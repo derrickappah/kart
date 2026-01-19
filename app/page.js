@@ -5,6 +5,8 @@ import SearchBar from "../components/SearchBar";
 
 export default async function Home() {
   console.log('[HomePage] Execution started');
+  console.log('[HomePage] URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('[HomePage] Key Length:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length);
   const supabase = await createClient();
 
   // Fetch featured/boosted products
