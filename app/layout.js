@@ -15,6 +15,7 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
+  console.log('[RootLayout] Execution started');
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

@@ -4,8 +4,9 @@ import NotificationBell from "../components/NotificationBell";
 import SearchBar from "../components/SearchBar";
 
 export default async function Home() {
+  console.log('[HomePage] Execution started');
   const supabase = await createClient();
-  
+
   // Fetch featured/boosted products
   const { data: featuredProducts } = await supabase
     .from('products')
@@ -14,7 +15,7 @@ export default async function Home() {
     .eq('status', 'Active')
     .order('created_at', { ascending: false })
     .limit(10);
-  
+
   // Fetch latest products
   const { data: latestProducts } = await supabase
     .from('products')
@@ -22,7 +23,7 @@ export default async function Home() {
     .eq('status', 'Active')
     .order('created_at', { ascending: false })
     .limit(10);
-  
+
   const displayProducts = featuredProducts && featuredProducts.length > 0 ? featuredProducts : latestProducts;
 
   const categories = [
@@ -94,7 +95,7 @@ export default async function Home() {
                     </div>
                     <p className="shrink-0 text-xl font-bold text-gray-900 dark:text-white">GHS {product.price}</p>
                   </div>
-                  <Link 
+                  <Link
                     href={`/marketplace/${product.id}`}
                     className="mt-2 btn-primary"
                   >
