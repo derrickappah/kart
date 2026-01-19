@@ -1,0 +1,299 @@
+.pageContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+}
+
+.backLink:hover {
+    color: var(--foreground);
+}
+
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.headerContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pageTitle {
+    font-size: 1.875rem;
+    font-weight: 700;
+}
+
+.orderId {
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.statusBadges {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.statusBadge,
+.escrowBadge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.statusPending {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.statusPaid {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.statusShipped {
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+.statusDelivered {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.statusCompleted {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.statusCancelled {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.escrowHeld {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.escrowReleased {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.escrowRefunded {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.contentFullWidth {
+    grid-column: 1 / -1;
+    margin-bottom: 2rem;
+}
+
+.contentGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.productCard {
+    display: flex;
+    flex-direction: column;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.sectionTitleIcon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--text-muted);
+}
+
+.productImage {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+}
+
+.productTitle {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.productDescription {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.productMeta {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.productMetaItem {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.productMetaLabel {
+    color: var(--text-muted);
+}
+
+.productMetaValue {
+    font-weight: 500;
+}
+
+.summaryList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.summaryLabel {
+    color: var(--text-muted);
+}
+
+.summaryValue {
+    font-weight: 500;
+}
+
+.summaryDivider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.5rem 0;
+}
+
+.summaryTotal {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.summaryPayout {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border);
+    font-weight: 600;
+}
+
+.userInfoCard {}
+
+.userName {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.userEmail {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.verifiedBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #ecfdf5;
+    color: #047857;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+}
+
+.historyList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.historyItem {
+    position: relative;
+    padding-left: 1rem;
+    border-left: 2px solid var(--border);
+}
+
+.historyHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.historyStatus {
+    font-weight: 600;
+}
+
+.historyDate {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.historyDetails {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.paymentInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.paymentRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.paymentLabel {
+    color: var(--text-muted);
+}
+
+.paymentValue {
+    font-family: monospace;
+}
