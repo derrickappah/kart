@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server'
 
-export async function proxy(request) {
+export async function middleware(request) {
     const { pathname } = request.nextUrl
-    console.log(`[Proxy] Executing for: ${pathname}`)
+    console.log(`[Middleware] Executing for: ${pathname}`)
 
     const response = NextResponse.next()
+    response.headers.set('x-middleware-active', 'true')
     response.headers.set('x-proxy-active', 'true')
     return response
 }
 
-export default proxy
+export const proxy = middleware
+export default middleware
 
 export const config = {
     matcher: [
