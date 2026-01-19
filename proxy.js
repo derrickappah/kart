@@ -2,13 +2,21 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function proxy(request) {
-    try {
-        const { pathname } = request.nextUrl
-        console.log(`[Proxy] Intercepting: ${pathname}`)
+    const { pathname } = request.nextUrl
 
-        return NextResponse.next()
+    try {
+        console.log(`[Proxy] Request Path: ${pathname}`)
+        console.log(`[Proxy] Method: ${request.method}`)
+
+        // Basic response to ensure middleware is active
+        const response = NextResponse.next()
+
+        // Add a diagnostic header
+        response.headers.set('x-proxy-active', 'true')
+
+        return response
     } catch (e) {
-        console.error('[Proxy] Error:', e)
+        console.error(`[Proxy] Error for path ${pathname}:`, e)
         return NextResponse.next()
     }
 }
