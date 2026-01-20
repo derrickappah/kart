@@ -1,4 +1,3 @@
-
 const faqs = [
   {
     question: 'How do I start selling on KART?',
@@ -36,17 +35,23 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <main className={styles.main}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Frequently Asked Questions</h1>
-        <p className={styles.subtitle}>Everything you need to know about KART</p>
+    <main className="bg-slate-50 dark:bg-[#111d21] min-h-screen py-16 px-6 font-display text-slate-900 dark:text-white transition-colors duration-300">
+      <header className="max-w-4xl mx-auto text-center mb-16 px-4">
+        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight uppercase">Frequently Asked Questions</h1>
+        <p className="text-slate-500 font-medium bg-slate-100 dark:bg-white/5 inline-block px-4 py-1 rounded-full text-sm">Everything you need to know about KART</p>
       </header>
 
-      <div className={styles.faqList}>
+      <div className="max-w-3xl mx-auto space-y-4">
         {faqs.map((faq, index) => (
-          <div key={index} className={styles.faqItem}>
-            <h3 className={styles.question}>{faq.question}</h3>
-            <p className={styles.answer}>{faq.answer}</p>
+          <div
+            key={index}
+            className="group bg-white dark:bg-slate-800/40 border border-slate-100 dark:border-white/5 rounded-2xl p-6 transition-all hover:shadow-md"
+          >
+            <h3 className="text-lg font-bold text-[#0e171b] dark:text-white mb-2 flex items-start gap-3">
+              <span className="text-primary mt-1 font-black leading-none">?</span>
+              {faq.question}
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium pl-5">{faq.answer}</p>
           </div>
         ))}
       </div>

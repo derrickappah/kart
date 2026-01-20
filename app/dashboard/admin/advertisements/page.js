@@ -2,6 +2,8 @@ import { createClient } from '../../../../utils/supabase/server';
 import { redirect } from 'next/navigation';
 import AdvertisementsClient from './AdvertisementsClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminAdvertisementsPage({ searchParams }) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -10,7 +12,6 @@ export default async function AdminAdvertisementsPage({ searchParams }) {
         redirect('/login');
     }
 
-    // Admin check is handled by layout
     // Get filter from search params
     const resolvedSearchParams = await searchParams;
     const statusFilter = resolvedSearchParams?.status || 'all';
@@ -45,12 +46,12 @@ export default async function AdminAdvertisementsPage({ searchParams }) {
     const totalClicks = advertisements?.reduce((sum, ad) => sum + (ad.clicks || 0), 0) || 0;
 
     return (
-        <div className={styles.pageContainer}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Advertisements Management</h1>
-                <p className={styles.subtitle}>Manage and monitor all platform advertisements</p>
+        <div className="flex flex-col gap-6 p-6">
+            <header className="flex flex-col gap-1">
+                <h1 className="text-2xl font-bold text-[#0e171b] dark:text-white">Advertisements Management</h1>
+                <p className="text-slate-500 text-sm">Manage and monitor all platform advertisements</p>
             </header>
-            <AdvertisementsClient 
+            <AdvertisementsClient
                 initialAdvertisements={advertisements || []}
                 stats={{
                     total: totalCount,

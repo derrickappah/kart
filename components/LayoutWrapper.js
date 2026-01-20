@@ -7,7 +7,6 @@ import MobileBottomNav from './MobileBottomNav';
 
 export default function LayoutWrapper({ children, user }) {
     const pathname = usePathname();
-    console.log('[LayoutWrapper] Current pathname:', pathname);
 
     // Check if we are on a product details page
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';

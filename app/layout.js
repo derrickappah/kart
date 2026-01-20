@@ -13,22 +13,15 @@ export const metadata = {
   description: "The premium marketplace for students.",
 };
 
-export default async function RootLayout({ children }) {
-  console.log('[RootLayout] Execution started');
+export const dynamic = 'force-dynamic';
 
+export default async function RootLayout({ children }) {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    console.log('[RootLayout] Env Check - URL present:', !!supabaseUrl);
-    console.log('[RootLayout] Env Check - Key present:', !!supabaseAnonKey);
-
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-    if (userError) {
-      console.error('[RootLayout] Auth Error:', userError);
-    }
 
     return (
       <html lang="en" className={`${jakarta.variable}`}>
@@ -45,7 +38,6 @@ export default async function RootLayout({ children }) {
       </html>
     );
   } catch (error) {
-    console.error('[RootLayout] Critical Error:', error);
     return (
       <html lang="en">
         <body>
