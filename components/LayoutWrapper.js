@@ -38,7 +38,7 @@ export default function LayoutWrapper({ children, user }) {
     return (
         <>
             {!isEditingPage && <Navbar user={user} />}
-            <main className={isProductPage ? "" : (isEditingPage ? "" : "pt-16 pb-20")}>
+            <main className={isProductPage ? "" : (isEditingPage ? "" : "pt-16 pb-[70px]")}>
                 {children}
             </main>
             {!isEditingPage && <MobileBottomNav user={user} />}
