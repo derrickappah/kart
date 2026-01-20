@@ -1,40 +1,28 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Lottie from 'lottie-react';
+import faceVerificationAnimation from '@/public/Face verification.json';
 
 export default function VerificationIntroPage() {
     const router = useRouter();
 
     return (
         <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen overflow-hidden selection:bg-primary/30 antialiased transition-colors duration-200">
-            {/* Top Navigation Bar */}
-            <header className="flex items-center justify-between p-4 bg-white dark:bg-[#111d21] z-20 relative">
-                <button
-                    onClick={() => router.back()}
-                    aria-label="Go back"
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-900 dark:text-white"
-                >
-                    <span className="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
-                </button>
-                <h2 className="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] text-center">
-                    Verification
-                </h2>
-                <div className="size-10 shrink-0"></div> {/* Spacer for optical centering */}
-            </header>
-
             {/* Main Scrollable Content */}
-            <main className="flex-1 overflow-y-auto w-full flex flex-col items-center px-6 pt-6 pb-32 no-scrollbar">
-                {/* Hero Illustration */}
-                <div className="relative mb-8 mt-2 group">
+            <main className="flex-1 overflow-y-auto w-full flex flex-col items-center px-6 pt-12 pb-32 no-scrollbar">
+                {/* Hero Illustration - Lottie Animation */}
+                <div className="relative mb-12 mt-4 group w-full max-w-[280px] aspect-square flex items-center justify-center">
                     {/* Animated Background Blob */}
-                    <div className="absolute inset-0 bg-primary/20 dark:bg-primary/10 rounded-full blur-2xl transform scale-110 group-hover:scale-125 transition-transform duration-700"></div>
-                    {/* Icon Container */}
-                    <div className="relative size-32 bg-white dark:bg-gray-800 rounded-[2rem] shadow-soft flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform duration-500 ease-out border border-white/50 dark:border-gray-700">
-                        <span className="material-symbols-outlined text-primary text-[64px] drop-shadow-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
-                        {/* Floating Decorative Elements */}
-                        <div className="absolute -top-3 -right-3 size-10 bg-green-500 rounded-xl shadow-lg flex items-center justify-center transform -rotate-12 border-2 border-white dark:border-gray-800">
-                            <span className="material-symbols-outlined text-white text-xl font-bold">check</span>
-                        </div>
+                    <div className="absolute inset-4 bg-primary/10 dark:bg-primary/5 rounded-full blur-3xl transform scale-110 group-hover:scale-125 transition-transform duration-1000"></div>
+
+                    {/* Lottie Container */}
+                    <div className="relative w-full h-full z-10 flex items-center justify-center">
+                        <Lottie
+                            animationData={faceVerificationAnimation}
+                            loop={true}
+                            className="w-full h-full scale-110"
+                        />
                     </div>
                 </div>
 
@@ -78,7 +66,7 @@ export default function VerificationIntroPage() {
             </main>
 
             {/* Bottom Action Area */}
-            <footer className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#f6f7f8] via-[#f6f7f8] to-transparent dark:from-[#111d21] dark:via-[#111d21] pb-[env(safe-area-inset-bottom,24px)] z-30">
+            <footer className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#f6f7f8] via-[#f6f7f8] to-transparent dark:from-[#111d21] dark:via-[#111d21] pb-12 sm:pb-16 z-30">
                 <div className="max-w-md mx-auto w-full flex flex-col gap-4">
                     {/* Trust Badge */}
                     <div className="flex items-center justify-center gap-2 text-xs font-medium text-[#57858e] dark:text-gray-500 opacity-80">

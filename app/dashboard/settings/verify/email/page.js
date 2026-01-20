@@ -68,24 +68,15 @@ export default function EmailVerificationPage() {
 
     return (
         <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen antialiased transition-colors duration-200">
-            {/* Top Navigation Bar */}
-            <header className="flex items-center justify-between p-4 bg-white dark:bg-[#111d21] z-20 relative">
-                <button
-                    onClick={() => router.back()}
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-900 dark:text-white"
-                >
-                    <span className="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
-                </button>
-                <h2 className="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] text-center">
-                    Email Verification
-                </h2>
-                <div className="size-10 shrink-0"></div>
-            </header>
-
             <main className="flex-1 flex flex-col items-center px-6 pt-12 pb-32">
                 <div className="w-full max-w-sm text-center">
-                    <div className="size-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary">
-                        <span className="material-symbols-outlined text-[40px]">mark_email_unread</span>
+                    <div className="size-48 bg-primary/10 rounded-[48px] flex items-center justify-center mx-auto mb-10 text-primary">
+                        <span
+                            className="material-symbols-outlined"
+                            style={{ fontSize: '120px' }}
+                        >
+                            mark_email_unread
+                        </span>
                     </div>
 
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Check your email</h1>
