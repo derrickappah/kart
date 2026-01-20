@@ -25,18 +25,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
 
     return (
         <div className="bg-[#f6f7f8] dark:bg-[#111d21] text-[#0e181b] dark:text-white font-display min-h-screen antialiased">
-            <header className="sticky top-0 z-[100] flex items-center bg-[#f6f7f8]/80 dark:bg-[#111d21]/80 backdrop-blur-md px-4 py-4 justify-between border-b border-transparent">
-                <button 
-                    onClick={() => router.back()}
-                    className="btn-ghost size-10 !p-0 rounded-full bg-white dark:bg-slate-800 shadow-sm"
-                >
-                    <span className="material-symbols-outlined text-lg text-slate-600 dark:text-slate-300">arrow_back_ios_new</span>
-                </button>
-                <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center">Wallet</h2>
-                <div className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-sm cursor-pointer active:scale-95 transition-transform">
-                    <span className="material-symbols-outlined text-lg text-slate-600 dark:text-slate-300">help_outline</span>
-                </div>
-            </header>
+
 
             <main className="max-w-md mx-auto pb-32">
                 {/* Main Balance Card Section */}
@@ -44,7 +33,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                     <div className="relative flex flex-col overflow-hidden rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] bg-white dark:bg-[#1a2b31] border border-slate-100 dark:border-slate-800 transition-all duration-300">
                         {/* Decorative background elements */}
                         <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#1daddd]/10 rounded-full blur-3xl"></div>
-                        
+
                         <div className="relative flex flex-col items-center justify-center gap-2 py-10 px-6">
                             <p className="text-[#4f8596] dark:text-slate-400 text-sm font-bold tracking-wide uppercase">Total Balance</p>
                             <div className="flex items-baseline gap-1">

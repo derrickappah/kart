@@ -18,6 +18,7 @@ export default function LayoutWrapper({ children, user }) {
         pathname?.includes('/withdraw') ||
         pathname?.includes('/buy') ||
         pathname?.includes('/review') ||
+        pathname?.includes('/verify') ||
         pathname?.includes('/success')) &&
         !pathname?.includes('/profile/edit'); // Show navigation on profile edit page
 

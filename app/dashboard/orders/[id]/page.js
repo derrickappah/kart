@@ -21,8 +21,8 @@ export default async function OrderDetailPage({ params }) {
     .select(`
       *,
       product:products(id, title, description, images, image_url, category, condition),
-      buyer:profiles!orders_buyer_id_profiles_fkey(id, display_name, email, is_verified),
-      seller:profiles!orders_seller_id_profiles_fkey(id, display_name, email, is_verified)
+      buyer:profiles!orders_buyer_id_profiles_fkey(id, display_name, email, is_verified, avatar_url),
+      seller:profiles!orders_seller_id_profiles_fkey(id, display_name, email, is_verified, avatar_url)
     `)
     .eq('id', id)
     .single();

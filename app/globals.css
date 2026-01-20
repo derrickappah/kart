@@ -17,7 +17,7 @@
   --text-secondary-dark: #9ca3af;
   --border-light: #f3f4f6;
   --border-dark: #374151;
-  
+
   --radius-button: 0.75rem;
   --radius-card: 1rem;
   --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -42,6 +42,7 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
+
   html,
   body {
     background-color: var(--background-dark);
@@ -146,7 +147,7 @@ a {
 
 /* Page content styling */
 .page-content {
-  min-height:100vh;
+  min-height: 100vh;
   /* Content will be positioned between fixed navbar and bottom nav */
   /* Padding-top is applied conditionally via Tailwind classes when navbar is visible */
 }
@@ -155,13 +156,15 @@ a {
 .auth-page-active body {
   padding: 0 !important;
   margin: 0 !important;
-  background-color: #fafafa !important; /* Match light theme background */
+  background-color: #fafafa !important;
+  /* Match light theme background */
 }
 
 /* Specific fix for pages that use .auth-page-active but still show the global fixed navbar */
 /* Or pages that have their own fixed elements */
 .auth-page-active:not(.navbar-hidden) {
-  padding-top: 0 !important; /* Removed top padding */
+  padding-top: 0 !important;
+  /* Removed top padding */
 }
 
 
@@ -172,19 +175,21 @@ a {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 @media (prefers-color-scheme: dark) {
   body.auth-page-active {
-    background-color: #21242c !important; /* Match dark theme background */
+    background-color: #21242c !important;
+    /* Match dark theme background */
   }
 }
 
-/* Hide global navbar and bottom nav on profile, notifications, subscription, and product details pages */
-.profile-page .fixed,
-.notifications-page .fixed,
-.subscription-page .fixed {
+/* Hide global navbar and bottom nav on product details pages to avoid overlap */
+.product-details-page .navbar-fixed,
+.product-details-page .bottom-nav-fixed {
   display: none !important;
 }

@@ -22,7 +22,8 @@ export default async function ProductDetails({ params }) {
                     created_at,
                     is_verified,
                     average_rating,
-                    total_reviews
+                    total_reviews,
+                    avatar_url
                 )
             `)
             .eq('id', id)
@@ -41,7 +42,7 @@ export default async function ProductDetails({ params }) {
             if (prodData && !prodError) {
                 const { data: sellerData } = await supabase
                     .from('profiles')
-                    .select('display_name, email, created_at, is_verified, average_rating, total_reviews')
+                    .select('display_name, email, created_at, is_verified, average_rating, total_reviews, avatar_url')
                     .eq('id', prodData.seller_id)
                     .single();
 
@@ -52,7 +53,8 @@ export default async function ProductDetails({ params }) {
                         email: '',
                         is_verified: false,
                         average_rating: 0,
-                        total_reviews: 0
+                        total_reviews: 0,
+                        avatar_url: null
                     }
                 };
             }

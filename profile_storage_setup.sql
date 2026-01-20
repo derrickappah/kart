@@ -6,14 +6,35 @@ insert into storage.buckets (id, name, public)
 values ('profiles', 'profiles', true)
 on conflict (id) do nothing;
 
--- 2. Add avatar_url column to profiles table if it doesn't exist
+-- 2. Add required columns to profiles table if they don't exist
 do $$ 
 begin
-  if not exists (
-    select 1 from information_schema.columns 
-    where table_name = 'profiles' and column_name = 'avatar_url'
-  ) then
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'avatar_url') then
     alter table profiles add column avatar_url text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'bio') then
+    alter table profiles add column bio text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'instagram') then
+    alter table profiles add column instagram text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'linkedin') then
+    alter table profiles add column linkedin text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'phone') then
+    alter table profiles add column phone text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'campus') then
+    alter table profiles add column campus text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'updated_at') then
+    alter table profiles add column updated_at timestamp with time zone default now();
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'display_name') then
+    alter table profiles add column display_name text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'username') then
+    alter table profiles add column username text;
   end if;
 end $$;
 
