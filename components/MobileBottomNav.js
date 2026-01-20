@@ -11,6 +11,20 @@ export default function MobileBottomNav({ user }) {
         return null;
     }
 
+    // Check if we are on a product details page
+    const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
+
+    // Check if we are on a product details page or editing page
+    const isEditingPage = pathname?.includes('/create') ||
+        pathname?.includes('/edit') ||
+        pathname?.includes('/buy') ||
+        pathname?.includes('/review') ||
+        pathname?.includes('/withdraw') ||
+        pathname?.includes('/promote');
+
+    // Don't render bottom nav on these pages to avoid overlap
+    if (isProductPage || isEditingPage) return null;
+
     const isActive = (path) => {
         if (path === '/') return pathname === '/';
         return pathname?.startsWith(path);
@@ -25,7 +39,7 @@ export default function MobileBottomNav({ user }) {
             <div className="flex w-full max-w-md items-center justify-between px-8">
                 {/* Home */}
                 <Link href="/" className="group flex flex-col items-center">
-                    <span 
+                    <span
                         className={`material-symbols-outlined text-[44px] transition-transform group-active:scale-90 ${isActive('/') ? 'text-[#1daddd]' : 'text-gray-400'}`}
                         style={{ fontVariationSettings: isActive('/') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
@@ -35,7 +49,7 @@ export default function MobileBottomNav({ user }) {
 
                 {/* Marketplace */}
                 <Link href="/marketplace" className="group flex flex-col items-center -mr-8">
-                    <span 
+                    <span
                         className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/marketplace') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
                         style={{ fontVariationSettings: isActive('/marketplace') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
@@ -54,7 +68,7 @@ export default function MobileBottomNav({ user }) {
 
                 {/* Messages */}
                 <Link href="/dashboard/messages" className="group flex flex-col items-center -ml-8">
-                    <span 
+                    <span
                         className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
                         style={{ fontVariationSettings: isActive('/dashboard/messages') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
@@ -64,7 +78,7 @@ export default function MobileBottomNav({ user }) {
 
                 {/* Profile */}
                 <Link href={getProfileLink()} className="group flex flex-col items-center">
-                    <span 
+                    <span
                         className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/dashboard') || isActive('/login') || isActive('/profile') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
                         style={{ fontVariationSettings: isActive('/dashboard') || isActive('/login') || isActive('/profile') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >

@@ -185,7 +185,6 @@ a {
 /* Hide global navbar and bottom nav on profile, notifications, subscription, and product details pages */
 .profile-page .fixed,
 .notifications-page .fixed,
-.subscription-page .fixed,
-.product-details-page .fixed {
+.subscription-page .fixed {
   display: none !important;
 }

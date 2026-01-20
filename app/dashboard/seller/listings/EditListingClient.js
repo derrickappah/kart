@@ -58,7 +58,7 @@ export default function EditListingClient({ product }) {
                 {/* Header */}
                 <header className="sticky top-0 z-[100] bg-[#f6f7f9]/95 dark:bg-[#1a1d21]/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors">
                     <div className="flex items-center px-4 pt-4 pb-4 justify-between">
-                        <button 
+                        <button
                             onClick={() => router.back()}
                             className="text-[#0e191b] dark:text-[#e0e6e8] flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         >
@@ -84,13 +84,13 @@ export default function EditListingClient({ product }) {
                                 </div>
                                 <span className="text-xs font-bold">Add Photo</span>
                             </button>
-                            
+
                             {formData.image_url && (
                                 <div className="relative shrink-0 w-28 h-36 rounded-2xl overflow-visible group">
                                     <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-md">
-                                        <Image 
-                                            src={formData.image_url} 
-                                            alt="Listing photo" 
+                                        <Image
+                                            src={formData.image_url}
+                                            alt="Listing photo"
                                             fill
                                             className="object-cover"
                                         />
@@ -110,11 +110,11 @@ export default function EditListingClient({ product }) {
                         <div className="space-y-2">
                             <label className="block text-sm font-bold text-[#0e191b] dark:text-[#e0e6e8] ml-1" htmlFor="title">Item Name</label>
                             <div className="relative">
-                                <input 
-                                    className="block w-full rounded-2xl border-0 py-4 px-4 text-[#0e191b] dark:text-[#e0e6e8] shadow-sm bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-sm sm:leading-6 transition-shadow font-medium" 
-                                    id="title" 
+                                <input
+                                    className="block w-full rounded-2xl border-0 py-4 px-4 text-[#0e191b] dark:text-[#e0e6e8] shadow-sm bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-sm sm:leading-6 transition-shadow font-medium"
+                                    id="title"
                                     name="title"
-                                    type="text" 
+                                    type="text"
                                     value={formData.title}
                                     onChange={handleChange}
                                 />
@@ -132,11 +132,11 @@ export default function EditListingClient({ product }) {
                                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                                         <span className="text-[#4e8b97] dark:text-[#94aab0] font-bold text-lg">₵</span>
                                     </div>
-                                    <input 
-                                        className="block w-full rounded-2xl border-0 py-4 pl-9 pr-4 text-[#0e191b] dark:text-[#e0e6e8] bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-lg sm:leading-6 font-bold transition-shadow text-right" 
-                                        id="price" 
-                                        name="price" 
-                                        type="number" 
+                                    <input
+                                        className="block w-full rounded-2xl border-0 py-4 pl-9 pr-4 text-[#0e191b] dark:text-[#e0e6e8] bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-lg sm:leading-6 font-bold transition-shadow text-right"
+                                        id="price"
+                                        name="price"
+                                        type="number"
                                         value={formData.price}
                                         onChange={handleChange}
                                     />
@@ -145,9 +145,9 @@ export default function EditListingClient({ product }) {
                             <div className="space-y-2">
                                 <label className="block text-sm font-bold text-[#0e191b] dark:text-[#e0e6e8] ml-1" htmlFor="category">Category</label>
                                 <div className="relative">
-                                    <select 
-                                        className="block w-full rounded-2xl border-0 py-4 pl-4 pr-10 text-[#0e191b] dark:text-[#e0e6e8] shadow-sm bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-sm sm:leading-6 font-medium appearance-none transition-shadow" 
-                                        id="category" 
+                                    <select
+                                        className="block w-full rounded-2xl border-0 py-4 pl-4 pr-10 text-[#0e191b] dark:text-[#e0e6e8] shadow-sm bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-sm sm:leading-6 font-medium appearance-none transition-shadow"
+                                        id="category"
                                         name="category"
                                         value={formData.category}
                                         onChange={handleChange}
@@ -168,15 +168,14 @@ export default function EditListingClient({ product }) {
                             <label className="block text-sm font-bold text-[#0e191b] dark:text-[#e0e6e8] ml-1">Condition</label>
                             <div className="grid grid-cols-3 gap-3">
                                 {conditions.map(cond => (
-                                    <button 
+                                    <button
                                         key={cond}
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, condition: cond }))}
-                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-xs font-bold shadow-sm ${
-                                            formData.condition === cond 
-                                            ? 'border-[#149cb8] bg-[#149cb8]/5 text-[#149cb8] ring-1 ring-[#149cb8]' 
+                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-xs font-bold shadow-sm ${formData.condition === cond
+                                            ? 'border-[#149cb8] bg-[#149cb8]/5 text-[#149cb8] ring-1 ring-[#149cb8]'
                                             : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#22262a] text-gray-500 hover:border-gray-300'
-                                        }`}
+                                            }`}
                                     >
                                         {cond}
                                     </button>
@@ -187,9 +186,9 @@ export default function EditListingClient({ product }) {
                         {/* Description */}
                         <div className="space-y-2">
                             <label className="block text-sm font-bold text-[#0e191b] dark:text-[#e0e6e8] ml-1" htmlFor="description">Description</label>
-                            <textarea 
-                                className="block w-full rounded-2xl border-0 py-4 px-4 text-[#0e191b] dark:text-[#e0e6e8] shadow-sm bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-sm sm:leading-6 transition-shadow font-medium min-h-[120px]" 
-                                id="description" 
+                            <textarea
+                                className="block w-full rounded-2xl border-0 py-4 px-4 text-[#0e191b] dark:text-[#e0e6e8] shadow-sm bg-white dark:bg-[#22262a] ring-1 ring-inset ring-gray-200 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#149cb8] sm:text-sm sm:leading-6 transition-shadow font-medium min-h-[120px]"
+                                id="description"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
@@ -200,8 +199,8 @@ export default function EditListingClient({ product }) {
                 </main>
 
                 {/* Sticky Footer Action */}
-                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 dark:bg-[#22262a]/80 backdrop-blur-lg border-t border-gray-100 dark:border-gray-800 p-5 z-[100]">
-                    <button 
+                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 dark:bg-[#22262a]/80 backdrop-blur-lg border-t border-gray-100 dark:border-gray-800 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] z-[100]">
+                    <button
                         onClick={handleSave}
                         disabled={loading}
                         className="w-full flex items-center justify-center gap-2 bg-[#149cb8] hover:bg-[#149cb8]/90 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-[#149cb8]/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"

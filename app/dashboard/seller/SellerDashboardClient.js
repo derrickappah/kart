@@ -5,12 +5,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ManualActivationButton from './ManualActivationButton';
 
-export default function SellerDashboardClient({ 
-    user, 
-    profile, 
-    listings, 
-    isSubscribed, 
-    subscription, 
+export default function SellerDashboardClient({
+    user,
+    profile,
+    listings,
+    isSubscribed,
+    subscription,
     pendingSubscriptions,
     totalEarnings,
     itemsSold,
@@ -19,7 +19,7 @@ export default function SellerDashboardClient({
 }) {
     const router = useRouter();
     const displayName = profile?.display_name || user.email.split('@')[0];
-    
+
     // Greeting based on time of day
     const [greeting, setGreeting] = useState('Good Morning');
     useEffect(() => {
@@ -59,7 +59,7 @@ export default function SellerDashboardClient({
                             <span className="uppercase tracking-widest font-black">Create Listing</span>
                         </Link>
                     ) : (
-                        <Link href="/sell#plans" className="btn-primary w-full h-14 shadow-xl shadow-primary/20 text-base">
+                        <Link href="/subscriptions" className="btn-primary w-full h-14 shadow-xl shadow-primary/20 text-base">
                             <span className="material-symbols-outlined">subscriptions</span>
                             <span className="uppercase tracking-widest font-black">Subscribe to Sell</span>
                         </Link>
@@ -85,7 +85,7 @@ export default function SellerDashboardClient({
                                 <span className="material-symbols-outlined text-[14px] text-gray-400">chevron_right</span>
                             </Link>
                         </div>
-                        
+
                         <div className="h-24 w-full relative">
                             <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 350 100">
                                 <defs>
@@ -115,7 +115,7 @@ export default function SellerDashboardClient({
                 {(pendingSubscriptions?.length > 0 || !isSubscribed || daysUntilExpiry <= 7) && (
                     <section className="mb-8 space-y-3">
                         <h3 className="text-sm font-black text-text-primary-light dark:text-white px-1 mb-2 uppercase tracking-tight">Alerts</h3>
-                        
+
                         {pendingSubscriptions?.map(sub => (
                             <div key={sub.id} className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-4 rounded-2xl shadow-sm">
                                 <div className="flex items-center gap-3 mb-3">
@@ -127,8 +127,8 @@ export default function SellerDashboardClient({
                                         <p className="text-[10px] font-bold text-amber-700/70 dark:text-amber-400/70 break-all leading-tight">Ref: {sub.payment_reference}</p>
                                     </div>
                                 </div>
-                                <ManualActivationButton 
-                                    subscriptionId={sub.id} 
+                                <ManualActivationButton
+                                    subscriptionId={sub.id}
                                     paymentReference={sub.payment_reference}
                                 />
                             </div>
@@ -142,7 +142,7 @@ export default function SellerDashboardClient({
                                     </div>
                                     <p className="text-sm font-black text-red-900 dark:text-red-100 uppercase tracking-tight">Expired</p>
                                 </div>
-                                <Link href="/sell#plans" className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest underline decoration-2 underline-offset-4">Renew</Link>
+                                <Link href="/subscriptions" className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest underline decoration-2 underline-offset-4">Renew</Link>
                             </div>
                         )}
 
@@ -165,7 +165,7 @@ export default function SellerDashboardClient({
                         <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Listings</h3>
                         <Link href="/dashboard/seller/listings" className="text-primary text-xs font-black uppercase tracking-widest">Manage All</Link>
                     </div>
-                    
+
                     <div className="space-y-3">
                         {listings?.slice(0, 5).map(item => (
                             <div key={item.id} className="bg-white dark:bg-surface-dark rounded-3xl p-3 shadow-soft border border-gray-100 dark:border-gray-800 flex items-center gap-4 group active:scale-[0.98] transition-all">

@@ -244,7 +244,7 @@ export default function EditProfilePage() {
             </main>
 
             {/* Sticky Footer */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 px-5 pt-4 pb-8 bg-[#f6f7f8] dark:bg-[#111d21] border-t border-gray-100 dark:border-white/5">
+            <div className="fixed bottom-0 left-0 right-0 z-[100] px-5 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))] bg-[#f6f7f8] dark:bg-[#111d21] border-t border-gray-100 dark:border-white/5">
                 <div className="max-w-md mx-auto w-full">
                     <button
                         onClick={handleSave}

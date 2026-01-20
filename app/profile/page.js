@@ -9,7 +9,7 @@ export default function ProfilePage() {
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [stats, setStats] = useState({ listings: 12, followers: 145, reviews: 4.8 });
-    const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -35,22 +35,13 @@ export default function ProfilePage() {
                 .eq('seller_id', user.id);
 
             setStats(prev => ({ ...prev, listings: listingsCount || 12 }));
-            setLoading(false);
+
         };
 
         fetchProfileData();
     }, [supabase]);
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] flex items-center justify-center">
-                <div className="animate-pulse flex flex-col items-center gap-4">
-                    <div className="size-20 rounded-full bg-gray-200 dark:bg-gray-800"></div>
-                    <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded"></div>
-                </div>
-            </div>
-        );
-    }
+
 
     const displayName = profile?.display_name || 'Alex Johnson';
     const university = profile?.university || "Stanford University • Class of '25";
@@ -64,7 +55,7 @@ export default function ProfilePage() {
                         {/* Profile Image */}
                         <div className="w-32 h-32 rounded-full p-1 border-2 border-dashed border-[#1daddd]/30 group-hover:border-[#1daddd] transition-colors duration-300">
                             <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden bg-cover bg-center shadow-sm"
-                                 style={{ backgroundImage: profile?.avatar_url ? `url('${profile.avatar_url}')` : "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCw2lhXuAw9JUwW8ISP2dXOqUvlpah2n7pQIdoK9DADfxJN35II58VGYtBvbXzU3bTLUPtX5n2mWUwEcI93apzULB8nTkVf01mzFxW-_TpFMEbUyKBRdqXJ2Gejmv16KsMNEqdpPtZJysu1SPu6d0mEl59JBin5nmrXLnZveAuJfrfgMMg4O7dFYfJ50CnVu1l2gytefNQeOLk7uWun4GeWGJyb6kBPedKG7i5m7QBr0KaF1s0n08rIP5dpEIosjpLIKB-6OmkhQQRJ')" }}>
+                                style={{ backgroundImage: profile?.avatar_url ? `url('${profile.avatar_url}')` : "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCw2lhXuAw9JUwW8ISP2dXOqUvlpah2n7pQIdoK9DADfxJN35II58VGYtBvbXzU3bTLUPtX5n2mWUwEcI93apzULB8nTkVf01mzFxW-_TpFMEbUyKBRdqXJ2Gejmv16KsMNEqdpPtZJysu1SPu6d0mEl59JBin5nmrXLnZveAuJfrfgMMg4O7dFYfJ50CnVu1l2gytefNQeOLk7uWun4GeWGJyb6kBPedKG7i5m7QBr0KaF1s0n08rIP5dpEIosjpLIKB-6OmkhQQRJ')" }}>
                             </div>
                         </div>
                         {/* Edit Overlay Badge */}

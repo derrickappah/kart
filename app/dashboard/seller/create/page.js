@@ -10,6 +10,7 @@ export default function CreateListingPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [imageFiles, setImageFiles] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]);
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [checkingSubscription, setCheckingSubscription] = useState(true);
 
@@ -38,8 +39,8 @@ export default function CreateListingPage() {
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false });
 
-                const subscription = allSubscriptions?.find(sub => 
-                    (sub.status === 'Active' || sub.status === 'active') && 
+                const subscription = allSubscriptions?.find(sub =>
+                    (sub.status === 'Active' || sub.status === 'active') &&
                     new Date(sub.end_date) > new Date()
                 );
 
@@ -65,11 +66,66 @@ export default function CreateListingPage() {
         setFormData({ ...formData, condition });
     };
 
-    const handleFileChange = (e) => {
-        if (e.target.files) {
-            setImageFiles(Array.from(e.target.files));
+    // Unified handle for file changes
+    const handleFileChange = (e, replaceIndex = null) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const files = Array.from(e.target.files);
+
+            if (replaceIndex !== null) {
+                // Replacing a specific image
+                const file = files[0];
+                const newFiles = [...imageFiles];
+                newFiles[replaceIndex] = file;
+
+                // Cleanup old preview
+                if (imagePreviews[replaceIndex]) {
+                    URL.revokeObjectURL(imagePreviews[replaceIndex]);
+                }
+
+                const newPreviews = [...imagePreviews];
+                newPreviews[replaceIndex] = URL.createObjectURL(file);
+
+                setImageFiles(newFiles);
+                setImagePreviews(newPreviews);
+            } else {
+                // Adding new images
+                const remainingSlots = 5 - imageFiles.length;
+                if (remainingSlots <= 0) return;
+
+                const filesToAdd = files.slice(0, remainingSlots);
+                const nextFiles = [...imageFiles, ...filesToAdd];
+
+                const nextPreviews = [
+                    ...imagePreviews,
+                    ...filesToAdd.map(file => URL.createObjectURL(file))
+                ];
+
+                setImageFiles(nextFiles);
+                setImagePreviews(nextPreviews);
+            }
         }
+        // Reset input value so same file can be selected again
+        e.target.value = '';
     };
+
+    const removeImage = (index) => {
+        if (imagePreviews[index]) {
+            URL.revokeObjectURL(imagePreviews[index]);
+        }
+
+        const newFiles = imageFiles.filter((_, i) => i !== index);
+        const newPreviews = imagePreviews.filter((_, i) => i !== index);
+
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
+    };
+
+    // Clean up previews on unmount
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [imagePreviews]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -116,7 +172,7 @@ export default function CreateListingPage() {
                 }
             }
 
-            const { error: insertError } = await supabase
+            const { data: insertData, error: insertError } = await supabase
                 .from('products')
                 .insert([
                     {
@@ -131,11 +187,13 @@ export default function CreateListingPage() {
                         images: uploadedUrls,
                         status: 'Active'
                     }
-                ]);
+                ])
+                .select();
 
             if (insertError) throw insertError;
 
-            router.push('/dashboard/seller');
+            const newProductId = insertData?.[0]?.id;
+            router.push(`/dashboard/seller/create/success?id=${newProductId}`);
             router.refresh();
 
         } catch (err) {
@@ -163,7 +221,7 @@ export default function CreateListingPage() {
                 <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm">
                     You need an active subscription to create listings. Choose a plan to start selling on KART.
                 </p>
-                <Link href="/subscription" className="w-full max-w-xs btn-primary h-14">
+                <Link href="/subscriptions" className="w-full max-w-xs btn-primary h-14">
                     View Subscription Plans
                 </Link>
             </main>
@@ -179,9 +237,6 @@ export default function CreateListingPage() {
                         Cancel
                     </Link>
                     <h1 className="text-lg font-extrabold tracking-tight">List Item</h1>
-                    <button type="button" className="text-base font-bold text-primary hover:text-primary-dark transition-colors">
-                        Save Draft
-                    </button>
                 </div>
             </header>
 
@@ -195,22 +250,48 @@ export default function CreateListingPage() {
 
                 {/* Photo Upload Section */}
                 <section className="p-4">
-                    <div className="relative group cursor-pointer overflow-hidden rounded-2xl">
-                        <label className="cursor-pointer">
-                            <input type="file" accept="image/*" multiple onChange={handleFileChange} className="sr-only" />
-                            <div className="aspect-[4/3] w-full rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#2E2E32] flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:border-primary hover:bg-primary/5 active:scale-[0.99]">
-                                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
-                                    <span className="material-symbols-outlined text-3xl">add_a_photo</span>
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-primary font-bold text-lg">Add Photos</p>
-                                    <p className="text-gray-400 text-sm font-medium mt-1">
-                                        {imageFiles.length > 0 ? `${imageFiles.length}/5 uploaded` : '0/5 uploaded'}
-                                    </p>
-                                </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        {imagePreviews.map((url, index) => (
+                            <div key={url} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in group">
+                                <img src={url} className="w-full h-full object-cover" alt={`Preview ${index + 1}`} />
+                                <button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="absolute top-2 right-2 bg-red-500/90 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0"
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+
+                                <label className="absolute bottom-2 right-2 bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 cursor-pointer border border-gray-100 dark:border-gray-700">
+                                    <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileChange(e, index)} />
+                                    <span className="material-symbols-outlined text-[16px]">sync</span>
+                                </label>
+                                {index === 0 && (
+                                    <div className="absolute bottom-2 left-2 bg-[#1daddd] text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm border border-white/20">
+                                        Main Photo
+                                    </div>
+                                )}
                             </div>
-                        </label>
-                        <div className="absolute -z-10 top-2 left-2 right-2 bottom-0 bg-gray-200 dark:bg-gray-700 rounded-2xl opacity-50 transform scale-[0.98] translate-y-2"></div>
+                        ))}
+
+                        {imageFiles.length < 5 && (
+                            <label className="cursor-pointer block">
+                                <input type="file" accept="image/*" multiple onChange={handleFileChange} className="sr-only" />
+                                <div className="aspect-[4/3] w-full rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#2E2E32] flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:border-[#1daddd] hover:bg-[#1daddd]/5 active:scale-[0.98]">
+                                    <div className="size-10 rounded-full bg-[#1daddd]/10 flex items-center justify-center text-[#1daddd]">
+                                        <span className="material-symbols-outlined">add_a_photo</span>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-[#1daddd] font-bold text-xs uppercase tracking-widest">
+                                            {imageFiles.length === 0 ? 'Add Photo' : 'Add More'}
+                                        </p>
+                                        <p className="text-gray-400 text-[9px] font-medium mt-0.5">
+                                            {imageFiles.length}/5 Limit
+                                        </p>
+                                    </div>
+                                </div>
+                            </label>
+                        )}
                     </div>
                 </section>
 
@@ -338,7 +419,7 @@ export default function CreateListingPage() {
                 </section>
 
                 {/* Sticky Bottom Action Bar */}
-                <footer className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-[#242428]/90 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 z-30">
+                <footer className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/90 dark:bg-[#242428]/90 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 z-[100]">
                     <div className="max-w-[430px] mx-auto w-full">
                         <button
                             type="submit"

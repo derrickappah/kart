@@ -19,7 +19,7 @@ export default function ListingDetailsManagementClient({ product }) {
                 .from('products')
                 .update({ status: newStatus })
                 .eq('id', product.id);
-            
+
             if (error) throw error;
             setIsSold(!isSold);
             router.refresh();
@@ -37,8 +37,8 @@ export default function ListingDetailsManagementClient({ product }) {
                 <div className="relative w-full h-80 group">
                     <div className="absolute inset-0 bg-gray-100">
                         {product?.image_url ? (
-                            <Image 
-                                src={product.image_url} 
+                            <Image
+                                src={product.image_url}
                                 alt={product.title}
                                 fill
                                 className="object-cover"
@@ -51,10 +51,10 @@ export default function ListingDetailsManagementClient({ product }) {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-90"></div>
                     </div>
-                    
+
                     {/* Header Overlay */}
                     <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10 pt-4">
-                        <button 
+                        <button
                             onClick={() => router.back()}
                             className="bg-black/20 backdrop-blur-md text-white rounded-full p-2 hover:bg-black/40 transition border border-white/10 flex items-center justify-center"
                         >
@@ -65,7 +65,7 @@ export default function ListingDetailsManagementClient({ product }) {
                         </button>
                     </div>
 
-                    <Link 
+                    <Link
                         href={`/dashboard/seller/listings/edit/${product.id}`}
                         className="absolute bottom-4 right-4 bg-white text-[#0bb8da] rounded-full p-3 shadow-lg hover:scale-105 transition active:scale-95 flex items-center justify-center z-20 border border-gray-100"
                     >
@@ -151,11 +151,11 @@ export default function ListingDetailsManagementClient({ product }) {
                                 </div>
                             </div>
                             <div className="pr-4 py-2 flex items-center gap-3 border-l border-gray-100 pl-4">
-                                <span className="text-xs text-gray-500 font-medium text-right leading-tight">Mark<br/>Sold</span>
+                                <span className="text-xs text-gray-500 font-medium text-right leading-tight">Mark<br />Sold</span>
                                 <label className="relative inline-flex items-center cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        className="sr-only peer" 
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
                                         checked={isSold}
                                         onChange={handleToggleSold}
                                         disabled={loading}
@@ -189,18 +189,21 @@ export default function ListingDetailsManagementClient({ product }) {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="fixed bottom-0 left-0 right-0 p-5 bg-white/90 backdrop-blur-xl border-t border-gray-200 flex items-center gap-3 z-50 w-full max-w-md mx-auto">
-                    <Link 
+                <div className="fixed bottom-0 left-0 right-0 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] bg-white/90 backdrop-blur-xl border-t border-gray-200 flex items-center gap-3 z-[100] w-full max-w-md mx-auto">
+                    <Link
                         href={`/dashboard/seller/listings/edit/${product.id}`}
                         className="flex-1 bg-white hover:bg-gray-50 text-slate-700 font-bold py-3.5 px-4 rounded-xl border border-gray-200 shadow-sm transition flex items-center justify-center gap-2 group"
                     >
                         <span className="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-slate-600 transition">edit_square</span>
                         Edit Details
                     </Link>
-                    <button className="flex-[1.5] bg-[#0bb8da] hover:bg-[#0bb8da]/90 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-[0_4px_15px_rgba(11,184,218,0.4)] transition flex items-center justify-center gap-2">
+                    <Link
+                        href={`/dashboard/seller/listings/promote/${product.id}`}
+                        className="flex-[1.5] bg-[#0bb8da] hover:bg-[#0bb8da]/90 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-[0_4px_15px_rgba(11,184,218,0.4)] transition flex items-center justify-center gap-2 text-center"
+                    >
                         <span className="material-symbols-outlined text-[20px] icon-filled">rocket_launch</span>
                         Promote Listing
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>

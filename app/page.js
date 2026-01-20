@@ -3,14 +3,25 @@ import { createClient } from '../utils/supabase/server';
 import NotificationBell from "../components/NotificationBell";
 import SearchBar from "../components/SearchBar";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   console.log('[HomePage] Execution started');
-  console.log('[HomePage] URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log('[HomePage] Key Length:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length);
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  console.log('[HomePage] Supabase URL:', supabaseUrl);
+  console.log('[HomePage] Key Length:', supabaseAnonKey?.length || 0);
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('[HomePage] Missing Supabase environment variables');
+  }
+
   const supabase = await createClient();
 
   // Fetch featured/boosted products
-  const { data: featuredProducts } = await supabase
+  const { data: featuredProducts, error: featuredError } = await supabase
     .from('products')
     .select('*, seller:profiles!seller_id(display_name, avatar_url)')
     .or('is_featured.eq.true,is_boosted.eq.true')
@@ -18,13 +29,17 @@ export default async function Home() {
     .order('created_at', { ascending: false })
     .limit(10);
 
+  if (featuredError) console.error('[HomePage] Featured Fetch Error:', featuredError);
+
   // Fetch latest products
-  const { data: latestProducts } = await supabase
+  const { data: latestProducts, error: latestError } = await supabase
     .from('products')
     .select('*, seller:profiles!seller_id(display_name, avatar_url)')
     .eq('status', 'Active')
     .order('created_at', { ascending: false })
     .limit(10);
+
+  if (latestError) console.error('[HomePage] Latest Fetch Error:', latestError);
 
   const displayProducts = featuredProducts && featuredProducts.length > 0 ? featuredProducts : latestProducts;
 

@@ -33,7 +33,7 @@ export default function ConversationList() {
                     .from('conversations')
                     .select('*')
                     .order('updated_at', { ascending: false });
-                
+
                 if (allErr) {
                     setLoading(false);
                     return;
@@ -49,7 +49,7 @@ export default function ConversationList() {
             if (convsToProcess && convsToProcess.length > 0 && user) {
                 const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
                     const otherUserId = c.participants?.find(p => p !== user.id);
-                    
+
                     let profile = null;
                     if (otherUserId) {
                         const { data: p } = await supabase
@@ -110,21 +110,12 @@ export default function ConversationList() {
         return Math.floor(seconds) + "s";
     };
 
-    const filteredConversations = conversations.filter(conv => 
+    const filteredConversations = conversations.filter(conv =>
         conv.otherUser.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         conv.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (loading) {
-        return (
-            <div className="flex-1 flex items-center justify-center p-8 text-slate-400">
-                <div className="animate-pulse flex flex-col items-center gap-2">
-                    <span className="material-symbols-outlined text-4xl">chat_bubble</span>
-                    <p className="text-sm font-medium">Loading inbox...</p>
-                </div>
-            </div>
-        );
-    }
+
 
     return (
         <div className="flex flex-col h-full bg-[#fbfaf9] dark:bg-[#1b1b1d] font-display max-w-[480px] mx-auto min-h-screen">
@@ -141,9 +132,9 @@ export default function ConversationList() {
                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                         <span className="material-symbols-outlined text-[#7A8493] text-[20px]">search</span>
                     </div>
-                    <input 
-                        className="w-full h-12 pl-12 pr-4 bg-[#F3F1ED] dark:bg-[#2a2a2c] border-none rounded-xl focus:ring-2 focus:ring-[#1daddd]/40 text-sm font-medium placeholder:text-[#7A8493] dark:placeholder:text-gray-500" 
-                        placeholder="Search conversations..." 
+                    <input
+                        className="w-full h-12 pl-12 pr-4 bg-[#F3F1ED] dark:bg-[#2a2a2c] border-none rounded-xl focus:ring-2 focus:ring-[#1daddd]/40 text-sm font-medium placeholder:text-[#7A8493] dark:placeholder:text-gray-500"
+                        placeholder="Search conversations..."
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -152,7 +143,14 @@ export default function ConversationList() {
             </header>
 
             <main className="flex-1 px-4 pt-2 pb-24">
-                {filteredConversations.length === 0 ? (
+                {loading ? (
+                    <div className="flex-1 flex items-center justify-center p-8 text-slate-400 mt-12">
+                        <div className="animate-pulse flex flex-col items-center gap-2">
+                            <span className="material-symbols-outlined text-4xl">chat_bubble</span>
+                            <p className="text-sm font-medium">Loading inbox...</p>
+                        </div>
+                    </div>
+                ) : filteredConversations.length === 0 ? (
                     <div className="text-center py-12 px-6">
                         <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
                             <span className="material-symbols-outlined text-slate-400 text-3xl">inbox</span>
@@ -197,18 +195,14 @@ export default function ConversationList() {
                         );
                     })
                 )}
-                
+
                 <div className="py-8 flex flex-col items-center">
                     <div className="w-12 h-1 bg-gray-200 dark:bg-gray-800 rounded-full mb-4"></div>
                     <p className="text-xs text-[#7A8493] font-medium uppercase tracking-widest">End of Messages</p>
                 </div>
             </main>
 
-            <div className="fixed bottom-24 right-6">
-                <button className="flex items-center justify-center size-14 rounded-2xl bg-[#1daddd] text-white shadow-lg shadow-[#1daddd]/30 active:scale-95 transition-transform">
-                    <span className="material-symbols-outlined text-[28px]">chat</span>
-                </button>
-            </div>
+
         </div>
     );
 }

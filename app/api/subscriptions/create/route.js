@@ -62,7 +62,7 @@ export async function POST(request) {
 
     // Initialize payment with Paystack
     const reference = `sub_${subscription.id}_${Date.now()}`;
-    
+
     try {
       // Initialize payment - DO NOT send currency parameter
       // Paystack will automatically use your account's default currency
@@ -71,7 +71,7 @@ export async function POST(request) {
         amount: plan.price,
         email: profile?.email || user.email,
         reference,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscription/success?subscriptionId=${subscription.id}`,
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
         // Explicitly pass undefined to ensure no currency is sent
         currency: undefined,
         metadata: {
@@ -81,7 +81,7 @@ export async function POST(request) {
           type: 'subscription',
         },
       };
-      
+
       console.log('[Subscription API] Initializing payment:', {
         subscription_id: subscription.id,
         plan_id: plan.id,
@@ -91,7 +91,7 @@ export async function POST(request) {
         reference: paymentRequest.reference,
         currency_sent: paymentRequest.currency || '(not sent)',
       });
-      
+
       const paymentData = await initializePayment(paymentRequest);
 
       // Update subscription with payment reference
@@ -104,16 +104,16 @@ export async function POST(request) {
       if (!paymentData.data) {
         console.error('[Subscription API] Invalid payment data structure:', paymentData);
         await supabase.from('subscriptions').delete().eq('id', subscription.id);
-        return NextResponse.json({ 
-          error: 'Invalid payment response from Paystack. Please try again.' 
+        return NextResponse.json({
+          error: 'Invalid payment response from Paystack. Please try again.'
         }, { status: 500 });
       }
 
       if (!paymentData.data.authorization_url && !paymentData.data.access_code) {
         console.error('[Subscription API] Missing authorization_url and access_code:', paymentData);
         await supabase.from('subscriptions').delete().eq('id', subscription.id);
-        return NextResponse.json({ 
-          error: 'Payment initialization failed. Missing authorization data.' 
+        return NextResponse.json({
+          error: 'Payment initialization failed. Missing authorization data.'
         }, { status: 500 });
       }
 
@@ -124,7 +124,7 @@ export async function POST(request) {
       });
 
       // Return payment details for popup
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: true,
         authorization_url: paymentData.data.authorization_url,
         access_code: paymentData.data.access_code,
@@ -156,7 +156,7 @@ export async function POST(request) {
           currency_parameter: 'undefined (not sent)',
         },
       });
-      
+
       // If currency error, automatically retry without currency parameter
       if (paymentError.message && (paymentError.message.includes('Currency') || paymentError.message.includes('currency'))) {
         try {
@@ -166,7 +166,7 @@ export async function POST(request) {
             amount: plan.price,
             email: profile?.email || user.email,
             reference: `sub_${subscription.id}_${Date.now()}_retry`,
-            callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscription/success?subscriptionId=${subscription.id}`,
+            callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
             currency: undefined, // Explicitly don't send currency
             metadata: {
               subscription_id: subscription.id,
@@ -182,7 +182,7 @@ export async function POST(request) {
             .update({ payment_reference: retryPaymentData.data.reference })
             .eq('id', subscription.id);
 
-          return NextResponse.json({ 
+          return NextResponse.json({
             success: true,
             authorization_url: retryPaymentData.data.authorization_url,
             access_code: retryPaymentData.data.access_code,
@@ -202,26 +202,26 @@ export async function POST(request) {
           // If retry also fails, continue to error handling below
         }
       }
-      
+
       // Delete subscription if payment fails
       await supabase.from('subscriptions').delete().eq('id', subscription.id);
-      
+
       let errorMessage = paymentError.message || 'Failed to initialize payment';
-      
+
       // Provide helpful messages for common errors
       if (paymentError.message?.includes('Currency') || paymentError.message?.includes('currency')) {
         errorMessage = 'Currency not supported. Please check your Paystack account settings. The system does not send currency by default - this error suggests a Paystack account configuration issue. Please verify your account currency in the Paystack dashboard.';
       } else if (paymentError.message?.includes('channel') || paymentError.message?.includes('No active channel')) {
         errorMessage = 'No active payment channel. Please activate your Paystack account and set up payment channels in the Paystack dashboard.';
       }
-      
+
       console.error('[Subscription API] Returning error to client:', {
         error_message: errorMessage,
         original_error: paymentError.message,
         subscription_id: subscription.id,
       });
-      
-      return NextResponse.json({ 
+
+      return NextResponse.json({
         error: errorMessage,
         debug_info: process.env.NODE_ENV === 'development' ? {
           original_error: paymentError.message,
@@ -236,7 +236,7 @@ export async function POST(request) {
       error_stack: error.stack,
       error_name: error.name,
     });
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error.message || 'Server error',
       debug_info: process.env.NODE_ENV === 'development' ? {
         error_name: error.name,
