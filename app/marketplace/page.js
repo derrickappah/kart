@@ -94,7 +94,13 @@ export default async function Marketplace({ searchParams }) {
                 .order('created_at', { ascending: false });
     }
 
-    const { data: products } = await finalQuery;
+    const { data: rawProducts } = await finalQuery.limit(40);
+
+    // Shuffle if default sorting is used (to provide variety)
+    // If user explicitly chose a sort, we respect it.
+    const products = (sortOption === 'newest' && !params?.search && !params?.category)
+        ? (rawProducts ? [...rawProducts].sort(() => Math.random() - 0.5) : [])
+        : rawProducts;
 
     return (
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">

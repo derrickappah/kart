@@ -175,9 +175,13 @@ export default function ProductDetailsClient({ product }) {
                     .eq('category', product.category)
                     .eq('status', 'Active')
                     .neq('id', product.id)
-                    .limit(4);
+                    .limit(12);
 
-                if (data) setSimilarProducts(data);
+                if (data) {
+                    // Shuffle the results and take top 4
+                    const shuffled = [...data].sort(() => Math.random() - 0.5);
+                    setSimilarProducts(shuffled.slice(0, 4));
+                }
             } catch (err) {
                 console.error("Error fetching similar products:", err);
             } finally {

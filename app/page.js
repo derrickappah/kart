@@ -47,23 +47,30 @@ export default async function Home() {
   const bannerProducts = rawBannerProducts ? [...rawBannerProducts].sort(() => Math.random() - 0.5) : [];
 
   // Fetch boosted products (for horizontal scroll)
-  const { data: boostedProducts } = await supabase
+  const { data: rawBoostedProducts } = await supabase
     .from('products')
     .select('*, seller:profiles(display_name, avatar_url)')
     .eq('is_boosted', true)
     .eq('status', 'Active')
-    .limit(10);
+    .limit(20);
+
+  // Shuffle boosted products
+  const boostedProducts = rawBoostedProducts ? [...rawBoostedProducts].sort(() => Math.random() - 0.5) : [];
 
   // Fetch latest products
-  const { data: latestProducts } = await supabase
+  const { data: rawLatestProducts } = await supabase
     .from('products')
     .select('*, seller:profiles(display_name, avatar_url)')
     .eq('status', 'Active')
     .order('created_at', { ascending: false })
-    .limit(10);
+    .limit(20);
+
+  // Shuffle latest products
+  const latestProducts = rawLatestProducts ? [...rawLatestProducts].sort(() => Math.random() - 0.5) : [];
 
   // Fallback for featured section if no boosted products
-  const displayFeatured = boostedProducts && boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 5);
+  // Using the shuffled latest products for fallback too
+  const displayFeatured = boostedProducts && boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 10);
 
 
   const categories = [
