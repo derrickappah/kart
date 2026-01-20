@@ -11,19 +11,19 @@ export default function VerificationSuccessPage() {
             <div className="flex flex-col h-screen sm:h-[850px] w-full max-w-md bg-[#f9fafa] dark:bg-[#1c1f22] shadow-2xl relative sm:rounded-[2.5rem] overflow-hidden">
 
                 {/* Main Content Area */}
-                <main className="flex-1 flex flex-col items-center justify-center px-6 w-full">
+                <main className="flex-1 flex flex-col items-center justify-center px-6 w-full text-center">
                     {/* Illustration Container */}
-                    <div className="w-full mb-8">
-                        <div className="relative w-96 h-96 mx-auto flex items-center justify-center">
-                            {/* Decorative background elements */}
-                            <div className="absolute inset-4 bg-primary/5 rounded-full animate-pulse"></div>
+                    <div className="w-full mb-6 flex justify-center">
+                        <div className="relative w-80 h-80 flex items-center justify-center">
+                            {/* Decorative background elements - subtle pulse */}
+                            <div className="absolute inset-0 bg-primary/5 rounded-full animate-pulse scale-90"></div>
 
                             {/* Main Lottie Animation */}
-                            <div className="z-10 w-full h-full">
+                            <div className="z-10 w-full h-full flex items-center justify-center">
                                 <Lottie
                                     animationData={successAnimation}
                                     loop={false}
-                                    className="w-full h-full scale-[1.3]"
+                                    className="w-full h-full"
                                 />
                             </div>
                         </div>
