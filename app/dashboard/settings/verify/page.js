@@ -1,11 +1,80 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
+import { createClient } from '@/utils/supabase/client';
 import faceVerificationAnimation from '@/public/Face verification.json';
+import successAnimation from '@/public/Success.json';
 
 export default function VerificationIntroPage() {
     const router = useRouter();
+    const supabase = createClient();
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('is_verified, verification_status')
+                    .eq('id', user.id)
+                    .maybeSingle();
+                setProfile(data);
+            }
+            setLoading(false);
+        };
+        fetchProfile();
+    }, [supabase]);
+
+    const isVerified = profile?.is_verified || profile?.verification_status === 'Approved';
+
+    if (loading) {
+        return (
+            <div className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex items-center justify-center">
+                <div className="size-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (isVerified) {
+        return (
+            <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen antialiased transition-colors duration-200">
+                <main className="flex-1 flex flex-col items-center justify-center px-6 pb-24">
+                    <div className="w-full max-w-[320px] aspect-square flex items-center justify-center mb-8">
+                        <Lottie
+                            animationData={successAnimation}
+                            loop={false}
+                            className="w-full h-full"
+                        />
+                    </div>
+
+                    <div className="text-center max-w-sm">
+                        <h1 className="text-gray-900 dark:text-white text-[32px] font-bold tracking-tight mb-4">
+                            Account Verified
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+                            Admins have reviewed your account, and your account has been successfully verified.
+                        </p>
+                    </div>
+                </main>
+
+                <footer className="p-6 pb-12 sm:pb-16">
+                    <div className="max-w-md mx-auto w-full">
+                        <button
+                            onClick={() => router.push('/dashboard/settings')}
+                            className="w-full h-14 bg-primary hover:bg-[#1e6a7a] active:scale-[0.98] transition-all duration-200 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
+                        >
+                            <span>Back to Settings</span>
+                            <span className="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen overflow-hidden selection:bg-primary/30 antialiased transition-colors duration-200">
