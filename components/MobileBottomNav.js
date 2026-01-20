@@ -15,12 +15,13 @@ export default function MobileBottomNav({ user }) {
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
 
     // Check if we are on a product details page or editing page
-    const isEditingPage = pathname?.includes('/create') ||
+    const isEditingPage = (pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
         pathname?.includes('/buy') ||
         pathname?.includes('/review') ||
         pathname?.includes('/withdraw') ||
-        pathname?.includes('/promote');
+        pathname?.includes('/promote')) &&
+        !pathname?.includes('/profile/edit'); // Show bottom nav on profile edit page
 
     // Don't render bottom nav on these pages to avoid overlap
     if (isProductPage || isEditingPage) return null;
@@ -31,7 +32,7 @@ export default function MobileBottomNav({ user }) {
     };
 
     const getProfileLink = () => {
-        return user ? '/dashboard' : '/login';
+        return user ? '/profile' : '/login';
     };
 
     return (
@@ -79,8 +80,8 @@ export default function MobileBottomNav({ user }) {
                 {/* Profile */}
                 <Link href={getProfileLink()} className="group flex flex-col items-center">
                     <span
-                        className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/dashboard') || isActive('/login') || isActive('/profile') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
-                        style={{ fontVariationSettings: isActive('/dashboard') || isActive('/login') || isActive('/profile') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
+                        className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/profile') || isActive('/login') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
+                        style={{ fontVariationSettings: isActive('/profile') || isActive('/login') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
                         account_circle
                     </span>

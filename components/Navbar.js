@@ -9,36 +9,41 @@ import NotificationBell from './NotificationBell';
 
 export default function Navbar({ user }) {
     const [isAdmin, setIsAdmin] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(null);
     const pathname = usePathname();
     const supabase = createClient();
 
-    // Check if user is admin
+    // Check if user is admin and fetch avatar
     useEffect(() => {
-        const checkAdminStatus = async () => {
+        const fetchUserProfile = async () => {
             if (!user?.id) {
                 setIsAdmin(false);
+                setAvatarUrl(null);
                 return;
             }
 
             try {
                 const { data: profile, error } = await supabase
                     .from('profiles')
-                    .select('is_admin')
+                    .select('is_admin, avatar_url')
                     .eq('id', user.id)
                     .single();
 
-                if (!error && profile?.is_admin === true) {
-                    setIsAdmin(true);
+                if (!error && profile) {
+                    setIsAdmin(profile.is_admin === true);
+                    setAvatarUrl(profile.avatar_url);
                 } else {
                     setIsAdmin(false);
+                    setAvatarUrl(null);
                 }
             } catch (err) {
-                console.error('Error checking admin status:', err);
+                console.error('Error fetching user profile:', err);
                 setIsAdmin(false);
+                setAvatarUrl(null);
             }
         };
 
-        checkAdminStatus();
+        fetchUserProfile();
     }, [user, supabase]);
 
     // Logic to get display name and initials
@@ -81,9 +86,16 @@ export default function Navbar({ user }) {
                     {user && (
                         <div className="relative group flex items-center">
                             <button className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-[#2d2d32]">
-                                <div className="h-8 w-8 rounded-full bg-[#1daddd] flex items-center justify-center text-white text-xs font-bold">
-                                    {initials}
-                                </div>
+                                {avatarUrl ? (
+                                    <div
+                                        className="h-8 w-8 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700"
+                                        style={{ backgroundImage: `url('${avatarUrl}')` }}
+                                    />
+                                ) : (
+                                    <div className="h-8 w-8 rounded-full bg-[#1daddd] flex items-center justify-center text-white text-xs font-bold">
+                                        {initials}
+                                    </div>
+                                )}
                             </button>
                             {/* Simple Profile Dropdown */}
                             <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#2d2d32] rounded-xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all border border-gray-100 dark:border-gray-700">

@@ -12,13 +12,14 @@ export default function LayoutWrapper({ children, user }) {
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
 
     // List of paths that should hide global navigation components
-    const isEditingPage = pathname?.includes('/create') ||
+    const isEditingPage = (pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
         pathname?.includes('/promote') ||
         pathname?.includes('/withdraw') ||
         pathname?.includes('/buy') ||
         pathname?.includes('/review') ||
-        pathname?.includes('/success');
+        pathname?.includes('/success')) &&
+        !pathname?.includes('/profile/edit'); // Show navigation on profile edit page
 
     // Add/remove class to body to allow CSS-level hiding as a fallback
     useEffect(() => {
