@@ -59,19 +59,26 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             </div>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
-            {/* University Verification */}
+            {/* Seller Verification */}
             <Link href="/dashboard/settings/verify" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-[#247d8f]/10 text-[#247d8f] shrink-0">
-                  <span className="material-symbols-outlined">school</span>
+                  <span className="material-symbols-outlined">verified_user</span>
                 </div>
-                <span className="text-base font-semibold text-slate-900 dark:text-white">University Verification</span>
+                <span className="text-base font-semibold text-slate-900 dark:text-white">Seller Verification</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full border border-green-200 dark:border-green-900/50">
-                  <span className="material-symbols-outlined text-[14px] text-green-700 dark:text-green-400" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                  <span className="text-xs font-bold text-green-700 dark:text-green-400">Verified</span>
-                </div>
+                {(initialProfile?.is_verified || initialProfile?.verification_status === 'Approved') ? (
+                  <div className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full border border-green-200 dark:border-green-900/50">
+                    <span className="material-symbols-outlined text-[14px] text-green-700 dark:text-green-400" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                    <span className="text-xs font-bold text-green-700 dark:text-green-400">Verified</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                    <span className="material-symbols-outlined text-[14px] text-slate-500 dark:text-slate-400">pending</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Not Verified</span>
+                  </div>
+                )}
                 <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
               </div>
             </Link>
