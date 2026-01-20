@@ -5,9 +5,18 @@ import Link from 'next/link';
 export default function PromotedBanner({ products }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
 
     const nextSlide = useCallback(() => {
         setCurrentIndex((prev) => (prev === products.length - 1 ? 0 : prev + 1));
+    }, [products.length]);
+
+    const prevSlide = useCallback(() => {
+        setCurrentIndex((prev) => (prev === 0 ? products.length - 1 : prev - 1));
     }, [products.length]);
 
     useEffect(() => {
@@ -20,6 +29,29 @@ export default function PromotedBanner({ products }) {
         return () => clearInterval(interval);
     }, [nextSlide, products, isHovered]);
 
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            nextSlide();
+        } else if (isRightSwipe) {
+            prevSlide();
+        }
+    };
+
     if (!products || products.length === 0) return null;
 
     return (
@@ -27,6 +59,9 @@ export default function PromotedBanner({ products }) {
             <div
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
                 className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-lg group"
             >
                 {products.map((p, idx) => (
