@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 export default function PromotedBanner({ products }) {
+    console.log('[PromotedBanner] Products received:', products?.length, products);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
     const [touchStart, setTouchStart] = useState(null);

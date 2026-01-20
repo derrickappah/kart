@@ -35,13 +35,16 @@ export default async function Home() {
     wishlistIds = wishlistItems?.map(item => item.product_id) || [];
   }
 
-  // Fetch banner products (Featured)
-  const { data: bannerProducts } = await supabase
+  // Fetch banner products (Featured & Boosted)
+  const { data: rawBannerProducts } = await supabase
     .from('products')
     .select('*, seller:profiles(display_name, avatar_url)')
-    .eq('is_featured', true)
+    .or('is_featured.eq.true,is_boosted.eq.true')
     .eq('status', 'Active')
-    .limit(5);
+    .limit(15);
+
+  // Shuffle the products randomly
+  const bannerProducts = rawBannerProducts ? [...rawBannerProducts].sort(() => Math.random() - 0.5) : [];
 
   // Fetch boosted products (for horizontal scroll)
   const { data: boostedProducts } = await supabase
