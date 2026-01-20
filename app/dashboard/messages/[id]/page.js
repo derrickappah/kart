@@ -1,11 +1,13 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ChatPage() {
     const { id: conversationId } = useParams();
+    const searchParams = useSearchParams();
+    const sellerId = searchParams.get('seller');
     const supabase = createClient();
     const router = useRouter();
     const [messages, setMessages] = useState([]);
@@ -13,6 +15,7 @@ export default function ChatPage() {
     const [currentUser, setCurrentUser] = useState(null);
     const [otherUser, setOtherUser] = useState(null);
     const [productContext, setProductContext] = useState(null);
+    const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -21,72 +24,108 @@ export default function ChatPage() {
 
     useEffect(() => {
         const init = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                router.push('/login');
-                return;
-            }
-            setCurrentUser(user);
-
-            // Fetch conversation details to get other participant and potential product context
-            const { data: conversation } = await supabase
-                .from('conversations')
-                .select('*')
-                .eq('id', conversationId)
-                .contains('participants', [user.id])
-                .maybeSingle();
-
-            if (conversation) {
-                // Fetch product details separately if product_id exists
-                if (conversation.product_id) {
-                    const { data: prod } = await supabase
-                        .from('products')
-                        .select('*')
-                        .eq('id', conversation.product_id)
-                        .maybeSingle();
-                    setProductContext(prod);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    router.push('/login');
+                    return;
                 }
-                
-                const otherParticipantId = conversation.participants.find(p => p !== user.id);
-                
-                // Fetch other user's profile
-                const { data: profile } = await supabase
-                    .from('profiles')
+                setCurrentUser(user);
+
+                if (conversationId === 'new') {
+                    if (!sellerId) {
+                        router.push('/dashboard/messages');
+                        return;
+                    }
+
+                    // Check if conversation already exists
+                    const { data: existingConvs } = await supabase
+                        .from('conversations')
+                        .select('*')
+                        .contains('participants', [user.id, sellerId]);
+
+                    const existing = existingConvs?.find(c => c.participants.includes(sellerId));
+                    if (existing) {
+                        router.replace(`/dashboard/messages/${existing.id}`);
+                        return;
+                    }
+
+                    // Fetch seller profile for the "new" state
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', sellerId)
+                        .maybeSingle();
+                    setOtherUser(profile);
+                    setLoading(false);
+                    return;
+                }
+
+                // Fetch conversation details to get other participant and potential product context
+                const { data: conversation } = await supabase
+                    .from('conversations')
                     .select('*')
-                    .eq('id', otherParticipantId)
+                    .eq('id', conversationId)
+                    .contains('participants', [user.id])
                     .maybeSingle();
-                setOtherUser(profile);
+
+                if (conversation) {
+                    // Fetch product details separately if product_id exists
+                    if (conversation.product_id) {
+                        const { data: prod } = await supabase
+                            .from('products')
+                            .select('*')
+                            .eq('id', conversation.product_id)
+                            .maybeSingle();
+                        setProductContext(prod);
+                    }
+
+                    const otherParticipantId = conversation.participants.find(p => p !== user.id);
+
+                    // Fetch other user's profile
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', otherParticipantId)
+                        .maybeSingle();
+                    setOtherUser(profile);
+                }
+
+                // Fetch initial messages
+                const { data: initialMessages } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('conversation_id', conversationId)
+                    .order('created_at', { ascending: true });
+
+                if (initialMessages) setMessages(initialMessages);
+
+                // Subscribe to new messages
+                const channel = supabase
+                    .channel(`room:${conversationId}`)
+                    .on('postgres_changes', {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'messages',
+                        filter: `conversation_id=eq.${conversationId}`
+                    }, (payload) => {
+                        setMessages(prev => [...prev, payload.new]);
+                    })
+                    .subscribe();
+
+                setLoading(false);
+
+                return () => {
+                    supabase.removeChannel(channel);
+                };
+            } catch (error) {
+                console.error("DEBUG: ChatPage init error:", error);
+                setLoading(false);
             }
-
-            // Fetch initial messages
-            const { data: initialMessages } = await supabase
-                .from('messages')
-                .select('*')
-                .eq('conversation_id', conversationId)
-                .order('created_at', { ascending: true });
-
-            if (initialMessages) setMessages(initialMessages);
-
-            // Subscribe to new messages
-            const channel = supabase
-                .channel(`room:${conversationId}`)
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `conversation_id=eq.${conversationId}`
-                }, (payload) => {
-                    setMessages(prev => [...prev, payload.new]);
-                })
-                .subscribe();
-
-            return () => {
-                supabase.removeChannel(channel);
-            };
         };
 
         init();
-    }, [conversationId, router, supabase]);
+    }, [conversationId, router, supabase, sellerId]);
 
     useEffect(() => {
         scrollToBottom();
@@ -96,11 +135,32 @@ export default function ChatPage() {
         e.preventDefault();
         if (!newMessage.trim() || !currentUser) return;
 
+        let activeConversationId = conversationId;
+
+        if (conversationId === 'new') {
+            // Create a new conversation on the first message
+            const { data: newConv, error: convError } = await supabase
+                .from('conversations')
+                .insert([{
+                    participants: [currentUser.id, sellerId]
+                }])
+                .select()
+                .single();
+
+            if (convError) {
+                console.error("Error creating conversation:", convError);
+                return;
+            }
+            activeConversationId = newConv.id;
+            // Redirect to the new conversation URL without reloading
+            router.replace(`/dashboard/messages/${newConv.id}`);
+        }
+
         const { error } = await supabase
             .from('messages')
             .insert([
                 {
-                    conversation_id: conversationId,
+                    conversation_id: activeConversationId,
                     sender_id: currentUser.id,
                     content: newMessage
                 }
@@ -112,7 +172,7 @@ export default function ChatPage() {
             await supabase
                 .from('conversations')
                 .update({ updated_at: new Date().toISOString() })
-                .eq('id', conversationId);
+                .eq('id', activeConversationId);
         }
     };
 
@@ -121,11 +181,19 @@ export default function ChatPage() {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    if (loading) {
+        return (
+            <div className="flex flex-col h-full bg-white dark:bg-[#242428] items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2e8ab8]"></div>
+                <p className="mt-4 text-sm font-medium text-gray-500">Loading conversation...</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="flex flex-col h-screen overflow-hidden bg-[#f6f7f8] dark:bg-[#131b1f] text-gray-900 dark:text-gray-100 font-display">
-            {/* Header */}
-            <header className="flex-none bg-white dark:bg-[#1e282c] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-20 relative shadow-sm">
-                <button 
+        <div className="flex flex-col h-full overflow-hidden bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-100 font-display">
+            <header className="flex-none bg-white dark:bg-[#242428] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-10 shadow-sm">
+                <button
                     onClick={() => router.back()}
                     className="size-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300"
                 >
@@ -148,13 +216,13 @@ export default function ChatPage() {
             {/* Product Context Bar (Pinned) */}
             {productContext && (
                 <div className="flex-none z-10 bg-[#f6f7f8] dark:bg-[#131b1f] px-4 py-3">
-                    <Link 
+                    <Link
                         href={`/marketplace/${productContext.id}`}
                         className="flex items-center gap-3 p-3 bg-white dark:bg-[#1e282c] rounded-xl shadow-soft border border-gray-100 dark:border-gray-800 relative overflow-hidden group cursor-pointer transition-transform active:scale-[0.99]"
                     >
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2e8ab8]"></div>
-                        <div 
-                            className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 bg-cover bg-center shrink-0" 
+                        <div
+                            className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 bg-cover bg-center shrink-0"
                             style={{ backgroundImage: `url('${productContext.images?.[0] || productContext.image_url}')` }}
                         ></div>
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -179,7 +247,7 @@ export default function ChatPage() {
                     return (
                         <div key={msg.id} className={`flex items-end gap-3 group ${isMe ? 'justify-end' : ''}`}>
                             {!isMe && (
-                                <div 
+                                <div
                                     className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center shrink-0 mb-1"
                                     style={{ backgroundImage: `url('${otherUser?.avatar_url || ''}')` }}
                                 >
@@ -191,11 +259,10 @@ export default function ChatPage() {
                                 </div>
                             )}
                             <div className={`flex flex-col gap-1 max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                <div className={`p-4 rounded-2xl shadow-sm text-[15px] leading-relaxed ${
-                                    isMe 
-                                    ? 'bg-[#2e8ab8] text-white rounded-br-none' 
+                                <div className={`p-4 rounded-2xl shadow-sm text-[15px] leading-relaxed ${isMe
+                                    ? 'bg-[#2e8ab8] text-white rounded-br-none'
                                     : 'bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-800 rounded-bl-none'
-                                }`}>
+                                    }`}>
                                     {msg.content}
                                 </div>
                                 <div className="flex items-center gap-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -214,9 +281,9 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#1e282c] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-20">
+            <footer className="flex-none bg-white dark:bg-[#242428] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-10">
                 <div className="flex justify-center -mt-8 mb-4">
-                    <button className="flex items-center gap-2 bg-white dark:bg-[#1e282c] border border-[#2e8ab8]/30 text-[#2e8ab8] px-4 py-2 rounded-full shadow-lg text-sm font-semibold hover:bg-[#2e8ab8]/5 transition-all transform hover:-translate-y-0.5 active:scale-95">
+                    <button className="flex items-center gap-2 bg-white dark:bg-[#242428] border border-[#2e8ab8]/30 text-[#2e8ab8] px-4 py-2 rounded-full shadow-lg text-sm font-semibold hover:bg-[#2e8ab8]/5 transition-all transform hover:-translate-y-0.5 active:scale-95">
                         <span className="material-symbols-outlined text-[18px]">sell</span>
                         Make an Offer
                     </button>
@@ -226,9 +293,9 @@ export default function ChatPage() {
                         <span className="material-symbols-outlined text-[24px]">add</span>
                     </button>
                     <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#2e8ab8]/50 focus-within:bg-white dark:focus-within:bg-black transition-all">
-                        <textarea 
-                            className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-3 px-4 max-h-24" 
-                            placeholder="Message..." 
+                        <textarea
+                            className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-3 px-4 max-h-24"
+                            placeholder="Message..."
                             rows="1"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
@@ -243,7 +310,7 @@ export default function ChatPage() {
                             <span className="material-symbols-outlined text-[20px]">sentiment_satisfied</span>
                         </button>
                     </div>
-                    <button 
+                    <button
                         type="submit"
                         disabled={!newMessage.trim()}
                         className="p-3 bg-[#2e8ab8] text-white rounded-full shadow-lg shadow-[#2e8ab8]/30 hover:bg-[#2e8ab8]/90 transition-colors transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none"

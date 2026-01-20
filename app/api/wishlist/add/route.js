@@ -23,7 +23,7 @@ export async function POST(request) {
       .select('*')
       .eq('user_id', user.id)
       .eq('product_id', productId)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({ message: 'Product already in wishlist' });

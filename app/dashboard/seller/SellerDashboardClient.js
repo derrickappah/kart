@@ -15,9 +15,11 @@ export default function SellerDashboardClient({
     totalEarnings,
     itemsSold,
     activeListings,
-    daysUntilExpiry
+    daysUntilExpiry,
+    activePromotions
 }) {
     const router = useRouter();
+    console.log('[SellerDashboardClient] Rendered');
     const displayName = profile?.display_name || user.email.split('@')[0];
 
     // Greeting based on time of day
@@ -178,6 +180,27 @@ export default function SellerDashboardClient({
                             )}
                         </section>
                     )}
+
+                    {/* Promotions Shortcut */}
+                    <section className="space-y-4">
+                        <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 px-1 uppercase tracking-widest leading-none">Marketplace Performance</h3>
+                        <Link href="/dashboard/seller/promotions" className="bg-gradient-to-br from-primary to-[#0e95c1] dark:from-primary/20 dark:to-primary/10 p-5 rounded-2xl shadow-lg shadow-primary/10 border border-white/10 flex items-center justify-between group active:scale-[0.98] transition-all">
+                            <div className="flex items-center gap-4">
+                                <div className="size-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center pointer-events-none">
+                                    <span className="material-symbols-outlined text-white text-2xl animate-pulse">rocket_launch</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-white uppercase tracking-tight">Promoted Items</p>
+                                    <p className="text-[11px] font-bold text-white/70 uppercase tracking-widest mt-0.5">
+                                        {activePromotions} Active Campaigns
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:translate-x-1 transition-transform">
+                                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                            </div>
+                        </Link>
+                    </section>
 
                     {/* Recent Listings */}
                     <section className="space-y-4">

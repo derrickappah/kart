@@ -3,6 +3,8 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '../../../../../../utils/supabase/client';
 import Link from 'next/link';
+import Lottie from 'lottie-react';
+import successAnimation from '@/public/Success.json';
 
 function PromotionSuccessContent() {
     const searchParams = useSearchParams();
@@ -87,8 +89,17 @@ function PromotionSuccessContent() {
             </div>
 
             <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
-                <div className="size-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-green-500/20">
-                    <span className="material-symbols-outlined text-green-500 text-5xl font-bold">check</span>
+                <div className="relative mb-8 w-full max-w-[280px] aspect-square flex items-center justify-center">
+                    {/* Soft glow behind the animation */}
+                    <div className="absolute inset-4 bg-primary/10 rounded-full blur-3xl transform scale-110"></div>
+
+                    <div className="relative z-10 w-full h-full flex items-center justify-center">
+                        <Lottie
+                            animationData={successAnimation}
+                            loop={false}
+                            className="w-full h-full scale-125"
+                        />
+                    </div>
                 </div>
 
                 <h1 className="text-3xl font-extrabold mb-4 tracking-tight">Boost Activated!</h1>

@@ -169,21 +169,21 @@ export default function ListingDetailsManagementClient({ product }) {
                                     <div className="flex items-center gap-1.5 text-primary">
                                         <span className="material-symbols-outlined text-[20px] fill-1">visibility</span>
                                     </div>
-                                    <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.views || 0}</span>
+                                    <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.views_count || 0}</span>
                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Views</span>
                                 </div>
                                 <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white dark:bg-[#1e292b] shadow-soft active:scale-[0.98] transition-all">
                                     <div className="flex items-center gap-1.5 text-rose-500">
                                         <span className="material-symbols-outlined text-[20px] fill-1">favorite</span>
                                     </div>
-                                    <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.likes || 0}</span>
+                                    <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.likes_count || 0}</span>
                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Saves</span>
                                 </div>
                                 <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white dark:bg-[#1e292b] shadow-soft active:scale-[0.98] transition-all">
                                     <div className="flex items-center gap-1.5 text-indigo-500">
                                         <span className="material-symbols-outlined text-[20px] fill-1">shortcut</span>
                                     </div>
-                                    <span className="text-xl font-black text-slate-900 dark:text-white leading-none">0</span>
+                                    <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.shares_count || 0}</span>
                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Shares</span>
                                 </div>
                             </div>

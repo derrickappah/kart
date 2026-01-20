@@ -78,7 +78,7 @@ export default function NotificationBell() {
       if (channel) supabase.removeChannel(channel);
       if (updateChannel) supabase.removeChannel(updateChannel);
     };
-  }, [supabase]);
+  }, []); // Run only once on mount
 
   if (loading) {
     return null;

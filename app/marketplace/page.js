@@ -3,11 +3,26 @@ import { Suspense } from 'react';
 import FilterSidebar from '../../components/FilterSidebar';
 import SearchBar from '../../components/SearchBar';
 import MarketplaceControls from '../../components/MarketplaceControls';
+import WishlistButton from '../../components/WishlistButton';
 import { createClient } from '../../utils/supabase/server';
 
 export default async function Marketplace({ searchParams }) {
     const params = await searchParams;
     const supabase = await createClient();
+
+    // Get current user for wishlist check
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Fetch user's wishlist IDs
+    let wishlistIds = [];
+    if (user) {
+        const { data: wishlistItems } = await supabase
+            .from('wishlist')
+            .select('product_id')
+            .eq('user_id', user.id);
+        wishlistIds = wishlistItems?.map(item => item.product_id) || [];
+    }
+
     let query = supabase
         .from('products')
         .select('*')
@@ -46,7 +61,7 @@ export default async function Marketplace({ searchParams }) {
     // Apply sorting
     const sortOption = params?.sort || 'newest';
     let finalQuery = query;
-    
+
     switch (sortOption) {
         case 'newest':
             finalQuery = query
@@ -101,16 +116,17 @@ export default async function Marketplace({ searchParams }) {
                     <div className="grid grid-cols-2 gap-4 pb-8">
                         {products && products.length > 0 ? (
                             products.map((p) => (
-                                <Link href={`/marketplace/${p.id}`} key={p.id} className="group flex flex-col gap-2">
+                                <Link href={`/marketplace/${p.id}`} key={p.id} className="group flex flex-col gap-2 relative">
                                     <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35]">
-                                        <img 
-                                            src={p.images?.[0] || p.image_url} 
+                                        <img
+                                            src={p.images?.[0] || p.image_url}
                                             alt={p.title}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
-                                        <button className="absolute top-2 right-2 h-9 w-9 bg-white/80 dark:bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-600 dark:text-white hover:text-red-500 hover:bg-white transition-all active:scale-90 z-10">
-                                            <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 0" }}>favorite</span>
-                                        </button>
+                                        <WishlistButton
+                                            productId={p.id}
+                                            initialIsSaved={wishlistIds.includes(p.id)}
+                                        />
                                         {p.condition && (
                                             <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-[10px] font-bold text-white uppercase tracking-wider">
                                                 {p.condition}

@@ -44,7 +44,7 @@ export default function Navbar({ user }) {
         };
 
         fetchUserProfile();
-    }, [user, supabase]);
+    }, [user?.id]); // Only re-run if the user ID changes
 
     // Logic to get display name and initials
     const email = user?.email || '';

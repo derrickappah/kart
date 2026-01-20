@@ -26,29 +26,29 @@ export default async function SellerAnalyticsPage() {
   const totalSales = orders?.length || 0;
   const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.seller_payout_amount || 0), 0) || 0;
 
-  // Mock data for analytics visuals as requested in design
-  const totalViews = 1200;
-  const conversionRate = 5.2;
+  // Real data from products
+  const totalViews = products?.reduce((sum, p) => sum + (p.views_count || 0), 0) || 0;
+  const totalShares = products?.reduce((sum, p) => sum + (p.shares_count || 0), 0) || 0;
+  const totalLikes = products?.reduce((sum, p) => sum + (p.likes_count || 0), 0) || 0;
 
   // Product performance
   const productStats = (products || []).map(product => {
     const productOrders = orders?.filter(o => o.product_id === product.id) || [];
     const sales = productOrders.length;
-    const revenue = productOrders.reduce((sum, o) => sum + parseFloat(o.seller_payout_amount || 0), 0);
-    // Mock views for design consistency
-    const views = Math.floor(Math.random() * 500) + 50;
-    const favorites = Math.floor(Math.random() * 50) + 5;
+    const views = product.views_count || 0;
+    const favorites = product.likes_count || 0;
+    const shares = product.shares_count || 0;
     const rate = views > 0 ? ((sales / views) * 100).toFixed(1) : 0;
 
     return {
       ...product,
       sales,
-      revenue,
       views,
       favorites,
+      shares,
       conversionRate: rate
     };
-  }).sort((a, b) => b.sales - a.sales).slice(0, 3);
+  }).sort((a, b) => b.views - a.views).slice(0, 5); // Show top 5 by views
 
   return (
     <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display antialiased min-h-screen transition-colors duration-200">
@@ -98,15 +98,17 @@ export default async function SellerAnalyticsPage() {
               </div>
             </div>
 
-            {/* Profile Views */}
+            {/* Total Views */}
             <div className="bg-white dark:bg-[#1e292b] p-5 rounded-2xl shadow-soft border border-transparent dark:border-white/5 flex flex-col justify-between">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Profile Views</p>
-                <p className="text-2xl font-black text-slate-900 dark:text-white">1.2k</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Total Views</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">
+                  {totalViews >= 1000 ? `${(totalViews / 1000).toFixed(1)}k` : totalViews}
+                </p>
               </div>
-              <div className="flex items-center gap-1 mt-4 text-[10px] font-bold text-rose-500">
-                <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
-                1% vs last mo.
+              <div className="flex items-center gap-1 mt-4 text-[10px] font-bold text-primary">
+                <span className="material-symbols-outlined text-[14px]">visibility</span>
+                Live tracking
               </div>
             </div>
           </section>
@@ -171,6 +173,10 @@ export default async function SellerAnalyticsPage() {
                       <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
                         <span className="material-symbols-outlined text-[16px] text-primary/70">favorite</span>
                         {item.favorites}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                        <span className="material-symbols-outlined text-[16px] text-blue-400">share</span>
+                        {item.shares || 0}
                       </div>
                     </div>
                   </div>

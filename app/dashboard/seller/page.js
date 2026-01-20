@@ -29,13 +29,13 @@ export default async function SellerDashboard() {
         .order('created_at', { ascending: false });
 
     // Find active subscription (case-insensitive status check)
-    const subscription = allSubscriptions?.find(sub => 
-        (sub.status === 'Active' || sub.status === 'active') && 
+    const subscription = allSubscriptions?.find(sub =>
+        (sub.status === 'Active' || sub.status === 'active') &&
         new Date(sub.end_date) > new Date()
     );
 
     // Find pending subscriptions
-    const pendingSubscriptions = allSubscriptions?.filter(sub => 
+    const pendingSubscriptions = allSubscriptions?.filter(sub =>
         sub.status === 'Pending' || sub.status === 'pending'
     ) || [];
 
@@ -52,19 +52,26 @@ export default async function SellerDashboard() {
     // 5. Calculate Stats
     const products = listings || [];
     const activeListings = products.filter(p => p.status === 'Active' || !p.status).length;
-    
+
     // Calculate total earnings from orders
     const { data: sellerOrders } = await supabase
         .from('orders')
         .select('total_amount, status')
         .eq('seller_id', user.id)
         .eq('status', 'Completed');
-    
+
     const totalEarnings = sellerOrders?.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0) || 0;
     const itemsSold = sellerOrders?.length || 0;
 
+    // 6. Fetch Promotions Count
+    const { count: activePromotions } = await supabase
+        .from('advertisements')
+        .select('*', { count: 'exact', head: true })
+        .eq('seller_id', user.id)
+        .eq('status', 'Active');
+
     return (
-        <SellerDashboardClient 
+        <SellerDashboardClient
             user={user}
             profile={profile}
             listings={listings}
@@ -75,6 +82,7 @@ export default async function SellerDashboard() {
             itemsSold={itemsSold}
             activeListings={activeListings}
             daysUntilExpiry={daysUntilExpiry}
+            activePromotions={activePromotions || 0}
         />
     );
 }

@@ -14,41 +14,49 @@ export default function ConversationList() {
 
     useEffect(() => {
         const fetchConversations = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                setUser(user);
 
-            if (!user) return;
-
-            // Fetch conversation IDs and basic info first to isolate the 400 error source
-            const { data: convs, error } = await supabase
-                .from('conversations')
-                .select('*')
-                .contains('participants', [user.id])
-                .order('updated_at', { ascending: false });
-
-            if (error) {
-                console.error("DEBUG: Conversation fetch error:", error);
-                // Fallback to fetching all and filtering locally if .contains fails
-                const { data: allConvs, error: allErr } = await supabase
-                    .from('conversations')
-                    .select('*')
-                    .order('updated_at', { ascending: false });
-
-                if (allErr) {
+                if (!user) {
                     setLoading(false);
                     return;
                 }
-                const filtered = allConvs?.filter(c => c.participants?.includes(user.id)) || [];
-                processConversations(filtered);
-            } else {
-                processConversations(convs);
+
+                // Fetch conversation IDs and basic info first to isolate the 400 error source
+                const { data: convs, error } = await supabase
+                    .from('conversations')
+                    .select('*')
+                    .contains('participants', [user.id])
+                    .order('updated_at', { ascending: false });
+
+                if (error) {
+                    console.error("DEBUG: Conversation fetch error:", error);
+                    // Fallback to fetching all and filtering locally if .contains fails
+                    const { data: allConvs, error: allErr } = await supabase
+                        .from('conversations')
+                        .select('*')
+                        .order('updated_at', { ascending: false });
+
+                    if (allErr) {
+                        setLoading(false);
+                        return;
+                    }
+                    const filtered = allConvs?.filter(c => c.participants?.includes(user.id)) || [];
+                    processConversations(filtered, user);
+                } else {
+                    processConversations(convs, user);
+                }
+            } catch (err) {
+                console.error("DEBUG: ConversationList fetch error:", err);
+                setLoading(false);
             }
         };
 
-        const processConversations = async (convsToProcess) => {
-            if (convsToProcess && convsToProcess.length > 0 && user) {
+        const processConversations = async (convsToProcess, currentUser) => {
+            if (convsToProcess && convsToProcess.length > 0 && currentUser) {
                 const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
-                    const otherUserId = c.participants?.find(p => p !== user.id);
+                    const otherUserId = c.participants?.find(p => p !== currentUser.id);
 
                     let profile = null;
                     if (otherUserId) {
@@ -118,8 +126,8 @@ export default function ConversationList() {
 
 
     return (
-        <div className="flex flex-col h-full bg-[#fbfaf9] dark:bg-[#1b1b1d] font-display max-w-[480px] mx-auto min-h-screen">
-            <header className="bg-[#fbfaf9]/80 dark:bg-[#1b1b1d]/80 backdrop-blur-md px-6 pt-6 pb-4">
+        <div className="flex flex-col h-full bg-white dark:bg-[#242428] font-display overflow-hidden">
+            <header className="flex-none sticky top-0 bg-[#fbfaf9]/80 dark:bg-[#1b1b1d]/80 backdrop-blur-md px-6 pt-6 pb-4 z-30">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex flex-col">
                         <h1 className="text-3xl font-bold tracking-tight text-[#0e181b] dark:text-white">Messages</h1>
@@ -142,7 +150,7 @@ export default function ConversationList() {
                 </div>
             </header>
 
-            <main className="flex-1 px-4 pt-2 pb-24">
+            <main className="flex-1 px-4 pt-2 pb-24 overflow-y-auto no-scrollbar">
                 {loading ? (
                     <div className="flex-1 flex items-center justify-center p-8 text-slate-400 mt-12">
                         <div className="animate-pulse flex flex-col items-center gap-2">

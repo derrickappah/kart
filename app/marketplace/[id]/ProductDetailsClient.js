@@ -11,6 +11,8 @@ export default function ProductDetailsClient({ product }) {
     const [isOwner, setIsOwner] = useState(false);
     const [loadingWishlist, setLoadingWishlist] = useState(false);
     const [loadingBoost, setLoadingBoost] = useState(false);
+    const [similarProducts, setSimilarProducts] = useState([]);
+    const [loadingSimilar, setLoadingSimilar] = useState(true);
 
     // Initialize with first image from array if available, otherwise fallback to image_url
     const images = (product?.images && product.images.length > 0) ? product.images : [product?.image_url];
@@ -51,14 +53,14 @@ export default function ProductDetailsClient({ product }) {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setIsOwner(user.id === product.seller_id);
-                
+
                 const { data: wishlistItem } = await supabase
                     .from('wishlist')
                     .select('*')
                     .eq('user_id', user.id)
                     .eq('product_id', product.id)
                     .maybeSingle();
-                
+
                 setIsInWishlist(!!wishlistItem);
             }
         };
@@ -80,14 +82,20 @@ export default function ProductDetailsClient({ product }) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ productId: product.id }),
                 });
-                if (response.ok) setIsInWishlist(false);
+                if (response.ok) {
+                    setIsInWishlist(false);
+                    router.refresh();
+                }
             } else {
                 const response = await fetch('/api/wishlist/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ productId: product.id }),
                 });
-                if (response.ok) setIsInWishlist(true);
+                if (response.ok) {
+                    setIsInWishlist(true);
+                    router.refresh();
+                }
             }
         } catch (error) {
             console.error('Wishlist error:', error);
@@ -139,6 +147,68 @@ export default function ProductDetailsClient({ product }) {
         }
     };
 
+    // Track views
+    useEffect(() => {
+        const incrementViews = async () => {
+            try {
+                // Check if we've already viewed this product in this session to avoid double counting
+                const sessionKey = `viewed_${product.id}`;
+                if (!sessionStorage.getItem(sessionKey)) {
+                    await fetch(`/api/products/${product.id}/increment-views`, { method: 'POST' });
+                    sessionStorage.setItem(sessionKey, 'true');
+                }
+            } catch (error) {
+                console.error('Error incrementing views:', error);
+            }
+        };
+        incrementViews();
+    }, [product.id]);
+
+    // Fetch similar products
+    useEffect(() => {
+        const fetchSimilar = async () => {
+            if (!product?.category) return;
+            try {
+                const { data } = await supabase
+                    .from('products')
+                    .select('*, seller:profiles(display_name, avatar_url)')
+                    .eq('category', product.category)
+                    .eq('status', 'Active')
+                    .neq('id', product.id)
+                    .limit(4);
+
+                if (data) setSimilarProducts(data);
+            } catch (err) {
+                console.error("Error fetching similar products:", err);
+            } finally {
+                setLoadingSimilar(false);
+            }
+        };
+        fetchSimilar();
+    }, [product.id, product.category, supabase]);
+
+    const handleShare = async () => {
+        try {
+            const shareData = {
+                title: product.title,
+                text: `Check out this ${product.title} on KART!`,
+                url: window.location.href,
+            };
+
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+            }
+
+            // Increment share count
+            await fetch(`/api/products/${product.id}/increment-shares`, { method: 'POST' });
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    };
+
     if (!product) {
         return (
             <div className="min-h-screen bg-[#fafafa] dark:bg-[#22262a] flex items-center justify-center">
@@ -151,17 +221,20 @@ export default function ProductDetailsClient({ product }) {
         <div className="bg-[#fafafa] dark:bg-[#22262a] text-[#0e181b] dark:text-white antialiased min-h-screen font-display product-details-page">
             {/* Top Navigation Overlay */}
             <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 pointer-events-none">
-                <button 
+                <button
                     onClick={() => router.back()}
                     className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform"
                 >
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
                 <div className="flex gap-2">
-                    <button className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform">
+                    <button
+                        onClick={handleShare}
+                        className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform"
+                    >
                         <span className="material-symbols-outlined">share</span>
                     </button>
-                    <button 
+                    <button
                         onClick={handleWishlistToggle}
                         disabled={loadingWishlist}
                         className={`pointer-events-auto size-11 flex items-center justify-center rounded-full backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform ${isInWishlist ? 'bg-primary text-white' : 'bg-white/20 text-white'}`}
@@ -173,18 +246,18 @@ export default function ProductDetailsClient({ product }) {
 
             <main className="pb-32">
                 {/* Hero Image Carousel Section */}
-                <div 
+                <div
                     className="relative w-full aspect-[4/5] overflow-hidden bg-gray-200 dark:bg-gray-800 touch-pan-y"
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
                 >
-                    <img 
-                        src={images[currentImageIndex]} 
+                    <img
+                        src={images[currentImageIndex]}
                         alt={product.title}
                         className="absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-in-out"
                     />
-                    
+
                     {/* Pagination Dots */}
                     {images.length > 1 && (
                         <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-2 z-10">
@@ -265,6 +338,48 @@ export default function ProductDetailsClient({ product }) {
                             </div>
                         </div>
                     )}
+
+                    {/* Similar Items Section */}
+                    {similarProducts.length > 0 && (
+                        <div className="mt-12 mb-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-extrabold tracking-tight">Similar Items</h3>
+                                <Link
+                                    href={`/marketplace?category=${product.category}`}
+                                    className="text-primary text-sm font-bold hover:underline"
+                                >
+                                    See All
+                                </Link>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                {similarProducts.map((p) => (
+                                    <Link
+                                        href={`/marketplace/${p.id}`}
+                                        key={p.id}
+                                        className="group flex flex-col gap-2 relative"
+                                        onClick={() => window.scrollTo(0, 0)}
+                                    >
+                                        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35] shadow-sm">
+                                            <img
+                                                src={p.images?.[0] || p.image_url}
+                                                alt={p.title}
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                            {p.condition && (
+                                                <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-[10px] font-bold text-white uppercase tracking-wider">
+                                                    {p.condition}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col gap-0.5 px-1">
+                                            <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">{p.title}</h3>
+                                            <p className="text-primary text-base font-extrabold">GHS {p.price}</p>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
 
@@ -272,7 +387,7 @@ export default function ProductDetailsClient({ product }) {
             {!isOwner && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#22262a]/80 backdrop-blur-xl border-t border-black/5 dark:border-white/5 p-4 pb-8 z-50">
                     <div className="max-w-screen-md mx-auto flex items-center gap-4">
-                        <button 
+                        <button
                             onClick={handleContactSeller}
                             disabled={loadingChat}
                             className="flex-1 h-14 rounded-xl border-2 border-primary text-primary font-bold text-base flex items-center justify-center gap-2 hover:bg-primary/5 active:scale-95 transition-all disabled:opacity-50"

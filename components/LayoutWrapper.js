@@ -14,7 +14,7 @@ export default function LayoutWrapper({ children, user }) {
     // List of paths that should hide global navigation components
     const isEditingPage = (pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
-        pathname?.includes('/promote') ||
+        pathname?.includes('/promote/') || // Specific to promote action, not promotions list
         pathname?.includes('/withdraw') ||
         pathname?.includes('/buy') ||
         pathname?.includes('/review') ||
@@ -22,6 +22,8 @@ export default function LayoutWrapper({ children, user }) {
         pathname?.includes('/success') ||
         (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
         !pathname?.includes('/profile/edit'); // Show navigation on profile edit page
+
+    console.log('[LayoutWrapper] Rendered at:', pathname, 'isEditingPage:', isEditingPage);
 
     // Add/remove class to body to allow CSS-level hiding as a fallback
     useEffect(() => {

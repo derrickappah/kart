@@ -20,7 +20,7 @@ export default function MobileBottomNav({ user }) {
         pathname?.includes('/buy') ||
         pathname?.includes('/review') ||
         pathname?.includes('/withdraw') ||
-        pathname?.includes('/promote')) &&
+        pathname?.includes('/promote/')) && // Specific to promote action, not promotions list
         !pathname?.includes('/profile/edit'); // Show bottom nav on profile edit page
 
     // Don't render bottom nav on these pages to avoid overlap
