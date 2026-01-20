@@ -18,7 +18,8 @@ export default function MyListingsClient({ initialProducts }) {
         setActiveMenuId(activeMenuId === productId ? null : productId);
     };
 
-    const handleDeleteClick = (product) => {
+    const handleDeleteClick = (product, e) => {
+        if (e) e.stopPropagation();
         setProductToDelete(product);
         setIsDeleteModalOpen(true);
         setActiveMenuId(null);
@@ -52,192 +53,173 @@ export default function MyListingsClient({ initialProducts }) {
         router.push(`/dashboard/seller/listings/${productId}`);
     };
 
-    const handleEditClick = (productId) => {
+    const handleEditClick = (productId, e) => {
+        if (e) e.stopPropagation();
         router.push(`/dashboard/seller/listings/edit/${productId}`);
     };
 
     const tabs = ['Active', 'Sold', 'Expired'];
 
     return (
-        <div className="bg-[#f6f7f9] dark:bg-[#1a1d21] font-display antialiased min-h-screen transition-colors duration-200">
-            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f9] dark:bg-[#1a1d21] overflow-x-hidden shadow-2xl">
-
+        <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display antialiased min-h-screen transition-colors duration-200">
+            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#131d1f] shadow-2xl overflow-hidden">
 
                 {/* Main Content */}
-                <main className="flex-1 px-4 py-6 space-y-5 pb-24">
+                <main className="flex-1 px-4 py-8 space-y-6 pb-32 overflow-y-auto no-scrollbar">
+                    {/* Section Title & Tabs */}
+                    <div className="space-y-4">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-2">My Listings</h3>
+
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`chip ${activeTab === tab ? 'chip-active' : 'chip-inactive'} whitespace-nowrap`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {filteredProducts.length > 0 ? (
-                        filteredProducts.map((product) => (
-                            <article
-                                key={product.id}
-                                onClick={() => handleCardClick(product.id)}
-                                className={`group relative flex flex-col bg-white dark:bg-[#22262a] rounded-xl shadow-sm hover:shadow-[0_4px_20px_-2px_rgba(20,156,184,0.08)] transition-all duration-300 border border-transparent hover:border-[#149cb8]/20 overflow-hidden cursor-pointer ${activeTab === 'Expired' ? 'border-dashed border-gray-300 dark:border-gray-700' : ''
-                                    }`}
-                            >
-                                <div className="flex gap-4 p-3">
-                                    {/* Thumbnail */}
-                                    <div className={`relative shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 ${activeTab === 'Sold' ? 'grayscale-[50%] group-hover:grayscale-0' :
-                                        activeTab === 'Expired' ? 'grayscale' : ''
-                                        }`}>
-                                        {product.image_url ? (
-                                            <div className="relative w-full h-full">
+                        <div className="space-y-4">
+                            {filteredProducts.map((product) => (
+                                <article
+                                    key={product.id}
+                                    onClick={() => handleCardClick(product.id)}
+                                    className="group relative flex flex-col bg-white dark:bg-[#1e292b] rounded-2xl shadow-soft border border-transparent dark:border-white/5 transition-all duration-300 overflow-hidden cursor-pointer active:scale-[0.99]"
+                                >
+                                    <div className="flex gap-4 p-4">
+                                        {/* Thumbnail */}
+                                        <div className="relative shrink-0 w-24 h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                            {product.image_url ? (
                                                 <Image
                                                     src={product.image_url}
                                                     alt={product.title}
                                                     fill
-                                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    className={`object-cover transition-transform duration-500 group-hover:scale-110 ${activeTab !== 'Active' ? 'grayscale opacity-60' : ''}`}
                                                 />
-                                            </div>
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-gray-400">image</span>
-                                            </div>
-                                        )}
-                                        {activeTab === 'Active' && (new Date() - new Date(product.created_at)) < 86400000 && (
-                                            <div className="absolute top-1 left-1 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-[#149cb8] shadow-sm">
-                                                JUST POSTED
-                                            </div>
-                                        )}
-                                        {activeTab === 'Sold' && (
-                                            <div className="absolute inset-0 bg-emerald-900/20 flex items-center justify-center backdrop-blur-[1px]">
-                                                <span className="material-symbols-outlined text-white text-3xl drop-shadow-md">check_circle</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
+                                                    <span className="material-symbols-outlined text-3xl">image</span>
+                                                </div>
+                                            )}
 
-                                    {/* Details */}
-                                    <div className="flex flex-col flex-1 justify-between py-0.5 min-w-0">
-                                        <div>
-                                            <div className="flex justify-between items-start gap-2">
-                                                <h3 className={`text-base font-bold leading-tight line-clamp-2 ${activeTab === 'Active' ? 'text-[#0e191b] dark:text-[#e0e6e8]' : 'text-gray-500 dark:text-gray-400'
-                                                    }`}>
-                                                    {product.title}
-                                                </h3>
-                                                <div className="relative">
-                                                    <button
-                                                        onClick={(e) => toggleMenu(product.id, e)}
-                                                        className="text-gray-400 hover:text-[#149cb8] dark:text-gray-500 transition-colors p-1"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg">more_horiz</span>
-                                                    </button>
+                                            {activeTab === 'Active' && (new Date() - new Date(product.created_at)) < 86400000 && (
+                                                <div className="absolute top-1.5 left-1.5 bg-primary/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-[8px] font-bold text-white shadow-sm uppercase tracking-wider">
+                                                    New
+                                                </div>
+                                            )}
+                                        </div>
 
-                                                    {activeMenuId === product.id && (
-                                                        <>
-                                                            <div
-                                                                className="fixed inset-0 z-[60]"
-                                                                onClick={() => setActiveMenuId(null)}
-                                                            ></div>
-                                                            <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-[#22262a] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 z-[70] overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200">
-                                                                <button
-                                                                    onClick={() => handleEditClick(product.id)}
-                                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#0e191b] dark:text-[#e0e6e8] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                                                                >
-                                                                    <span className="material-symbols-outlined text-lg">edit</span>
-                                                                    Edit Listing
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDeleteClick(product)}
-                                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                                                                >
-                                                                    <span className="material-symbols-outlined text-lg">delete</span>
-                                                                    Delete Listing
-                                                                </button>
-                                                            </div>
-                                                        </>
-                                                    )}
+                                        {/* Details */}
+                                        <div className="flex flex-col flex-1 justify-between py-0.5 min-w-0">
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between items-start gap-2">
+                                                    <h3 className="text-[15px] font-bold leading-tight text-slate-900 dark:text-white line-clamp-2">
+                                                        {product.title}
+                                                    </h3>
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={(e) => toggleMenu(product.id, e)}
+                                                            className="text-slate-400 hover:text-primary transition-colors p-1"
+                                                        >
+                                                            <span className="material-symbols-outlined text-lg">more_horiz</span>
+                                                        </button>
+
+                                                        {activeMenuId === product.id && (
+                                                            <>
+                                                                <div
+                                                                    className="fixed inset-0 z-[60]"
+                                                                    onClick={() => setActiveMenuId(null)}
+                                                                ></div>
+                                                                <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-[#22262a] rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 z-[70] overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-200">
+                                                                    <button
+                                                                        onClick={(e) => handleEditClick(product.id, e)}
+                                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                                        Edit Listing
+                                                                    </button>
+                                                                    <div className="h-px bg-slate-50 dark:bg-white/5 mx-2 my-1"></div>
+                                                                    <button
+                                                                        onClick={(e) => handleDeleteClick(product, e)}
+                                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                                        Delete Listing
+                                                                    </button>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                                        <span className="material-symbols-outlined text-[14px] mr-1">monitoring</span>
+                                                        {product.views || 0} views
+                                                    </span>
+                                                    <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                                        <span className="material-symbols-outlined text-[14px] mr-1 text-primary">favorite</span>
+                                                        {product.likes || 0} likes
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                {activeTab === 'Active' ? (
-                                                    <>
-                                                        <span className="flex items-center text-xs text-[#4e8b97] dark:text-[#94aab0] font-medium">
-                                                            <span className="material-symbols-outlined text-[14px] mr-0.5">visibility</span>
-                                                            {product.views || 0}
-                                                        </span>
-                                                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></span>
-                                                        <span className="flex items-center text-xs text-[#4e8b97] dark:text-[#94aab0] font-medium">
-                                                            <span className="material-symbols-outlined text-[14px] mr-0.5">favorite</span>
-                                                            {product.likes || 0}
-                                                        </span>
-                                                    </>
-                                                ) : activeTab === 'Sold' ? (
-                                                    <p className="text-xs text-[#4e8b97] dark:text-[#94aab0] mt-1 font-medium">
-                                                        Sold on {new Date(product.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                                    </p>
-                                                ) : (
-                                                    <p className="text-xs text-red-500/80 mt-1 font-medium flex items-center gap-1">
-                                                        <span className="material-symbols-outlined text-[14px]">timer_off</span> Expired
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-end justify-between mt-2">
-                                            <p className={`text-lg font-bold leading-none ${activeTab === 'Active' ? 'text-[#149cb8]' :
-                                                activeTab === 'Sold' ? 'text-[#0e191b] dark:text-[#e0e6e8] line-through decoration-[#149cb8]/50 opacity-60' :
-                                                    'text-gray-400'
-                                                }`}>
-                                                ₵{parseFloat(product.price || 0).toFixed(2)}
-                                            </p>
-                                            <div className={`flex items-center text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md shadow-sm ${activeTab === 'Active' ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' :
-                                                activeTab === 'Sold' ? 'text-white bg-emerald-500' :
-                                                    'text-gray-500 bg-gray-200 dark:bg-gray-700'
-                                                }`}>
-                                                {activeTab === 'Active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>}
-                                                {activeTab}
+
+                                            <div className="flex items-center justify-between mt-3">
+                                                <p className="text-[17px] font-extrabold text-primary">
+                                                    ₵{parseFloat(product.price || 0).toFixed(2)}
+                                                </p>
+                                                <div className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${activeTab === 'Active' ? 'text-emerald-500 bg-emerald-500/10' :
+                                                    activeTab === 'Sold' ? 'text-blue-500 bg-blue-500/10' :
+                                                        'text-slate-500 bg-slate-500/10'
+                                                    }`}>
+                                                    {activeTab === 'Sold' ? 'Completed' : activeTab}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Actions Footer */}
-                                <div className={`flex border-t border-gray-100 dark:border-gray-800 divide-x divide-gray-100 dark:divide-gray-800 ${activeTab === 'Expired' ? 'bg-white/50 dark:bg-black/20' : ''
-                                    }`}>
+                                    {/* Quick Actions */}
                                     {activeTab === 'Active' && (
-                                        <>
+                                        <div className="flex border-t border-slate-50 dark:border-white/5">
                                             <button
-                                                onClick={() => handleEditClick(product.id)}
-                                                className="flex-1 flex items-center justify-center py-2.5 text-[#4e8b97] dark:text-[#94aab0] hover:text-[#149cb8] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-xs font-semibold gap-1.5"
+                                                onClick={(e) => handleEditClick(product.id, e)}
+                                                className="flex-1 flex items-center justify-center py-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                                             >
-                                                <span className="material-symbols-outlined text-base">edit</span>
+                                                <span className="material-symbols-outlined text-[16px] mr-1.5">edit_square</span>
                                                 Edit
                                             </button>
-                                            <button className="flex-1 flex items-center justify-center py-2.5 text-[#149cb8] hover:text-white hover:bg-[#149cb8] transition-colors text-xs font-bold gap-1.5">
-                                                <span className="material-symbols-outlined text-base">campaign</span>
-                                                Promote Listing
-                                            </button>
-                                        </>
-                                    )}
-                                    {activeTab === 'Sold' && (
-                                        <button className="flex-1 flex items-center justify-center py-2.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-colors text-xs font-bold gap-1.5 w-full">
-                                            <span className="material-symbols-outlined text-base">receipt_long</span>
-                                            View Sale Details
-                                        </button>
-                                    )}
-                                    {activeTab === 'Expired' && (
-                                        <>
+                                            <div className="w-px bg-slate-50 dark:bg-white/5"></div>
                                             <button
-                                                onClick={() => handleDeleteClick(product)}
-                                                className="flex-1 flex items-center justify-center py-2.5 text-[#4e8b97] dark:text-[#94aab0] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-xs font-semibold gap-1.5"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    router.push(`/dashboard/seller/listings/promote/${product.id}`);
+                                                }}
+                                                className="flex-1 flex items-center justify-center py-3 text-[11px] font-bold text-primary hover:bg-primary/5 transition-all"
                                             >
-                                                <span className="material-symbols-outlined text-base">delete</span>
-                                                Delete
+                                                <span className="material-symbols-outlined text-[16px] mr-1.5">rocket_launch</span>
+                                                Promote
                                             </button>
-                                            <button className="flex-1 flex items-center justify-center py-2.5 text-[#149cb8] hover:bg-[#149cb8]/5 transition-colors text-xs font-bold gap-1.5">
-                                                <span className="material-symbols-outlined text-base">refresh</span>
-                                                Renew
-                                            </button>
-                                        </>
+                                        </div>
                                     )}
-                                </div>
-                            </article>
-                        ))
+                                </article>
+                            ))}
+                        </div>
                     ) : (
-                        <div className="text-center py-20">
-                            <span className="material-symbols-outlined text-6xl text-gray-200 dark:text-gray-800 mb-4">inventory_2</span>
-                            <p className="text-gray-400 font-bold">No {activeTab.toLowerCase()} listings found</p>
+                        <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-slate-600">
+                            <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-4xl opacity-50">inventory_2</span>
+                            </div>
+                            <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No {activeTab.toLowerCase()} listings</p>
+                            <p className="text-sm mb-6 text-center">You don't have any items in this category yet.</p>
+                            <Link href="/dashboard/seller/create" className="h-12 flex items-center justify-center px-8 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.98]">
+                                Create New Listing
+                            </Link>
                         </div>
                     )}
-                    {/* Bottom Spacer */}
-                    <div className="h-16"></div>
                 </main>
 
 

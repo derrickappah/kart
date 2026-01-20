@@ -18,7 +18,6 @@ export default function OrdersClient({ orders }) {
   });
 
   return (
-  return (
     <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display antialiased min-h-screen transition-colors duration-200">
       <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#131d1f] shadow-2xl overflow-hidden">
 
@@ -108,6 +107,15 @@ export default function OrdersClient({ orders }) {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {order.status === 'Completed' && (
+                          <button
+                            onClick={() => router.push(`/product/${order.product?.id}`)}
+                            className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-white/5 active:scale-[0.98] text-xs font-bold"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">refresh</span>
+                            <span>Buy Again</span>
+                          </button>
+                        )}
                         {(order.status === 'Completed' || order.status === 'Delivered') && (
                           <button
                             onClick={() => router.push(`/dashboard/orders/${order.id}/review`)}
@@ -138,6 +146,5 @@ export default function OrdersClient({ orders }) {
         </main>
       </div>
     </div>
-  );
   );
 }

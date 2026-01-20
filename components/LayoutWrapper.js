@@ -19,7 +19,8 @@ export default function LayoutWrapper({ children, user }) {
         pathname?.includes('/buy') ||
         pathname?.includes('/review') ||
         pathname?.includes('/verify') ||
-        pathname?.includes('/success')) &&
+        pathname?.includes('/success') ||
+        (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
         !pathname?.includes('/profile/edit'); // Show navigation on profile edit page
 
     // Add/remove class to body to allow CSS-level hiding as a fallback
