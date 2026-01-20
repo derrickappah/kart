@@ -137,14 +137,6 @@ a {
   background: var(--primary);
 }
 
-/* Mobile bottom navigation padding */
-@media (max-width: 900px) {
-  body:not(.auth-page-active) {
-    padding-bottom: 70px;
-  }
-}
-
-
 /* Page content styling */
 .page-content {
   min-height: 100vh;

@@ -1,5 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import Lottie from 'lottie-react';
+import successAnimation from '@/public/Success.json';
 
 export default function VerificationSuccessPage() {
     const router = useRouter();
@@ -8,34 +10,21 @@ export default function VerificationSuccessPage() {
         <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display antialiased min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 transition-colors duration-200">
             <div className="flex flex-col h-screen sm:h-[850px] w-full max-w-md bg-[#f9fafa] dark:bg-[#1c1f22] shadow-2xl relative sm:rounded-[2.5rem] overflow-hidden">
 
-                {/* Top Navigation */}
-                <header className="flex items-center p-4 pt-12 pb-2 justify-between">
-                    <button
-                        onClick={() => router.push('/')}
-                        className="text-[#0e181b] dark:text-white flex size-12 shrink-0 items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
-                    >
-                        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>arrow_back_ios_new</span>
-                    </button>
-                    <h2 className="text-[#0e181b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Verification Status</h2>
-                </header>
-
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col items-center justify-center px-6 w-full">
                     {/* Illustration Container */}
                     <div className="w-full mb-8">
-                        <div className="relative w-64 h-64 mx-auto flex items-center justify-center">
+                        <div className="relative w-96 h-96 mx-auto flex items-center justify-center">
                             {/* Decorative background elements */}
-                            <div className="absolute inset-0 bg-primary/10 rounded-full animate-pulse"></div>
+                            <div className="absolute inset-4 bg-primary/5 rounded-full animate-pulse"></div>
 
-                            {/* Main Illustration */}
-                            <div
-                                className="z-10 w-full h-full bg-center bg-no-repeat bg-contain"
-                                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDfB4lJGMPncLzABu2LKAG-X4Ihchw89RMJdyj3h_qGuQ85PW3LmV8U_-l-aMPze2Ma2aEeTGN0fHwO4ES85HP0d5sAZjgTMps12_3ITOiXdfz34kFUB6zJUwXcAOMbO-UC2p_lks1rlcFf8yu0F4sOoJU2-GRmtImwrkVrtMe7NfwkjZ29LSTuUXi4cPa4XYE9CbZtwDiEzV8j9EoZ2zUCSeOs4q58QYU9THZtk_yiW-fLRYk7AsKj5tUfvhXIjizwvSv1Frw2Qc__")' }}
-                            ></div>
-
-                            {/* Floating Accents */}
-                            <div className="absolute -top-2 -right-2 bg-white dark:bg-[#2d3139] p-3 rounded-2xl shadow-xl border border-zinc-100 dark:border-zinc-700">
-                                <span className="material-symbols-outlined text-primary text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
+                            {/* Main Lottie Animation */}
+                            <div className="z-10 w-full h-full">
+                                <Lottie
+                                    animationData={successAnimation}
+                                    loop={false}
+                                    className="w-full h-full scale-[1.3]"
+                                />
                             </div>
                         </div>
                     </div>
