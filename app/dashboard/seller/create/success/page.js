@@ -4,6 +4,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '../../../../../utils/supabase/client';
 import Link from 'next/link';
 import Image from 'next/image';
+import Lottie from 'lottie-react';
+import successAnimation from '@/public/Success.json';
 
 function SuccessContent() {
     const searchParams = useSearchParams();
@@ -81,12 +83,18 @@ function SuccessContent() {
 
             {/* Main Content Container */}
             <div className="relative z-10 flex flex-col items-center w-full max-w-sm">
-                {/* Hero Illustration */}
-                <div className="floating-anim mb-8 relative w-full flex justify-center">
-                    <div
-                        className="w-48 h-48 bg-contain bg-center bg-no-repeat drop-shadow-2xl"
-                        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBEU9Pk4VjVPsyjUNomWMcYSIcDgp6HvSJuM2uedA8qqdAxRFO32ZUcPuhDlth9k8YLzVGt7H4hhiIMCw8EfMB847muETJ5A5z6D7DWBI-NIhXT-vP365Dcujxo1Xtg4TD2dX1A6FBdo8BiJ-JxMGMJkqnvUMF7tFKF-dren8YDWGeaJxRvh7J_DZfX7ZGbOJw83z2EdJrNQmVfMavFobTdi-FPhXH04O2oevTj9P6TgAZVc5ftMI6coOMQfWWBUocfr4t8VKAaMHhl')" }}
-                    ></div>
+                {/* Hero Illustration - Lottie Animation */}
+                <div className="relative mb-8 w-full max-w-[280px] aspect-square flex items-center justify-center">
+                    {/* Soft glow behind the animation */}
+                    <div className="absolute inset-4 bg-primary/10 rounded-full blur-3xl transform scale-110"></div>
+
+                    <div className="relative z-10 w-full h-full flex items-center justify-center">
+                        <Lottie
+                            animationData={successAnimation}
+                            loop={false}
+                            className="w-full h-full scale-125"
+                        />
+                    </div>
                 </div>
 
                 {/* Headlines */}
