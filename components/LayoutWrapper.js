@@ -1,4 +1,5 @@
 "use client";
+// Force re-render to fix hydration mismatch
 
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
@@ -20,6 +21,7 @@ export default function LayoutWrapper({ children, user }) {
         pathname?.includes('/review') ||
         pathname?.includes('/verify') ||
         pathname?.includes('/success') ||
+        pathname?.startsWith('/dashboard/admin') || // Hide on all admin pages
         (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
         !pathname?.includes('/profile/edit'); // Show navigation on profile edit page
 

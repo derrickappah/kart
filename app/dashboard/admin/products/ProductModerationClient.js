@@ -61,183 +61,168 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
     };
 
     return (
-        <div>
-            {/* Stats Row */}
-            {stats && Object.keys(stats).length > 0 && (
-                <div className={styles.statsRow}>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Total Products</div>
-                        <div className={styles.statValue}>{stats.total || 0}</div>
+        <div className="space-y-6">
+            {/* Moderation Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[
+                    { label: 'Total Listings', value: stats.total, color: 'primary', icon: 'inventory_2' },
+                    { label: 'Active Items', value: stats.active, color: 'green-500', icon: 'shopping_bag' },
+                    { label: 'Under Review', value: stats.pending, color: 'amber-500', icon: 'farsight_digital' },
+                    { label: 'Banned Items', value: stats.banned, color: 'red-500', icon: 'block' },
+                ].map((stat, i) => (
+                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="flex items-center gap-4">
+                            <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
+                                <span className="material-symbols-outlined">{stat.icon}</span>
+                            </div>
+                            <div>
+                                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h4 className="text-xl font-black">{stat.value || 0}</h4>
+                            </div>
+                        </div>
                     </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Active</div>
-                        <div className={styles.statValue}>{stats.active || 0}</div>
-                    </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Banned</div>
-                        <div className={styles.statValue}>{stats.banned || 0}</div>
-                    </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Pending</div>
-                        <div className={styles.statValue}>{stats.pending || 0}</div>
-                    </div>
-                </div>
-            )}
-
-            {/* Search Bar */}
-            <div className={styles.searchSection}>
-                <form onSubmit={handleSearch} className={styles.searchForm}>
-                    <input
-                        type="text"
-                        placeholder="Search products by title..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className={styles.searchInput}
-                    />
-                    <button type="submit" className={styles.searchButton}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Search
-                    </button>
-                </form>
+                ))}
             </div>
 
-            {/* Products Table */}
-            {initialProducts.length === 0 ? (
-                <div className={styles.emptyState}>
-                    <svg className={styles.emptyStateIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <div className={styles.emptyStateTitle}>No products found</div>
-                    <div className={styles.emptyStateText}>Try adjusting your search query</div>
+            {/* Catalog Filters */}
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-wrap items-center justify-between gap-4">
+                <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors">search</span>
+                    <input
+                        className="w-full bg-background-light dark:bg-[#212b30] border-none rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-[#4b636c]"
+                        placeholder="Inspect Marketplace Inventory..."
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </form>
+
+                <div className="flex items-center gap-2">
+                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                        <span className="material-symbols-outlined text-sm">category</span>
+                        Category
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                        <span className="material-symbols-outlined text-sm">payments</span>
+                        Price Range
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                        <span className="material-symbols-outlined text-sm">history</span>
+                        Status
+                    </button>
                 </div>
-            ) : (
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead className={styles.tableHeader}>
-                            <tr>
-                                <th>Product</th>
-                                <th>Seller</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className={styles.tableBody}>
-                            {initialProducts.map(product => (
-                                <tr key={product.id}>
-                                    <td>
-                                        <div className={styles.productCell}>
+            </div>
+
+            {/* Product Directory Table */}
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-gray-50/50 dark:bg-[#212b30]/50 text-[#4b636c] text-[10px] font-black uppercase tracking-widest border-b border-[#dce3e5] dark:border-[#2d3b41]">
+                            <th className="px-6 py-4">Registry Item</th>
+                            <th className="px-6 py-4">Merchant</th>
+                            <th className="px-6 py-4">Valuation</th>
+                            <th className="px-6 py-4">Policy Status</th>
+                            <th className="px-6 py-4 text-center">Protocol</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#dce3e5] dark:divide-[#2d3b41]">
+                        {initialProducts.map((product) => (
+                            <tr key={product.id} className="hover:bg-primary/[0.02] transition-colors group">
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="size-16 rounded-lg bg-gray-100 dark:bg-[#212b30] flex-shrink-0 relative overflow-hidden group/img">
                                             {product.image_url ? (
-                                                <img 
-                                                    src={product.image_url} 
-                                                    alt={product.title}
-                                                    className={styles.productImage}
-                                                />
+                                                <img src={product.image_url} alt="" className="size-full object-cover group-hover/img:scale-110 transition-transform" />
                                             ) : (
-                                                <div className={styles.productImage} style={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
-                                                    justifyContent: 'center',
-                                                    background: 'rgba(99, 102, 241, 0.2)',
-                                                    color: '#a5b4fc',
-                                                    fontSize: '1.5rem'
-                                                }}>
-                                                    📦
+                                                <div className="size-full flex items-center justify-center text-[#4b636c]/30">
+                                                    <span className="material-symbols-outlined text-2xl">image</span>
                                                 </div>
                                             )}
-                                            <div className={styles.productInfo}>
-                                                <div className={styles.productTitle}>{product.title}</div>
-                                                <Link 
-                                                    href={`/marketplace/${product.id}`} 
-                                                    target="_blank" 
-                                                    className={styles.viewLink}
-                                                >
-                                                    View Listing
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M18 13V19A2 2 0 0 1 16 21H5A2 2 0 0 1 3 19V8A2 2 0 0 1 5 6H11M15 3H21M21 3V9M21 3L9 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                </Link>
-                                            </div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <span className={styles.sellerEmail}>{product.seller?.email || 'Unknown'}</span>
-                                    </td>
-                                    <td>
-                                        <span className={styles.priceValue}>₵{parseFloat(product.price || 0).toFixed(2)}</span>
-                                    </td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${getStatusClass(product.status)}`}>
-                                            {product.status === 'Active' && (
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            )}
-                                            {product.status === 'Banned' && (
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            )}
-                                            {product.status === 'Pending' && (
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M6 1V6L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            )}
-                                            {product.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className={styles.actionButtons}>
-                                            {product.status !== 'Banned' && (
-                                                <button
-                                                    onClick={() => updateStatus(product.id, 'Banned')}
-                                                    disabled={loading}
-                                                    className={`${styles.actionButton} ${styles.flagButton}`}
-                                                    title="Ban Product"
-                                                >
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                        <path d="M4 22L4 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                    Flag
-                                                </button>
-                                            )}
-                                            {product.status === 'Banned' && (
-                                                <button
-                                                    onClick={() => updateStatus(product.id, 'Active')}
-                                                    disabled={loading}
-                                                    className={`${styles.actionButton} ${styles.restoreButton}`}
-                                                    title="Restore Product"
-                                                >
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M3 12C3 4.5885 4.5885 3 12 3C19.4115 3 21 4.5885 21 12C21 19.4115 19.4115 21 12 21C4.5885 21 3 19.4115 3 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                        <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                    Restore
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => deleteProduct(product.id)}
-                                                disabled={loading}
-                                                className={`${styles.actionButton} ${styles.deleteButton}`}
-                                                title="Delete Product"
+                                        <div>
+                                            <p className="text-sm font-black text-[#111618] dark:text-gray-200 group-hover:text-primary transition-colors max-w-[200px] truncate tracking-tight">{product.title}</p>
+                                            <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest mt-0.5">{product.category || 'General'}</p>
+                                            <Link
+                                                href={`/marketplace/${product.id}`}
+                                                target="_blank"
+                                                className="text-[9px] text-primary font-black uppercase mt-1.5 flex items-center gap-1 hover:underline tracking-widest"
                                             >
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                                Delete
-                                            </button>
+                                                View Live Pulse
+                                                <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                                            </Link>
                                         </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <p className="text-sm font-black text-[#111618] dark:text-gray-200">{product.seller?.email?.split('@')[0] || 'Unknown'}</p>
+                                    <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">Verified Seller</p>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <p className="text-sm font-black text-primary tracking-tighter">GH₵ {parseFloat(product.price || 0).toFixed(2)}</p>
+                                    <p className="text-[9px] text-[#4b636c] font-black uppercase tracking-widest">Market Value</p>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase w-fit ${product.status === 'Active' ? 'bg-green-500/10 text-green-500' :
+                                        product.status === 'Banned' ? 'bg-red-500/10 text-red-500' :
+                                            'bg-amber-500/10 text-amber-500'
+                                        }`}>
+                                        {product.status}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <button className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20">
+                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
+
+                                        {product.status !== 'Banned' ? (
+                                            <button
+                                                onClick={() => updateStatus(product.id, 'Banned')}
+                                                disabled={loading}
+                                                className="size-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center hover:bg-red-500/20 transition-colors"
+                                                title="Flag for Deletion"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">flag</span>
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => updateStatus(product.id, 'Active')}
+                                                disabled={loading}
+                                                className="size-8 rounded-lg bg-green-500/10 text-green-600 flex items-center justify-center hover:bg-green-500/20 transition-colors"
+                                                title="Restore Policy"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">restore</span>
+                                            </button>
+                                        )}
+
+                                        <button
+                                            onClick={() => deleteProduct(product.id)}
+                                            disabled={loading}
+                                            className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-red-500 transition-colors border border-transparent hover:border-red-500/20"
+                                            title="Purge Record"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination Placeholder */}
+            <div className="flex items-center justify-between px-2">
+                <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">Showing <span className="text-[#111618] dark:text-white">1-{initialProducts.length}</span> of <span className="text-[#111618] dark:text-white">{stats.total}</span></p>
+                <div className="flex gap-2">
+                    <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
+                        <span className="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
+                        <span className="material-symbols-outlined">chevron_right</span>
+                    </button>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

@@ -4,6 +4,7 @@ import NotificationBell from "../components/NotificationBell";
 import SearchBar from "../components/SearchBar";
 import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
+import { toSentenceCase } from '../utils/formatters';
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function Home() {
   // Fetch banner products (Featured & Boosted)
   const { data: rawBannerProducts } = await supabase
     .from('products')
-    .select('*, seller:profiles(display_name, avatar_url)')
+    .select('*, seller:profiles(display_name, avatar_url, is_verified)')
     .or('is_featured.eq.true,is_boosted.eq.true')
     .eq('status', 'Active')
     .limit(15);
@@ -49,7 +50,7 @@ export default async function Home() {
   // Fetch boosted products (for horizontal scroll)
   const { data: rawBoostedProducts } = await supabase
     .from('products')
-    .select('*, seller:profiles(display_name, avatar_url)')
+    .select('*, seller:profiles(display_name, avatar_url, is_verified)')
     .eq('is_boosted', true)
     .eq('status', 'Active')
     .limit(20);
@@ -60,7 +61,7 @@ export default async function Home() {
   // Fetch latest products
   const { data: rawLatestProducts } = await supabase
     .from('products')
-    .select('*, seller:profiles(display_name, avatar_url)')
+    .select('*, seller:profiles(display_name, avatar_url, is_verified)')
     .eq('status', 'Active')
     .order('created_at', { ascending: false })
     .limit(20);
@@ -69,16 +70,34 @@ export default async function Home() {
   const latestProducts = rawLatestProducts ? [...rawLatestProducts].sort(() => Math.random() - 0.5) : [];
 
   // Fallback for featured section if no boosted products
-  // Using the shuffled latest products for fallback too
   const displayFeatured = boostedProducts && boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 10);
+
+  const getRecReason = (product) => {
+    if (product.is_boosted) return "Highest Priority";
+    if (product.category === 'Textbooks') return "Highly requested in your level";
+    if (product.campus) return `Trending at ${product.campus}`;
+    return "Based on your search interest";
+  };
 
 
   const categories = [
     { name: 'All', active: true },
     { name: 'Textbooks', active: false },
     { name: 'Electronics', active: false },
-    { name: 'Furniture', active: false },
-    { name: 'Clothing', active: false }
+    { name: 'Dorm Furniture', active: false },
+    { name: 'Clothing', active: false },
+    { name: 'School Supplies', active: false },
+    { name: 'Tickets & Events', active: false },
+    { name: 'Services & Tutoring', active: false },
+    { name: 'Beauty & Grooming', active: false },
+    { name: 'Sports & Fitness', active: false },
+    { name: 'Kitchenware', active: false },
+    { name: 'Musical Instruments', active: false },
+    { name: 'Games & Consoles', active: false },
+    { name: 'Health & Wellness', active: false },
+    { name: 'Arts & Crafts', active: false },
+    { name: 'Lost & Found', active: false },
+    { name: 'Home Appliances', active: false }
   ];
 
   return (
@@ -92,15 +111,15 @@ export default async function Home() {
           <SearchBar placeholder="Search campus finds..." />
         </div>
 
-        {/* Category Chips */}
         <div className="flex w-full overflow-x-auto px-5 py-4 no-scrollbar space-x-3">
           {categories.map((cat) => (
-            <button
+            <Link
               key={cat.name}
-              className={`chip ${cat.active ? 'chip-active' : 'chip-inactive'}`}
+              href={cat.name === 'All' ? '/marketplace' : `/marketplace?category=${cat.name}`}
+              className={`chip ${cat.active ? 'chip-active' : 'chip-inactive'} whitespace-nowrap`}
             >
               <span>{cat.name}</span>
-            </button>
+            </Link>
           ))}
         </div>
 
@@ -114,16 +133,23 @@ export default async function Home() {
         <div className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-4">
           {displayFeatured && displayFeatured.length > 0 ? (
             displayFeatured.map(product => (
-              <div key={product.id} className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50">
+              <Link
+                key={product.id}
+                href={`/marketplace/${product.id}`}
+                className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
+              >
                 {/* Image */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
-                  <Link href={`/marketplace/${product.id}`} className="absolute inset-0">
-                    <img
-                      src={product.image_url || product.images?.[0]}
-                      alt={product.title}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </Link>
+                  <img
+                    src={product.image_url || product.images?.[0]}
+                    alt={product.title}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {product.condition && (
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
+                      {product.condition}
+                    </div>
+                  )}
                   <WishlistButton
                     productId={product.id}
                     initialIsSaved={wishlistIds.includes(product.id)}
@@ -132,7 +158,7 @@ export default async function Home() {
 
                 {/* Content */}
                 <div className="flex flex-col p-4">
-                  <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{product.title}</h3>
+                  <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
                   <div className="mt-2 flex items-center justify-between">
                     <p className="text-lg font-bold text-primary">GHS {product.price}</p>
                     <div className="flex items-center gap-1.5 overflow-hidden">
@@ -143,11 +169,16 @@ export default async function Home() {
                           {product.seller?.display_name?.[0] || 'U'}
                         </div>
                       )}
-                      <p className="text-xs font-medium text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
+                        {product.seller?.is_verified && (
+                          <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="w-full text-center py-8">
@@ -166,16 +197,23 @@ export default async function Home() {
         <div className="flex flex-col gap-6 px-5">
           {latestProducts && latestProducts.length > 0 ? (
             latestProducts.map(product => (
-              <div key={product.id} className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50">
+              <Link
+                key={product.id}
+                href={`/marketplace/${product.id}`}
+                className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
+              >
                 {/* Image */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-200">
-                  <Link href={`/marketplace/${product.id}`} className="absolute inset-0">
-                    <img
-                      src={product.image_url || product.images?.[0]}
-                      alt={product.title}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </Link>
+                  <img
+                    src={product.image_url || product.images?.[0]}
+                    alt={product.title}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {product.condition && (
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
+                      {product.condition}
+                    </div>
+                  )}
                   <WishlistButton
                     productId={product.id}
                     initialIsSaved={wishlistIds.includes(product.id)}
@@ -184,9 +222,18 @@ export default async function Home() {
 
                 {/* Content */}
                 <div className="flex flex-col p-4">
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-black uppercase tracking-widest border border-primary/20">
+                      {getRecReason(product)}
+                    </span>
+                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">
+                      {product.category || 'General'}
+                    </span>
+                  </div>
+
                   <div className="mb-3 flex items-start justify-between">
                     <div className="pr-4 flex-1">
-                      <h3 className="text-lg font-bold leading-tight text-gray-900 dark:text-white line-clamp-2">{product.title}</h3>
+                      <h3 className="text-lg font-bold leading-tight text-gray-900 dark:text-white line-clamp-2">{toSentenceCase(product.title)}</h3>
                       <div className="mt-1 flex items-center gap-2">
                         {product.seller?.avatar_url ? (
                           <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover" alt={product.seller.display_name} />
@@ -195,20 +242,18 @@ export default async function Home() {
                             {product.seller?.display_name?.[0] || 'U'}
                           </div>
                         )}
-                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{product.seller?.display_name || 'Seller'}</p>
+                        <div className="flex items-center gap-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate">{product.seller?.display_name || 'Seller'}</p>
+                          {product.seller?.is_verified && (
+                            <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <p className="shrink-0 text-xl font-bold text-gray-900 dark:text-white">GHS {product.price}</p>
+                    <p className="shrink-0 text-xl font-black text-primary tracking-tighter">GHS {product.price}</p>
                   </div>
-                  <Link
-                    href={`/marketplace/${product.id}`}
-                    className="mt-2 btn-primary"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
-                    View Details
-                  </Link>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="text-center py-12">

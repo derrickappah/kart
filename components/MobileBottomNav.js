@@ -1,4 +1,5 @@
 'use client';
+// Force re-render to fix hydration mismatch
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
 import BuyButton from './BuyButton';
+import { toSentenceCase } from '../../../utils/formatters';
 
 export default function ProductDetailsClient({ product }) {
     const [loadingChat, setLoadingChat] = useState(false);
@@ -288,7 +289,7 @@ export default function ProductDetailsClient({ product }) {
                             </span>
                         </div>
                         <h1 className="text-[#0e181b] dark:text-white text-3xl font-extrabold leading-tight mt-2">
-                            {product.title}
+                            {toSentenceCase(product.title)}
                         </h1>
                         <p className="text-primary text-3xl font-bold mt-2">GHS {product.price}</p>
                     </div>
@@ -376,7 +377,7 @@ export default function ProductDetailsClient({ product }) {
                                             )}
                                         </div>
                                         <div className="flex flex-col gap-0.5 px-1">
-                                            <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">{p.title}</h3>
+                                            <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">{toSentenceCase(p.title)}</h3>
                                             <p className="text-primary text-base font-extrabold">GHS {p.price}</p>
                                         </div>
                                     </Link>

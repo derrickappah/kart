@@ -2,7 +2,25 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const categories = ['All', 'Textbooks', 'Electronics', 'Furniture', 'Clothing', 'School Supplies'];
+const categories = [
+    'All',
+    'Textbooks',
+    'Electronics',
+    'Dorm Furniture',
+    'Clothing',
+    'School Supplies',
+    'Tickets & Events',
+    'Services & Tutoring',
+    'Beauty & Grooming',
+    'Sports & Fitness',
+    'Kitchenware',
+    'Musical Instruments',
+    'Games & Consoles',
+    'Health & Wellness',
+    'Arts & Crafts',
+    'Lost & Found',
+    'Home Appliances'
+];
 const conditions = ['New', 'Like New', 'Good', 'Fair'];
 
 export default function FilterSidebar({ hideHeader = false }) {
@@ -10,7 +28,7 @@ export default function FilterSidebar({ hideHeader = false }) {
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
     const [isOpen, setIsOpen] = useState(false);
-    
+
     // Initialize state from URL params
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [selectedConditions, setSelectedConditions] = useState([]);
@@ -40,14 +58,14 @@ export default function FilterSidebar({ hideHeader = false }) {
         const params = new URLSearchParams();
         if (searchParams?.get('search')) params.set('search', searchParams.get('search'));
         if (searchParams?.get('sort')) params.set('sort', searchParams.get('sort'));
-        
+
         const filteredCategories = categories.filter(c => c !== 'All');
         if (filteredCategories.length > 0) params.set('category', filteredCategories.join(','));
         if (conditions.length > 0) params.set('condition', conditions.join(','));
         if (min) params.set('minPrice', min);
         if (max) params.set('maxPrice', max);
         if (campusValue) params.set('campus', campusValue);
-        
+
         const queryString = params.toString();
         startTransition(() => {
             router.replace(`/marketplace${queryString ? `?${queryString}` : ''}`);
@@ -93,11 +111,11 @@ export default function FilterSidebar({ hideHeader = false }) {
 
     return (
         <div className="fixed inset-0 z-[100] flex flex-col justify-end bg-black/40 backdrop-blur-sm transition-opacity duration-300">
-            <div 
-                className="absolute inset-0" 
+            <div
+                className="absolute inset-0"
                 onClick={() => setIsOpen(false)}
             />
-            
+
             <div className="relative w-full bg-white dark:bg-[#242428] rounded-t-[2.5rem] shadow-2xl flex flex-col max-h-[90vh] transition-transform duration-300 animate-in slide-in-from-bottom">
                 {/* Handle */}
                 <div className="w-full flex justify-center pt-4 pb-2">
@@ -107,7 +125,7 @@ export default function FilterSidebar({ hideHeader = false }) {
                 {/* Header */}
                 <div className="px-6 pb-4 pt-2 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Filters</h2>
-                    <button 
+                    <button
                         onClick={handleReset}
                         className="text-sm font-semibold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
                     >
@@ -128,7 +146,7 @@ export default function FilterSidebar({ hideHeader = false }) {
                                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Min Price</label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">GHS</span>
-                                    <input 
+                                    <input
                                         type="number"
                                         className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-xl py-3 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all"
                                         placeholder="0"
@@ -141,7 +159,7 @@ export default function FilterSidebar({ hideHeader = false }) {
                                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Max Price</label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">GHS</span>
-                                    <input 
+                                    <input
                                         type="number"
                                         className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-xl py-3 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all"
                                         placeholder="Any"
@@ -164,11 +182,10 @@ export default function FilterSidebar({ hideHeader = false }) {
                                 <button
                                     key={con}
                                     onClick={() => toggleCondition(con)}
-                                    className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-bold text-sm ${
-                                        selectedConditions.includes(con)
+                                    className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-bold text-sm ${selectedConditions.includes(con)
                                             ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20'
                                             : 'border-transparent bg-gray-100 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                                    }`}
+                                        }`}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">
                                         {con === 'New' ? 'new_releases' : con === 'Like New' ? 'thumb_up' : con === 'Good' ? 'handshake' : 'build'}
@@ -190,11 +207,10 @@ export default function FilterSidebar({ hideHeader = false }) {
                                 <button
                                     key={cat}
                                     onClick={() => toggleCategory(cat)}
-                                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                                        selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)
+                                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)
                                             ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
                                             : 'bg-gray-50 dark:bg-[#2d2d32] text-gray-500 border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                    }`}
+                                        }`}
                                 >
                                     {cat}
                                 </button>
@@ -208,7 +224,7 @@ export default function FilterSidebar({ hideHeader = false }) {
                             <span className="material-symbols-outlined text-primary">near_me</span>
                             <h3 className="font-bold text-lg">Location</h3>
                         </div>
-                        <input 
+                        <input
                             type="text"
                             className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-xl py-3.5 px-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all"
                             placeholder="Enter campus name..."
@@ -220,7 +236,7 @@ export default function FilterSidebar({ hideHeader = false }) {
 
                 {/* Footer */}
                 <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-[#242428]">
-                    <button 
+                    <button
                         onClick={handleApply}
                         className="btn-primary w-full h-14 rounded-2xl shadow-xl shadow-primary/25"
                     >

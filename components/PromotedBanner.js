@@ -2,6 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
+import { toSentenceCase } from '../utils/formatters';
+
 export default function PromotedBanner({ products }) {
     console.log('[PromotedBanner] Products received:', products?.length, products);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -83,13 +85,25 @@ export default function PromotedBanner({ products }) {
                             </div>
                             <div className="absolute bottom-4 left-4 right-4">
                                 <h2 className="text-white text-lg font-extrabold leading-tight line-clamp-1 mb-1 drop-shadow-md">
-                                    {p.title}
+                                    {toSentenceCase(p.title)}
                                 </h2>
                                 <div className="flex items-center justify-between">
                                     <p className="text-[#FFD700] text-sm font-black drop-shadow-sm">GHS {p.price}</p>
-                                    <span className="text-white text-[10px] font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/30 uppercase tracking-widest">
-                                        View Deal
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            {p.seller?.avatar_url ? (
+                                                <img src={p.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0 border border-white/20" alt="" />
+                                            ) : (
+                                                <div className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] text-white font-bold shrink-0 border border-white/20">
+                                                    {p.seller?.display_name?.[0] || 'U'}
+                                                </div>
+                                            )}
+                                            <p className="text-white/90 text-xs font-bold truncate drop-shadow-sm">{p.seller?.display_name || 'Seller'}</p>
+                                            {p.seller?.is_verified && (
+                                                <span className="material-symbols-outlined text-[#FFD700] text-[14px] font-bold drop-shadow-sm">verified</span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </Link>

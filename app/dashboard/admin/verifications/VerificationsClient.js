@@ -32,10 +32,10 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
             }
 
             // Update local state
-            setVerifications(prev => prev.map(v => 
+            setVerifications(prev => prev.map(v =>
                 v.id === verificationId ? { ...v, status: 'Approved' } : v
             ));
-            
+
             router.refresh();
         } catch (err) {
             alert('Error approving verification: ' + err.message);
@@ -56,9 +56,9 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
             const response = await fetch('/api/admin/verifications/reject', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     verificationId: selectedVerification.id,
-                    adminNotes: rejectNotes 
+                    adminNotes: rejectNotes
                 }),
             });
 
@@ -69,10 +69,10 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
             }
 
             // Update local state
-            setVerifications(prev => prev.map(v => 
+            setVerifications(prev => prev.map(v =>
                 v.id === selectedVerification.id ? { ...v, status: 'Rejected', admin_notes: rejectNotes } : v
             ));
-            
+
             setShowNotesModal(false);
             setSelectedVerification(null);
             setRejectNotes('');
@@ -92,248 +92,225 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
     const pendingCount = verifications.filter(v => v.status === 'Pending').length;
 
     return (
-        <div>
-            {/* Stats Row */}
-            {stats && Object.keys(stats).length > 0 && (
-                <div className={styles.statsRow}>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Total Requests</div>
-                        <div className={styles.statValue}>{stats.total || 0}</div>
+        <div className="space-y-6">
+            {/* Verification Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[
+                    { label: 'Total Queue', value: stats.total, color: 'primary', icon: 'list_alt' },
+                    { label: 'Pending Review', value: stats.pending, color: 'amber-500', icon: 'pending' },
+                    { label: 'Approved Today', value: stats.approved, color: 'green-500', icon: 'verified' },
+                    { label: 'Recently Flagged', value: stats.rejected, color: 'red-500', icon: 'rule' },
+                ].map((stat, i) => (
+                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="flex items-center gap-4">
+                            <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
+                                <span className="material-symbols-outlined">{stat.icon}</span>
+                            </div>
+                            <div>
+                                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h4 className="text-xl font-black tracking-tighter uppercase">{stat.value || 0}</h4>
+                            </div>
+                        </div>
                     </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Pending</div>
-                        <div className={styles.statValue}>{stats.pending || 0}</div>
-                    </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Approved</div>
-                        <div className={styles.statValue}>{stats.approved || 0}</div>
-                    </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Rejected</div>
-                        <div className={styles.statValue}>{stats.rejected || 0}</div>
-                    </div>
-                </div>
-            )}
-
-            {/* Alert Banner */}
-            {pendingCount > 0 && (
-                <div className={styles.alertBanner}>
-                    <svg className={styles.alertIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 9V12M12 15H12.01M5 19H19C19.5523 19 20 18.5523 20 18V6C20 5.44772 19.5523 5 19 5H5C4.44772 5 4 5.44772 4 6V18C4 18.5523 4.44772 19 5 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <div className={styles.alertText}>
-                        {pendingCount} pending verification request{pendingCount !== 1 ? 's' : ''} awaiting review
-                    </div>
-                </div>
-            )}
-
-            {/* Filter Tabs */}
-            <div className={styles.filterTabs}>
-                <Link 
-                    href="/dashboard/admin/verifications" 
-                    className={`${styles.filterTab} ${currentFilter === 'all' ? styles.filterTabActive : ''}`}
-                >
-                    All
-                    {stats.total > 0 && <span className={styles.filterTabCount}>{stats.total}</span>}
-                </Link>
-                <Link 
-                    href="/dashboard/admin/verifications?status=Pending" 
-                    className={`${styles.filterTab} ${currentFilter === 'Pending' ? styles.filterTabActive : ''}`}
-                >
-                    Pending
-                    {stats.pending > 0 && <span className={styles.filterTabCount}>{stats.pending}</span>}
-                </Link>
-                <Link 
-                    href="/dashboard/admin/verifications?status=Approved" 
-                    className={`${styles.filterTab} ${currentFilter === 'Approved' ? styles.filterTabActive : ''}`}
-                >
-                    Approved
-                    {stats.approved > 0 && <span className={styles.filterTabCount}>{stats.approved}</span>}
-                </Link>
-                <Link 
-                    href="/dashboard/admin/verifications?status=Rejected" 
-                    className={`${styles.filterTab} ${currentFilter === 'Rejected' ? styles.filterTabActive : ''}`}
-                >
-                    Rejected
-                    {stats.rejected > 0 && <span className={styles.filterTabCount}>{stats.rejected}</span>}
-                </Link>
+                ))}
             </div>
 
-            {verifications.length === 0 ? (
-                <div className={styles.emptyState}>
-                    <svg className={styles.emptyStateIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <div className={styles.emptyStateTitle}>No verification requests found</div>
-                    <div className={styles.emptyStateText}>All verification requests have been processed</div>
-                </div>
-            ) : (
-                <div className={styles.verificationsList}>
-                    {verifications.map((verification) => (
-                        <div key={verification.id} className={styles.verificationCard}>
-                            <div className={styles.cardHeader}>
-                                <div className={styles.userInfo}>
-                                    <div className={styles.userHeader}>
-                                        <h3 className={styles.userName}>
-                                            {verification.user?.display_name || verification.user?.email || 'Unknown User'}
-                                        </h3>
-                                        <span className={`${styles.statusBadge} ${
-                                            verification.status === 'Pending' ? styles.statusPending :
-                                            verification.status === 'Approved' ? styles.statusApproved :
-                                            styles.statusRejected
-                                        }`}>
-                                            {verification.status === 'Pending' && (
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M6 1V6L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            )}
-                                            {verification.status === 'Approved' && (
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            )}
-                                            {verification.status === 'Rejected' && (
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            )}
+            {/* Verification Filters */}
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-2 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex items-center gap-2 overflow-x-auto">
+                {[
+                    { label: 'All Requests', value: 'all', icon: 'apps' },
+                    { label: 'Pending Queue', value: 'Pending', icon: 'update' },
+                    { label: 'Approved', value: 'Approved', icon: 'check_circle' },
+                    { label: 'Rejected', value: 'Rejected', icon: 'cancel' },
+                ].map((tab) => (
+                    <Link
+                        key={tab.value}
+                        href={tab.value === 'all' ? '/dashboard/admin/verifications' : `/dashboard/admin/verifications?status=${tab.value}`}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${currentFilter === tab.value
+                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                            : 'text-[#4b636c] hover:bg-primary/5'
+                            }`}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
+                        {tab.label}
+                    </Link>
+                ))}
+            </div>
+
+            {/* Applicant Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {verifications.length === 0 ? (
+                    <div className="col-span-full bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-12 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-center">
+                        <span className="material-symbols-outlined text-6xl text-[#4b636c]/20 mb-4">search_off</span>
+                        <h3 className="text-xl font-black tracking-tighter uppercase">No Applications Found</h3>
+                        <p className="text-[#4b636c] text-[11px] font-black uppercase tracking-widest mt-2">Try changing your filters or check back later</p>
+                    </div>
+                ) : (
+                    verifications.map((verification) => (
+                        <div key={verification.id} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden flex flex-col md:flex-row min-h-[280px] group transition-all hover:border-primary/30">
+                            {/* ID Card Image Column */}
+                            <div className="w-full md:w-56 bg-gray-100 dark:bg-[#212b30] relative overflow-hidden flex-shrink-0">
+                                {verification.student_id_image ? (
+                                    <>
+                                        <img src={verification.student_id_image} alt="Student ID" className="size-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                                        <button
+                                            onClick={() => setSelectedImage(verification.student_id_image)}
+                                            className="absolute inset-0 bg-primary/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                                        >
+                                            <span className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-xs">VIEW FULL ID</span>
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="size-full flex items-center justify-center text-[#4b636c]/30">
+                                        <span className="material-symbols-outlined text-5xl">no_photography</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Details Column */}
+                            <div className="p-6 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary border-2 border-white dark:border-background-dark shadow-sm">
+                                                {verification.user?.display_name?.[0]?.toUpperCase() || 'U'}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-base leading-tight tracking-tighter uppercase">{verification.user?.display_name || 'Verification Applicant'}</h4>
+                                                <p className="text-[#4b636c] text-[9px] font-black uppercase tracking-widest">Joined {new Date(verification.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${verification.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' :
+                                            verification.status === 'Approved' ? 'bg-green-500/10 text-green-500' :
+                                                'bg-red-500/10 text-red-500'
+                                            }`}>
                                             {verification.status}
                                         </span>
                                     </div>
-                                    <div className={styles.userDetails}>
-                                        <div className={styles.detailItem}>
-                                            <span className={styles.detailLabel}>Email:</span>
-                                            <span>{verification.user?.email || 'Unknown'}</span>
+
+                                    <div className="grid grid-cols-2 gap-4 mb-6">
+                                        <div className="p-3 bg-background-light dark:bg-[#212b30]/50 rounded-lg">
+                                            <p className="text-[9px] text-[#4b636c] font-black uppercase tracking-widest mb-1">Student ID</p>
+                                            <p className="text-xs font-black uppercase tracking-tighter truncate">{verification.student_id || 'N/A'}</p>
                                         </div>
-                                        <div className={styles.detailItem}>
-                                            <span className={styles.detailLabel}>Student ID:</span>
-                                            <span>{verification.student_id || 'N/A'}</span>
-                                        </div>
-                                        <div className={styles.detailItem}>
-                                            <span className={styles.detailLabel}>Submitted:</span>
-                                            <span>{new Date(verification.created_at).toLocaleDateString('en-US', { 
-                                                year: 'numeric', 
-                                                month: 'long', 
-                                                day: 'numeric' 
-                                            })}</span>
+                                        <div className="p-3 bg-background-light dark:bg-[#212b30]/50 rounded-lg">
+                                            <p className="text-[9px] text-[#4b636c] font-black uppercase tracking-widest mb-1">Campus</p>
+                                            <p className="text-xs font-black uppercase tracking-tighter truncate">{verification.campus || 'Main Campus'}</p>
                                         </div>
                                     </div>
+
                                     {verification.admin_notes && (
-                                        <div className={styles.adminNotes}>
-                                            <strong>Admin Notes:</strong> {verification.admin_notes}
+                                        <div className="mb-6 p-4 bg-red-500/5 rounded-xl border border-red-500/10">
+                                            <p className="text-xs text-red-800 dark:text-red-400 font-medium">Rejection Reason: {verification.admin_notes}</p>
                                         </div>
                                     )}
                                 </div>
-                                <div className={styles.actionButtons}>
-                                    {verification.student_id_image && (
-                                        <button
-                                            onClick={() => setSelectedImage(verification.student_id_image)}
-                                            className={`${styles.actionButton} ${styles.viewImageButton}`}
-                                        >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                            View Image
-                                        </button>
-                                    )}
-                                    {verification.status === 'Pending' && (
+
+                                <div className="flex items-center gap-2">
+                                    {verification.status === 'Pending' ? (
                                         <>
                                             <button
                                                 onClick={() => handleApprove(verification.id)}
                                                 disabled={loading}
-                                                className={`${styles.actionButton} ${styles.approveButton}`}
+                                                className="flex-1 bg-green-500 text-white py-2.5 rounded-xl font-bold text-xs hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/20 disabled:opacity-50"
                                             >
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                                Approve
+                                                <span className="material-symbols-outlined text-[18px]">verified</span>
+                                                APPROVE
                                             </button>
                                             <button
                                                 onClick={() => openRejectModal(verification)}
                                                 disabled={loading}
-                                                className={`${styles.actionButton} ${styles.rejectButton}`}
+                                                className="flex-1 bg-white dark:bg-[#212b30] text-[#4b636c] py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest border border-[#dce3e5] dark:border-[#2d3b41] hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                                             >
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                                Reject
+                                                <span className="material-symbols-outlined text-[18px]">rule</span>
+                                                FLAG / REJECT
                                             </button>
                                         </>
+                                    ) : (
+                                        <button className="w-full py-2.5 bg-gray-100 dark:bg-[#212b30] text-[#4b636c] rounded-xl font-black text-[10px] uppercase tracking-widest cursor-default">
+                                            PROCESSED ON {new Date(verification.updated_at || verification.created_at).toLocaleDateString()}
+                                        </button>
                                     )}
                                 </div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
 
             {/* Image Preview Modal */}
             {selectedImage && (
                 <div
-                    className={styles.modalOverlay}
+                    className="fixed inset-0 z-50 bg-[#111618]/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
                     onClick={() => setSelectedImage(null)}
                 >
-                    <div className={styles.imageModal}>
-                        <img
-                            src={selectedImage}
-                            alt="Student ID"
-                        />
-                        <button
-                            onClick={() => setSelectedImage(null)}
-                            className={styles.closeButton}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            Close
-                        </button>
+                    <div className="relative max-w-5xl w-full h-full flex flex-col items-center justify-center gap-6" onClick={e => e.stopPropagation()}>
+                        <div className="w-full h-[85%] rounded-3xl overflow-hidden border-2 border-primary/20 bg-[#111618]">
+                            <img src={selectedImage} alt="Full ID Preview" className="size-full object-contain" />
+                        </div>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setSelectedImage(null)}
+                                className="bg-white text-[#111618] px-8 py-3 rounded-2xl font-bold shadow-2xl hover:bg-primary hover:text-white transition-all flex items-center gap-2"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                                CLOSE PREVIEW
+                            </button>
+                            <a
+                                href={selectedImage}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-primary text-white px-8 py-3 rounded-2xl font-bold shadow-2xl hover:brightness-110 transition-all flex items-center gap-2"
+                            >
+                                <span className="material-symbols-outlined">open_in_new</span>
+                                OPEN ORIGINAL
+                            </a>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Reject Notes Modal */}
+            {/* Rejection Modal */}
             {showNotesModal && (
-                <div
-                    className={styles.modalOverlay}
-                    onClick={() => {
-                        setShowNotesModal(false);
-                        setSelectedVerification(null);
-                        setRejectNotes('');
-                    }}
-                >
-                    <div
-                        className={styles.rejectModal}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h3 className={styles.rejectModalTitle}>Reject Verification Request</h3>
-                        <p className={styles.rejectModalText}>
-                            Please provide a reason for rejecting this verification request. This will be visible to the user.
-                        </p>
-                        <textarea
-                            value={rejectNotes}
-                            onChange={(e) => setRejectNotes(e.target.value)}
-                            placeholder="Enter rejection reason..."
-                            className={styles.rejectTextarea}
-                        />
-                        <div className={styles.modalActions}>
-                            <button
-                                onClick={() => {
-                                    setShowNotesModal(false);
-                                    setSelectedVerification(null);
-                                    setRejectNotes('');
-                                }}
-                                className={`${styles.modalButton} ${styles.modalButtonCancel}`}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleReject}
-                                disabled={loading || !rejectNotes.trim()}
-                                className={`${styles.modalButton} ${styles.modalButtonReject}`}
-                            >
-                                {loading ? 'Rejecting...' : 'Reject Request'}
-                            </button>
+                <div className="fixed inset-0 z-50 bg-[#111618]/60 backdrop-blur-md flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-[#182125] w-full max-w-md rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="size-12 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-3xl">report</span>
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-black tracking-tighter uppercase text-[#111618] dark:text-white">Flag Account</h4>
+                                    <p className="text-xs text-[#4b636c] font-black uppercase tracking-widest">Provide a reason for rejection</p>
+                                </div>
+                            </div>
+
+                            <textarea
+                                value={rejectNotes}
+                                onChange={(e) => setRejectNotes(e.target.value)}
+                                className="w-full min-h-[140px] bg-background-light dark:bg-[#212b30] border-none rounded-2xl p-4 text-sm font-black focus:ring-2 focus:ring-red-500/50 transition-all placeholder:text-[#4b636c] mb-6"
+                                placeholder="Explain why this ID was rejected (e.g. Blurry photo, Not a valid student ID, Expired card...)"
+                            />
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={handleReject}
+                                    disabled={loading || !rejectNotes.trim()}
+                                    className="w-full py-4 bg-red-500 text-white rounded-2xl font-bold shadow-lg shadow-red-500/20 hover:brightness-110 transition-all disabled:opacity-50"
+                                >
+                                    {loading ? 'Processing...' : 'CONFIRM REJECTION'}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowNotesModal(false);
+                                        setSelectedVerification(null);
+                                        setRejectNotes('');
+                                    }}
+                                    className="w-full py-4 bg-transparent text-[#4b636c] font-black uppercase tracking-widest hover:text-[#111618] dark:hover:text-white transition-colors"
+                                >
+                                    Go Back
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

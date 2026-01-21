@@ -38,7 +38,7 @@ export default async function AdminSubscriptionsPage({ searchParams }) {
     // Filter by search query if provided (client-side filtering for email)
     let filteredSubscriptions = subscriptions || [];
     if (searchQuery && subscriptions) {
-        filteredSubscriptions = subscriptions.filter(sub => 
+        filteredSubscriptions = subscriptions.filter(sub =>
             sub.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             sub.id.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -57,12 +57,9 @@ export default async function AdminSubscriptionsPage({ searchParams }) {
         .reduce((sum, sub) => sum + parseFloat(sub.plan?.price || 0), 0) || 0;
 
     return (
-        <div className={styles.pageContainer}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Subscriptions Management</h1>
-                <p className={styles.subtitle}>Manage and monitor all platform subscriptions</p>
-            </header>
-            <SubscriptionsClient 
+        <div className="space-y-8 pb-12">
+
+            <SubscriptionsClient
                 initialSubscriptions={filteredSubscriptions || []}
                 stats={{
                     total: totalCount,
@@ -72,6 +69,8 @@ export default async function AdminSubscriptionsPage({ searchParams }) {
                     cancelled: cancelledCount,
                     revenue: totalRevenue
                 }}
+                statusFilter={statusFilter}
+                searchQuery={searchQuery}
             />
         </div>
     );

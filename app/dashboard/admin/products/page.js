@@ -30,12 +30,9 @@ export default async function AdminProductsPage({ searchParams }) {
     const pendingCount = products?.filter(p => p.status === 'Pending').length || 0;
 
     return (
-        <div className={styles.pageContainer}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Product Moderation</h1>
-                <p className={styles.subtitle}>Manage and moderate all platform products</p>
-            </header>
-            <ProductModerationClient 
+        <div className="space-y-8">
+
+            <ProductModerationClient
                 initialProducts={products || []}
                 stats={{
                     total: totalCount,
@@ -47,3 +44,4 @@ export default async function AdminProductsPage({ searchParams }) {
         </div>
     );
 }
+

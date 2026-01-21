@@ -6,6 +6,7 @@ import Link from 'next/link';
 export default function CheckoutClient({ product, user, walletBalance }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet' or 'paystack'
 
     // Calculate totals
     const price = parseFloat(product.price);
@@ -18,13 +19,61 @@ export default function CheckoutClient({ product, user, walletBalance }) {
     // Determine balance color
     const canAfford = walletBalance >= total;
 
-    const handleConfirmPay = () => {
+    const handleConfirmPay = async () => {
         setLoading(true);
-        // Simulate payment processing
-        setTimeout(() => {
-            alert('Payment functionality coming soon!');
+        try {
+            if (paymentMethod === 'wallet') {
+                const response = await fetch('/api/orders/pay-with-wallet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        productId: product.id,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Payment failed');
+                }
+
+                // Success! Redirect to order details
+                router.push(`/dashboard/orders/${data.orderId}?success=true`);
+                router.refresh();
+            } else {
+                // Paystack Payment
+                const response = await fetch('/api/orders/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        productId: product.id,
+                        quantity: 1
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to initialize Paystack');
+                }
+
+                if (data.payment?.authorization_url) {
+                    // Redirect to Paystack
+                    window.location.href = data.payment.authorization_url;
+                } else {
+                    throw new Error('Payment URL not received');
+                }
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert(error.message || 'Failed to process payment. Please try again.');
+        } finally {
             setLoading(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -82,14 +131,22 @@ export default function CheckoutClient({ product, user, walletBalance }) {
                         </div>
                     </div>
 
-                    {/* Section: Payment Method */}
+                    {/* Section: Payment Method Selection */}
                     <div className="flex flex-col gap-3">
-                        <h3 className="text-[#333940] dark:text-gray-300 text-sm font-bold uppercase tracking-wider px-1">Payment Method</h3>
-                        <div className="bg-white dark:bg-[#1f2229] p-4 rounded-xl card-shadow border border-gray-50 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
+                        <h3 className="text-[#333940] dark:text-gray-300 text-sm font-bold uppercase tracking-wider px-1">Choose Payment Method</h3>
+
+                        {/* KART Wallet Option */}
+                        <div
+                            onClick={() => setPaymentMethod('wallet')}
+                            className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3
+                            ${paymentMethod === 'wallet'
+                                    ? 'bg-primary/5 border-primary shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
+                                    : 'bg-white dark:bg-[#1f2229] border-gray-100 dark:border-gray-800'}`}
+                        >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="size-10 flex items-center justify-center bg-[#1daddd]/10 rounded-full">
-                                        <span className="material-symbols-outlined text-[#1daddd]">account_balance_wallet</span>
+                                    <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'wallet' ? 'bg-primary text-white' : 'bg-[#1daddd]/10 text-[#1daddd]'}`}>
+                                        <span className="material-symbols-outlined">account_balance_wallet</span>
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold text-[#7A818C] uppercase tracking-tighter">KART Wallet</p>
@@ -98,14 +155,44 @@ export default function CheckoutClient({ product, user, walletBalance }) {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
-                                    <span className="material-symbols-outlined text-sm">add</span>
-                                    <span className="text-sm font-bold">Top Up</span>
+                                <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-primary' : 'border-gray-200'}`}>
+                                    {paymentMethod === 'wallet' && <div className="size-3 rounded-full bg-primary"></div>}
                                 </div>
                             </div>
-                            {!canAfford && (
-                                <p className="text-red-500 text-xs mt-2 pl-1">Insufficient balance. Please top up your wallet.</p>
+
+                            {!canAfford && paymentMethod === 'wallet' && (
+                                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 p-2 rounded-lg">
+                                    <span className="material-symbols-outlined text-red-500 text-sm">error</span>
+                                    <p className="text-red-500 text-[11px] font-medium leading-tight">Insufficient balance. Please top up or pay with card.</p>
+                                </div>
                             )}
+
+                            <div onClick={(e) => { e.stopPropagation(); router.push('/dashboard/wallet'); }} className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors self-end text-[#0e181b] dark:text-white">
+                                <span className="material-symbols-outlined text-sm">add</span>
+                                <span className="text-sm font-bold">Top Up</span>
+                            </div>
+                        </div>
+
+                        {/* Direct Paystack Payment Option */}
+                        <div
+                            onClick={() => setPaymentMethod('paystack')}
+                            className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between
+                            ${paymentMethod === 'paystack'
+                                    ? 'bg-primary/5 border-primary shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
+                                    : 'bg-white dark:bg-[#1f2229] border-gray-100 dark:border-gray-800'}`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'paystack' ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
+                                    <span className="material-symbols-outlined">credit_card</span>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold text-[#7A818C] uppercase tracking-tighter">Direct Payment</p>
+                                    <p className="text-[#0e181b] dark:text-white text-base font-bold">Paystack (Momo/Card)</p>
+                                </div>
+                            </div>
+                            <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'paystack' ? 'border-primary' : 'border-gray-200'}`}>
+                                {paymentMethod === 'paystack' && <div className="size-3 rounded-full bg-primary"></div>}
+                            </div>
                         </div>
                     </div>
 
@@ -122,13 +209,13 @@ export default function CheckoutClient({ product, user, walletBalance }) {
                 <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto p-4 pb-8 bg-[#f6f7f8]/95 dark:bg-[#111d21]/95 backdrop-blur-md z-40">
                     <button
                         onClick={handleConfirmPay}
-                        disabled={loading || !canAfford}
+                        disabled={loading || (paymentMethod === 'wallet' && !canAfford)}
                         className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] 
-                        ${canAfford
+                        ${(paymentMethod === 'paystack' || canAfford)
                                 ? 'bg-[#1daddd] hover:bg-[#1daddd]/90 text-white shadow-[#1daddd]/20'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'}`}
                     >
-                        <span>{loading ? 'Processing...' : 'Confirm and Pay'}</span>
+                        <span>{loading ? 'Processing...' : (paymentMethod === 'wallet' ? 'Confirm and Pay' : 'Pay with Paystack')}</span>
                         {!loading && <span className="material-symbols-outlined">chevron_right</span>}
                     </button>
                 </footer>

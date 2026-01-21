@@ -55,25 +55,15 @@ export default async function AdminVerificationsPage({ searchParams }) {
     const rejectedCount = verificationsWithUsers?.filter(v => v.status === 'Rejected').length || 0;
 
     return (
-        <div className={styles.pageContainer}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Verification Requests</h1>
-                <p className={styles.subtitle}>Review and manage user verification requests</p>
-            </header>
+        <div className="space-y-8">
+
             {error && (
-                <div style={{ 
-                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%)', 
-                    border: '1px solid rgba(239, 68, 68, 0.3)', 
-                    borderRadius: '12px', 
-                    padding: '1rem 1.5rem',
-                    marginBottom: '2rem',
-                    color: '#fca5a5',
-                    backdropFilter: 'blur(10px)'
-                }}>
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-500 text-sm font-medium">
                     Error loading verification requests: {error.message}
                 </div>
             )}
-            <VerificationsClient 
+
+            <VerificationsClient
                 initialVerifications={verificationsWithUsers || []}
                 stats={{
                     total: totalCount,
@@ -85,3 +75,4 @@ export default async function AdminVerificationsPage({ searchParams }) {
         </div>
     );
 }
+

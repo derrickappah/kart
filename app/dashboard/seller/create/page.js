@@ -345,11 +345,20 @@ export default function CreateListingPage() {
                                     <option disabled value="">Select</option>
                                     <option value="Textbooks">Textbooks</option>
                                     <option value="Electronics">Electronics</option>
-                                    <option value="Furniture">Dorm Furniture</option>
+                                    <option value="Dorm Furniture">Dorm Furniture</option>
                                     <option value="Clothing">Clothing</option>
-                                    <option value="Tickets">Tickets</option>
-                                    <option value="Services">Services</option>
-                                    <option value="Other">Other</option>
+                                    <option value="School Supplies">School Supplies</option>
+                                    <option value="Tickets & Events">Tickets & Events</option>
+                                    <option value="Services & Tutoring">Services & Tutoring</option>
+                                    <option value="Beauty & Grooming">Beauty & Grooming</option>
+                                    <option value="Sports & Fitness">Sports & Fitness</option>
+                                    <option value="Kitchenware">Kitchenware</option>
+                                    <option value="Musical Instruments">Musical Instruments</option>
+                                    <option value="Games & Consoles">Games & Consoles</option>
+                                    <option value="Health & Wellness">Health & Wellness</option>
+                                    <option value="Arts & Crafts">Arts & Crafts</option>
+                                    <option value="Lost & Found">Lost & Found</option>
+                                    <option value="Home Appliances">Home Appliances</option>
                                 </select>
                                 <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xl">expand_more</span>
                             </div>

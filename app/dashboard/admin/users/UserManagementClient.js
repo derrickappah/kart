@@ -35,130 +35,149 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
     };
 
     return (
-        <div>
-            {/* Stats Row */}
-            {stats && Object.keys(stats).length > 0 && (
-                <div className={styles.statsRow}>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Total Users</div>
-                        <div className={styles.statValue}>{stats.total || 0}</div>
+        <div className="space-y-6">
+            {/* User Stats Row */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[
+                    { label: 'Total Users', value: stats.total, color: 'primary', icon: 'group' },
+                    { label: 'Active', value: stats.active, color: 'green-500', icon: 'person_check' },
+                    { label: 'Admins', value: stats.admins, color: 'purple-500', icon: 'shield_person' },
+                    { label: 'Banned', value: stats.banned, color: 'red-500', icon: 'person_off' },
+                ].map((stat, i) => (
+                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="flex items-center gap-4">
+                            <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
+                                <span className="material-symbols-outlined">{stat.icon}</span>
+                            </div>
+                            <div>
+                                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h4 className="text-xl font-black">{stat.value || 0}</h4>
+                            </div>
+                        </div>
                     </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Active Users</div>
-                        <div className={styles.statValue}>{stats.active || 0}</div>
-                    </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Admins</div>
-                        <div className={styles.statValue}>{stats.admins || 0}</div>
-                    </div>
-                    <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Banned</div>
-                        <div className={styles.statValue}>{stats.banned || 0}</div>
-                    </div>
-                </div>
-            )}
-
-            {/* Search Bar */}
-            <div className={styles.searchSection}>
-                <form onSubmit={handleSearch} className={styles.searchForm}>
-                    <input
-                        type="text"
-                        placeholder="Search by email or name..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className={styles.searchInput}
-                    />
-                    <button type="submit" className={styles.searchButton}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Search
-                    </button>
-                </form>
+                ))}
             </div>
 
-            {/* Users Table */}
-            {initialUsers.length === 0 ? (
-                <div className={styles.emptyState}>
-                    <svg className={styles.emptyStateIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <div className={styles.emptyStateTitle}>No users found</div>
-                    <div className={styles.emptyStateText}>Try adjusting your search query</div>
+            {/* Filter & Search Bar */}
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-wrap items-center justify-between gap-4">
+                <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors">search</span>
+                    <input
+                        className="w-full bg-background-light dark:bg-[#212b30] border-none rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-[#4b636c]"
+                        placeholder="Search Executive Directory..."
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </form>
+
+                <div className="flex items-center gap-2">
+                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                        <span className="material-symbols-outlined text-sm">filter_list</span>
+                        Campus
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                        <span className="material-symbols-outlined text-sm">sort</span>
+                        Role
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                        <span className="material-symbols-outlined text-sm">history</span>
+                        Status
+                    </button>
                 </div>
-            ) : (
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead className={styles.tableHeader}>
-                            <tr>
-                                <th>User</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className={styles.tableBody}>
-                            {initialUsers.map(user => (
-                                <tr key={user.id}>
-                                    <td>
-                                        <div className={styles.userCell}>
-                                            <div className={styles.userAvatar}>
-                                                {user.display_name?.[0]?.toUpperCase() || 'U'}
-                                            </div>
-                                            <span className={styles.userName}>{user.display_name || 'N/A'}</span>
+            </div>
+
+            {/* User Directory Table */}
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-gray-50/50 dark:bg-[#212b30]/50 text-[#4b636c] text-[10px] font-black uppercase tracking-widest border-b border-[#dce3e5] dark:border-[#2d3b41]">
+                            <th className="px-6 py-4">Identity</th>
+                            <th className="px-6 py-4">Locality</th>
+                            <th className="px-6 py-4">Compliance Status</th>
+                            <th className="px-6 py-4">Registry Date</th>
+                            <th className="px-6 py-4 text-center">Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#dce3e5] dark:divide-[#2d3b41]">
+                        {initialUsers.map((user) => (
+                            <tr key={user.id} className="hover:bg-primary/[0.02] transition-colors group">
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary overflow-hidden">
+                                            {user.avatar_url ? (
+                                                <img src={user.avatar_url} alt="" className="size-full object-cover" />
+                                            ) : (
+                                                user.display_name?.[0]?.toUpperCase() || 'U'
+                                            )}
                                         </div>
-                                    </td>
-                                    <td>{user.email}</td>
-                                    <td>
-                                        <span className={`${styles.roleBadge} ${user.is_admin ? styles.roleAdmin : styles.roleUser}`}>
-                                            {user.is_admin ? (
-                                                <>
-                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5L6 0Z" fill="currentColor"/>
-                                                    </svg>
-                                                    Admin
-                                                </>
-                                            ) : (
-                                                'User'
-                                            )}
+                                        <div>
+                                            <p className="text-sm font-black text-[#111618] dark:text-gray-200 group-hover:text-primary transition-colors">{user.display_name || 'Anonymous'}</p>
+                                            <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-tighter">{user.email}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <p className="text-sm font-bold text-[#111618] dark:text-gray-200">{user.campus || 'N/A'}</p>
+                                    <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">{user.phone || 'No Phone'}</p>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex flex-col gap-1">
+                                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase w-fit ${user.banned ? 'bg-red-500/10 text-red-600' : 'bg-green-500/10 text-green-600'
+                                            }`}>
+                                            {user.banned ? 'Banned' : 'Verified Agent'}
                                         </span>
-                                    </td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${user.banned ? styles.statusBanned : styles.statusActive}`}>
-                                            {user.banned ? (
-                                                <>
-                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                    Banned
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                    Active
-                                                </>
-                                            )}
+                                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase bg-[#4b636c]/10 text-[#4b636c] w-fit ${user.is_admin ? 'text-primary' : ''
+                                            }`}>
+                                            {user.is_admin ? 'Authority Admin' : 'Active Member'}
                                         </span>
-                                    </td>
-                                    <td>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <p className="text-sm font-bold text-[#111618] dark:text-gray-200">{new Date(user.created_at).toLocaleDateString()}</p>
+                                    <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">Enrolled</p>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <button className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20">
+                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
                                         <button
                                             onClick={() => toggleBan(user.id, user.banned)}
-                                            className={`${styles.actionButton} ${user.banned ? styles.unbanButton : styles.banButton}`}
                                             disabled={loading || user.is_admin}
+                                            className={`size-8 rounded-lg flex items-center justify-center transition-colors border border-transparent ${user.banned
+                                                ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20 hover:border-green-500/20'
+                                                : 'bg-red-500/10 text-red-600 hover:bg-red-500/20 hover:border-red-500/20'
+                                                }`}
                                         >
-                                            {user.banned ? 'Unban' : 'Ban'}
+                                            <span className="material-symbols-outlined text-[18px]">
+                                                {user.banned ? 'undo' : 'block'}
+                                            </span>
                                         </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        <button className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20">
+                                            <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination Placeholder */}
+            <div className="flex items-center justify-between px-2">
+                <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">Record <span className="text-[#111618] dark:text-white">1-{initialUsers.length}</span> of <span className="text-[#111618] dark:text-white">{stats.total}</span></p>
+                <div className="flex gap-2">
+                    <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
+                        <span className="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
+                        <span className="material-symbols-outlined">chevron_right</span>
+                    </button>
                 </div>
-            )}
+            </div>
         </div>
     );
 }
+

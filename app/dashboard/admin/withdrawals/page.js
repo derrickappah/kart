@@ -36,7 +36,7 @@ export default async function AdminWithdrawalsPage() {
         .from('profiles')
         .select('id, display_name, email, bank_account_details, momo_details')
         .in('id', userIds);
-      
+
       if (!profilesError && profilesData) {
         profiles = profilesData;
       }
@@ -49,7 +49,7 @@ export default async function AdminWithdrawalsPage() {
         .from('wallets')
         .select('id, balance')
         .in('id', walletIds);
-      
+
       if (!walletsError && walletsData) {
         wallets = walletsData;
       }
@@ -75,18 +75,21 @@ export default async function AdminWithdrawalsPage() {
     .reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
 
   return (
-    <WithdrawalsClient 
-      initialRequests={normalizedRequests}
-      stats={{
-        total: totalCount,
-        pending: pendingCount,
-        approved: approvedCount,
-        rejected: rejectedCount,
-        completed: completedCount,
-        totalAmount: totalAmount,
-        pendingAmount: pendingAmount
-      }}
-      error={queryError ? queryError.message : null}
-    />
+    <div className="space-y-8 pb-12">
+
+      <WithdrawalsClient
+        initialRequests={normalizedRequests}
+        stats={{
+          total: totalCount,
+          pending: pendingCount,
+          approved: approvedCount,
+          rejected: rejectedCount,
+          completed: completedCount,
+          totalAmount: totalAmount,
+          pendingAmount: pendingAmount
+        }}
+        error={queryError ? queryError.message : null}
+      />
+    </div>
   );
 }

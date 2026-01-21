@@ -14,7 +14,7 @@ export default async function AdminOrdersPage({ searchParams }) {
   // Await searchParams for Next.js 15+
   const resolvedSearchParams = await searchParams;
   const escrowFilter = resolvedSearchParams?.escrow || 'all';
-  
+
   let query = supabase
     .from('orders')
     .select(`
@@ -60,188 +60,163 @@ export default async function AdminOrdersPage({ searchParams }) {
   };
 
   return (
-    <div className={styles.pageContainer}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Order Management</h1>
-        <p className={styles.subtitle}>Manage and monitor all platform orders</p>
-      </header>
+    <div className="space-y-8">
 
-      {/* Stats Row */}
-      <div className={styles.statsRow}>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Total Orders</div>
-          <div className={styles.statValue}>{totalCount || 0}</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Held in Escrow</div>
-          <div className={styles.statValue}>{heldCount || 0}</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Released</div>
-          <div className={styles.statValue}>{releasedCount || 0}</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Total Revenue</div>
-          <div className={styles.statValue}>₵{totalRevenue.toFixed(2)}</div>
-        </div>
+      {/* Financial Pulse Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'Platform Volume', value: `GH₵ ${totalRevenue.toLocaleString()}`, color: 'primary', icon: 'account_balance_wallet' },
+          { label: 'Escrow Lock', value: heldCount, color: 'amber-500', icon: 'lock' },
+          { label: 'Total Orders', value: totalCount, color: 'green-500', icon: 'shopping_cart' },
+          { label: 'Refunded', value: refundedCount, color: 'red-500', icon: 'keyboard_return' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+            <div className="flex items-center gap-4">
+              <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
+                <span className="material-symbols-outlined">{stat.icon}</span>
+              </div>
+              <div>
+                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                <h4 className="text-xl font-black tracking-tighter uppercase">{stat.value || 0}</h4>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Filters */}
-      <div className={styles.filterSection}>
-        <div className={styles.filterTabs}>
+      {/* Transaction Control Bar */}
+      <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-2 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex items-center gap-2 overflow-x-auto">
+        {[
+          { label: 'All Transactions', value: 'all', icon: 'receipt_long' },
+          { label: 'Held in Escrow', value: 'Held', icon: 'lock_person' },
+          { label: 'Released', value: 'Released', icon: 'money_forward' },
+          { label: 'Refunded', value: 'Refunded', icon: 'history_edu' },
+        ].map((tab) => (
           <Link
-            href="/dashboard/admin/orders"
-            className={`${styles.filterTab} ${escrowFilter === 'all' ? styles.filterTabActive : ''}`}
+            key={tab.value}
+            href={tab.value === 'all' ? '/dashboard/admin/orders' : `/dashboard/admin/orders?escrow=${tab.value}`}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${escrowFilter === tab.value
+              ? 'bg-primary text-white shadow-lg shadow-primary/20'
+              : 'text-[#4b636c] hover:bg-primary/5'
+              }`}
           >
-            All Orders
-            {totalCount > 0 && <span className={styles.filterTabCount}>{totalCount}</span>}
+            <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
+            {tab.label}
           </Link>
-          <Link
-            href="/dashboard/admin/orders?escrow=Held"
-            className={`${styles.filterTab} ${escrowFilter === 'Held' ? styles.filterTabActive : ''}`}
-          >
-            Held in Escrow
-            {heldCount > 0 && <span className={styles.filterTabCount}>{heldCount}</span>}
-          </Link>
-          <Link
-            href="/dashboard/admin/orders?escrow=Released"
-            className={`${styles.filterTab} ${escrowFilter === 'Released' ? styles.filterTabActive : ''}`}
-          >
-            Released
-            {releasedCount > 0 && <span className={styles.filterTabCount}>{releasedCount}</span>}
-          </Link>
-          <Link
-            href="/dashboard/admin/orders?escrow=Refunded"
-            className={`${styles.filterTab} ${escrowFilter === 'Refunded' ? styles.filterTabActive : ''}`}
-          >
-            Refunded
-            {refundedCount > 0 && <span className={styles.filterTabCount}>{refundedCount}</span>}
-          </Link>
-        </div>
+        ))}
       </div>
 
       {error && (
-        <div className={styles.errorMessage}>
+        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-500 text-sm font-medium">
           Error loading orders: {error.message}
         </div>
       )}
 
-      {!orders || orders.length === 0 ? (
-        <div className={styles.emptyState}>
-          <svg className={styles.emptyStateIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <div className={styles.emptyStateTitle}>No orders found</div>
-          <div className={styles.emptyStateText}>Try adjusting your filter</div>
-        </div>
-      ) : (
-        <div className={styles.ordersList}>
-          {orders.map((order) => {
-            const productImage = order.product?.images?.[0] || order.product?.image_url;
-
-            return (
-              <Link
-                key={order.id}
-                href={`/dashboard/admin/orders/${order.id}`}
-                className={styles.orderCard}
-              >
-                <div className={styles.orderContent}>
-                  {productImage ? (
-                    <img
-                      src={productImage}
-                      alt={order.product?.title}
-                      className={styles.productImage}
-                    />
-                  ) : (
-                    <div className={styles.productImagePlaceholder}>
-                      📦
-                    </div>
-                  )}
-                  <div className={styles.orderInfo}>
-                    <h3 className={styles.productTitle}>
-                      {order.product?.title || 'Product'}
-                    </h3>
-                    <div className={styles.orderDetails}>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Buyer</span>
-                        <span className={styles.detailValue}>{order.buyer?.display_name || 'No name'}</span>
-                        <span className={styles.detailValueSecondary}>{order.buyer?.email || 'Unknown'}</span>
+      {/* Transaction Ledger */}
+      <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-gray-50/50 dark:bg-[#212b30]/50 text-[#4b636c] text-[10px] font-black uppercase tracking-widest border-b border-[#dce3e5] dark:border-[#2d3b41]">
+              <th className="px-6 py-4">Transaction Details</th>
+              <th className="px-6 py-4">Buyer / Seller</th>
+              <th className="px-6 py-4">Financials</th>
+              <th className="px-6 py-4">Escrow State</th>
+              <th className="px-6 py-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#dce3e5] dark:divide-[#2d3b41]">
+            {orders?.map((order) => {
+              const productImage = order.product?.images?.[0] || order.product?.image_url;
+              return (
+                <tr key={order.id} className="hover:bg-primary/[0.02] transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-lg bg-gray-100 dark:bg-[#212b30] flex-shrink-0 relative overflow-hidden group/img">
+                        {productImage ? (
+                          <img src={productImage} alt="" className="size-full object-cover group-hover/img:scale-110 transition-transform" />
+                        ) : (
+                          <div className="size-full flex items-center justify-center text-[#4b636c]/30">
+                            <span className="material-symbols-outlined text-2xl">package</span>
+                          </div>
+                        )}
                       </div>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Seller</span>
-                        <span className={styles.detailValue}>{order.seller?.display_name || 'No name'}</span>
-                        <span className={styles.detailValueSecondary}>{order.seller?.email || 'Unknown'}</span>
-                      </div>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Quantity</span>
-                        <span className={styles.detailValue}>{order.quantity} × ₵{parseFloat(order.unit_price || 0).toFixed(2)}</span>
+                      <div>
+                        <p className="text-sm font-bold group-hover:text-primary transition-colors max-w-[180px] truncate">{order.product?.title || 'Unknown Item'}</p>
+                        <p className="text-[10px] text-[#4b636c] font-black uppercase mt-0.5 tracking-widest">ID: {order.id.slice(0, 8)}</p>
                       </div>
                     </div>
-                  </div>
-                  <div className={styles.orderMeta}>
-                    <span className={`${styles.statusBadge} ${getStatusClass(order.status)}`}>
-                      {order.status === 'Pending' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M6 1V6L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {order.status === 'Paid' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {order.status === 'Shipped' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M1 6L6 1L11 6M6 1V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {order.status === 'Delivered' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {order.status === 'Completed' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {order.status === 'Cancelled' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {order.status}
-                    </span>
-                    {order.escrow_status && (
-                      <span className={`${styles.escrowBadge} ${getEscrowClass(order.escrow_status)}`}>
-                        {order.escrow_status === 'Held' && (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 1L8 4L11 4.5L9 7L9.5 10L6 8.5L2.5 10L3 7L1 4.5L4 4L6 1Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                        {order.escrow_status === 'Released' && (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                        {order.escrow_status === 'Refunded' && (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                        Escrow: {order.escrow_status}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-[#4b636c] uppercase w-10">Buyer:</span>
+                        <span className="text-xs font-bold truncate max-w-[140px] uppercase tracking-tighter">{order.buyer?.display_name || 'No Name'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-[#4b636c] uppercase w-10">Seller:</span>
+                        <span className="text-xs font-bold truncate max-w-[140px] uppercase tracking-tighter">{order.seller?.display_name || 'No Name'}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-black text-primary">GH₵ {parseFloat(order.total_amount || 0).toFixed(2)}</p>
+                    <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">{order.quantity} x Item</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1">
+                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase w-fit ${order.status === 'Paid' ? 'bg-green-500/10 text-green-500' :
+                        order.status === 'Cancelled' ? 'bg-red-500/10 text-red-500' :
+                          'bg-amber-500/10 text-amber-500'
+                        }`}>
+                        {order.status}
                       </span>
-                    )}
-                    <div className={styles.totalAmount}>
-                      ₵{parseFloat(order.total_amount || 0).toFixed(2)}
+                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase w-fit ${order.escrow_status === 'Held' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                        order.escrow_status === 'Released' ? 'bg-primary/10 text-primary' :
+                          'bg-gray-500/10 text-gray-500'
+                        }`}>
+                        {order.escrow_status || 'NOT SET'}
+                      </span>
                     </div>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <Link
+                        href={`/dashboard/admin/orders/${order.id}`}
+                        className="size-10 rounded-xl bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-[#dce3e5] dark:border-[#2d3b41] hover:border-primary/20"
+                      >
+                        <span className="material-symbols-outlined">payments</span>
+                      </Link>
+                      <button className="size-10 rounded-xl bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-[#dce3e5] dark:border-[#2d3b41] hover:border-primary/20">
+                        <span className="material-symbols-outlined">more_horiz</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {(!orders || orders.length === 0) && (
+          <div className="p-12 text-center text-[#4b636c]">
+            <span className="material-symbols-outlined text-5xl opacity-20 mb-2">receipt_long</span>
+            <p className="text-[11px] font-black uppercase tracking-widest">No transactions recorded for this filter</p>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination Placeholder */}
+      <div className="flex items-center justify-between px-2">
+        <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">Showing <span className="text-[#111618] dark:text-white">1-{orders?.length || 0}</span> of <span className="text-[#111618] dark:text-white">{totalCount}</span> transactions</p>
+        <div className="flex gap-2">
+          <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
+            <span className="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

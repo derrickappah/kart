@@ -35,17 +35,14 @@ export default async function AdminReviewsPage({ searchParams }) {
     const rating3Count = reviews?.filter(r => r.rating === 3).length || 0;
     const rating2Count = reviews?.filter(r => r.rating === 2).length || 0;
     const rating1Count = reviews?.filter(r => r.rating === 1).length || 0;
-    const averageRating = totalCount > 0 
+    const averageRating = totalCount > 0
         ? (reviews?.reduce((sum, r) => sum + r.rating, 0) / totalCount).toFixed(1)
         : 0;
 
     return (
-        <div className={styles.pageContainer}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Reviews Moderation</h1>
-                <p className={styles.subtitle}>Manage and moderate all product reviews</p>
-            </header>
-            <ReviewsClient 
+        <div className="space-y-8 pb-12">
+
+            <ReviewsClient
                 initialReviews={reviews || []}
                 stats={{
                     total: totalCount,

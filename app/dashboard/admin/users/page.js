@@ -29,13 +29,10 @@ export default async function AdminUsersPage({ searchParams }) {
     const activeCount = totalUsers - bannedCount;
 
     return (
-        <div className={styles.pageContainer}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>User Management</h1>
-                <p className={styles.subtitle}>Manage and monitor all platform users</p>
-            </header>
-            <UserManagementClient 
-                initialUsers={users || []} 
+        <div className="space-y-8">
+
+            <UserManagementClient
+                initialUsers={users || []}
                 stats={{
                     total: totalUsers,
                     admins: adminCount,
@@ -46,3 +43,4 @@ export default async function AdminUsersPage({ searchParams }) {
         </div>
     );
 }
+

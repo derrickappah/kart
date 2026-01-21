@@ -49,178 +49,148 @@ export default async function AdminReportsPage({ searchParams }) {
   };
 
   return (
-    <div className={styles.pageContainer}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Product Reports</h1>
-          <p className={styles.subtitle}>Review and manage all product reports</p>
-        </div>
-        <Link href="/dashboard/admin" className={styles.backButton}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back to Dashboard
-        </Link>
-      </header>
+    <div className="space-y-8 pb-12">
 
-      {/* Stats Row */}
-      <div className={styles.statsRow}>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Total Reports</div>
-          <div className={styles.statValue}>{totalCount || 0}</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Pending</div>
-          <div className={styles.statValue}>{pendingCount || 0}</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Resolved</div>
-          <div className={styles.statValue}>{resolvedCount || 0}</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statLabel}>Dismissed</div>
-          <div className={styles.statValue}>{dismissedCount || 0}</div>
-        </div>
+      {/* Compliance Stats Pulse */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'Total Inquiries', value: totalCount, color: 'primary', icon: 'visibility', sub: 'Cumulative reports' },
+          { label: 'Unresolved', value: pendingCount, color: 'amber-500', icon: 'pending', sub: 'Requires attention' },
+          { label: 'Resolved', value: resolvedCount, color: 'green-500', icon: 'check_circle', sub: 'Successfully settled' },
+          { label: 'Dismissed', value: dismissedCount, color: 'gray-500', icon: 'block', sub: 'Non-violating items' }
+        ].map((stat, i) => (
+          <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm transform hover:-translate-y-1 transition-all">
+            <div className="flex items-center gap-4 mb-4">
+              <div className={`size-12 rounded-xl flex items-center justify-center ${stat.color === 'primary' ? 'bg-primary/10 text-primary' :
+                stat.color === 'amber-500' ? 'bg-amber-500/10 text-amber-500' :
+                  stat.color === 'green-500' ? 'bg-green-500/10 text-green-500' :
+                    'bg-gray-500/10 text-gray-500'
+                }`}>
+                <span className="material-symbols-outlined text-[24px] font-bold">{stat.icon}</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">{stat.label}</p>
+                <p className="text-xl font-black tracking-tighter">{stat.value}</p>
+              </div>
+            </div>
+            <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">{stat.sub}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Filters */}
-      <div className={styles.filterSection}>
-        <div className={styles.filterTabs}>
+      {/* Enforcement Filters */}
+      <div className="flex flex-wrap items-center gap-3 bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-2 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41]">
+        {[
+          { id: 'all', label: 'All Activity' },
+          { id: 'Pending', label: 'Unresolved' },
+          { id: 'Resolved', label: 'Resolved' },
+          { id: 'Dismissed', label: 'Dismissed' }
+        ].map(filter => (
           <Link
-            href="/dashboard/admin/reports"
-            className={`${styles.filterTab} ${statusFilter === 'all' ? styles.filterTabActive : ''}`}
+            key={filter.id}
+            href={filter.id === 'all' ? '/dashboard/admin/reports' : `/dashboard/admin/reports?status=${filter.id}`}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${statusFilter === filter.id
+              ? 'bg-primary text-white shadow-lg shadow-primary/20'
+              : 'text-[#4b636c] hover:bg-gray-100 dark:hover:bg-[#212b30]'
+              }`}
           >
-            All Reports
-            {totalCount > 0 && <span className={styles.filterTabCount}>{totalCount}</span>}
+            {filter.label}
           </Link>
-          <Link
-            href="/dashboard/admin/reports?status=Pending"
-            className={`${styles.filterTab} ${statusFilter === 'Pending' ? styles.filterTabActive : ''}`}
-          >
-            Pending
-            {pendingCount > 0 && <span className={styles.filterTabCount}>{pendingCount}</span>}
-          </Link>
-          <Link
-            href="/dashboard/admin/reports?status=Resolved"
-            className={`${styles.filterTab} ${statusFilter === 'Resolved' ? styles.filterTabActive : ''}`}
-          >
-            Resolved
-            {resolvedCount > 0 && <span className={styles.filterTabCount}>{resolvedCount}</span>}
-          </Link>
-          <Link
-            href="/dashboard/admin/reports?status=Dismissed"
-            className={`${styles.filterTab} ${statusFilter === 'Dismissed' ? styles.filterTabActive : ''}`}
-          >
-            Dismissed
-            {dismissedCount > 0 && <span className={styles.filterTabCount}>{dismissedCount}</span>}
-          </Link>
-        </div>
+        ))}
       </div>
 
       {error && (
-        <div className={styles.errorMessage}>
-          <svg className={styles.errorIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 9V12M12 15H12.01M5 19H19C19.5523 19 20 18.5523 20 18V6C20 5.44772 19.5523 5 19 5H5C4.44772 5 4 5.44772 4 6V18C4 18.5523 4.44772 19 5 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Error loading reports: {error.message}
+        <div className="flex items-center gap-2 text-red-500 bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+          <span className="material-symbols-outlined text-[20px]">error</span>
+          <p className="text-sm font-medium">Error loading compliance data: {error.message}</p>
         </div>
       )}
 
-      {!reports || reports.length === 0 ? (
-        <div className={styles.emptyState}>
-          <svg className={styles.emptyStateIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <div className={styles.emptyStateTitle}>No Reports</div>
-          <div className={styles.emptyStateText}>All clear! No pending reports.</div>
-        </div>
-      ) : (
-        <div className={styles.reportsList}>
+      {reports && reports.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reports.map((report) => (
-            <div key={report.id} className={styles.reportCard}>
-              <div className={styles.cardContent}>
-                <div className={styles.reportInfo}>
-                  <div className={styles.reportHeader}>
-                    <h3 className={styles.productTitle}>
-                      {report.product?.title || 'Product'}
-                    </h3>
-                    <span className={`${styles.statusBadge} ${getStatusClass(report.status)}`}>
-                      {report.status === 'Pending' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M6 1V6L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {report.status === 'Resolved' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {report.status === 'Dismissed' && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                      {report.status}
-                    </span>
-                  </div>
-                  <div className={styles.reportDetails}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Reporter</span>
-                      <span className={styles.detailValue}>{report.reporter?.display_name || 'No name'}</span>
-                      <span className={styles.detailValueSecondary}>{report.reporter?.email || 'Unknown'}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Reported</span>
-                      <span className={styles.detailValue}>
-                        {new Date(report.created_at).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.reasonBadge}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 1V6L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Reason: {report.reason}
-                  </div>
-                  {report.description && (
-                    <div className={styles.descriptionBox}>
-                      <p className={styles.descriptionText}>
-                        {report.description}
-                      </p>
-                    </div>
+            <div key={report.id} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden flex flex-col group hover:border-primary/30 transition-all shadow-sm">
+              <div className="p-6 pb-2 border-b border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between bg-background-light dark:bg-[#212b30]/30">
+                <div className="flex items-center gap-2">
+                  {report.status === 'Pending' ? (
+                    <span className="size-2 bg-amber-500 rounded-full animate-pulse"></span>
+                  ) : report.status === 'Resolved' ? (
+                    <span className="material-symbols-outlined text-green-500 text-[14px]">verified</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-gray-400 text-[14px]">block</span>
                   )}
-                  <div className={styles.reportMeta}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M8 2V6M16 2V6M3 10H21M5 4H19C20.1046 4 21 4.89543 21 6V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6C3 4.89543 3.89543 4 5 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Reported on {new Date(report.created_at).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${report.status === 'Pending' ? 'text-amber-500' :
+                    report.status === 'Resolved' ? 'text-green-500' : 'text-[#4b636c]'
+                    }`}>
+                    {report.status}
+                  </span>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">
+                  {new Date(report.created_at).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="p-6 flex-1 space-y-4">
+                <div>
+                  <h4 className="text-[9px] font-black uppercase mr-2 tracking-[0.2em] text-[#4b636c] mb-1">Reported Item</h4>
+                  <p className="text-sm font-black tracking-tighter uppercase line-clamp-1">{report.product?.title || 'Unknown Product'}</p>
+                </div>
+
+                <div className="bg-white dark:bg-[#212b30] p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-[0.05em] text-red-500 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px]">report</span>
+                  Reason: {report.reason}
+                </div>
+
+                {report.description && (
+                  <div className="bg-white/50 dark:bg-[#111618]/50 p-4 rounded-xl italic text-xs font-black text-[#4b636c] leading-relaxed">
+                    {report.description}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-4 pt-2">
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black uppercase text-[#4b636c] tracking-widest">Submitted By</p>
+                    <div className="flex items-center gap-2">
+                      <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[8px] font-black">
+                        {report.reporter?.display_name?.charAt(0) || 'R'}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-tighter truncate">{report.reporter?.display_name || 'Anonymous User'}</p>
+                        <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-tighter truncate">{report.reporter?.email}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className={styles.actionButtons}>
-                  <Link 
-                    href={`/marketplace/${report.product?.id}`} 
-                    target="_blank"
-                    className={styles.viewProductButton}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M18 13V19A2 2 0 0 1 16 21H5A2 2 0 0 1 3 19V8A2 2 0 0 1 5 6H11M15 3H21M21 3V9M21 3L9 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    View Product
-                  </Link>
+              </div>
+
+              <div className="px-6 py-4 bg-background-light dark:bg-[#212b30]/30 mt-auto flex items-center justify-between border-t border-[#dce3e5] dark:border-[#2d3b41]">
+                <Link
+                  href={`/marketplace/${report.product?.id}`}
+                  target="_blank"
+                  className="flex items-center gap-2 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                  Investigate
+                </Link>
+                <div className="flex items-center gap-2">
+                  <button className="size-8 rounded-lg hover:bg-green-500/10 text-green-600 transition-colors flex items-center justify-center" title="Resolve">
+                    <span className="material-symbols-outlined text-[20px]">check</span>
+                  </button>
+                  <button className="size-8 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors flex items-center justify-center" title="Dismiss">
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="py-20 flex flex-col items-center justify-center text-center">
+          <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
+            <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">shield_check</span>
+          </div>
+          <h3 className="text-xl font-black tracking-tighter uppercase">Sector Clear</h3>
+          <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest mt-2 max-w-xs">No pending compliance reports are currently awaiting your review.</p>
         </div>
       )}
     </div>

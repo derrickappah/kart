@@ -45,136 +45,196 @@ export default async function AdminDashboard() {
         .from('orders')
         .select('total_amount')
         .eq('status', 'Completed');
-    
+
     const totalRevenue = revenueData?.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0) || 0;
 
     return (
         <AdminAccessCheck>
-            <div className="min-h-screen bg-gray-50 dark:bg-[#1a1c23] p-4 md:p-8">
-                <header className="mb-8 flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 12 12">
-                                <path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5L6 0Z"/>
-                            </svg>
-                            ADMIN MODE
-                        </span>
-                    </div>
-                </header>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    {[
-                        { label: 'Total Users', value: userCount },
-                        { label: 'Total Listings', value: productCount },
-                        { label: 'Total Orders', value: orderCount },
-                        { label: 'Platform Revenue', value: `₵${totalRevenue.toFixed(2)}` },
-                        { label: 'Active Subscriptions', value: activeSubscriptions },
-                        { label: 'Pending Verifications', value: pendingVerifications },
-                        { label: 'Pending Reports', value: pendingReports }
-                    ].map((stat, i) => (
-                        <div key={i} className="bg-white dark:bg-[#2d2d32] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.label}</h3>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stat.value || 0}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-                    {[
-                        { href: '/dashboard/admin/verifications', label: 'Verifications', desc: 'Review requests', icon: 'verified' },
-                        { href: '/dashboard/admin/subscriptions', label: 'Subscriptions', desc: 'Manage plans', icon: 'subscriptions' },
-                        { href: '/dashboard/admin/orders', label: 'Orders', desc: 'Manage escrow', icon: 'shopping_bag' },
-                        { href: '/dashboard/admin/reports', label: 'Reports', desc: 'Review reports', icon: 'report' },
-                        { href: '/dashboard/admin/advertisements', label: 'Ads', desc: 'Manage ads', icon: 'campaign' },
-                        { href: '/dashboard/admin/reviews', label: 'Reviews', desc: 'Moderate feedback', icon: 'star' }
-                    ].map((action, i) => (
-                        <Link key={i} href={action.href} className="flex flex-col p-4 bg-white dark:bg-[#2d2d32] rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-[#1daddd] dark:hover:border-[#1daddd] transition-all group">
-                            <div className="w-10 h-10 rounded-xl bg-[#1daddd]/10 flex items-center justify-center text-[#1daddd] mb-3 group-hover:bg-[#1daddd] group-hover:text-white transition-colors">
-                                <span className="material-symbols-outlined">{action.icon}</span>
+            <div className="space-y-8 pb-12">
+                {/* KPI Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                <span className="material-symbols-outlined text-3xl">groups</span>
                             </div>
-                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{action.label}</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{action.desc}</p>
-                        </Link>
-                    ))}
+                            <span className="text-[#078836] bg-[#078836]/10 px-2 py-1 rounded-lg text-xs font-bold">+12%</span>
+                        </div>
+                        <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Total Users</p>
+                        <h3 className="text-3xl font-bold mt-1">{userCount || 0}</h3>
+                        <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: '75%' }}></div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="size-12 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-3xl">verified</span>
+                            </div>
+                            <span className="text-[#078836] bg-[#078836]/10 px-2 py-1 rounded-lg text-xs font-bold">+5%</span>
+                        </div>
+                        <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Active Subscriptions</p>
+                        <h3 className="text-3xl font-bold mt-1">{activeSubscriptions || 0}</h3>
+                        <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-purple-500" style={{ width: '42%' }}></div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="size-12 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-3xl">inventory_2</span>
+                            </div>
+                            <span className="text-[#078836] bg-[#078836]/10 px-2 py-1 rounded-lg text-xs font-bold">+8%</span>
+                        </div>
+                        <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Active Listings</p>
+                        <h3 className="text-3xl font-bold mt-1">{productCount || 0}</h3>
+                        <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-orange-500" style={{ width: '68%' }}></div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="size-12 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-3xl">payments</span>
+                            </div>
+                            <span className="text-[#078836] bg-[#078836]/10 px-2 py-1 rounded-lg text-xs font-bold">+15%</span>
+                        </div>
+                        <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Total Revenue</p>
+                        <h3 className="text-3xl font-bold mt-1">₵{totalRevenue.toFixed(0)}</h3>
+                        <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-green-500" style={{ width: '89%' }}></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Recent Users */}
-                    <div className="bg-white dark:bg-[#2d2d32] rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                            <h3 className="font-bold text-gray-900 dark:text-white">Newest Users</h3>
-                            <Link href="/dashboard/admin/users" className="text-xs font-bold text-[#1daddd]">View All</Link>
+                    {/* Main Activity Chart Placeholder */}
+                    <div className="lg:col-span-2 bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-8 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] min-h-[400px]">
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h4 className="text-xl font-bold">Transaction Trends</h4>
+                                <p className="text-sm text-[#4b636c]">Live marketplace volume from across campuses</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button className="px-4 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold">Monthly</button>
+                                <button className="px-4 py-1.5 rounded-lg text-[#4b636c] text-sm font-bold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Weekly</button>
+                            </div>
                         </div>
-                        <div className="divide-y divide-gray-50 dark:divide-gray-800">
-                            {recentUsers?.map(u => (
-                                <div key={u.id} className="p-4 flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-500">
-                                        {u.display_name?.[0]?.toUpperCase() || 'U'}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{u.display_name || 'No Name'}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{u.email}</p>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="relative w-full h-[280px] flex items-end justify-between gap-4">
+                            {/* Dummy Graph visualization using Tailwind */}
+                            <div className="w-full h-48 bg-primary/10 rounded-t-lg relative group">
+                                <div className="absolute bottom-0 w-full bg-primary/30 h-2/3 rounded-t-lg transition-all group-hover:h-[80%]"></div>
+                            </div>
+                            <div className="w-full h-56 bg-primary/10 rounded-t-lg relative group">
+                                <div className="absolute bottom-0 w-full bg-primary/30 h-3/4 rounded-t-lg transition-all group-hover:h-[90%]"></div>
+                            </div>
+                            <div className="w-full h-40 bg-primary/10 rounded-t-lg relative group">
+                                <div className="absolute bottom-0 w-full bg-primary/30 h-1/2 rounded-t-lg transition-all group-hover:h-[60%]"></div>
+                            </div>
+                            <div className="w-full h-64 bg-primary/10 rounded-t-lg relative group">
+                                <div className="absolute bottom-0 w-full bg-primary/30 h-[85%] rounded-t-lg transition-all group-hover:h-[95%]"></div>
+                            </div>
+                            <div className="w-full h-52 bg-primary/10 rounded-t-lg relative group">
+                                <div className="absolute bottom-0 w-full bg-primary/30 h-3/5 rounded-t-lg transition-all group-hover:h-[75%]"></div>
+                            </div>
+                            <div className="w-full h-72 bg-primary rounded-t-lg relative group shadow-[0_0_20px_rgba(25,175,225,0.3)]">
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#111618] text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap">Peak: ₵{totalRevenue.toFixed(0)}</div>
+                            </div>
+                        </div>
+                        <div className="flex justify-between mt-4 text-[#4b636c] text-xs font-bold uppercase tracking-widest">
+                            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
                         </div>
                     </div>
 
-                    {/* Recent Orders */}
-                    <div className="bg-white dark:bg-[#2d2d32] rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                            <h3 className="font-bold text-gray-900 dark:text-white">Recent Orders</h3>
-                            <Link href="/dashboard/admin/orders" className="text-xs font-bold text-[#1daddd]">View All</Link>
+                    {/* Right Sidebar Activity Feed */}
+                    <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-col gap-6">
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-lg font-bold">Real-time Activity</h4>
+                            <span className="size-2 bg-green-500 rounded-full animate-pulse"></span>
                         </div>
-                        <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                        <div className="flex flex-col gap-6">
                             {recentOrders?.map(order => (
-                                <div key={order.id} className="p-4 flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600">
-                                        <span className="material-symbols-outlined">shopping_basket</span>
+                                <div key={order.id} className="flex gap-4 group">
+                                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                        <span className="material-symbols-outlined text-primary text-xl">shopping_bag</span>
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{order.product?.title || 'Product'}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">by {order.buyer?.email}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-gray-900 dark:text-white">₵{parseFloat(order.total_amount || 0).toFixed(0)}</p>
-                                        <p className={`text-[10px] font-black uppercase ${order.status === 'Completed' ? 'text-green-500' : 'text-amber-500'}`}>{order.status}</p>
+                                        <p className="text-sm font-bold text-[#111618] dark:text-gray-200 truncate group-hover:text-primary transition-colors"><span className="font-black">{order.product?.title || 'Product'}</span> purchased</p>
+                                        <p className="text-[10px] font-bold text-[#4b636c] dark:text-gray-400 mt-1 uppercase tracking-tighter transition-all">@{order.buyer?.email?.split('@')[0]} • {new Date(order.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </div>
 
-                    {/* Recent Subscriptions */}
-                    <div className="bg-white dark:bg-[#2d2d32] rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                            <h3 className="font-bold text-gray-900 dark:text-white">Recent Subscriptions</h3>
-                            <Link href="/dashboard/admin/subscriptions" className="text-xs font-bold text-[#1daddd]">View All</Link>
-                        </div>
-                        <div className="divide-y divide-gray-50 dark:divide-gray-800">
-                            {recentSubscriptions?.map(sub => (
-                                <div key={sub.id} className="p-4 flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
-                                        <span className="material-symbols-outlined">card_membership</span>
+                            {pendingVerifications > 0 && (
+                                <div className="flex gap-4 group">
+                                    <div className="size-10 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
+                                        <span className="material-symbols-outlined text-amber-500 text-xl">verified_user</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold text-[#111618] dark:text-gray-200"><span className="font-black text-amber-600">{pendingVerifications}</span> pending applications</p>
+                                        <p className="text-[10px] font-bold text-[#4b636c] dark:text-gray-400 mt-1 uppercase tracking-tighter">Requires audit attention</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {recentUsers?.map(user => (
+                                <div key={user.id} className="flex gap-4 group">
+                                    <div className="size-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                                        <span className="material-symbols-outlined text-green-500 text-xl">person_add</span>
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{sub.plan?.name || 'Plan'}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{sub.user?.email}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${sub.status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
-                                            {sub.status}
-                                        </span>
+                                        <p className="text-sm font-bold text-[#111618] dark:text-gray-200 truncate group-hover:text-green-600 transition-colors"><span className="font-black">{user.display_name || 'New User'}</span> joined platform</p>
+                                        <p className="text-[10px] font-bold text-[#4b636c] dark:text-gray-400 mt-1 uppercase tracking-tighter">{new Date(user.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
+                        <Link href="/dashboard/admin/users" className="w-full py-3 text-center text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:text-[#111618] dark:hover:text-white transition-colors border-t border-[#dce3e5] dark:border-[#2d3b41] mt-auto">
+                            View Executive Roster
+                        </Link>
                     </div>
+                </div>
+
+                {/* Quick Actions / Bottom Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Link href="/dashboard/admin/verifications" className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between group cursor-pointer hover:bg-primary/5 transition-colors border-l-4 border-primary">
+                        <div className="flex items-center gap-4">
+                            <span className="material-symbols-outlined text-primary text-3xl">pending_actions</span>
+                            <div>
+                                <p className="text-lg font-black tracking-tight">{pendingVerifications} Pending</p>
+                                <p className="text-xs font-bold text-[#4b636c] uppercase tracking-wider">Seller verifications</p>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-[#4b636c] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </Link>
+
+                    <Link href="/dashboard/admin/reports" className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between group cursor-pointer hover:bg-orange-500/5 transition-colors border-l-4 border-orange-500">
+                        <div className="flex items-center gap-4">
+                            <span className="material-symbols-outlined text-orange-500 text-3xl">report_problem</span>
+                            <div>
+                                <p className="text-lg font-black tracking-tight">{pendingReports} Flagged</p>
+                                <p className="text-xs font-bold text-[#4b636c] uppercase tracking-wider">Items to review</p>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-[#4b636c] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </Link>
+
+                    <Link href="/dashboard/admin/orders" className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between group cursor-pointer hover:bg-green-500/5 transition-colors border-l-4 border-green-500">
+                        <div className="flex items-center gap-4">
+                            <span className="material-symbols-outlined text-green-500 text-3xl">account_balance_wallet</span>
+                            <div>
+                                <p className="text-lg font-black tracking-tight">{orderCount} Total</p>
+                                <p className="text-xs font-bold text-[#4b636c] uppercase tracking-wider">Orders in system</p>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-[#4b636c] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </Link>
                 </div>
             </div>
         </AdminAccessCheck>
     );
+
 }

@@ -46,11 +46,8 @@ export default async function AdminAdvertisementsPage({ searchParams }) {
     const totalClicks = advertisements?.reduce((sum, ad) => sum + (ad.clicks || 0), 0) || 0;
 
     return (
-        <div className="flex flex-col gap-6 p-6">
-            <header className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold text-[#0e171b] dark:text-white">Advertisements Management</h1>
-                <p className="text-slate-500 text-sm">Manage and monitor all platform advertisements</p>
-            </header>
+        <div className="space-y-8 pb-12">
+
             <AdvertisementsClient
                 initialAdvertisements={advertisements || []}
                 stats={{

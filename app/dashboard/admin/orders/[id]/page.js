@@ -2,7 +2,6 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import EscrowManagementClient from '../EscrowManagementClient';
-import styles from './order-details.module.css';
 
 export default async function AdminOrderDetailPage({ params }) {
   const { id } = await params;
@@ -28,11 +27,19 @@ export default async function AdminOrderDetailPage({ params }) {
 
   if (orderError || !order) {
     return (
-      <div className={styles.pageContainer}>
-        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <h1 style={{ color: '#ef4444', fontSize: '2rem', marginBottom: '1rem' }}>Order Not Found</h1>
-          <Link href="/dashboard/admin/orders" className={styles.backLink}>
-            ← Back to Orders
+      <div className="min-h-[80vh] flex items-center justify-center p-6">
+        <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-12 rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] text-center max-w-md w-full shadow-2xl">
+          <div className="size-20 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-4xl">receipt_long</span>
+          </div>
+          <h1 className="text-2xl font-black mb-2 tracking-tighter uppercase">Record Not Found</h1>
+          <p className="text-[#4b636c] mb-8 text-[11px] font-black uppercase tracking-widest">The transaction record you are looking for does not exist or has been archived.</p>
+          <Link
+            href="/dashboard/admin/orders"
+            className="inline-flex items-center gap-2 bg-primary text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:brightness-110 transition-all shadow-lg shadow-primary/20"
+          >
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Ledger
           </Link>
         </div>
       </div>
@@ -47,246 +54,203 @@ export default async function AdminOrderDetailPage({ params }) {
     .order('created_at', { ascending: false });
 
   const productImage = order.product?.images?.[0] || order.product?.image_url;
-  
-  const getStatusClass = (status) => {
-    const statusMap = {
-      Pending: styles.statusPending,
-      Paid: styles.statusPaid,
-      Shipped: styles.statusShipped,
-      Delivered: styles.statusDelivered,
-      Completed: styles.statusCompleted,
-      Cancelled: styles.statusCancelled,
-    };
-    return statusMap[status] || styles.statusPending;
-  };
-
-  const getEscrowClass = (status) => {
-    const escrowMap = {
-      Held: styles.escrowHeld,
-      Released: styles.escrowReleased,
-      Refunded: styles.escrowRefunded,
-    };
-    return escrowMap[status] || styles.escrowHeld;
-  };
 
   return (
-    <div className={styles.pageContainer}>
-      <Link href="/dashboard/admin/orders" className={styles.backLink}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Back to Orders
-      </Link>
-
-      <header className={styles.pageHeader}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.pageTitle}>Order Management</h1>
-          <p className={styles.orderId}>Order ID: {order.id}</p>
-        </div>
-        <div className={styles.statusBadges}>
-          <span className={`${styles.statusBadge} ${getStatusClass(order.status)}`}>
-            {order.status}
-          </span>
-          {order.escrow_status && (
-            <span className={`${styles.escrowBadge} ${getEscrowClass(order.escrow_status)}`}>
-              Escrow: {order.escrow_status}
-            </span>
-          )}
-        </div>
-      </header>
-
-      {/* Escrow Management */}
-      <div className={styles.contentFullWidth}>
-        <EscrowManagementClient order={order} />
-      </div>
-
-      <div className={styles.contentGrid}>
-        {/* Product Info */}
-        <div className={`${styles.card} ${styles.productCard}`}>
-          <h2 className={styles.sectionTitle}>
-            <svg className={styles.sectionTitleIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Product Information
-          </h2>
-          {productImage && (
-            <img
-              src={productImage}
-              alt={order.product?.title}
-              className={styles.productImage}
-            />
-          )}
-          <h3 className={styles.productTitle}>{order.product?.title || 'Product'}</h3>
-          {order.product?.description && (
-            <p className={styles.productDescription}>{order.product.description}</p>
-          )}
-          <div className={styles.productMeta}>
-            {order.product?.category && (
-              <div className={styles.productMetaItem}>
-                <span className={styles.productMetaLabel}>Category</span>
-                <span className={styles.productMetaValue}>{order.product.category}</span>
-              </div>
-            )}
-            {order.product?.condition && (
-              <div className={styles.productMetaItem}>
-                <span className={styles.productMetaLabel}>Condition</span>
-                <span className={styles.productMetaValue}>{order.product.condition}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Order Summary */}
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <svg className={styles.sectionTitleIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Order Summary
-          </h2>
-          <div className={styles.summaryList}>
-            <div className={styles.summaryRow}>
-              <span className={styles.summaryLabel}>Quantity</span>
-              <span className={styles.summaryValue}>{order.quantity}</span>
-            </div>
-            <div className={styles.summaryRow}>
-              <span className={styles.summaryLabel}>Unit Price</span>
-              <span className={styles.summaryValue}>GHS {parseFloat(order.unit_price).toFixed(2)}</span>
-            </div>
-            <div className={styles.summaryRow}>
-              <span className={styles.summaryLabel}>Subtotal</span>
-              <span className={styles.summaryValue}>GHS {(parseFloat(order.unit_price) * order.quantity).toFixed(2)}</span>
-            </div>
-            <div className={styles.summaryDivider}></div>
-            <div className={styles.summaryRow}>
-              <span className={styles.summaryLabel}>Platform Fee ({order.platform_fee_percentage}% + GHS {order.platform_fee_fixed})</span>
-              <span className={styles.summaryValue}>GHS {parseFloat(order.platform_fee_total).toFixed(2)}</span>
-            </div>
-            <div className={styles.summaryTotal}>
-              <span className={styles.summaryTotalLabel}>Total</span>
-              <span className={styles.summaryTotalValue}>GHS {parseFloat(order.total_amount).toFixed(2)}</span>
-            </div>
-            <div className={styles.summaryPayout}>
-              <span className={styles.summaryPayoutLabel}>Seller Payout</span>
-              <span className={styles.summaryPayoutValue}>GHS {parseFloat(order.seller_payout_amount).toFixed(2)}</span>
-            </div>
-          </div>
+    <div className="space-y-8 pb-12">
+      <div className="flex items-center justify-between">
+        <Link
+          href="/dashboard/admin/orders"
+          className="flex items-center gap-2 text-[#4b636c] hover:text-primary transition-colors text-xs font-black uppercase tracking-widest group"
+        >
+          <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          Back to Ledger
+        </Link>
+        <div className="flex items-center gap-3">
+          <button className="px-4 py-2 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-primary/5 transition-colors">
+            <span className="material-symbols-outlined text-[18px]">print</span>
+            Invoice
+          </button>
+          <button className="px-4 py-2 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-primary/5 transition-colors">
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Data Export
+          </button>
         </div>
       </div>
 
-      {/* Buyer/Seller Info */}
-      <div className={styles.contentGrid}>
-        <div className={`${styles.card} ${styles.userInfoCard}`}>
-          <h2 className={styles.sectionTitle}>
-            <svg className={styles.sectionTitleIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Buyer Information
-          </h2>
-          <h3 className={styles.userName}>
-            {order.buyer?.display_name || order.buyer?.email || 'Unknown'}
-          </h3>
-          <p className={styles.userEmail}>{order.buyer?.email || 'No email provided'}</p>
-        </div>
-        <div className={`${styles.card} ${styles.userInfoCard}`}>
-          <h2 className={styles.sectionTitle}>
-            <svg className={styles.sectionTitleIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Seller Information
-          </h2>
-          <h3 className={styles.userName}>
-            {order.seller?.display_name || order.seller?.email || 'Unknown'}
-            {order.seller?.is_verified && (
-              <span className={styles.verifiedBadge}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Verified
-              </span>
-            )}
-          </h3>
-          <p className={styles.userEmail}>{order.seller?.email || 'No email provided'}</p>
-        </div>
-      </div>
 
-      {/* Status History */}
-      {statusHistory && statusHistory.length > 0 && (
-        <div className={`${styles.card} ${styles.contentFullWidth}`}>
-          <h2 className={styles.sectionTitle}>
-            <svg className={styles.sectionTitleIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Status History
-          </h2>
-          <div className={styles.historyList}>
-            {statusHistory.map((history) => (
-              <div key={history.id} className={styles.historyItem}>
-                <div className={styles.historyHeader}>
-                  <span className={styles.historyStatus}>{history.new_status}</span>
-                  <span className={styles.historyDate}>
-                    {new Date(history.created_at).toLocaleString()}
+      {/* Escrow Hub */}
+      <EscrowManagementClient order={order} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Intelligence Column */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Product Detail Card */}
+          <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
+            <div className="p-1 responsive-aspect-square md:aspect-[21/9] bg-gray-100 dark:bg-[#212b30] relative overflow-hidden group">
+              {productImage ? (
+                <img src={productImage} alt="" className="size-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              ) : (
+                <div className="size-full flex items-center justify-center text-[#4b636c]/20">
+                  <span className="material-symbols-outlined text-8xl">box</span>
+                </div>
+              )}
+              <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+                <h2 className="text-2xl font-black text-white tracking-tight">{order.product?.title || 'Unknown Item'}</h2>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-white/60 text-xs font-bold uppercase tracking-widest flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs">category</span>
+                    {order.product?.category || 'General'}
+                  </span>
+                  <span className="text-white/60 text-xs font-bold uppercase tracking-widest flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs">verified</span>
+                    {order.product?.condition || 'Standard'}
                   </span>
                 </div>
-                <div className={styles.historyDetails}>
-                  {history.old_status && (
-                    <p className={styles.historyDetail}>
-                      Changed from {history.old_status}
-                    </p>
-                  )}
-                  {history.changed_by_user && (
-                    <p className={styles.historyDetail}>
-                      By {history.changed_by_user.display_name}
-                    </p>
-                  )}
-                  {history.notes && (
-                    <p className={styles.historyNotes}>
-                      {history.notes}
-                    </p>
-                  )}
+              </div>
+            </div>
+            <div className="p-8">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-4">Item Analytics</h3>
+              <p className="text-[#4b636c] dark:text-gray-400 text-[11px] font-black uppercase tracking-widest leading-relaxed">
+                {order.product?.description || 'No detailed description provided for this marketplace listing.'}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <div className="bg-background-light dark:bg-[#212b30] px-4 py-3 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex-1 min-w-[140px]">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Quantity</p>
+                  <p className="text-xl font-black">{order.quantity} Units</p>
+                </div>
+                <div className="bg-background-light dark:bg-[#212b30] px-4 py-3 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex-1 min-w-[140px]">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Unit Value</p>
+                  <p className="text-xl font-black text-primary uppercase tracking-tighter">GH₵ {parseFloat(order.unit_price || 0).toFixed(2)}</p>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Payment Info */}
-      {order.payment_reference && (
-        <div className={`${styles.card} ${styles.contentFullWidth}`}>
-          <h2 className={styles.sectionTitle}>
-            <svg className={styles.sectionTitleIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 4H3C1.89543 4 1 4.89543 1 6V18C1 19.1046 1.89543 20 3 20H21C22.1046 20 23 19.1046 23 18V6C23 4.89543 22.1046 4 21 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M1 10H23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Payment Information
-          </h2>
-          <div className={styles.paymentInfo}>
-            <div className={styles.paymentRow}>
-              <span className={styles.paymentLabel}>Payment Reference</span>
-              <span className={styles.paymentValue}>{order.payment_reference}</span>
+          {/* Transaction Audit Trail */}
+          <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
+            <div className="px-8 py-6 border-b border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Audit Timeline</h3>
+              <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-[#212b30] text-[9px] font-black uppercase">{statusHistory?.length || 0} Events</span>
             </div>
-            {order.paystack_transaction_id && (
-              <div className={styles.paymentRow}>
-                <span className={styles.paymentLabel}>Transaction ID</span>
-                <span className={styles.paymentValue}>{order.paystack_transaction_id}</span>
+            <div className="p-8">
+              <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-[#dce3e5] dark:before:bg-[#2d3b41]">
+                {statusHistory?.map((history, i) => (
+                  <div key={history.id} className="relative pl-10">
+                    <div className={`absolute left-0 top-1.5 size-[24px] rounded-full border-4 border-white dark:border-[#182125] flex items-center justify-center ${i === 0 ? 'bg-primary shadow-[0_0_15px_rgba(29,173,221,0.5)]' : 'bg-[#4b636c]'
+                      }`}>
+                      <div className="size-1.5 rounded-full bg-white"></div>
+                    </div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-1">
+                      <h4 className={`text-[11px] font-black uppercase tracking-[0.1em] ${i === 0 ? 'text-primary' : 'text-[#4b636c]'}`}>
+                        {history.new_status}
+                      </h4>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[#4b636c]">{new Date(history.created_at).toLocaleString()}</span>
+                    </div>
+                    <p className="text-[11px] text-[#4b636c] font-black uppercase tracking-tight leading-relaxed">
+                      {history.notes || `Order status transition from ${history.old_status || 'Initial'} to ${history.new_status}.`}
+                    </p>
+                    {history.changed_by_user && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[8px] font-black">
+                          {history.changed_by_user.display_name?.charAt(0) || 'A'}
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[#4b636c]">Managed by {history.changed_by_user.display_name}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
-            <div className={styles.paymentRow}>
-              <span className={styles.paymentLabel}>Order Date</span>
-              <span className={styles.paymentValue}>{new Date(order.created_at).toLocaleString()}</span>
             </div>
-            {order.escrow_released_at && (
-              <div className={styles.paymentRow}>
-                <span className={styles.paymentLabel}>Escrow Released</span>
-                <span className={styles.paymentValue}>{new Date(order.escrow_released_at).toLocaleString()}</span>
-              </div>
-            )}
           </div>
         </div>
-      )}
+
+        {/* Sidebar Intelligence Column */}
+        <div className="space-y-8">
+          {/* Financial Breakdown */}
+          <div className="bg-[#111618] text-white rounded-2xl p-8 shadow-xl shadow-primary/5">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-6">Settlement Breakdown</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-sm font-medium">
+                <span className="text-white/60">Subtotal Gross</span>
+                <span>GH₵ {(parseFloat(order.unit_price || 0) * order.quantity).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm font-medium">
+                <span className="text-white/60">Platform Fees ({order.platform_fee_percentage}%)</span>
+                <span className="text-red-400">- GH₵ {parseFloat(order.platform_fee_total || 0).toFixed(2)}</span>
+              </div>
+              <div className="h-px bg-white/10 my-6"></div>
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Total Paid</p>
+                  <p className="text-3xl font-black tracking-tighter">GH₵ {parseFloat(order.total_amount || 0).toFixed(2)}</p>
+                </div>
+              </div>
+              <div className="mt-8 bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Seller Payout</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xl font-black text-green-400 uppercase tracking-tighter">GH₵ {parseFloat(order.seller_payout_amount || 0).toFixed(2)}</p>
+                  <span className="material-symbols-outlined text-green-400">payments</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Participant Profiles */}
+          <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
+            <div className="p-6 border-b border-[#dce3e5] dark:border-[#2d3b41]">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Transaction Parties</h3>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black">B</div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Buyer Account</p>
+                  <p className="text-xs font-black uppercase tracking-tighter truncate">{order.buyer?.display_name || 'Anonymous'}</p>
+                  <p className="text-[9px] text-[#4b636c] font-black uppercase tracking-widest truncate">{order.buyer?.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="size-12 rounded-2xl bg-green-500/10 text-green-500 flex items-center justify-center font-black">S</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Seller Account</p>
+                    {order.seller?.is_verified && (
+                      <span className="material-symbols-outlined text-[12px] text-primary">verified</span>
+                    )}
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-tighter truncate">{order.seller?.display_name || 'Anonymous'}</p>
+                  <p className="text-[9px] text-[#4b636c] font-black uppercase tracking-widest truncate">{order.seller?.email}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Technical Metadata */}
+          <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] p-6">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-4">Transaction Meta</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                <span className="text-[#4b636c]">Created At</span>
+                <span>{new Date(order.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                <span className="text-[#4b636c]">Ref ID</span>
+                <span className="truncate max-w-[120px]">{order.payment_reference || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                <span className="text-[#4b636c]">Bank ID</span>
+                <span className="truncate max-w-[120px]">{order.paystack_transaction_id || 'N/A'}</span>
+              </div>
+              {order.escrow_released_at && (
+                <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                  <span className="text-[#4b636c] text-green-500">Released At</span>
+                  <span className="text-green-500">{new Date(order.escrow_released_at).toLocaleDateString()}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
