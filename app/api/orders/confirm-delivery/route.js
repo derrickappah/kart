@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
     try {
@@ -41,8 +41,11 @@ export async function POST(request) {
             );
         }
 
+        // Use service role client for updates to bypass RLS
+        const adminSupabase = createServiceRoleClient();
+
         // Update order status to Delivered
-        const { error: orderUpdateError } = await supabase
+        const { error: orderUpdateError } = await adminSupabase
             .from('orders')
             .update({
                 status: 'Delivered',
@@ -53,13 +56,13 @@ export async function POST(request) {
         if (orderUpdateError) {
             console.error('Error updating order status:', orderUpdateError);
             return NextResponse.json(
-                { error: 'Failed to update order status' },
+                { error: 'Failed to update order status: ' + orderUpdateError.message },
                 { status: 500 }
             );
         }
 
         // Record status change in history
-        const { error: historyError } = await supabase
+        const { error: historyError } = await adminSupabase
             .from('order_status_history')
             .insert({
                 order_id: order.id,
@@ -71,11 +74,10 @@ export async function POST(request) {
 
         if (historyError) {
             console.error('Error recording order status history:', historyError);
-            // Non-critical error - continue execution
         }
 
         // Create notification for seller
-        const { error: notificationError } = await supabase
+        const { error: notificationError } = await adminSupabase
             .from('notifications')
             .insert({
                 user_id: order.seller_id,
@@ -87,7 +89,6 @@ export async function POST(request) {
 
         if (notificationError) {
             console.error('Error creating notification:', notificationError);
-            // Non-critical error - continue execution
         }
 
         return NextResponse.json({

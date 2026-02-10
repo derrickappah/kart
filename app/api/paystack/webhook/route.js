@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { verifyTransaction } from '@/lib/paystack';
 import crypto from 'crypto';
 
@@ -17,7 +17,8 @@ function verifyPaystackSignature(bodyText, signature, secret) {
 export async function POST(request) {
   try {
     console.log('[Webhook] Paystack webhook received');
-    const supabase = await createClient();
+    const supabase = await createClient(); // Still needed for some initial context if used
+    const adminSupabase = createServiceRoleClient(); // Use this for all mutations
     const signature = request.headers.get('x-paystack-signature');
     const secret = process.env.PAYSTACK_SECRET_KEY;
 
@@ -73,7 +74,7 @@ export async function POST(request) {
       // Check if this is a subscription payment
       // Try exact match first
       console.log('[Webhook] Looking for subscription with payment_reference:', reference);
-      let { data: subscription, error: subError } = await supabase
+      let { data: subscription, error: subError } = await adminSupabase
         .from('subscriptions')
         .select('*, plan:subscription_plans(*)')
         .eq('payment_reference', reference)
@@ -82,7 +83,7 @@ export async function POST(request) {
       // If not found, try case-insensitive match
       if (subError && subError.code === 'PGRST116') {
         console.log('[Webhook] Exact match not found, trying case-insensitive search...');
-        const { data: allSubs } = await supabase
+        const { data: allSubs } = await adminSupabase
           .from('subscriptions')
           .select('*, plan:subscription_plans(*)')
           .ilike('payment_reference', reference);
@@ -92,7 +93,7 @@ export async function POST(request) {
           subscription = allSubs[0];
           subError = null;
           // Update the reference to match exactly
-          await supabase
+          await adminSupabase
             .from('subscriptions')
             .update({ payment_reference: reference })
             .eq('id', subscription.id);
@@ -104,7 +105,7 @@ export async function POST(request) {
         const metadata = verification.data.metadata;
         if (metadata.subscription_id) {
           console.log('[Webhook] Trying to find subscription by metadata subscription_id:', metadata.subscription_id);
-          const { data: metaSub, error: metaError } = await supabase
+          const { data: metaSub, error: metaError } = await adminSupabase
             .from('subscriptions')
             .select('*, plan:subscription_plans(*)')
             .eq('id', metadata.subscription_id)
@@ -115,7 +116,7 @@ export async function POST(request) {
             subscription = metaSub;
             subError = null;
             // Update the payment reference
-            await supabase
+            await adminSupabase
               .from('subscriptions')
               .update({ payment_reference: reference })
               .eq('id', subscription.id);
@@ -140,7 +141,7 @@ export async function POST(request) {
         });
 
         // Handle subscription payment
-        const { data: updatedSubscription, error: updateSubError } = await supabase
+        const { data: updatedSubscription, error: updateSubError } = await adminSupabase
           .from('subscriptions')
           .update({
             status: 'Active',
@@ -165,7 +166,7 @@ export async function POST(request) {
         });
 
         // Create notification
-        const { error: notifError } = await supabase.from('notifications').insert({
+        const { error: notifError } = await adminSupabase.from('notifications').insert({
           user_id: subscription.user_id,
           type: 'SubscriptionActivated',
           title: 'Subscription Activated',
@@ -186,7 +187,7 @@ export async function POST(request) {
 
       // Find order by payment reference
       console.log('[Webhook] Looking for order with payment_reference:', reference);
-      let { data: order, error: orderError } = await supabase
+      let { data: order, error: orderError } = await adminSupabase
         .from('orders')
         .select('*, product:products(*)')
         .eq('payment_reference', reference)
@@ -197,7 +198,7 @@ export async function POST(request) {
         const metadata = verification.data.metadata;
         if (metadata.order_id) {
           console.log('[Webhook] Trying to find order by metadata order_id:', metadata.order_id);
-          const { data: metaOrder, error: metaError } = await supabase
+          const { data: metaOrder, error: metaError } = await adminSupabase
             .from('orders')
             .select('*, product:products(*)')
             .eq('id', metadata.order_id)
@@ -208,7 +209,7 @@ export async function POST(request) {
             order = metaOrder;
             orderError = null;
             // Update the payment reference
-            await supabase
+            await adminSupabase
               .from('orders')
               .update({ payment_reference: reference })
               .eq('id', order.id);
@@ -224,7 +225,7 @@ export async function POST(request) {
         });
         // Also try to find subscription by partial reference or metadata
         console.log('[Webhook] Attempting to find subscription by partial reference match...');
-        const { data: allSubs } = await supabase
+        const { data: allSubs } = await adminSupabase
           .from('subscriptions')
           .select('id, payment_reference, status, user_id')
           .ilike('payment_reference', `%${reference}%`)
@@ -254,7 +255,7 @@ export async function POST(request) {
       }
 
       // Update order status to Paid
-      const { error: updateError } = await supabase
+      const { error: updateError } = await adminSupabase
         .from('orders')
         .update({
           status: 'Paid',
@@ -274,7 +275,7 @@ export async function POST(request) {
         const newStock = Math.max(0, order.product.stock_quantity - order.quantity);
         const productStatus = newStock === 0 ? 'Sold' : order.product.status;
 
-        await supabase
+        await adminSupabase
           .from('products')
           .update({
             stock_quantity: newStock,
@@ -284,7 +285,7 @@ export async function POST(request) {
       } else if (order.product) {
         // If stock_quantity is null, mark as sold if quantity is 1
         if (order.quantity === 1) {
-          await supabase
+          await adminSupabase
             .from('products')
             .update({ status: 'Sold' })
             .eq('id', order.product_id);
@@ -292,7 +293,7 @@ export async function POST(request) {
       }
 
       // Create or get seller wallet
-      const { data: wallet } = await supabase
+      const { data: wallet } = await adminSupabase
         .from('wallets')
         .select('*')
         .eq('user_id', order.seller_id)
@@ -300,7 +301,7 @@ export async function POST(request) {
 
       if (!wallet) {
         // Create wallet if it doesn't exist
-        await supabase
+        await adminSupabase
           .from('wallets')
           .insert({
             user_id: order.seller_id,
@@ -310,7 +311,7 @@ export async function POST(request) {
           });
       } else {
         // Update pending balance
-        await supabase
+        await adminSupabase
           .from('wallets')
           .update({
             pending_balance: (parseFloat(wallet.pending_balance) || 0) + parseFloat(order.seller_payout_amount),
@@ -337,10 +338,10 @@ export async function POST(request) {
         },
       ];
 
-      await supabase.from('notifications').insert(notifications);
+      await adminSupabase.from('notifications').insert(notifications);
 
       // Record status change
-      await supabase.from('order_status_history').insert({
+      await adminSupabase.from('order_status_history').insert({
         order_id: order.id,
         old_status: 'Pending',
         new_status: 'Paid',

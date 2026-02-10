@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { initializePayment } from '@/lib/paystack';
 
 const PLATFORM_FEE_PERCENTAGE = parseFloat(process.env.PLATFORM_FEE_PERCENTAGE || '3');
@@ -133,9 +133,10 @@ export async function POST(request) {
       }
     });
 
-    // 7. Success! Update and finish
-    await supabase.from('orders').update({ payment_reference: reference }).eq('id', order.id);
-    await supabase.from('order_status_history').insert({
+    // 7. Success! Update and finish using service role client to bypass RLS
+    const adminSupabase = createServiceRoleClient();
+    await adminSupabase.from('orders').update({ payment_reference: reference }).eq('id', order.id);
+    await adminSupabase.from('order_status_history').insert({
       order_id: order.id,
       new_status: 'Pending',
       changed_by: user.id,

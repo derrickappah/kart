@@ -40,6 +40,7 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
         });
         // Refresh the page after a short delay to show updated status
         setTimeout(() => {
+          router.refresh();
           window.location.reload();
         }, 1500);
       } else {

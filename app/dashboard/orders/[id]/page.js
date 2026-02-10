@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import OrderPaymentVerification from './OrderPaymentVerification';
 import ConfirmDeliveryButton from './ConfirmDeliveryButton';
 
+export const dynamic = 'force-dynamic';
 
 // Refined Order Detail Page Component
 export default async function OrderDetailPage({ params }) {

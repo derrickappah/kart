@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { verifyTransaction } from '@/lib/paystack';
 
 export async function POST(request) {
@@ -88,9 +88,12 @@ export async function POST(request) {
       });
     }
 
+    // Use service role client for system updates to bypass RLS
+    const adminSupabase = createServiceRoleClient();
+
     // Update payment_reference if it was null
     if (!order.payment_reference) {
-      await supabase
+      await adminSupabase
         .from('orders')
         .update({ payment_reference: reference })
         .eq('id', order.id);
@@ -105,7 +108,7 @@ export async function POST(request) {
 
     if (order.status === 'Pending') {
       console.log('[Verify] Updating order to Paid status...');
-      const { error: updateError } = await supabase
+      const { error: updateError } = await adminSupabase
         .from('orders')
         .update({
           status: 'Paid',
@@ -126,7 +129,7 @@ export async function POST(request) {
       console.log('[Verify] Order updated successfully to Paid');
 
       // Update product stock
-      const { data: product } = await supabase
+      const { data: product } = await adminSupabase
         .from('products')
         .select('*')
         .eq('id', order.product_id)
@@ -137,7 +140,7 @@ export async function POST(request) {
           const newStock = Math.max(0, product.stock_quantity - order.quantity);
           const productStatus = newStock === 0 ? 'Sold' : product.status;
 
-          await supabase
+          await adminSupabase
             .from('products')
             .update({
               stock_quantity: newStock,
@@ -145,7 +148,7 @@ export async function POST(request) {
             })
             .eq('id', order.product_id);
         } else if (order.quantity === 1) {
-          await supabase
+          await adminSupabase
             .from('products')
             .update({ status: 'Sold' })
             .eq('id', order.product_id);
@@ -153,14 +156,14 @@ export async function POST(request) {
       }
 
       // Get or create seller wallet
-      const { data: wallet } = await supabase
+      const { data: wallet } = await adminSupabase
         .from('wallets')
         .select('*')
         .eq('user_id', order.seller_id)
         .single();
 
       if (!wallet) {
-        await supabase
+        await adminSupabase
           .from('wallets')
           .insert({
             user_id: order.seller_id,
@@ -169,7 +172,7 @@ export async function POST(request) {
             currency: 'GHS',
           });
       } else {
-        await supabase
+        await adminSupabase
           .from('wallets')
           .update({
             pending_balance: (parseFloat(wallet.pending_balance) || 0) + parseFloat(order.seller_payout_amount),
@@ -179,7 +182,7 @@ export async function POST(request) {
       }
 
       // Create notifications
-      await supabase.from('notifications').insert([
+      await adminSupabase.from('notifications').insert([
         {
           user_id: order.buyer_id,
           type: 'PaymentReceived',
@@ -197,7 +200,7 @@ export async function POST(request) {
       ]);
 
       // Record status change
-      await supabase.from('order_status_history').insert({
+      await adminSupabase.from('order_status_history').insert({
         order_id: order.id,
         old_status: 'Pending',
         new_status: 'Paid',
