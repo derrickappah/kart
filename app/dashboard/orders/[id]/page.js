@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import OrderPaymentVerification from './OrderPaymentVerification';
+import ConfirmDeliveryButton from './ConfirmDeliveryButton';
+
 
 // Refined Order Detail Page Component
 export default async function OrderDetailPage({ params }) {
@@ -252,6 +254,25 @@ export default async function OrderDetailPage({ params }) {
               <span className="font-bold">Safety Note:</span> Your funds are held securely in escrow and only released once you confirm the handover.
             </p>
           </div>
+
+          {/* Confirm Delivery Button - Only for buyers with paid/shipped orders */}
+          {isBuyer && (order.status === 'Paid' || order.status === 'Shipped') && (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Confirm Receipt</h2>
+              <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
+                <div className="mb-4 flex items-start gap-3">
+                  <span className="material-symbols-outlined text-[#1daddd] text-2xl shrink-0">local_shipping</span>
+                  <div>
+                    <h3 className="font-bold text-base mb-1">Received Your Item?</h3>
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      Once you've received and inspected your item, confirm delivery to release payment to the seller.
+                    </p>
+                  </div>
+                </div>
+                <ConfirmDeliveryButton orderId={order.id} orderStatus={order.status} />
+              </div>
+            </section>
+          )}
 
         </main>
       </div>

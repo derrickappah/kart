@@ -49,7 +49,7 @@ export async function POST(request) {
     if (event === 'charge.success') {
       const reference = data.reference;
       console.log('[Webhook] Processing charge.success for reference:', reference);
-      
+
       // Verify transaction with Paystack
       let verification;
       try {
@@ -64,7 +64,7 @@ export async function POST(request) {
         console.error('[Webhook] Transaction verification failed:', verifyError);
         return NextResponse.json({ error: 'Transaction verification failed' }, { status: 400 });
       }
-      
+
       if (verification.data.status !== 'success') {
         console.error('[Webhook] Transaction not successful:', verification.data.status);
         return NextResponse.json({ error: 'Transaction not successful' }, { status: 400 });
@@ -86,7 +86,7 @@ export async function POST(request) {
           .from('subscriptions')
           .select('*, plan:subscription_plans(*)')
           .ilike('payment_reference', reference);
-        
+
         if (allSubs && allSubs.length > 0) {
           console.log('[Webhook] Found subscription with case-insensitive match');
           subscription = allSubs[0];
@@ -109,7 +109,7 @@ export async function POST(request) {
             .select('*, plan:subscription_plans(*)')
             .eq('id', metadata.subscription_id)
             .single();
-          
+
           if (!metaError && metaSub) {
             console.log('[Webhook] Found subscription by metadata, updating payment_reference');
             subscription = metaSub;
@@ -186,16 +186,41 @@ export async function POST(request) {
 
       // Find order by payment reference
       console.log('[Webhook] Looking for order with payment_reference:', reference);
-      const { data: order, error: orderError } = await supabase
+      let { data: order, error: orderError } = await supabase
         .from('orders')
         .select('*, product:products(*)')
         .eq('payment_reference', reference)
         .single();
 
+      // If not found by exact match, try to find by metadata or reference pattern
+      if (orderError && orderError.code === 'PGRST116' && verification.data?.metadata) {
+        const metadata = verification.data.metadata;
+        if (metadata.order_id) {
+          console.log('[Webhook] Trying to find order by metadata order_id:', metadata.order_id);
+          const { data: metaOrder, error: metaError } = await supabase
+            .from('orders')
+            .select('*, product:products(*)')
+            .eq('id', metadata.order_id)
+            .single();
+
+          if (!metaError && metaOrder) {
+            console.log('[Webhook] Found order by metadata, updating payment_reference');
+            order = metaOrder;
+            orderError = null;
+            // Update the payment reference
+            await supabase
+              .from('orders')
+              .update({ payment_reference: reference })
+              .eq('id', order.id);
+          }
+        }
+      }
+
       if (orderError || !order) {
         console.error('[Webhook] Order not found for reference:', {
           reference: reference,
           error: orderError?.message,
+          metadata: verification.data?.metadata,
         });
         // Also try to find subscription by partial reference or metadata
         console.log('[Webhook] Attempting to find subscription by partial reference match...');
@@ -204,10 +229,10 @@ export async function POST(request) {
           .select('id, payment_reference, status, user_id')
           .ilike('payment_reference', `%${reference}%`)
           .limit(10);
-        
+
         console.log('[Webhook] Subscriptions with similar references:', allSubs);
-        
-        return NextResponse.json({ 
+
+        return NextResponse.json({
           error: 'Order not found',
           debug: {
             reference: reference,

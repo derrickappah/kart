@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { amount } = body;
+    const { amount, method } = body;
 
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
@@ -47,6 +47,7 @@ export async function POST(request) {
         amount: withdrawAmount,
         currency: 'GHS',
         status: 'Pending',
+        payout_method: method || 'bank',
       })
       .select()
       .single();

@@ -3,7 +3,7 @@
 
 -- 1. Ensure all sellers have a profile
 INSERT INTO profiles (id, email, display_name)
-SELECT 
+SELECT  
   id, 
   email, 
   COALESCE(raw_user_meta_data->>'full_name', email) as display_name

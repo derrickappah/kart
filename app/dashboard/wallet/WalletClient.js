@@ -9,6 +9,25 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
     const supabase = createClient();
     const [wallet, setWallet] = useState(initialWallet);
     const [transactions, setTransactions] = useState(initialTransactions || []);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+
+    const handleInviteNow = () => {
+        // In a real app, this would get the user's specific referral link
+        // For now, we'll use a generic link with their ID if available
+        const baseUrl = window.location.origin;
+        const referralLink = `${baseUrl}/signup?ref=${wallet?.user_id?.substring(0, 8) || 'friend'}`;
+
+        navigator.clipboard.writeText(referralLink).then(() => {
+            setToastMessage('Referral link copied to clipboard!');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            // Fallback for browsers that don't support clipboard API
+            alert('Share KART with your friends to earn credit!');
+        });
+    };
 
     const getTransactionIcon = (type) => {
         switch (type) {
@@ -47,10 +66,10 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
 
                         {/* Action Button Group */}
                         <div className="flex gap-3 p-4 pt-0">
-                            <button className="flex-1 btn-primary h-14">
+                            <Link href="/dashboard/wallet/deposit" className="flex-1 btn-primary h-14">
                                 <span className="material-symbols-outlined text-xl">add_circle</span>
                                 <span>Add Funds</span>
-                            </button>
+                            </Link>
                             <Link href="/dashboard/wallet/withdraw" className="flex-1 btn-primary h-14">
                                 <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
                                 <span>Withdraw</span>
@@ -108,7 +127,12 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                         <div className="relative z-10 flex flex-col gap-2">
                             <h3 className="text-lg font-black tracking-tight">Refer a friend</h3>
                             <p className="text-sm font-medium text-white/90 leading-snug">Get GHS 5.00 credit for every student who joins and makes their first sale!</p>
-                            <button className="mt-3 w-fit px-6 py-2.5 bg-white text-primary text-xs font-black rounded-full shadow-sm active:scale-95 transition-transform uppercase tracking-wider">Invite Now</button>
+                            <button
+                                onClick={handleInviteNow}
+                                className="mt-3 w-fit px-6 py-2.5 bg-white text-primary text-xs font-black rounded-full shadow-sm active:scale-95 transition-transform uppercase tracking-wider"
+                            >
+                                Invite Now
+                            </button>
                         </div>
                         <div className="absolute -right-4 -bottom-4 opacity-20 rotate-12">
                             <span className="material-symbols-outlined text-[120px]">share</span>
@@ -116,6 +140,16 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                     </div>
                 </div>
             </main>
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] animate-bounce-in">
+                    <div className="bg-[#1daddd] text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-xl shadow-[#1daddd]/20">
+                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                        <span className="text-sm font-bold">{toastMessage}</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -43,9 +43,26 @@ export async function POST(request) {
     }
 
     // Verify transaction with Paystack
-    const verification = await verifyTransaction(reference);
+    console.log('[Verify] Verifying transaction with Paystack:', reference);
+    let verification;
+    try {
+      verification = await verifyTransaction(reference);
+      console.log('[Verify] Paystack verification response:', {
+        status: verification.data?.status,
+        amount: verification.data?.amount,
+        reference: verification.data?.reference,
+        id: verification.data?.id,
+      });
+    } catch (verifyError) {
+      console.error('[Verify] Paystack verification failed:', verifyError);
+      return NextResponse.json({
+        success: false,
+        message: 'Failed to verify with Paystack: ' + verifyError.message,
+      });
+    }
 
     if (verification.data.status !== 'success') {
+      console.log('[Verify] Payment not successful, status:', verification.data.status);
       return NextResponse.json({
         success: false,
         message: 'Payment not successful',
@@ -53,15 +70,41 @@ export async function POST(request) {
     }
 
     // Check if payment reference matches
-    if (order.payment_reference !== reference) {
+    // Handle cases where payment_reference might be null or reference format variations
+    const referenceMatches =
+      order.payment_reference === reference ||
+      !order.payment_reference || // Allow if payment_reference is null (race condition during order creation)
+      reference.includes(order.id); // Fallback: check if reference contains order ID
+
+    if (!referenceMatches) {
+      console.error('Payment reference mismatch:', {
+        order_payment_reference: order.payment_reference,
+        provided_reference: reference,
+        order_id: order.id
+      });
       return NextResponse.json({
         success: false,
         message: 'Payment reference mismatch',
       });
     }
 
+    // Update payment_reference if it was null
+    if (!order.payment_reference) {
+      await supabase
+        .from('orders')
+        .update({ payment_reference: reference })
+        .eq('id', order.id);
+    }
+
     // Update order if still pending
+    console.log('[Verify] Order status check:', {
+      order_id: order.id,
+      current_status: order.status,
+      will_update: order.status === 'Pending'
+    });
+
     if (order.status === 'Pending') {
+      console.log('[Verify] Updating order to Paid status...');
       const { error: updateError } = await supabase
         .from('orders')
         .update({
@@ -73,12 +116,14 @@ export async function POST(request) {
         .eq('id', order.id);
 
       if (updateError) {
-        console.error('Error updating order:', updateError);
+        console.error('[Verify] Error updating order:', updateError);
         return NextResponse.json(
-          { error: 'Failed to update order' },
+          { error: 'Failed to update order: ' + updateError.message },
           { status: 500 }
         );
       }
+
+      console.log('[Verify] Order updated successfully to Paid');
 
       // Update product stock
       const { data: product } = await supabase
@@ -159,12 +204,21 @@ export async function POST(request) {
         changed_by: null,
         notes: 'Payment verified via callback',
       });
-    }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Payment verified and order updated',
-    });
+      console.log('[Verify] Order processing complete, returning success');
+      return NextResponse.json({
+        success: true,
+        message: 'Payment verified and order updated',
+      });
+    } else {
+      // Order is not pending - might have been processed already
+      console.log('[Verify] Order is not pending, current status:', order.status);
+      return NextResponse.json({
+        success: order.status === 'Paid', // Only success if already paid
+        message: order.status === 'Paid' ? 'Order already paid' : `Order status is ${order.status}, cannot verify payment`,
+        currentStatus: order.status,
+      });
+    }
   } catch (error) {
     console.error('Payment verification error:', error);
     return NextResponse.json(

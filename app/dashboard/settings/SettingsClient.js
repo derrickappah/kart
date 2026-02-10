@@ -28,7 +28,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Personal Info</h3>
           <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
             {/* Email Item */}
-            <div className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <Link href="/dashboard/settings/account/email" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4 overflow-hidden">
                 <div className="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shrink-0">
                   <span className="material-symbols-outlined">mail</span>
@@ -41,11 +41,11 @@ export default function SettingsClient({ initialProfile, initialUser }) {
               <div className="flex items-center gap-2 pl-4 shrink-0">
                 <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
               </div>
-            </div>
+            </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
             {/* Phone Item */}
-            <div className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <Link href="/dashboard/settings/account/phone" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shrink-0">
                   <span className="material-symbols-outlined">call</span>
@@ -53,10 +53,10 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Phone</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-400 dark:text-slate-500 hidden sm:block">+1 (555) 012-3456</span>
+                <span className="text-sm text-slate-400 dark:text-slate-500 hidden sm:block">Update Phone</span>
                 <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
               </div>
-            </div>
+            </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
             {/* Seller Verification */}
@@ -89,7 +89,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
         <section>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Security</h3>
           <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-            <div className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <Link href="/dashboard/settings/security/password" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 shrink-0">
                   <span className="material-symbols-outlined">lock</span>
@@ -97,10 +97,10 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Change Password</span>
               </div>
               <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
-            </div>
+            </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
-            <div className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <Link href="/dashboard/settings/security/2fa" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 shrink-0">
                   <span className="material-symbols-outlined">shield</span>
@@ -111,10 +111,10 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 <span className="text-xs font-medium text-slate-400">Off</span>
                 <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
               </div>
-            </div>
+            </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
-            <div className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <Link href="/dashboard/settings/security/activity" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 shrink-0">
                   <span className="material-symbols-outlined">history</span>
@@ -122,7 +122,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Login Activity</span>
               </div>
               <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
-            </div>
+            </Link>
           </div>
         </section>
 
@@ -130,7 +130,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
         <section>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Preferences</h3>
           <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-            <div className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <Link href="/dashboard/settings/preferences/notifications" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shrink-0">
                   <span className="material-symbols-outlined">notifications</span>
@@ -138,10 +138,10 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Notifications</span>
               </div>
               <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
-            </div>
+            </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
-            <div className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <Link href="/dashboard/settings/preferences/language" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 shrink-0">
                   <span className="material-symbols-outlined">language</span>
@@ -152,7 +152,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 <span className="text-sm font-medium text-slate-500 dark:text-slate-400">English</span>
                 <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
               </div>
-            </div>
+            </Link>
           </div>
         </section>
 

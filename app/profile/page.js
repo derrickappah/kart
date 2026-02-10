@@ -141,24 +141,33 @@ export default function ProfilePage() {
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Account Settings</span>
                         <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
                     </Link>
+
+                    {/* Contact Support (WhatsApp) */}
+                    <Link href="https://wa.me/233256650926" target="_blank" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
+                            <span className="material-symbols-outlined">chat</span>
+                        </div>
+                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Contact Support (WhatsApp)</span>
+                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                    </Link>
+
+                    {/* Email Support */}
+                    <Link href="mailto:kartzendo@gmail.com" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
+                            <span className="material-symbols-outlined">mail</span>
+                        </div>
+                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Email Support</span>
+                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                    </Link>
                 </section>
 
                 {/* Action Button */}
-                <section className="mt-2 pb-6 space-y-3">
+                <section className="mt-2 pb-6">
                     <Link href="/dashboard/seller" className="w-full relative overflow-hidden rounded-xl h-14 bg-[#1daddd] text-white text-base font-bold leading-normal tracking-[0.015em] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-[#1daddd]/20 flex items-center justify-center gap-2">
                         <span className="material-symbols-outlined">store</span>
                         <span>Switch to Seller Dashboard</span>
                         <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div>
                     </Link>
-
-                    {/* Sign Out Button */}
-                    <button
-                        onClick={() => signout()}
-                        className="w-full h-12 bg-transparent text-[#5e7d87] dark:text-gray-400 text-sm font-bold hover:text-[#1daddd] dark:hover:text-[#1daddd] transition-colors border border-gray-200 dark:border-gray-700 rounded-xl"
-                    >
-                        <span className="material-symbols-outlined text-lg mr-2">logout</span>
-                        Sign Out
-                    </button>
                 </section>
             </main>
 

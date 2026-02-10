@@ -52,9 +52,9 @@ export default function Signup() {
                             <label className="flex flex-col w-full">
                                 <p className="text-[#0e181b] dark:text-gray-200 text-base font-medium leading-normal pb-2 ml-1">Full Name</p>
                                 <div className="flex w-full items-stretch rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] focus-within:ring-2 focus-within:ring-[#1daddd]">
-                                    <input 
+                                    <input
                                         name="full_name"
-                                        className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0e181b] dark:text-white focus:outline-0 focus:ring-0 border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] h-14 placeholder:text-[#4f8596] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal" 
+                                        className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0e181b] dark:text-white focus:outline-0 focus:ring-0 border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] h-14 placeholder:text-[#4f8596] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal"
                                         placeholder="Alex Johnson"
                                         required
                                     />
@@ -65,16 +65,16 @@ export default function Signup() {
                             </label>
                         </div>
 
-                        {/* TextField: University Email */}
+                        {/* TextField: Email */}
                         <div className="flex flex-col">
                             <label className="flex flex-col w-full">
-                                <p className="text-[#0e181b] dark:text-gray-200 text-base font-medium leading-normal pb-2 ml-1">University Email</p>
+                                <p className="text-[#0e181b] dark:text-gray-200 text-base font-medium leading-normal pb-2 ml-1">Email</p>
                                 <div className="flex w-full items-stretch rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] focus-within:ring-2 focus-within:ring-[#1daddd]">
-                                    <input 
+                                    <input
                                         name="email"
                                         type="email"
-                                        className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0e181b] dark:text-white focus:outline-0 focus:ring-0 border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] h-14 placeholder:text-[#4f8596] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal" 
-                                        placeholder="name@university.edu"
+                                        className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0e181b] dark:text-white focus:outline-0 focus:ring-0 border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] h-14 placeholder:text-[#4f8596] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal"
+                                        placeholder="your@email.com"
                                         required
                                     />
                                     <div className="text-[#4f8596] flex border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] items-center justify-center pr-[15px] rounded-r-xl border-l-0">
@@ -82,7 +82,6 @@ export default function Signup() {
                                     </div>
                                 </div>
                             </label>
-                            <p className="text-xs text-[#1daddd] mt-2 ml-1 font-medium">Must end in .edu</p>
                         </div>
 
                         {/* TextField: Password */}
@@ -90,14 +89,14 @@ export default function Signup() {
                             <label className="flex flex-col w-full">
                                 <p className="text-[#0e181b] dark:text-gray-200 text-base font-medium leading-normal pb-2 ml-1">Password</p>
                                 <div className="flex w-full items-stretch rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] focus-within:ring-2 focus-within:ring-[#1daddd]">
-                                    <input 
+                                    <input
                                         name="password"
-                                        className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0e181b] dark:text-white focus:outline-0 focus:ring-0 border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] h-14 placeholder:text-[#4f8596] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal" 
-                                        placeholder="••••••••" 
+                                        className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0e181b] dark:text-white focus:outline-0 focus:ring-0 border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] h-14 placeholder:text-[#4f8596] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal"
+                                        placeholder="••••••••"
                                         type={showPassword ? "text" : "password"}
                                         required
                                     />
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="text-[#4f8596] flex border border-[#d0e1e6] dark:border-gray-700 bg-white dark:bg-[#21242c] items-center justify-center pr-[15px] rounded-r-xl border-l-0"
@@ -113,10 +112,10 @@ export default function Signup() {
                         {/* Terms of Service */}
                         <div className="flex items-start gap-3 px-1 py-2">
                             <div className="flex items-center h-6">
-                                <input 
-                                    className="h-5 w-5 rounded border-gray-300 dark:border-gray-700 text-[#1daddd] focus:ring-[#1daddd]" 
-                                    id="terms" 
-                                    name="terms" 
+                                <input
+                                    className="h-5 w-5 rounded border-gray-300 dark:border-gray-700 text-[#1daddd] focus:ring-[#1daddd]"
+                                    id="terms"
+                                    name="terms"
                                     type="checkbox"
                                     required
                                 />
@@ -129,7 +128,7 @@ export default function Signup() {
                         </div>
 
                         {/* Primary Button */}
-                        <button 
+                        <button
                             type="submit"
                             disabled={loading}
                             className="w-full btn-primary h-14 text-lg"
@@ -141,7 +140,7 @@ export default function Signup() {
                     {/* Secondary Navigation */}
                     <div className="mt-auto pt-10 text-center">
                         <p className="text-[#4f8596] dark:text-gray-400">
-                            Already have an account? 
+                            Already have an account?
                             <Link className="text-[#1daddd] font-bold ml-1 hover:underline" href="/login">Log In</Link>
                         </p>
                     </div>
