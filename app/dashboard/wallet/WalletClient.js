@@ -29,13 +29,19 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                     const data = await response.json();
 
                     if (data.success) {
+                        // Update wallet state immediately
+                        setWallet(prev => ({
+                            ...prev,
+                            balance: data.balance
+                        }));
+
                         setToastMessage(`Success! GHS ${data.amount?.toFixed(2) || '0.00'} added to your wallet.`);
                         setShowToast(true);
                         setTimeout(() => setShowToast(false), 5000);
 
-                        // Clear query params and refresh
+                        // Clear query params and refresh in background
                         router.replace('/dashboard/wallet');
-                        router.refresh();
+                        setTimeout(() => router.refresh(), 500);
                     } else {
                         setToastMessage(data.message || 'Payment verification failed');
                         setShowToast(true);
