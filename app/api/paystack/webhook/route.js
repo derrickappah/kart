@@ -105,7 +105,7 @@ export async function POST(request) {
             }
 
             // Critical Fallback: Check reference prefix if metadata is missing
-            if (!type && reference && reference.startsWith('wallet_dep_')) {
+            if (!type && reference && (reference.startsWith('wdp_') || reference.startsWith('wallet_dep_'))) {
                 console.log('[Webhook] Metadata type missing, but reference indicates wallet_deposit:', reference);
                 type = 'wallet_deposit';
             }

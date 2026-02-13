@@ -19,8 +19,9 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
             setShowToast(true);
             setTimeout(() => setShowToast(false), 5000);
 
-            // Clear query params
+            // Clear query params and refresh data
             router.replace('/dashboard/wallet');
+            router.refresh();
         }
     }, [router]);
 
