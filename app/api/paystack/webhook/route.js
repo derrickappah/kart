@@ -116,7 +116,7 @@ export async function POST(request) {
                 // Determine user_id from metadata or reference
                 let userId = metadata.user_id || verification.data.metadata?.user_id;
 
-                // Critical Fallback: Extract from reference wdp_FULL-USER-ID_TIMESTAMP
+                // Fallback 1: Extract from reference wdp_FULL-USER-ID_TIMESTAMP
                 if (!userId && reference && reference.startsWith('wdp_')) {
                     console.log('[Webhook] Metadata user_id missing, extracting from reference...');
                     const parts = reference.split('_');
@@ -126,12 +126,39 @@ export async function POST(request) {
                     }
                 }
 
-                // Support legacy prefix just in case (though it only has 8 chars)
-                if (!userId && reference && reference.startsWith('wallet_dep_')) {
-                    console.log('[Webhook] Metadata user_id missing and reference is legacy (truncated). Cannot recover full ID.');
+                // Fallback 2: Find user by email from Paystack data
+                if (!userId && (verification.data.customer?.email || verification.data.customer?.id)) {
+                    const email = verification.data.customer?.email;
+                    console.log('[Webhook] Metadata user_id missing, searching by email:', email);
+                    const { data: profile, error: profileErr } = await adminSupabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('email', email)
+                        .maybeSingle();
+
+                    if (profile) {
+                        userId = profile.id;
+                        console.log(`[Webhook] User ID recovered by email search: ${userId}`);
+                    } else if (profileErr) {
+                        console.error('[Webhook] Error searching user by email:', profileErr);
+                    }
                 }
 
-                // Fallback: Check custom_fields for user_id
+                // Fallback 3: Support legacy prefix (only has 8 chars, so this is a last resort/logging)
+                if (!userId && reference && reference.startsWith('wallet_dep_')) {
+                    console.log('[Webhook] Metadata user_id missing and reference is legacy (truncated). Attempting truncated search...');
+                    const { data: candidates } = await adminSupabase
+                        .from('profiles')
+                        .select('id')
+                        .ilike('id', `${reference.split('_')[2]}%`);
+
+                    if (candidates && candidates.length === 1) {
+                        userId = candidates[0].id;
+                        console.log(`[Webhook] User ID recovered from truncated reference match: ${userId}`);
+                    }
+                }
+
+                // Fallback 4: Check custom_fields for user_id
                 if (!userId && metadata.custom_fields) {
                     console.log('[Webhook] Checking custom_fields for user_id...');
                     const idField = metadata.custom_fields.find(f => f.variable_name === 'user_id');
@@ -140,9 +167,9 @@ export async function POST(request) {
                         console.log(`[Webhook] User ID found in custom_fields: ${userId}`);
                     }
                 }
-                const amount = verification.data.amount / 100; // Paystack amount is in kobo/pesewas
 
-                console.log('[Webhook] Processing wallet deposit:', { userId, amount, reference });
+                const amount = verification.data.amount / 100; // Paystack amount is in kobo/pesewas
+                console.log('[Webhook] Final Wallet Deposit context:', { userId, amount, reference });
 
                 if (!userId) {
                     console.error('[Webhook] Missing user_id in wallet_deposit metadata', { metadata });
