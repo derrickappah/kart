@@ -17,6 +17,9 @@ export default function WithdrawFundsClient({ initialWallet }) {
     const [profile, setProfile] = useState(null);
     const [checkingPayout, setCheckingPayout] = useState(true);
 
+    // Calculate available balance (balance minus pending)
+    const availableBalance = (parseFloat(wallet?.balance) || 0) - (parseFloat(wallet?.pending_balance) || 0);
+
     useEffect(() => {
         const fetchUserData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
