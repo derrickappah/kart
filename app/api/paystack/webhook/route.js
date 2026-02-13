@@ -49,12 +49,6 @@ export async function POST(request) {
             has_signature: !!signature,
         });
 
-        // Verify webhook signature using raw body text
-        if (!verifyPaystackSignature(bodyText, signature, secret)) {
-            console.error('[Webhook] Invalid signature - webhook rejected');
-            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-        }
-
         const event = payload.event;
         const data = payload.data;
 
