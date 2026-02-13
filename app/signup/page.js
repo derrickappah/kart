@@ -1,9 +1,12 @@
 'use client';
 import Link from 'next/link';
 import { signup } from '../auth/actions';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default function Signup() {
+function SignupForm() {
+    const searchParams = useSearchParams();
+    const ref = searchParams.get('ref');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +14,9 @@ export default function Signup() {
     async function handleSubmit(formData) {
         setLoading(true);
         setError(null);
+        if (ref) {
+            formData.append('referred_by', ref);
+        }
         const result = await signup(formData);
         if (result?.error) {
             setError(result.error);
@@ -149,5 +155,13 @@ export default function Signup() {
                 <div className="h-2 w-32 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-2 opacity-50"></div>
             </div>
         </main>
+    );
+}
+
+export default function Signup() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <SignupForm />
+        </Suspense>
     );
 }

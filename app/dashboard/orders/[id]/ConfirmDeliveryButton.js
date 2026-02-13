@@ -35,8 +35,9 @@ export default function ConfirmDeliveryButton({ orderId, orderStatus }) {
                 throw new Error(data.error || 'Failed to confirm delivery');
             }
 
-            // Refresh the page to show updated status
+            // Refresh the page and redirect to the review page
             router.refresh();
+            router.push(`/dashboard/orders/${orderId}/review`);
         } catch (err) {
             console.error('Error confirming delivery:', err);
             setError(err.message);
