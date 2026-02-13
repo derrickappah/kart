@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
+import { timeAgo } from '../../../utils/dateUtils';
 
 export default function SellerProfilePage() {
     const router = useRouter();
@@ -111,20 +112,6 @@ export default function SellerProfilePage() {
         );
     }
 
-    const timeAgo = (date) => {
-        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + " years ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " months ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " days ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " hours ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " minutes ago";
-        return Math.floor(seconds) + " seconds ago";
-    };
 
     return (
         <div className="bg-[#f6f7f8] dark:bg-[#111d21] text-slate-900 dark:text-slate-100 min-h-screen font-display">
