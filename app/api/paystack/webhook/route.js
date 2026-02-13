@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { verifyTransaction } from '@/lib/paystack';
 import crypto from 'crypto';
+import { logWebhook } from '@/app/api/webhook-logs/route';
 
 // Disable body parsing, we need raw body for signature verification
 export const runtime = 'nodejs';
@@ -17,6 +18,8 @@ function verifyPaystackSignature(bodyText, signature, secret) {
 export async function POST(request) {
     try {
         console.log('[Webhook] Paystack webhook received');
+        logWebhook({ event: 'webhook_received', status: 'processing' });
+
         const adminSupabase = createServiceRoleClient();
         const rawBody = await request.text();
         const payload = JSON.parse(rawBody);
@@ -25,6 +28,7 @@ export async function POST(request) {
 
         if (!signature) {
             console.error('[Webhook] No signature found in headers');
+            logWebhook({ event: 'signature_missing', status: 'rejected' });
             return NextResponse.json({ error: 'No signature' }, { status: 401 });
         }
 
@@ -40,6 +44,7 @@ export async function POST(request) {
 
         if (hash !== signature) {
             console.error('[Webhook] Signature verification failed');
+            logWebhook({ event: 'signature_invalid', status: 'rejected', hash_prefix: hash.substring(0, 10), sig_prefix: signature.substring(0, 10) });
             return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
@@ -274,6 +279,7 @@ export async function POST(request) {
                     message: `GHS ${amount.toFixed(2)} has been added to your wallet.`,
                 });
 
+                logWebhook({ event: 'wallet_deposit_success', reference, userId, amount });
                 return NextResponse.json({ message: 'Wallet deposit processed successfully' }, { status: 200 });
             }
 
