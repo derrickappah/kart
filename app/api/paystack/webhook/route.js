@@ -85,12 +85,50 @@ export async function POST(request) {
             }
 
             metadata = metadata || {};
-            const type = metadata.type || verification.data.metadata?.type;
+            let type = metadata.type;
+
+            // Fallback: Check custom_fields for type
+            if (!type && metadata.custom_fields) {
+                console.log('[Webhook] Checking custom_fields for type...');
+                const typeField = metadata.custom_fields.find(f => f.variable_name === 'type');
+                if (typeField) {
+                    type = typeField.value === 'Wallet Deposit' ? 'wallet_deposit' : typeField.value;
+                    console.log(`[Webhook] Type found in custom_fields: ${type}`);
+                }
+            }
+
+            // Critical Fallback: Check reference prefix if metadata is missing
+            if (!type && reference && reference.startsWith('wallet_dep_')) {
+                console.log('[Webhook] Metadata type missing, but reference indicates wallet_deposit:', reference);
+                type = 'wallet_deposit';
+            }
 
             console.log('[Webhook] Resolved metadata type:', type);
 
             if (type === 'wallet_deposit') {
-                const userId = metadata.user_id || verification.data.metadata?.user_id;
+                // Determine user_id from metadata or reference
+                let userId = metadata.user_id;
+
+                // Fallback: Extract from reference wallet_dep_USERID_TIMESTAMP
+                if (!userId && reference && reference.startsWith('wallet_dep_')) {
+                    console.log('[Webhook] Attempting to extract user_id from reference...');
+                    const parts = reference.split('_');
+                    // This is tricky because userId in reference is truncated (substring(0,8))
+                    // So we can't fully reconstruct it from the reference alone if it's truncated.
+                    // Better to rely on metadata if possible.
+                    // For now, we'll just log this attempt.
+                    console.log('[Webhook] User ID extraction from reference is complex due to truncation, relying on metadata or custom_fields.');
+                }
+
+                // Fallback: Check custom_fields for user_id
+                if (!userId && metadata.custom_fields) {
+                    console.log('[Webhook] Checking custom_fields for user_id...');
+                    const idField = metadata.custom_fields.find(f => f.variable_name === 'user_id');
+                    if (idField) {
+                        userId = idField.value;
+                        console.log(`[Webhook] User ID found in custom_fields: ${userId}`);
+                    }
+                }
                 const amount = verification.data.amount / 100; // Paystack amount is in kobo/pesewas
 
                 console.log('[Webhook] Processing wallet deposit:', { userId, amount, reference });
@@ -107,14 +145,18 @@ export async function POST(request) {
                     .eq('user_id', userId)
                     .single();
 
+                const currentBalance = wallet ? (parseFloat(wallet.balance) || 0) : 0;
+                let finalBalance = currentBalance;
+
                 if (walletError && walletError.code === 'PGRST116') {
                     console.log('[Webhook] Wallet not found, creating new one for user:', userId);
+                    finalBalance = amount;
                     // Create wallet if it doesn't exist
                     const { data: newWallet, error: createError } = await adminSupabase
                         .from('wallets')
                         .insert({
                             user_id: userId,
-                            balance: amount,
+                            balance: finalBalance,
                             currency: 'GHS',
                         })
                         .select()
@@ -127,20 +169,19 @@ export async function POST(request) {
                     wallet = newWallet;
                     console.log('[Webhook] New wallet created successfully:', wallet.id);
                 } else if (wallet) {
-                    const currentBalance = parseFloat(wallet.balance) || 0;
-                    const newBalance = currentBalance + amount;
+                    finalBalance = currentBalance + amount;
                     console.log('[Webhook] Updating existing wallet balance:', {
                         wallet_id: wallet.id,
                         current: currentBalance,
                         adding: amount,
-                        new: newBalance
+                        new: finalBalance
                     });
 
                     // Update balance
                     const { error: updateError } = await adminSupabase
                         .from('wallets')
                         .update({
-                            balance: newBalance,
+                            balance: finalBalance,
                             updated_at: new Date().toISOString(),
                         })
                         .eq('id', wallet.id);
@@ -157,17 +198,32 @@ export async function POST(request) {
 
                 // Record transaction
                 console.log('[Webhook] Recording wallet transaction for reference:', reference);
-                const { error: transError } = await adminSupabase.from('wallet_transactions').insert({
+                const transactionData = {
                     wallet_id: wallet.id,
                     amount: amount,
                     transaction_type: 'Credit',
-                    description: 'Wallet Deposit via Paystack',
                     status: 'Completed',
+                    balance_before: currentBalance,
+                    balance_after: finalBalance,
+                    admin_notes: `Wallet Deposit via Paystack. Ref: ${reference}`,
+                };
+
+                // Add reference and description if they were added via SQL
+                // We do this dynamically to avoid errors if SQL hasn't been run yet
+                // But since we want them, we'll include them and just log if it fails
+                const { error: transError } = await adminSupabase.from('wallet_transactions').insert({
+                    ...transactionData,
                     reference: reference,
+                    description: 'Wallet Deposit',
                 });
 
                 if (transError) {
-                    console.error('[Webhook] Error recording transaction:', transError);
+                    console.error('[Webhook] Error recording transaction (possibly missing columns):', transError);
+                    // Fallback try without reference/description if it failed
+                    if (transError.code === '42703') { // Column does not exist
+                        console.log('[Webhook] Retrying transaction record with fallback columns...');
+                        await adminSupabase.from('wallet_transactions').insert(transactionData);
+                    }
                 } else {
                     console.log('[Webhook] Wallet transaction recorded successfully');
                 }
