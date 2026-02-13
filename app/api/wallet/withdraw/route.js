@@ -71,9 +71,51 @@ export async function POST(request) {
       );
     }
 
+    // Update wallet: move amount from balance to pending_balance
+    const newBalance = availableBalance - withdrawAmount;
+    const newPendingBalance = parseFloat(wallet.pending_balance || 0) + withdrawAmount;
+
+    const { error: walletUpdateError } = await supabase
+      .from('wallets')
+      .update({
+        balance: newBalance,
+        pending_balance: newPendingBalance,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', wallet.id);
+
+    if (walletUpdateError) {
+      console.error('Error updating wallet:', walletUpdateError);
+      // Rollback: delete the withdrawal request
+      await supabase
+        .from('withdrawal_requests')
+        .delete()
+        .eq('id', withdrawalRequest.id);
+
+      return NextResponse.json(
+        { error: 'Failed to update wallet balance' },
+        { status: 500 }
+      );
+    }
+
+    // Record transaction
+    await supabase.from('wallet_transactions').insert({
+      wallet_id: wallet.id,
+      amount: withdrawAmount,
+      transaction_type: 'Withdrawal',
+      status: 'Pending',
+      balance_before: availableBalance,
+      balance_after: newBalance,
+      reference: withdrawalRequest.id,
+      description: 'Withdrawal Request',
+      admin_notes: `Withdrawal request #${withdrawalRequest.id}. Method: ${method || 'bank'}`,
+    });
+
     return NextResponse.json({
       success: true,
       withdrawal_request: withdrawalRequest,
+      new_balance: newBalance,
+      pending_balance: newPendingBalance,
     });
   } catch (error) {
     console.error('Withdrawal request error:', error);
