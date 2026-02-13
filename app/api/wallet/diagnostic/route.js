@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
-export async function GET() {
+export async function GET(request) {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -11,58 +11,56 @@ export async function GET() {
         }
 
         const adminSupabase = createServiceRoleClient();
+        const { searchParams } = new URL(request.url);
+        const action = searchParams.get('action');
 
-        // Probe Wallets table
-        const { error: walletsCurErr } = await adminSupabase.from('wallets').select('currency').limit(1);
-        const { error: walletsUpdErr } = await adminSupabase.from('wallets').select('updated_at').limit(1);
+        let testWriteResult = null;
 
-        // Get the user's wallet to check for existence and use its ID for transactions
-        const { data: wallet, error: walletFetchError } = await adminSupabase.from('wallets').select('*').eq('user_id', user.id).maybeSingle();
-
-        // 2. Check latest transactions
-        const { data: transactions, error: transError } = wallet
-            ? await adminSupabase
-                .from('wallet_transactions')
+        if (action === 'test_write') {
+            // Attempt to create a test wallet or update if exists
+            const { data: wallet } = await adminSupabase
+                .from('wallets')
                 .select('*')
-                .eq('wallet_id', wallet.id)
-                .order('created_at', { ascending: false })
-                .limit(5)
-            : { data: [], error: null };
+                .eq('user_id', user.id)
+                .maybeSingle();
 
-        // Probe Wallet Transactions table (only if a wallet exists to avoid UUID errors)
-        let transRefErr = null;
-        let transDescErr = null;
-        let transBeforeErr = null;
-        if (wallet) {
-            const { error: refErr } = await adminSupabase.from('wallet_transactions').select('reference').limit(1);
-            transRefErr = refErr;
-            const { error: descErr } = await adminSupabase.from('wallet_transactions').select('description').limit(1);
-            transDescErr = descErr;
-            const { error: beforeErr } = await adminSupabase.from('wallet_transactions').select('balance_before').limit(1);
-            transBeforeErr = beforeErr;
+            if (!wallet) {
+                const { data, error } = await adminSupabase
+                    .from('wallets')
+                    .insert({ user_id: user.id, balance: 0.01, currency: 'GHS' })
+                    .select()
+                    .single();
+                testWriteResult = { action: 'insert', data, error };
+            } else {
+                const { data, error } = await adminSupabase
+                    .from('wallets')
+                    .update({ balance: parseFloat(wallet.balance) + 0.01 })
+                    .eq('id', wallet.id)
+                    .select()
+                    .single();
+                testWriteResult = { action: 'update', data, error };
+            }
         }
 
-
-        // Get one full row from each to see ALL available columns
-        const { data: walletRow } = await adminSupabase.from('wallets').select('*').limit(1).single();
-        const { data: transRow } = await adminSupabase.from('wallet_transactions').select('*').limit(1).single();
+        // Standard diagnostic data
+        const { data: wallet } = await adminSupabase.from('wallets').select('*').eq('user_id', user.id).maybeSingle();
+        const { data: allWallets } = await adminSupabase.from('wallets').select('id, user_id, balance, created_at').order('created_at', { ascending: false }).limit(3);
+        const { data: allTrans } = await adminSupabase.from('wallet_transactions').select('*').order('created_at', { ascending: false }).limit(3);
 
         return NextResponse.json({
             user_id: user.id,
-            wallets_schema: {
-                has_currency: !walletsCurErr,
-                has_updated_at: !walletsUpdErr,
-                available_columns: walletRow ? Object.keys(walletRow) : 'No rows to check',
-                currency_error: walletsCurErr?.message,
+            test_write_result: testWriteResult,
+            wallet: wallet || 'No wallet found',
+            system_stats: {
+                total_wallets: (await adminSupabase.from('wallets').select('*', { count: 'exact', head: true })).count,
+                recent_wallets: allWallets,
+                recent_transactions: allTrans,
             },
-            transactions_schema: {
-                has_reference: !transRefErr,
-                has_description: !transDescErr,
-                has_balance_before: !transBeforeErr,
-                available_columns: transRow ? Object.keys(transRow) : 'No rows to check',
-                reference_error: transRefErr?.message,
+            env: {
+                has_service_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+                service_key_prefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 10),
             },
-            current_user_wallet: await adminSupabase.from('wallets').select('*').eq('user_id', user.id).maybeSingle(),
+            debug_tip: "If test_write fails here, the service role key is likely invalid or RLS is blocking even service role (rare). If it succeeds but deposits don't work, Paystack webhook is not reaching your server or secret key is wrong."
         });
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
