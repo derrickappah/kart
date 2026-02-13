@@ -12,65 +12,35 @@ export async function GET() {
 
         const adminSupabase = createServiceRoleClient();
 
-        // 1. Check user profile
-        const { data: profile } = await adminSupabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+        // Probe Wallets table
+        const { error: walletsCurErr } = await adminSupabase.from('wallets').select('currency').limit(1);
+        const { error: walletsUpdErr } = await adminSupabase.from('wallets').select('updated_at').limit(1);
 
-        // 2. Check wallet record for this user
-        const { data: wallet, error: walletError } = await adminSupabase
-            .from('wallets')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+        // Probe Wallet Transactions table
+        const { error: transRefErr } = await adminSupabase.from('wallet_transactions').select('reference').limit(1);
+        const { error: transDescErr } = await adminSupabase.from('wallet_transactions').select('description').limit(1);
+        const { error: transBeforeErr } = await adminSupabase.from('wallet_transactions').select('balance_before').limit(1);
 
-        // 3. Check for ANY wallet records (system-wide)
-        const { data: allWallets } = await adminSupabase
-            .from('wallets')
-            .select('id, user_id, balance, created_at')
-            .order('created_at', { ascending: false })
-            .limit(5);
-
-        const { count: totalWallets } = await adminSupabase
-            .from('wallets')
-            .select('*', { count: 'exact', head: true });
-
-        // 4. Check for ANY transactions (system-wide)
-        const { data: allTrans } = await adminSupabase
-            .from('wallet_transactions')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(10);
-
-        // 5. Try to get schema info via error hint
-        const { error: schemaHint } = await adminSupabase
-            .from('wallets')
-            .select('non_existent_column');
+        // Get one full row from each to see ALL available columns
+        const { data: walletRow } = await adminSupabase.from('wallets').select('*').limit(1).single();
+        const { data: transRow } = await adminSupabase.from('wallet_transactions').select('*').limit(1).single();
 
         return NextResponse.json({
-            user: {
-                id: user.id,
-                email: user.email,
-                profile_exists: !!profile,
+            user_id: user.id,
+            wallets_schema: {
+                has_currency: !walletsCurErr,
+                has_updated_at: !walletsUpdErr,
+                available_columns: walletRow ? Object.keys(walletRow) : 'No rows to check',
+                currency_error: walletsCurErr?.message,
             },
-            wallet: {
-                user_wallet: wallet || 'No wallet found',
-                wallet_error: walletError,
-                system_total_count: totalWallets,
-                recent_system_wallets: allWallets || [],
+            transactions_schema: {
+                has_reference: !transRefErr,
+                has_description: !transDescErr,
+                has_balance_before: !transBeforeErr,
+                available_columns: transRow ? Object.keys(transRow) : 'No rows to check',
+                reference_error: transRefErr?.message,
             },
-            transactions: {
-                latest_system_transactions: allTrans || [],
-            },
-            schema: {
-                error_hint: schemaHint?.message,
-            },
-            env: {
-                has_service_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-                has_paystack_key: !!process.env.PAYSTACK_SECRET_KEY,
-            }
+            current_user_wallet: await adminSupabase.from('wallets').select('*').eq('user_id', user.id).maybeSingle(),
         });
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
