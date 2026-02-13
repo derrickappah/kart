@@ -160,7 +160,9 @@ export async function POST(request) {
                 balance_before: parseFloat(buyerWallet.balance),
                 balance_after: parseFloat(buyerWallet.balance) - totalAmount,
                 status: 'Completed',
-                notes: `Purchase of ${product.title}`
+                reference: order.id,
+                description: 'Product Purchase',
+                admin_notes: `Purchase of ${product.title}`,
             }
         ]);
 
