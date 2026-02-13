@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '../../../../utils/supabase/client';
 
 export default function WithdrawFundsClient({ initialWallet }) {
@@ -13,12 +14,43 @@ export default function WithdrawFundsClient({ initialWallet }) {
     const router = useRouter();
     const supabase = createClient();
 
-    const availableBalance = parseFloat(wallet?.balance || 0);
+    const [profile, setProfile] = useState(null);
+    const [checkingPayout, setCheckingPayout] = useState(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('bank_account_details, momo_details')
+                    .eq('id', user.id)
+                    .single();
+                setProfile(profileData);
+            }
+            setCheckingPayout(false);
+        };
+        fetchUserData();
+    }, [supabase]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setSuccess(false);
+
+        // Validate payout details
+        const hasBank = profile?.bank_account_details?.account_number && profile?.bank_account_details?.bank_name;
+        const hasMoMo = profile?.momo_details?.number && profile?.momo_details?.name;
+
+        if (payoutMethod === 'bank' && !hasBank) {
+            setError('Please set up your Bank Account details in Settings first.');
+            return;
+        }
+        if (payoutMethod === 'momo' && !hasMoMo) {
+            setError('Please set up your Mobile Money details in Settings first.');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -33,7 +65,11 @@ export default function WithdrawFundsClient({ initialWallet }) {
             const response = await fetch('/api/wallet/withdraw', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: withdrawAmount, method: payoutMethod }),
+                body: JSON.stringify({
+                    amount: withdrawAmount,
+                    method: payoutMethod,
+                    details: payoutMethod === 'bank' ? profile.bank_account_details : profile.momo_details
+                }),
             });
 
             const data = await response.json();
@@ -53,7 +89,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
         <div className="bg-[#f6f7f8] dark:bg-[#131a1f] font-display text-[#101619] dark:text-gray-100 min-h-screen flex flex-col antialiased">
             {/* Top Navigation Bar */}
             <header className="sticky top-0 z-[100] bg-[#f6f7f8]/80 dark:bg-[#131a1f]/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
-                <button 
+                <button
                     onClick={() => router.back()}
                     className="btn-ghost size-10 !p-0 rounded-full"
                 >
@@ -88,7 +124,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
                 <section className="px-6 mb-8">
                     <div className="flex items-center justify-between mb-3">
                         <label className="text-base font-bold text-primary dark:text-primary-light pl-1">Amount to Withdraw</label>
-                        <button 
+                        <button
                             onClick={() => setAmount(availableBalance.toFixed(2))}
                             className="text-primary dark:text-primary-light font-black text-sm px-4 py-1.5 bg-primary/10 rounded-full hover:bg-primary/20 transition-colors active:scale-95"
                         >
@@ -97,9 +133,9 @@ export default function WithdrawFundsClient({ initialWallet }) {
                     </div>
                     <div className="relative group">
                         <div className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400">GHS</div>
-                        <input 
-                            className="w-full bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-6 pl-20 pr-6 text-3xl font-black focus:border-primary focus:ring-0 transition-all outline-none shadow-soft" 
-                            placeholder="0.00" 
+                        <input
+                            className="w-full bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl py-6 pl-20 pr-6 text-3xl font-black focus:border-primary focus:ring-0 transition-all outline-none shadow-soft"
+                            placeholder="0.00"
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
@@ -110,19 +146,28 @@ export default function WithdrawFundsClient({ initialWallet }) {
 
                 {/* Payout Method Section */}
                 <section className="px-6 space-y-4">
-                    <h3 className="text-lg font-black text-[#101619] dark:text-white mb-4 pl-1">Select Payout Method</h3>
-                    
+                    <div className="flex items-center justify-between pl-1 mb-4">
+                        <h3 className="text-lg font-black text-[#101619] dark:text-white">Select Payout Method</h3>
+                        <Link href="/dashboard/settings/payout" className="text-primary text-xs font-bold hover:underline">Change</Link>
+                    </div>
+
                     {/* Bank Transfer Option */}
-                    <div 
+                    <div
                         onClick={() => setPayoutMethod('bank')}
                         className={`relative flex items-center p-5 bg-white dark:bg-gray-900 border-2 rounded-2xl cursor-pointer group shadow-soft transition-all ${payoutMethod === 'bank' ? 'border-primary ring-1 ring-primary' : 'border-gray-100 dark:border-gray-800'}`}
                     >
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mr-4">
                             <span className="material-symbols-outlined text-primary text-3xl">account_balance</span>
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                             <p className="font-black text-base">Bank Transfer</p>
-                            <p className="text-sm font-medium text-secondary-light dark:text-secondary-dark">1-3 business days</p>
+                            {profile?.bank_account_details?.account_number ? (
+                                <p className="text-sm font-medium text-[#4f8596] truncate">
+                                    {profile.bank_account_details.bank_name} • {profile.bank_account_details.account_number}
+                                </p>
+                            ) : (
+                                <p className="text-sm font-bold text-amber-500">Settings required</p>
+                            )}
                         </div>
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${payoutMethod === 'bank' ? 'border-primary' : 'border-slate-200 dark:border-slate-700'}`}>
                             {payoutMethod === 'bank' && <div className="w-3.5 h-3.5 bg-primary rounded-full"></div>}
@@ -130,16 +175,22 @@ export default function WithdrawFundsClient({ initialWallet }) {
                     </div>
 
                     {/* MoMo Option */}
-                    <div 
+                    <div
                         onClick={() => setPayoutMethod('momo')}
                         className={`relative flex items-center p-5 bg-white dark:bg-gray-900 border-2 rounded-2xl cursor-pointer group shadow-soft transition-all ${payoutMethod === 'momo' ? 'border-primary ring-1 ring-primary' : 'border-gray-100 dark:border-gray-800'}`}
                     >
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mr-4">
                             <span className="material-symbols-outlined text-primary text-3xl">smartphone</span>
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                             <p className="font-black text-base">Mobile Money</p>
-                            <p className="text-sm font-medium text-secondary-light dark:text-secondary-dark">Instant</p>
+                            {profile?.momo_details?.number ? (
+                                <p className="text-sm font-medium text-[#4f8596] truncate">
+                                    {profile.momo_details.provider} • {profile.momo_details.number}
+                                </p>
+                            ) : (
+                                <p className="text-sm font-bold text-amber-500">Settings required</p>
+                            )}
                         </div>
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${payoutMethod === 'momo' ? 'border-primary' : 'border-slate-200 dark:border-slate-700'}`}>
                             {payoutMethod === 'momo' && <div className="w-3.5 h-3.5 bg-primary rounded-full"></div>}
@@ -151,7 +202,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
             {/* Sticky Bottom Footer */}
             <footer className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 px-6 pt-5 pb-10 z-50">
                 <div className="flex flex-col gap-4 max-w-md mx-auto">
-                    <button 
+                    <button
                         onClick={handleSubmit}
                         disabled={loading || availableBalance <= 0}
                         className="btn-primary w-full h-16 text-lg shadow-xl shadow-primary/20"

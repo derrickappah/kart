@@ -16,10 +16,32 @@ export async function GET() {
         const { error: walletsCurErr } = await adminSupabase.from('wallets').select('currency').limit(1);
         const { error: walletsUpdErr } = await adminSupabase.from('wallets').select('updated_at').limit(1);
 
-        // Probe Wallet Transactions table
-        const { error: transRefErr } = await adminSupabase.from('wallet_transactions').select('reference').limit(1);
-        const { error: transDescErr } = await adminSupabase.from('wallet_transactions').select('description').limit(1);
-        const { error: transBeforeErr } = await adminSupabase.from('wallet_transactions').select('balance_before').limit(1);
+        // Get the user's wallet to check for existence and use its ID for transactions
+        const { data: wallet, error: walletFetchError } = await adminSupabase.from('wallets').select('*').eq('user_id', user.id).maybeSingle();
+
+        // 2. Check latest transactions
+        const { data: transactions, error: transError } = wallet
+            ? await adminSupabase
+                .from('wallet_transactions')
+                .select('*')
+                .eq('wallet_id', wallet.id)
+                .order('created_at', { ascending: false })
+                .limit(5)
+            : { data: [], error: null };
+
+        // Probe Wallet Transactions table (only if a wallet exists to avoid UUID errors)
+        let transRefErr = null;
+        let transDescErr = null;
+        let transBeforeErr = null;
+        if (wallet) {
+            const { error: refErr } = await adminSupabase.from('wallet_transactions').select('reference').limit(1);
+            transRefErr = refErr;
+            const { error: descErr } = await adminSupabase.from('wallet_transactions').select('description').limit(1);
+            transDescErr = descErr;
+            const { error: beforeErr } = await adminSupabase.from('wallet_transactions').select('balance_before').limit(1);
+            transBeforeErr = beforeErr;
+        }
+
 
         // Get one full row from each to see ALL available columns
         const { data: walletRow } = await adminSupabase.from('wallets').select('*').limit(1).single();

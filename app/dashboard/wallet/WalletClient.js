@@ -12,6 +12,18 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
 
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.get('deposit_success') === 'true') {
+            setToastMessage('Deposit initiated successfully! It may take a minute to reflect.');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 5000);
+
+            // Clear query params
+            router.replace('/dashboard/wallet');
+        }
+    }, [router]);
+
     const handleInviteNow = () => {
         // In a real app, this would get the user's specific referral link
         // For now, we'll use a generic link with their ID if available

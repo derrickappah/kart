@@ -107,17 +107,21 @@ export async function POST(request) {
 
             if (type === 'wallet_deposit') {
                 // Determine user_id from metadata or reference
-                let userId = metadata.user_id;
+                let userId = metadata.user_id || verification.data.metadata?.user_id;
 
-                // Fallback: Extract from reference wallet_dep_USERID_TIMESTAMP
-                if (!userId && reference && reference.startsWith('wallet_dep_')) {
-                    console.log('[Webhook] Attempting to extract user_id from reference...');
+                // Critical Fallback: Extract from reference wdp_FULL-USER-ID_TIMESTAMP
+                if (!userId && reference && reference.startsWith('wdp_')) {
+                    console.log('[Webhook] Metadata user_id missing, extracting from reference...');
                     const parts = reference.split('_');
-                    // This is tricky because userId in reference is truncated (substring(0,8))
-                    // So we can't fully reconstruct it from the reference alone if it's truncated.
-                    // Better to rely on metadata if possible.
-                    // For now, we'll just log this attempt.
-                    console.log('[Webhook] User ID extraction from reference is complex due to truncation, relying on metadata or custom_fields.');
+                    if (parts.length >= 2) {
+                        userId = parts[1];
+                        console.log(`[Webhook] User ID recovered from reference: ${userId}`);
+                    }
+                }
+
+                // Support legacy prefix just in case (though it only has 8 chars)
+                if (!userId && reference && reference.startsWith('wallet_dep_')) {
+                    console.log('[Webhook] Metadata user_id missing and reference is legacy (truncated). Cannot recover full ID.');
                 }
 
                 // Fallback: Check custom_fields for user_id

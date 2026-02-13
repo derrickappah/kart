@@ -130,6 +130,17 @@ export default function SettingsClient({ initialProfile, initialUser }) {
         <section>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Preferences</h3>
           <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+            <Link href="/dashboard/settings/payout" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center size-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <span className="material-symbols-outlined">payments</span>
+                </div>
+                <span className="text-base font-semibold text-slate-900 dark:text-white">Payout Details</span>
+              </div>
+              <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+            </Link>
+            <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
+
             <Link href="/dashboard/settings/preferences/notifications" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shrink-0">

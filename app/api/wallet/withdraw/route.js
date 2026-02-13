@@ -48,6 +48,7 @@ export async function POST(request) {
         currency: 'GHS',
         status: 'Pending',
         payout_method: method || 'bank',
+        payout_details: body.details || {},
       })
       .select()
       .single();

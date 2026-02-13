@@ -18,8 +18,8 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
         }
 
-        // Generate unique reference for wallet deposit
-        const reference = `wallet_dep_${user.id.substring(0, 8)}_${Date.now()}`;
+        // Generate unique reference for wallet deposit - include full user.id for recovery if metadata is lost
+        const reference = `wdp_${user.id}_${Date.now()}`;
 
         // Initialize payment with Paystack
         const paymentData = await initializePayment({
