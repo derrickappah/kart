@@ -55,8 +55,18 @@ export async function POST(request) {
 
     if (requestError) {
       console.error('Error creating withdrawal request:', requestError);
+      console.error('Error details:', {
+        code: requestError.code,
+        message: requestError.message,
+        details: requestError.details,
+        hint: requestError.hint
+      });
       return NextResponse.json(
-        { error: 'Failed to create withdrawal request' },
+        {
+          error: 'Failed to create withdrawal request',
+          details: requestError.message,
+          code: requestError.code
+        },
         { status: 500 }
       );
     }
