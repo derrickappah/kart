@@ -59,6 +59,8 @@ export async function GET(request) {
             env: {
                 has_service_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
                 service_key_prefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 10),
+                has_paystack_key: !!process.env.PAYSTACK_SECRET_KEY,
+                paystack_key_prefix: process.env.PAYSTACK_SECRET_KEY?.substring(0, 7),
             },
             debug_tip: "If test_write fails here, the service role key is likely invalid or RLS is blocking even service role (rare). If it succeeds but deposits don't work, Paystack webhook is not reaching your server or secret key is wrong."
         });

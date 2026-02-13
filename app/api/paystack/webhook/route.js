@@ -17,18 +17,31 @@ function verifyPaystackSignature(bodyText, signature, secret) {
 export async function POST(request) {
     try {
         console.log('[Webhook] Paystack webhook received');
-        const adminSupabase = createServiceRoleClient(); // Use this for all mutations
+        const adminSupabase = createServiceRoleClient();
+        const rawBody = await request.text();
+        const payload = JSON.parse(rawBody);
         const signature = request.headers.get('x-paystack-signature');
         const secret = process.env.PAYSTACK_SECRET_KEY;
 
-        if (!signature || !secret) {
-            console.error('[Webhook] Missing signature or secret key');
-            return NextResponse.json({ error: 'Missing signature or secret' }, { status: 401 });
+        if (!signature) {
+            console.error('[Webhook] No signature found in headers');
+            return NextResponse.json({ error: 'No signature' }, { status: 401 });
         }
 
-        // Get raw body for signature verification
-        const bodyText = await request.text();
-        const payload = JSON.parse(bodyText);
+        if (!secret) {
+            console.error('[Webhook] PAYSTACK_SECRET_KEY is not set. Key prefix:', process.env.PAYSTACK_SECRET_KEY?.substring(0, 5) + '...');
+            return NextResponse.json({ error: 'Paystack secret key not configured' }, { status: 500 });
+        }
+
+        const hash = crypto
+            .createHmac('sha512', secret)
+            .update(rawBody)
+            .digest('hex');
+
+        if (hash !== signature) {
+            console.error('[Webhook] Signature verification failed');
+            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+        }
 
         console.log('[Webhook] Event received:', {
             event: payload.event,
