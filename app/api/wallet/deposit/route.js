@@ -26,7 +26,7 @@ export async function POST(request) {
             amount: parseFloat(amount),
             email: email || user.email,
             reference,
-            callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/wallet?deposit_success=true&ref=${reference}`,
+            callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/wallet?ref=${reference}`,
             metadata: {
                 type: 'wallet_deposit',
                 user_id: user.id,

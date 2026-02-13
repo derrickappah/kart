@@ -14,14 +14,41 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
 
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
-        if (queryParams.get('deposit_success') === 'true') {
-            setToastMessage('Deposit initiated successfully! It may take a minute to reflect.');
-            setShowToast(true);
-            setTimeout(() => setShowToast(false), 5000);
+        const reference = queryParams.get('ref');
 
-            // Clear query params and refresh data
-            router.replace('/dashboard/wallet');
-            router.refresh();
+        if (reference && reference.startsWith('wdp_')) {
+            // Verify payment with Paystack
+            const verifyPayment = async () => {
+                try {
+                    const response = await fetch('/api/wallet/verify-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reference }),
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setToastMessage(`Success! GHS ${data.amount?.toFixed(2) || '0.00'} added to your wallet.`);
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 5000);
+
+                        // Clear query params and refresh
+                        router.replace('/dashboard/wallet');
+                        router.refresh();
+                    } else {
+                        setToastMessage(data.message || 'Payment verification failed');
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 5000);
+                    }
+                } catch (error) {
+                    console.error('Payment verification error:', error);
+                    setToastMessage('Error verifying payment. Please refresh the page.');
+                    setShowToast(true);
+                }
+            };
+
+            verifyPayment();
         }
     }, [router]);
 
