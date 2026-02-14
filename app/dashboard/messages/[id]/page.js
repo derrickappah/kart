@@ -264,7 +264,7 @@ export default function ChatPage() {
             )}
 
             {/* Chat Area */}
-            <main className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 space-y-6 scroll-smooth">
+            <main className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 space-y-3 scroll-smooth">
                 <div className="flex justify-center py-2">
                     <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full uppercase tracking-wider">Conversation Started</span>
                 </div>
