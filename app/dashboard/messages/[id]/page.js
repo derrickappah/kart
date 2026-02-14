@@ -17,7 +17,11 @@ export default function ChatPage() {
     const [productContext, setProductContext] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const textareaRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -138,16 +142,56 @@ export default function ChatPage() {
         scrollToBottom();
     }, [messages]);
 
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
-        if (!newMessage.trim() || !currentUser || sending) return;
+    const formatTime = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const addEmoji = (emoji) => {
+        setNewMessage(prev => prev + emoji);
+        textareaRef.current?.focus();
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !currentUser) return;
+
+        setUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `${conversationId}/${fileName}`;
+
+            const { data, error: uploadError } = await supabase.storage
+                .from('chat-attachments')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('chat-attachments')
+                .getPublicUrl(filePath);
+
+            // Automatically send the public URL as a message
+            await sendMessage(publicUrl);
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            alert("Failed to upload file. Please try again.");
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    // Shared send message logic to be used by both text and file uploads
+    const sendMessage = async (content) => {
+        if (!content.trim() || !currentUser || sending) return;
 
         setSending(true);
         try {
             let activeConversationId = conversationId;
 
             if (conversationId === 'new') {
-                // Create a new conversation on the first message
                 const { data: newConv, error: convError } = await supabase
                     .from('conversations')
                     .insert([{
@@ -156,14 +200,8 @@ export default function ChatPage() {
                     .select()
                     .single();
 
-                if (convError) {
-                    console.error("Error creating conversation:", convError);
-                    alert("Failed to start conversation. Please try again.");
-                    setSending(false);
-                    return;
-                }
+                if (convError) throw convError;
                 activeConversationId = newConv.id;
-                // Redirect to the new conversation URL without reloading
                 router.replace(`/dashboard/messages/${newConv.id}`);
             }
 
@@ -173,39 +211,39 @@ export default function ChatPage() {
                     {
                         conversation_id: activeConversationId,
                         sender_id: currentUser.id,
-                        content: newMessage
+                        content: content
                     }
                 ])
                 .select()
                 .single();
 
-            if (error) {
-                console.error("Error sending message:", error);
-                alert("Failed to send message. Please try again.");
-            } else {
-                setNewMessage('');
-                // Append the sent message locally for instant feedback
-                if (sentMsg) {
-                    setMessages(prev => {
-                        const exists = prev.some(m => m.id === sentMsg.id);
-                        if (exists) return prev;
-                        return [...prev, sentMsg];
-                    });
-                }
+            if (error) throw error;
 
-                await supabase
-                    .from('conversations')
-                    .update({ updated_at: new Date().toISOString() })
-                    .eq('id', activeConversationId);
+            if (sentMsg) {
+                setMessages(prev => {
+                    const exists = prev.some(m => m.id === sentMsg.id);
+                    if (exists) return prev;
+                    return [...prev, sentMsg];
+                });
             }
+
+            await supabase
+                .from('conversations')
+                .update({ updated_at: new Date().toISOString() })
+                .eq('id', activeConversationId);
+
+            setNewMessage('');
+        } catch (error) {
+            console.error("Error sending message:", error);
+            alert("Failed to send message. Please try again.");
         } finally {
             setSending(false);
         }
     };
 
-    const formatTime = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const handleSendMessage = async (e) => {
+        if (e) e.preventDefault();
+        await sendMessage(newMessage);
     };
 
     if (loading) {
@@ -317,12 +355,34 @@ export default function ChatPage() {
                                 )}
 
                                 <div className={`relative flex flex-col group max-w-[85%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                    <div className={`relative p-2.5 px-4 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all ${isMe
+                                    <div className={`relative p-2.5 px-3 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all ${isMe
                                         ? `bg-[#2e8ab8] text-white ${isGrouped ? 'rounded-tr-md' : 'rounded-br-none'}`
                                         : `bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100/50 dark:border-gray-800/50 ${isGrouped ? 'rounded-tl-md' : 'rounded-bl-none'}`
                                         }`}>
                                         <div className="pr-12 min-w-[2rem] break-words">
-                                            {msg.content}
+                                            {msg.content.match(/\.(jpg|jpeg|png|gif|webp)/i) && msg.content.startsWith('http') ? (
+                                                <div className="flex flex-col gap-2">
+                                                    <img
+                                                        src={msg.content}
+                                                        alt="Attachment"
+                                                        className="max-w-full rounded-lg cursor-pointer hover:opacity-95 transition-opacity"
+                                                        onClick={() => window.open(msg.content, '_blank')}
+                                                    />
+                                                    {/* If there's text along with the image (though currently we send them separately), we could render it here */}
+                                                </div>
+                                            ) : msg.content.startsWith('http') ? (
+                                                <a
+                                                    href={msg.content}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-2 underline break-all"
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">attachment</span>
+                                                    Attachment
+                                                </a>
+                                            ) : (
+                                                msg.content
+                                            )}
                                         </div>
 
                                         {/* Integrated Bottom-Right Timestamp */}
@@ -344,18 +404,51 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#242428] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-10">
+            <footer className="flex-none bg-white dark:bg-[#242428] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-10 relative">
+                {/* Emoji Picker Popover */}
+                {showEmojiPicker && (
+                    <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#1e282c] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        {['😀', '😂', '😍', '👍', '🙏', '🔥', '✨', '💯', '🙌', '🎉', '👋', '❤️'].map(emoji => (
+                            <button
+                                key={emoji}
+                                onClick={() => addEmoji(emoji)}
+                                className="text-xl p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors active:scale-90"
+                            >
+                                {emoji}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileUpload}
+                />
+
                 <form onSubmit={handleSendMessage} className="flex items-end gap-3">
-                    <button type="button" className="p-3 text-gray-400 hover:text-[#2e8ab8] dark:text-gray-500 dark:hover:text-[#2e8ab8] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0">
-                        <span className="material-symbols-outlined text-[24px]">add</span>
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="p-3 text-gray-400 hover:text-[#2e8ab8] dark:text-gray-500 dark:hover:text-[#2e8ab8] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0 disabled:opacity-50"
+                    >
+                        {uploading ? (
+                            <div className="size-6 border-2 border-[#2e8ab8]/30 border-t-[#2e8ab8] rounded-full animate-spin"></div>
+                        ) : (
+                            <span className="material-symbols-outlined text-[24px]">add</span>
+                        )}
                     </button>
                     <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#2e8ab8]/50 focus-within:bg-white dark:focus-within:bg-black transition-all">
                         <textarea
+                            ref={textareaRef}
                             className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-3 px-4 max-h-24"
                             placeholder="Message..."
                             rows="1"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
+                            onFocus={() => setShowEmojiPicker(false)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !e.shiftKey) {
                                     e.preventDefault();
@@ -363,13 +456,17 @@ export default function ChatPage() {
                                 }
                             }}
                         ></textarea>
-                        <button type="button" className="p-2 mr-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors">
+                        <button
+                            type="button"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            className={`p-2 mr-1 transition-colors ${showEmojiPicker ? 'text-[#2e8ab8]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
+                        >
                             <span className="material-symbols-outlined text-[20px]">sentiment_satisfied</span>
                         </button>
                     </div>
                     <button
                         type="submit"
-                        disabled={!newMessage.trim() || sending}
+                        disabled={!newMessage.trim() || sending || uploading}
                         className="p-3 bg-[#2e8ab8] text-white rounded-full shadow-lg shadow-[#2e8ab8]/30 hover:bg-[#2e8ab8]/90 transition-colors transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none min-w-[48px]"
                     >
                         {sending ? (
