@@ -306,25 +306,45 @@ export default function ChatPage() {
                 {[...messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).map((msg, index, sortedMessages) => {
                     const isMe = msg.sender_id === currentUser?.id;
                     const prevMsg = index > 0 ? sortedMessages[index - 1] : null;
+                    const nextMsg = index < sortedMessages.length - 1 ? sortedMessages[index + 1] : null;
 
-                    // Check if this message is from the same sender as the previous one
-                    const isSameSender = prevMsg?.sender_id === msg.sender_id;
+                    // Time gap calculations
+                    const timeGapPrev = prevMsg ? (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) / (1000 * 60) : Infinity;
+                    const timeGapNext = nextMsg ? (new Date(nextMsg.created_at).getTime() - new Date(msg.created_at).getTime()) / (1000 * 60) : Infinity;
 
-                    // Calculate time gap in minutes using getTime() for robustness
-                    const timeGap = prevMsg
-                        ? (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) / (1000 * 60)
-                        : Infinity;
+                    // Grouping Logic
+                    const isSameSenderPrev = prevMsg?.sender_id === msg.sender_id;
+                    const isSameSenderNext = nextMsg?.sender_id === msg.sender_id;
 
-                    // WhatsApp-style grouping rules:
-                    // Only group if same sender AND tight timeframe (2 mins)
-                    const isGrouped = isSameSender && timeGap <= 2;
+                    // A message is "grouped" with the PREVIOUS one if same sender AND < 2 mins
+                    const isContinuedFromPrev = isSameSenderPrev && timeGapPrev <= 2;
+                    // A message is "grouped" with the NEXT one if same sender AND < 2 mins
+                    const isContinuedToNext = isSameSenderNext && timeGapNext <= 2;
 
-                    // Show a centered timestamp break if time gap is significant (> 15 mins for cleaner flow)
-                    // or if it's the first message of the day
+                    // Border Radius Logic
+                    // Top corners: If continued from prev, small radius. Else big (start of group).
+                    const topRadiusClass = isMe
+                        ? (isContinuedFromPrev ? 'rounded-tr-sm' : 'rounded-tr-2xl') // Right side (Me)
+                        : (isContinuedFromPrev ? 'rounded-tl-sm' : 'rounded-tl-2xl'); // Left side (Other)
+
+                    // Bottom corners: If continued to next, small radius. Else big/tail (end of group).
+                    // Actually, "tail" usually means sharp corner or specific shape. 
+                    // Let's use 'rounded-br-none' for tail on Me, 'rounded-bl-none' for Other.
+                    // But ONLY if it is the LAST in the group.
+                    const bottomRadiusClass = isMe
+                        ? (isContinuedToNext ? 'rounded-br-sm' : 'rounded-br-none')
+                        : (isContinuedToNext ? 'rounded-bl-sm' : 'rounded-bl-none');
+
+                    const bubbleShapeClass = `rounded-2xl ${topRadiusClass} ${bottomRadiusClass}`;
+
+                    // Margin Logic: Tight if continued from prev, else wide
+                    const marginTopClass = isContinuedFromPrev ? 'mt-[2px]' : 'mt-3';
+
+                    // Time Divider Logic
                     const prevDate = prevMsg ? new Date(prevMsg.created_at).toDateString() : null;
                     const currDate = new Date(msg.created_at).toDateString();
                     const isNewDay = prevDate !== currDate;
-                    const showTimeBreak = !prevMsg || isNewDay || timeGap > 15;
+                    const showTimeBreak = !prevMsg || isNewDay || timeGapPrev > 15;
 
                     return (
                         <div key={msg.id} className="flex flex-col w-full">
@@ -336,10 +356,11 @@ export default function ChatPage() {
                                 </div>
                             )}
 
-                            <div className={`flex items-end gap-1.5 group ${isMe ? 'justify-end' : 'justify-start'} ${isGrouped ? 'mt-0.5' : 'mt-3'}`}>
+                            <div className={`flex items-end gap-1.5 group ${isMe ? 'justify-end' : 'justify-start'} ${marginTopClass}`}>
                                 {!isMe && (
-                                    <div className="w-8 shrink-0">
-                                        {!isGrouped && (
+                                    <div className="w-8 shrink-0 flex flex-col justify-end">
+                                        {/* Show avatar only at the BOTTOM of the group (visually aligned with last message) */}
+                                        {!isContinuedToNext ? (
                                             <div
                                                 className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center shadow-sm"
                                                 style={{ backgroundImage: `url('${otherUser?.avatar_url || ''}')` }}
@@ -350,14 +371,14 @@ export default function ChatPage() {
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
+                                        ) : <div className="w-8" />}
                                     </div>
                                 )}
 
                                 <div className={`flex flex-col group max-w-[85%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                    <div className={`p-2 px-3 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all ${isMe
-                                        ? `bg-[#2e8ab8] text-white ${isGrouped ? 'rounded-tr-md' : 'rounded-br-none'}`
-                                        : `bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100/50 dark:border-gray-800/50 ${isGrouped ? 'rounded-tl-md' : 'rounded-bl-none'}`
+                                    <div className={`p-2 px-3 shadow-sm text-[15px] leading-[1.45] transition-all ${bubbleShapeClass} ${isMe
+                                        ? `bg-[#2e8ab8] text-white`
+                                        : `bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100/50 dark:border-gray-800/50`
                                         }`}>
                                         <div className="flex flex-col gap-1">
                                             <div className="break-words">
