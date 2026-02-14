@@ -400,7 +400,17 @@ export default function ChatPage() {
                                                         Attachment
                                                     </a>
                                                 ) : (
-                                                    msg.content
+                                                    // Check for emoji-only messages (1-3 emojis) to render them large
+                                                    // Regex checks for start/end of string with emojis, ignoring whitespace
+                                                    // This is a basic approximation for common emojis
+                                                    /^[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{200D}]+$/u.test(msg.content.trim()) && [...msg.content.trim()].length <= 6 ? (
+                                                        <span className={`block leading-normal ${[...new Intl.Segmenter().segment(msg.content.trim())].length === 1 ? 'text-[40px]' : 'text-[28px]'
+                                                            }`}>
+                                                            {msg.content}
+                                                        </span>
+                                                    ) : (
+                                                        msg.content
+                                                    )
                                                 )}
                                             </div>
 
