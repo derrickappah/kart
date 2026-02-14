@@ -264,45 +264,46 @@ export default function ChatPage() {
             )}
 
             {/* Chat Area */}
-            <main className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 scroll-smooth">
-                {messages.map((msg, index) => {
+            <main className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 scroll-smooth flex flex-col">
+                {[...messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).map((msg, index, sortedMessages) => {
                     const isMe = msg.sender_id === currentUser?.id;
-                    const prevMsg = index > 0 ? messages[index - 1] : null;
+                    const prevMsg = index > 0 ? sortedMessages[index - 1] : null;
 
                     // Check if this message is from the same sender as the previous one
                     const isSameSender = prevMsg?.sender_id === msg.sender_id;
 
-                    // Calculate time gap in minutes
+                    // Calculate time gap in minutes using getTime() for robustness
                     const timeGap = prevMsg
-                        ? (new Date(msg.created_at) - new Date(prevMsg.created_at)) / (1000 * 60)
+                        ? (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) / (1000 * 60)
                         : Infinity;
 
                     // WhatsApp-style grouping rules:
-                    // 1. Same sender
-                    // 2. Sent within 2 minutes of each other
+                    // Only group if same sender AND tight timeframe (2 mins)
                     const isGrouped = isSameSender && timeGap <= 2;
 
-                    // Show a centered timestamp if:
-                    // 1. It's the first message
-                    // 2. The time gap is > 2 minutes
-                    const showTimestamp = !prevMsg || timeGap > 2;
+                    // Show a centered timestamp break if time gap is significant (> 15 mins for cleaner flow)
+                    // or if it's the first message of the day
+                    const prevDate = prevMsg ? new Date(prevMsg.created_at).toDateString() : null;
+                    const currDate = new Date(msg.created_at).toDateString();
+                    const isNewDay = prevDate !== currDate;
+                    const showTimeBreak = !prevMsg || isNewDay || timeGap > 15;
 
                     return (
-                        <div key={msg.id} className="flex flex-col">
-                            {showTimestamp && (
-                                <div className="flex justify-center my-4">
-                                    <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-gray-100/50 dark:bg-gray-800/50 px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                                        {new Date(msg.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })} • {formatTime(msg.created_at)}
+                        <div key={msg.id} className="flex flex-col w-full">
+                            {showTimeBreak && (
+                                <div className="flex justify-center my-6 sticky top-2 z-10">
+                                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 bg-white/90 dark:bg-[#1e282c]/90 backdrop-blur-sm px-4 py-1.5 rounded-full uppercase tracking-[0.15em] shadow-sm border border-gray-100 dark:border-gray-800">
+                                        {isNewDay ? new Date(msg.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : formatTime(msg.created_at)}
                                     </span>
                                 </div>
                             )}
 
-                            <div className={`flex items-end gap-2 group ${isMe ? 'justify-end' : ''} ${isGrouped ? 'mt-1' : 'mt-4'}`}>
+                            <div className={`flex items-end gap-1.5 group ${isMe ? 'justify-end' : 'justify-start'} ${isGrouped ? 'mt-0.5' : 'mt-3'}`}>
                                 {!isMe && (
                                     <div className="w-8 shrink-0">
                                         {!isGrouped && (
                                             <div
-                                                className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center mb-1 shadow-sm"
+                                                className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center shadow-sm"
                                                 style={{ backgroundImage: `url('${otherUser?.avatar_url || ''}')` }}
                                             >
                                                 {!otherUser?.avatar_url && (
@@ -315,22 +316,24 @@ export default function ChatPage() {
                                     </div>
                                 )}
 
-                                <div className={`flex flex-col gap-1 max-w-[80%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                    <div className={`p-3 px-4 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all hover:shadow-md ${isMe
+                                <div className={`relative flex flex-col group max-w-[85%] ${isMe ? 'items-end' : 'items-start'}`}>
+                                    <div className={`relative p-2.5 px-4 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all ${isMe
                                         ? `bg-[#2e8ab8] text-white ${isGrouped ? 'rounded-tr-md' : 'rounded-br-none'}`
                                         : `bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100/50 dark:border-gray-800/50 ${isGrouped ? 'rounded-tl-md' : 'rounded-bl-none'}`
                                         }`}>
-                                        {msg.content}
-                                    </div>
+                                        <div className="pr-12 min-w-[2rem] break-words">
+                                            {msg.content}
+                                        </div>
 
-                                    {/* Small timestamp on hover or at end of group */}
-                                    <div className="flex items-center gap-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="text-[10px] font-medium text-gray-400 dark:text-gray-600">
-                                            {formatTime(msg.created_at)}
-                                        </span>
-                                        {isMe && (
-                                            <span className="material-symbols-outlined text-[12px] text-[#2e8ab8]">done_all</span>
-                                        )}
+                                        {/* Integrated Bottom-Right Timestamp */}
+                                        <div className={`absolute bottom-1.5 right-2.5 flex items-center gap-0.5 select-none ${isMe ? 'text-white/60' : 'text-gray-400 dark:text-gray-500'}`}>
+                                            <span className="text-[9px] font-medium leading-none">
+                                                {formatTime(msg.created_at)}
+                                            </span>
+                                            {isMe && (
+                                                <span className="material-symbols-outlined text-[11px] leading-none">done_all</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
