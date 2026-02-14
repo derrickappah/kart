@@ -273,7 +273,7 @@ export default function ChatPage() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-100 font-display">
-            <header className="flex-none bg-white dark:bg-[#242428] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-10 shadow-sm relative">
+            <header className="flex-none bg-white dark:bg-[#242428] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-30 shadow-sm relative">
                 <button
                     onClick={() => router.back()}
                     className="size-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300"
@@ -482,7 +482,7 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#242428] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-10 relative">
+            <footer className="flex-none bg-white dark:bg-[#242428] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
                 {/* Emoji Picker Popover */}
                 {showEmojiPicker && (
                     <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#1e282c] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
