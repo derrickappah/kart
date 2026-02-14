@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
     try {
@@ -80,11 +80,12 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Insufficient wallet balance' }, { status: 400 });
         }
 
-        // 5. Perform transaction (using Supabase transaction would be better, but we'll do sequential updates)
-        // In a production app, this should be a stored procedure or use a service role for atomic operations
+        // 5. Perform transaction
+        // Use service role client to bypass RLS for administrative updates
+        const adminSupabase = createServiceRoleClient();
 
-        // A. Deduct balance from buyer
-        const { error: deductError } = await supabase
+        // A. Deduct balance from buyer (Using admin client for sequential consistency)
+        const { error: deductError } = await adminSupabase
             .from('wallets')
             .update({
                 balance: parseFloat(buyerWallet.balance) - totalAmount,
@@ -95,7 +96,7 @@ export async function POST(request) {
         if (deductError) throw deductError;
 
         // B. Create Order
-        const { data: order, error: orderError } = await supabase
+        const { data: order, error: orderError } = await adminSupabase
             .from('orders')
             .insert({
                 buyer_id: user.id,
@@ -108,7 +109,8 @@ export async function POST(request) {
                 seller_payout_amount: sellerPayoutAmount,
                 status: 'Paid',
                 escrow_status: 'Held',
-                currency: 'GHS'
+                currency: 'GHS',
+                payment_method: 'Wallet'
             })
             .select()
             .single();
@@ -116,7 +118,7 @@ export async function POST(request) {
         if (orderError) throw orderError;
 
         // C. Update Product Status to Sold
-        const { error: productUpdateError } = await supabase
+        const { error: productUpdateError } = await adminSupabase
             .from('products')
             .update({ status: 'Sold' })
             .eq('id', productId);
@@ -124,14 +126,14 @@ export async function POST(request) {
         if (productUpdateError) throw productUpdateError;
 
         // D. Update Seller Pending Balance
-        const { data: sellerWallet } = await supabase
+        const { data: sellerWallet } = await adminSupabase
             .from('wallets')
             .select('*')
             .eq('user_id', product.seller_id)
             .single();
 
         if (sellerWallet) {
-            await supabase
+            await adminSupabase
                 .from('wallets')
                 .update({
                     pending_balance: (parseFloat(sellerWallet.pending_balance) || 0) + sellerPayoutAmount,
@@ -140,7 +142,7 @@ export async function POST(request) {
                 .eq('id', sellerWallet.id);
         } else {
             // Create wallet for seller if it doesn't exist
-            await supabase
+            await adminSupabase
                 .from('wallets')
                 .insert({
                     user_id: product.seller_id,
@@ -151,7 +153,7 @@ export async function POST(request) {
         }
 
         // E. Record Transactions
-        await supabase.from('wallet_transactions').insert([
+        await adminSupabase.from('wallet_transactions').insert([
             {
                 wallet_id: buyerWallet.id,
                 order_id: order.id,
@@ -183,10 +185,10 @@ export async function POST(request) {
                 related_order_id: order.id
             }
         ];
-        await supabase.from('notifications').insert(notifications);
+        await adminSupabase.from('notifications').insert(notifications);
 
         // G. Record Status History
-        await supabase.from('order_status_history').insert({
+        await adminSupabase.from('order_status_history').insert({
             order_id: order.id,
             old_status: null,
             new_status: 'Paid',
