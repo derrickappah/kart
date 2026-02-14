@@ -105,8 +105,7 @@ export default function ConversationList() {
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
-                table: 'conversations',
-                filter: `participants=cs.{${user?.id}}` // contains current user
+                table: 'conversations'
             }, () => fetchConversations())
             .on('postgres_changes', {
                 event: 'INSERT',

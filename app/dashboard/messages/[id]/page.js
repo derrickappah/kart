@@ -120,7 +120,12 @@ export default function ChatPage() {
                 table: 'messages',
                 filter: `conversation_id=eq.${conversationId}`
             }, (payload) => {
-                setMessages(prev => [...prev, payload.new]);
+                setMessages(prev => {
+                    // Prevent duplicate messages if they were added locally first
+                    const exists = prev.some(m => m.id === payload.new.id);
+                    if (exists) return prev;
+                    return [...prev, payload.new];
+                });
             })
             .subscribe();
 
@@ -162,7 +167,7 @@ export default function ChatPage() {
                 router.replace(`/dashboard/messages/${newConv.id}`);
             }
 
-            const { error } = await supabase
+            const { data: sentMsg, error } = await supabase
                 .from('messages')
                 .insert([
                     {
@@ -170,13 +175,24 @@ export default function ChatPage() {
                         sender_id: currentUser.id,
                         content: newMessage
                     }
-                ]);
+                ])
+                .select()
+                .single();
 
             if (error) {
                 console.error("Error sending message:", error);
                 alert("Failed to send message. Please try again.");
             } else {
                 setNewMessage('');
+                // Append the sent message locally for instant feedback
+                if (sentMsg) {
+                    setMessages(prev => {
+                        const exists = prev.some(m => m.id === sentMsg.id);
+                        if (exists) return prev;
+                        return [...prev, sentMsg];
+                    });
+                }
+
                 await supabase
                     .from('conversations')
                     .update({ updated_at: new Date().toISOString() })
