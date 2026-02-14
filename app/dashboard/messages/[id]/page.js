@@ -16,6 +16,7 @@ export default function ChatPage() {
     const [otherUser, setOtherUser] = useState(null);
     const [productContext, setProductContext] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [sending, setSending] = useState(false);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -70,25 +71,24 @@ export default function ChatPage() {
                     .maybeSingle();
 
                 if (conversation) {
-                    // Fetch product details separately if product_id exists
-                    if (conversation.product_id) {
-                        const { data: prod } = await supabase
+                    const otherParticipantId = conversation.participants.find(p => p !== user.id);
+
+                    // Fetch profile and product in parallel
+                    const [profileResult, productResult] = await Promise.all([
+                        supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', otherParticipantId)
+                            .maybeSingle(),
+                        conversation.product_id ? supabase
                             .from('products')
                             .select('*')
                             .eq('id', conversation.product_id)
-                            .maybeSingle();
-                        setProductContext(prod);
-                    }
+                            .maybeSingle() : Promise.resolve({ data: null })
+                    ]);
 
-                    const otherParticipantId = conversation.participants.find(p => p !== user.id);
-
-                    // Fetch other user's profile
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', otherParticipantId)
-                        .maybeSingle();
-                    setOtherUser(profile);
+                    if (profileResult.data) setOtherUser(profileResult.data);
+                    if (productResult.data) setProductContext(productResult.data);
                 }
 
                 // Fetch initial messages
@@ -100,24 +100,7 @@ export default function ChatPage() {
 
                 if (initialMessages) setMessages(initialMessages);
 
-                // Subscribe to new messages
-                const channel = supabase
-                    .channel(`room:${conversationId}`)
-                    .on('postgres_changes', {
-                        event: 'INSERT',
-                        schema: 'public',
-                        table: 'messages',
-                        filter: `conversation_id=eq.${conversationId}`
-                    }, (payload) => {
-                        setMessages(prev => [...prev, payload.new]);
-                    })
-                    .subscribe();
-
                 setLoading(false);
-
-                return () => {
-                    supabase.removeChannel(channel);
-                };
             } catch (error) {
                 console.error("DEBUG: ChatPage init error:", error);
                 setLoading(false);
@@ -125,6 +108,25 @@ export default function ChatPage() {
         };
 
         init();
+
+        if (conversationId === 'new') return;
+
+        // Proper Real-time Subscription Setup
+        const channel = supabase
+            .channel(`room:${conversationId}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `conversation_id=eq.${conversationId}`
+            }, (payload) => {
+                setMessages(prev => [...prev, payload.new]);
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [conversationId, router, supabase, sellerId]);
 
     useEffect(() => {
@@ -133,46 +135,55 @@ export default function ChatPage() {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !currentUser) return;
+        if (!newMessage.trim() || !currentUser || sending) return;
 
-        let activeConversationId = conversationId;
+        setSending(true);
+        try {
+            let activeConversationId = conversationId;
 
-        if (conversationId === 'new') {
-            // Create a new conversation on the first message
-            const { data: newConv, error: convError } = await supabase
-                .from('conversations')
-                .insert([{
-                    participants: [currentUser.id, sellerId]
-                }])
-                .select()
-                .single();
+            if (conversationId === 'new') {
+                // Create a new conversation on the first message
+                const { data: newConv, error: convError } = await supabase
+                    .from('conversations')
+                    .insert([{
+                        participants: [currentUser.id, sellerId]
+                    }])
+                    .select()
+                    .single();
 
-            if (convError) {
-                console.error("Error creating conversation:", convError);
-                return;
-            }
-            activeConversationId = newConv.id;
-            // Redirect to the new conversation URL without reloading
-            router.replace(`/dashboard/messages/${newConv.id}`);
-        }
-
-        const { error } = await supabase
-            .from('messages')
-            .insert([
-                {
-                    conversation_id: activeConversationId,
-                    sender_id: currentUser.id,
-                    content: newMessage
+                if (convError) {
+                    console.error("Error creating conversation:", convError);
+                    alert("Failed to start conversation. Please try again.");
+                    setSending(false);
+                    return;
                 }
-            ]);
+                activeConversationId = newConv.id;
+                // Redirect to the new conversation URL without reloading
+                router.replace(`/dashboard/messages/${newConv.id}`);
+            }
 
-        if (error) console.error("Error sending message:", error);
-        else {
-            setNewMessage('');
-            await supabase
-                .from('conversations')
-                .update({ updated_at: new Date().toISOString() })
-                .eq('id', activeConversationId);
+            const { error } = await supabase
+                .from('messages')
+                .insert([
+                    {
+                        conversation_id: activeConversationId,
+                        sender_id: currentUser.id,
+                        content: newMessage
+                    }
+                ]);
+
+            if (error) {
+                console.error("Error sending message:", error);
+                alert("Failed to send message. Please try again.");
+            } else {
+                setNewMessage('');
+                await supabase
+                    .from('conversations')
+                    .update({ updated_at: new Date().toISOString() })
+                    .eq('id', activeConversationId);
+            }
+        } finally {
+            setSending(false);
         }
     };
 
@@ -312,10 +323,14 @@ export default function ChatPage() {
                     </div>
                     <button
                         type="submit"
-                        disabled={!newMessage.trim()}
-                        className="p-3 bg-[#2e8ab8] text-white rounded-full shadow-lg shadow-[#2e8ab8]/30 hover:bg-[#2e8ab8]/90 transition-colors transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none"
+                        disabled={!newMessage.trim() || sending}
+                        className="p-3 bg-[#2e8ab8] text-white rounded-full shadow-lg shadow-[#2e8ab8]/30 hover:bg-[#2e8ab8]/90 transition-colors transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none min-w-[48px]"
                     >
-                        <span className="material-symbols-outlined text-[20px] ml-0.5">send</span>
+                        {sending ? (
+                            <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                            <span className="material-symbols-outlined text-[20px] ml-0.5">send</span>
+                        )}
                     </button>
                 </form>
             </footer>

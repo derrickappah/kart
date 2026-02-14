@@ -55,31 +55,28 @@ export default function ConversationList() {
 
         const processConversations = async (convsToProcess, currentUser) => {
             if (convsToProcess && convsToProcess.length > 0 && currentUser) {
+                // Collect all unique IDs for batch fetching
+                const otherUserIds = [...new Set(convsToProcess.map(c => c.participants?.find(p => p !== currentUser.id)).filter(Boolean))];
+                const productIds = [...new Set(convsToProcess.map(c => c.product_id).filter(Boolean))];
+
+                // Fetch all profiles and products in parallel batches
+                const [profilesResult, productsResult] = await Promise.all([
+                    otherUserIds.length > 0
+                        ? supabase.from('profiles').select('id, display_name, email, avatar_url').in('id', otherUserIds)
+                        : Promise.resolve({ data: [] }),
+                    productIds.length > 0
+                        ? supabase.from('products').select('id, title, image_url').in('id', productIds)
+                        : Promise.resolve({ data: [] })
+                ]);
+
+                const profilesMap = (profilesResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+                const productsMap = (productsResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+
+                // Last messages still need individual fetch or a complex group-by query 
+                // but we can at least parallelize them
                 const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
                     const otherUserId = c.participants?.find(p => p !== currentUser.id);
-
-                    let profile = null;
-                    if (otherUserId) {
-                        const { data: p } = await supabase
-                            .from('profiles')
-                            .select('display_name, email, avatar_url')
-                            .eq('id', otherUserId)
-                            .maybeSingle();
-                        profile = p;
-                    }
-
-                    // Fetch product details separately
-                    let productData = null;
-                    if (c.product_id) {
-                        const { data: p } = await supabase
-                            .from('products')
-                            .select('title, image_url')
-                            .eq('id', c.product_id)
-                            .maybeSingle();
-                        productData = p;
-                    }
-
-                    const { data: lastMsg } = await supabase
+                    const lastMsgResult = await supabase
                         .from('messages')
                         .select('content, created_at')
                         .eq('conversation_id', c.id)
@@ -89,18 +86,39 @@ export default function ConversationList() {
 
                     return {
                         ...c,
-                        otherUser: profile || { display_name: 'Unknown User', email: '', avatar_url: null },
-                        lastMessage: lastMsg,
-                        product: productData
+                        otherUser: profilesMap[otherUserId] || { display_name: 'Unknown User', email: '', avatar_url: null },
+                        product: productsMap[c.product_id] || null,
+                        lastMessage: lastMsgResult.data
                     };
                 }));
+
                 setConversations(enrichedConvs);
             }
             setLoading(false);
         };
 
         fetchConversations();
-    }, [supabase]);
+
+        // Subscribe to changes in conversations or messages to refresh the list
+        const channel = supabase
+            .channel('public:conversations')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'conversations',
+                filter: `participants=cs.{${user?.id}}` // contains current user
+            }, () => fetchConversations())
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages'
+            }, () => fetchConversations()) // Refresh on new messages
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [supabase, user?.id]);
 
     const timeAgo = (date) => {
         if (!date) return '';
