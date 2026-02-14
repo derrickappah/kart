@@ -354,45 +354,44 @@ export default function ChatPage() {
                                     </div>
                                 )}
 
-                                <div className={`relative flex flex-col group max-w-[85%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                    <div className={`relative p-2.5 px-3 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all ${isMe
+                                <div className={`flex flex-col group max-w-[85%] ${isMe ? 'items-end' : 'items-start'}`}>
+                                    <div className={`p-2 px-3 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all ${isMe
                                         ? `bg-[#2e8ab8] text-white ${isGrouped ? 'rounded-tr-md' : 'rounded-br-none'}`
                                         : `bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100/50 dark:border-gray-800/50 ${isGrouped ? 'rounded-tl-md' : 'rounded-bl-none'}`
                                         }`}>
-                                        <div className="pr-12 min-w-[2rem] break-words">
-                                            {msg.content.match(/\.(jpg|jpeg|png|gif|webp)/i) && msg.content.startsWith('http') ? (
-                                                <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="break-words">
+                                                {msg.content.match(/\.(jpg|jpeg|png|gif|webp)/i) && msg.content.startsWith('http') ? (
                                                     <img
                                                         src={msg.content}
                                                         alt="Attachment"
                                                         className="max-w-full rounded-lg cursor-pointer hover:opacity-95 transition-opacity"
                                                         onClick={() => window.open(msg.content, '_blank')}
                                                     />
-                                                    {/* If there's text along with the image (though currently we send them separately), we could render it here */}
-                                                </div>
-                                            ) : msg.content.startsWith('http') ? (
-                                                <a
-                                                    href={msg.content}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-2 underline break-all"
-                                                >
-                                                    <span className="material-symbols-outlined text-[18px]">attachment</span>
-                                                    Attachment
-                                                </a>
-                                            ) : (
-                                                msg.content
-                                            )}
-                                        </div>
+                                                ) : msg.content.startsWith('http') ? (
+                                                    <a
+                                                        href={msg.content}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 underline break-all"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[18px]">attachment</span>
+                                                        Attachment
+                                                    </a>
+                                                ) : (
+                                                    msg.content
+                                                )}
+                                            </div>
 
-                                        {/* Integrated Bottom-Right Timestamp */}
-                                        <div className={`absolute bottom-1.5 right-2.5 flex items-center gap-0.5 select-none ${isMe ? 'text-white/60' : 'text-gray-400 dark:text-gray-500'}`}>
-                                            <span className="text-[9px] font-medium leading-none">
-                                                {formatTime(msg.created_at)}
-                                            </span>
-                                            {isMe && (
-                                                <span className="material-symbols-outlined text-[11px] leading-none">done_all</span>
-                                            )}
+                                            {/* Integrated Bottom-Right Timestamp with Wrapping Flow */}
+                                            <div className={`flex items-center justify-end gap-1 mt-0.5 select-none self-end ${isMe ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
+                                                <span className="text-[9px] font-medium leading-none">
+                                                    {formatTime(msg.created_at)}
+                                                </span>
+                                                {isMe && (
+                                                    <span className="material-symbols-outlined text-[11px] leading-none">done_all</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
