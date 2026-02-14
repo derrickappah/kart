@@ -309,12 +309,6 @@ export default function ChatPage() {
 
             {/* Footer */}
             <footer className="flex-none bg-white dark:bg-[#242428] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-10">
-                <div className="flex justify-center -mt-8 mb-4">
-                    <button className="flex items-center gap-2 bg-white dark:bg-[#242428] border border-[#2e8ab8]/30 text-[#2e8ab8] px-4 py-2 rounded-full shadow-lg text-sm font-semibold hover:bg-[#2e8ab8]/5 transition-all transform hover:-translate-y-0.5 active:scale-95">
-                        <span className="material-symbols-outlined text-[18px]">sell</span>
-                        Make an Offer
-                    </button>
-                </div>
                 <form onSubmit={handleSendMessage} className="flex items-end gap-3">
                     <button type="button" className="p-3 text-gray-400 hover:text-[#2e8ab8] dark:text-gray-500 dark:hover:text-[#2e8ab8] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0">
                         <span className="material-symbols-outlined text-[24px]">add</span>
