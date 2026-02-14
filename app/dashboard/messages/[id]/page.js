@@ -264,41 +264,74 @@ export default function ChatPage() {
             )}
 
             {/* Chat Area */}
-            <main className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 space-y-3 scroll-smooth">
-                <div className="flex justify-center py-2">
-                    <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full uppercase tracking-wider">Conversation Started</span>
-                </div>
-
+            <main className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 scroll-smooth">
                 {messages.map((msg, index) => {
                     const isMe = msg.sender_id === currentUser?.id;
+                    const prevMsg = index > 0 ? messages[index - 1] : null;
+
+                    // Check if this message is from the same sender as the previous one
+                    const isSameSender = prevMsg?.sender_id === msg.sender_id;
+
+                    // Calculate time gap in minutes
+                    const timeGap = prevMsg
+                        ? (new Date(msg.created_at) - new Date(prevMsg.created_at)) / (1000 * 60)
+                        : Infinity;
+
+                    // WhatsApp-style grouping rules:
+                    // 1. Same sender
+                    // 2. Sent within 2 minutes of each other
+                    const isGrouped = isSameSender && timeGap <= 2;
+
+                    // Show a centered timestamp if:
+                    // 1. It's the first message
+                    // 2. The time gap is > 2 minutes
+                    const showTimestamp = !prevMsg || timeGap > 2;
+
                     return (
-                        <div key={msg.id} className={`flex items-end gap-3 group ${isMe ? 'justify-end' : ''}`}>
-                            {!isMe && (
-                                <div
-                                    className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center shrink-0 mb-1"
-                                    style={{ backgroundImage: `url('${otherUser?.avatar_url || ''}')` }}
-                                >
-                                    {!otherUser?.avatar_url && (
-                                        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                            {otherUser?.display_name?.[0]?.toUpperCase()}
-                                        </div>
-                                    )}
+                        <div key={msg.id} className="flex flex-col">
+                            {showTimestamp && (
+                                <div className="flex justify-center my-4">
+                                    <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-gray-100/50 dark:bg-gray-800/50 px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                                        {new Date(msg.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })} • {formatTime(msg.created_at)}
+                                    </span>
                                 </div>
                             )}
-                            <div className={`flex flex-col gap-1 max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                <div className={`p-4 rounded-2xl shadow-sm text-[15px] leading-relaxed ${isMe
-                                    ? 'bg-[#2e8ab8] text-white rounded-br-none'
-                                    : 'bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-800 rounded-bl-none'
-                                    }`}>
-                                    {msg.content}
-                                </div>
-                                <div className="flex items-center gap-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="text-[11px] text-gray-400 dark:text-gray-600">
-                                        {formatTime(msg.created_at)}
-                                    </span>
-                                    {isMe && (
-                                        <span className="material-symbols-outlined text-[12px] text-[#2e8ab8]">done_all</span>
-                                    )}
+
+                            <div className={`flex items-end gap-2 group ${isMe ? 'justify-end' : ''} ${isGrouped ? 'mt-1' : 'mt-4'}`}>
+                                {!isMe && (
+                                    <div className="w-8 shrink-0">
+                                        {!isGrouped && (
+                                            <div
+                                                className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center mb-1 shadow-sm"
+                                                style={{ backgroundImage: `url('${otherUser?.avatar_url || ''}')` }}
+                                            >
+                                                {!otherUser?.avatar_url && (
+                                                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500">
+                                                        {otherUser?.display_name?.[0]?.toUpperCase()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className={`flex flex-col gap-1 max-w-[80%] ${isMe ? 'items-end' : 'items-start'}`}>
+                                    <div className={`p-3 px-4 rounded-2xl shadow-sm text-[15px] leading-[1.45] transition-all hover:shadow-md ${isMe
+                                        ? `bg-[#2e8ab8] text-white ${isGrouped ? 'rounded-tr-md' : 'rounded-br-none'}`
+                                        : `bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100/50 dark:border-gray-800/50 ${isGrouped ? 'rounded-tl-md' : 'rounded-bl-none'}`
+                                        }`}>
+                                        {msg.content}
+                                    </div>
+
+                                    {/* Small timestamp on hover or at end of group */}
+                                    <div className="flex items-center gap-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="text-[10px] font-medium text-gray-400 dark:text-gray-600">
+                                            {formatTime(msg.created_at)}
+                                        </span>
+                                        {isMe && (
+                                            <span className="material-symbols-outlined text-[12px] text-[#2e8ab8]">done_all</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
