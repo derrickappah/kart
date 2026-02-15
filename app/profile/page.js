@@ -107,14 +107,10 @@ export default function ProfilePage() {
                 </section>
 
                 {/* Stats Section */}
-                <section className="grid grid-cols-3 gap-3">
+                <section className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all cursor-default">
                         <p className="text-2xl font-bold text-[#111618] dark:text-white">{stats.listings}</p>
                         <p className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Listings</p>
-                    </div>
-                    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all cursor-default">
-                        <p className="text-2xl font-bold text-[#111618] dark:text-white">{stats.followers}</p>
-                        <p className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Followers</p>
                     </div>
                     <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all cursor-default">
                         <div className="flex items-center gap-1">
