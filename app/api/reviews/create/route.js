@@ -61,24 +61,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to create review' }, { status: 500 });
     }
 
-    // Update seller's average rating
-    const { data: sellerReviews } = await supabase
-      .from('reviews')
-      .select('rating')
-      .eq('seller_id', sellerId);
-
-    if (sellerReviews && sellerReviews.length > 0) {
-      const totalRating = sellerReviews.reduce((sum, r) => sum + r.rating, 0);
-      const averageRating = totalRating / sellerReviews.length;
-
-      await supabase
-        .from('profiles')
-        .update({
-          average_rating: averageRating,
-          total_reviews: sellerReviews.length,
-        })
-        .eq('id', sellerId);
-    }
+    // Seller stats will be updated automatically by database trigger
 
     return NextResponse.json({ message: 'Review created successfully' });
   } catch (error) {
