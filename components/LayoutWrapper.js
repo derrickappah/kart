@@ -27,15 +27,7 @@ export default function LayoutWrapper({ children, user }) {
 
     console.log('[LayoutWrapper] Rendered at:', pathname, 'isEditingPage:', isEditingPage);
 
-    // Add/remove class to body to allow CSS-level hiding as a fallback
-    useEffect(() => {
-        if (isEditingPage) {
-            document.body.classList.add('hide-global-navigation');
-        } else {
-            document.body.classList.remove('hide-global-navigation');
-        }
-        return () => document.body.classList.remove('hide-global-navigation');
-    }, [isEditingPage]);
+
 
     return (
         <>

@@ -81,7 +81,7 @@ export default function PromotedBanner({ products }) {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
                             <div className="absolute top-3 left-3 flex items-center justify-center size-7 bg-[#FFD700] rounded-full text-black shadow-lg">
-                                <span className="material-symbols-outlined text-[18px] fill-current">stars</span>
+                                <span className="material-symbols-outlined text-[18px] w-[18px] h-[18px] overflow-hidden flex justify-center items-center fill-current">stars</span>
                             </div>
                             <div className="absolute bottom-4 left-4 right-4">
                                 <h2 className="text-white text-lg font-extrabold leading-tight line-clamp-1 mb-1 drop-shadow-md">
@@ -100,7 +100,7 @@ export default function PromotedBanner({ products }) {
                                             )}
                                             <p className="text-white/90 text-xs font-bold truncate drop-shadow-sm">{p.seller?.display_name || 'Seller'}</p>
                                             {p.seller?.is_verified && (
-                                                <span className="material-symbols-outlined text-[#FFD700] text-[14px] font-bold drop-shadow-sm">verified</span>
+                                                <span className="material-symbols-outlined text-[#FFD700] text-[14px] w-[14px] h-[14px] overflow-hidden flex justify-center items-center font-bold drop-shadow-sm">verified</span>
                                             )}
                                         </div>
                                     </div>

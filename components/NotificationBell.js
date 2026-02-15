@@ -81,16 +81,16 @@ export default function NotificationBell() {
   }, []); // Run only once on mount
 
   if (loading) {
-    return null;
+    return <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-[#2d2d32] animate-pulse" />;
   }
 
   return (
     <button
-      className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-[#2d2d32]"
+      className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-[#2d2d32] overflow-hidden"
       onClick={() => router.push('/dashboard/notifications')}
       aria-label="Notifications"
     >
-      <span className="material-symbols-outlined text-gray-900 dark:text-white" style={{ fontSize: '28px' }}>
+      <span className="material-symbols-outlined text-gray-900 dark:text-white w-[28px] h-[28px] overflow-hidden flex justify-center items-center" style={{ fontSize: '28px' }}>
         notifications
       </span>
       {unreadCount > 0 && (

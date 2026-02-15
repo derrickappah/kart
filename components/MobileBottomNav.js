@@ -42,7 +42,7 @@ export default function MobileBottomNav({ user }) {
                 {/* Home */}
                 <Link href="/" className="group flex flex-col items-center">
                     <span
-                        className={`material-symbols-outlined text-[44px] transition-transform group-active:scale-90 ${isActive('/') ? 'text-[#1daddd]' : 'text-gray-400'}`}
+                        className={`material-symbols-outlined text-[44px] w-[44px] h-[44px] overflow-hidden flex justify-center items-center transition-transform group-active:scale-90 ${isActive('/') ? 'text-[#1daddd]' : 'text-gray-400'}`}
                         style={{ fontVariationSettings: isActive('/') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
                         home
@@ -52,7 +52,7 @@ export default function MobileBottomNav({ user }) {
                 {/* Marketplace */}
                 <Link href="/marketplace" className="group flex flex-col items-center -mr-8">
                     <span
-                        className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/marketplace') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
+                        className={`material-symbols-outlined text-[44px] w-[44px] h-[44px] overflow-hidden flex justify-center items-center transition-colors ${isActive('/marketplace') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
                         style={{ fontVariationSettings: isActive('/marketplace') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
                         storefront
@@ -62,7 +62,7 @@ export default function MobileBottomNav({ user }) {
                 {/* Sell (FAB) */}
                 <div className="relative -top-5">
                     <Link href="/dashboard/seller/create" className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1daddd] shadow-lg shadow-[#1daddd]/40 transition-transform active:scale-95 hover:bg-[#159ac6]">
-                        <span className="material-symbols-outlined text-[44px] text-white" style={{ fontVariationSettings: "'wght' 400" }}>
+                        <span className="material-symbols-outlined text-[44px] w-[44px] h-[44px] overflow-hidden flex justify-center items-center text-white" style={{ fontVariationSettings: "'wght' 400" }}>
                             add
                         </span>
                     </Link>
@@ -71,7 +71,7 @@ export default function MobileBottomNav({ user }) {
                 {/* Messages */}
                 <Link href="/dashboard/messages" className="group flex flex-col items-center -ml-8">
                     <span
-                        className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
+                        className={`material-symbols-outlined text-[44px] w-[44px] h-[44px] overflow-hidden flex justify-center items-center transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
                         style={{ fontVariationSettings: isActive('/dashboard/messages') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
                         chat_bubble
@@ -81,7 +81,7 @@ export default function MobileBottomNav({ user }) {
                 {/* Profile */}
                 <Link href={getProfileLink()} className="group flex flex-col items-center">
                     <span
-                        className={`material-symbols-outlined text-[44px] transition-colors ${isActive('/profile') || isActive('/login') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
+                        className={`material-symbols-outlined text-[44px] w-[44px] h-[44px] overflow-hidden flex justify-center items-center transition-colors ${isActive('/profile') || isActive('/login') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}
                         style={{ fontVariationSettings: isActive('/profile') || isActive('/login') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}
                     >
                         account_circle
