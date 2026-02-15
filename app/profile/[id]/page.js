@@ -19,6 +19,26 @@ export default function SellerProfilePage() {
     const [showContact, setShowContact] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
 
+    const tagIcons = {
+        'Fair Price': 'thumb_up',
+        'Punctual': 'schedule',
+        'Item as Described': 'check_circle',
+        'Friendly': 'sentiment_satisfied',
+        'Quick Response': 'bolt'
+    };
+
+    const parseReviewContent = (content) => {
+        if (!content) return { text: '', tags: [] };
+        const tagsMatch = content.match(/\[Tags: (.*?)\]/);
+        if (tagsMatch) {
+            const tagsString = tagsMatch[1];
+            const tags = tagsString.split(',').map(t => t.trim());
+            const text = content.replace(tagsMatch[0], '').trim();
+            return { text, tags };
+        }
+        return { text: content, tags: [] };
+    };
+
     useEffect(() => {
         const fetchProfileData = async () => {
             if (!id) return;
@@ -370,8 +390,33 @@ export default function SellerProfilePage() {
                                             </div>
 
                                             {review.comment && (
-                                                <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap pl-1">
-                                                    {review.comment}
+                                                <div className="pl-1">
+                                                    {(() => {
+                                                        const { text, tags } = parseReviewContent(review.comment);
+                                                        return (
+                                                            <div className="flex flex-col gap-3">
+                                                                {tags.length > 0 && (
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {tags.map((tag, idx) => (
+                                                                            <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                                                                {tagIcons[tag] && (
+                                                                                    <span className="material-symbols-outlined text-[14px] text-primary">
+                                                                                        {tagIcons[tag]}
+                                                                                    </span>
+                                                                                )}
+                                                                                {tag}
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                                {text && (
+                                                                    <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                                                                        {text}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </div>
                                             )}
                                         </div>
