@@ -14,6 +14,8 @@ export default function SellerProfilePage() {
     const [profile, setProfile] = useState(null);
     const [activeListings, setActiveListings] = useState([]);
     const [activeTab, setActiveTab] = useState('listings'); // 'listings' or 'reviews'
+    const [reviews, setReviews] = useState([]);
+    const [reviewers, setReviewers] = useState({});
     const [showContact, setShowContact] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
 
@@ -42,6 +44,33 @@ export default function SellerProfilePage() {
 
                 if (listingsError) throw listingsError;
                 setActiveListings(listingsData);
+
+                // Fetch reviews
+                const { data: reviewsData, error: reviewsError } = await supabase
+                    .from('reviews')
+                    .select('*')
+                    .eq('seller_id', id)
+                    .order('created_at', { ascending: false });
+
+                if (reviewsError) throw reviewsError;
+                setReviews(reviewsData || []);
+
+                // Fetch reviewers profiles
+                if (reviewsData && reviewsData.length > 0) {
+                    const buyerIds = [...new Set(reviewsData.map(r => r.buyer_id))];
+                    const { data: buyersData } = await supabase
+                        .from('profiles')
+                        .select('id, display_name, avatar_url')
+                        .in('id', buyerIds);
+
+                    if (buyersData) {
+                        const buyersMap = buyersData.reduce((acc, buyer) => {
+                            acc[buyer.id] = buyer;
+                            return acc;
+                        }, {});
+                        setReviewers(buyersMap);
+                    }
+                }
 
             } catch (err) {
                 console.error('Error fetching seller profile:', err);
@@ -308,8 +337,57 @@ export default function SellerProfilePage() {
                             )}
                         </div>
                     ) : (
-                        <div className="text-center py-12 text-slate-500">
-                            Reviews functionality coming soon.
+                        <div className="flex flex-col gap-4">
+                            {reviews.length > 0 ? (
+                                reviews.map((review) => {
+                                    const reviewer = reviewers[review.buyer_id] || {};
+                                    return (
+                                        <div key={review.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                                        {reviewer.avatar_url ? (
+                                                            <img src={reviewer.avatar_url} alt={reviewer.display_name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold">
+                                                                {reviewer.display_name?.[0]?.toUpperCase() || 'U'}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                            {reviewer.display_name || 'Anonymous User'}
+                                                        </p>
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                            {timeAgo(review.created_at)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-0.5 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg">
+                                                    <span className="text-sm font-bold text-yellow-600 dark:text-yellow-500">{review.rating}</span>
+                                                    <span className="material-symbols-outlined text-sm text-yellow-500 filled">star</span>
+                                                </div>
+                                            </div>
+
+                                            {review.comment && (
+                                                <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap pl-1">
+                                                    {review.comment}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="text-center py-12 flex flex-col items-center justify-center gap-3">
+                                    <div className="size-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                                        <span className="material-symbols-outlined text-3xl">rate_review</span>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">No reviews yet</h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                                        This seller hasn't received any reviews from buyers yet.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </section>
@@ -331,6 +409,6 @@ export default function SellerProfilePage() {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

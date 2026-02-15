@@ -34,19 +34,36 @@ export default function ReviewClient({ orderId, seller, product }) {
 
         setSubmitting(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+            const response = await fetch('/api/reviews/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderId,
+                    productId: product?.id,
+                    sellerId: seller.id,
+                    rating,
+                    comment: selectedTags.length > 0
+                        ? `${reviewText}\n\n[Tags: ${selectedTags.join(', ')}]`
+                        : reviewText
+                }),
+            });
 
-        // Log the review data (in a real app, this would go to the backend)
-        console.log('Submitting review:', {
-            orderId,
-            sellerId: seller.id,
-            rating,
-            tags: selectedTags,
-            comment: reviewText
-        });
+            const data = await response.json();
 
-        router.push(`/dashboard/orders/${orderId}/review/success`);
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to submit review');
+            }
+
+            router.push(`/dashboard/orders/${orderId}/review/success`);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            alert(error.message || 'Something went wrong. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const ratingLabels = ['Poor', 'Fair', 'Good', 'Very Good', 'Great'];
