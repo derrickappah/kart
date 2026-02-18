@@ -23,19 +23,28 @@ export default function SellerDashboardClient({
     const router = useRouter();
     console.log('[SellerDashboardClient] Rendered');
 
+    const [hiddenSubs, setHiddenSubs] = useState([]);
     const [isDismissing, setIsDismissing] = useState(false);
 
     const handleDismissSub = async (subId) => {
         try {
+            // Optimistic Update: Hide it locally first
+            setHiddenSubs(prev => [...prev, subId]);
             setIsDismissing(true);
-            await fetch('/api/subscriptions/fail', {
+
+            const response = await fetch('/api/subscriptions/fail', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ subscriptionId: subId }),
             });
-            router.refresh(); // Refresh server data to hide the failed subscription
-            // The subscription will naturally disappear on next data fetch/refresh
-            // since its status will no longer be 'Pending'
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Failed to mark subscription as failed:', errorData.error);
+                // Rollback if needed, but for UX we might just leave it hidden
+            }
+
+            router.refresh();
         } catch (error) {
             console.error('Error dismissing subscription:', error);
         } finally {
@@ -43,7 +52,7 @@ export default function SellerDashboardClient({
         }
     };
 
-    const visiblePendingSubs = pendingSubscriptions || [];
+    const visiblePendingSubs = pendingSubscriptions?.filter(sub => !hiddenSubs.includes(sub.id)) || [];
 
     const displayName = profile?.display_name || user.email.split('@')[0];
 

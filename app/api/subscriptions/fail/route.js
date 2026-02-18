@@ -29,8 +29,9 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
         }
 
-        // Only allow failing if currently pending
-        if (subscription.status !== 'Pending' && subscription.status !== 'pending') {
+        // Only allow failing if currently pending (case-insensitive)
+        const currentStatus = subscription.status?.toLowerCase();
+        if (currentStatus !== 'pending') {
             return NextResponse.json({
                 error: `Cannot mark subscription as failed from status: ${subscription.status}`
             }, { status: 400 });
