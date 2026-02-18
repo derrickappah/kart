@@ -208,8 +208,8 @@ export default function SellerDashboardClient({
                                         <span className="material-symbols-outlined text-primary text-2xl fill-1">info</span>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-black text-primary uppercase tracking-tight">Expiring Soon</p>
-                                        <p className="text-[11px] font-bold text-primary/60 uppercase tracking-widest mt-0.5">Ends in {daysUntilExpiry} day{daysUntilExpiry !== 1 ? 's' : ''}</p>
+                                        <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Expiring Soon</p>
+                                        <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-0.5">Ends in {daysUntilExpiry} day{daysUntilExpiry !== 1 ? 's' : ''}</p>
                                     </div>
                                 </div>
                             )}
