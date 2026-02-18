@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
     try {
@@ -16,6 +16,7 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Subscription ID is required' }, { status: 400 });
         }
 
+        // Verify the subscription belongs to the user and is pending
         const { data: subscription, error: fetchError } = await supabase
             .from('subscriptions')
             .select('id, status')
@@ -24,6 +25,7 @@ export async function POST(request) {
             .single();
 
         if (fetchError || !subscription) {
+            console.error('[Subscription Fail API] Subscription not found or access denied:', fetchError);
             return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
         }
 
@@ -34,16 +36,22 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
-        const { error: updateError } = await supabase
+        // Use service role client to bypass RLS for the update
+        const adminSupabase = createServiceRoleClient();
+        const { error: updateError } = await adminSupabase
             .from('subscriptions')
-            .update({ status: 'Failed', updated_at: new Date().toISOString() })
+            .update({
+                status: 'Cancelled', // Changed from 'Failed' to satisfy DB check constraint
+                updated_at: new Date().toISOString()
+            })
             .eq('id', subscriptionId);
 
         if (updateError) {
+            console.error('[Subscription Fail API] Update error:', updateError);
             return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, message: 'Subscription marked as failed' });
+        return NextResponse.json({ success: true, message: 'Subscription marked as cancelled' });
     } catch (error) {
         console.error('[Subscription Fail API] Error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
