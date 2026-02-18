@@ -23,27 +23,27 @@ export default function SellerDashboardClient({
     const router = useRouter();
     console.log('[SellerDashboardClient] Rendered');
 
-    const [hiddenSubs, setHiddenSubs] = useState([]);
+    const [isDismissing, setIsDismissing] = useState(false);
 
-    // Load permanently dismissed subs from localStorage
-    useEffect(() => {
-        const dismissed = localStorage.getItem('dismissed_pending_subs');
-        if (dismissed) {
-            try {
-                setHiddenSubs(JSON.parse(dismissed));
-            } catch (e) {
-                console.error('Error parsing dismissed_pending_subs', e);
-            }
+    const handleDismissSub = async (subId) => {
+        try {
+            setIsDismissing(true);
+            await fetch('/api/subscriptions/fail', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscriptionId: subId }),
+            });
+            router.refresh(); // Refresh server data to hide the failed subscription
+            // The subscription will naturally disappear on next data fetch/refresh
+            // since its status will no longer be 'Pending'
+        } catch (error) {
+            console.error('Error dismissing subscription:', error);
+        } finally {
+            setIsDismissing(false);
         }
-    }, []);
-
-    const handleDismissSub = (subId) => {
-        const updated = [...hiddenSubs, subId];
-        setHiddenSubs(updated);
-        localStorage.setItem('dismissed_pending_subs', JSON.stringify(updated));
     };
 
-    const visiblePendingSubs = pendingSubscriptions?.filter(sub => !hiddenSubs.includes(sub.id)) || [];
+    const visiblePendingSubs = pendingSubscriptions || [];
 
     const displayName = profile?.display_name || user.email.split('@')[0];
 
@@ -206,7 +206,7 @@ export default function SellerDashboardClient({
                                             const tenMinutesMs = 10 * 60 * 1000;
 
                                             if (subAgeMs > tenMinutesMs) {
-                                                console.log('[Dashboard] Sub is older than 10 min and activation failed. Hiding persistently.');
+                                                console.log('[Dashboard] Sub is older than 10 min and activation failed. Marking failed in DB.');
                                                 handleDismissSub(sub.id);
                                             } else {
                                                 console.log('[Dashboard] Activation failed but sub is recent. Keeping on dashboard.');
