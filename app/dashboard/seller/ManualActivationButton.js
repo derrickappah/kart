@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 
-export default function ManualActivationButton({ subscriptionId, paymentReference }) {
+export default function ManualActivationButton({ subscriptionId, paymentReference, onFailure }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -28,6 +28,9 @@ export default function ManualActivationButton({ subscriptionId, paymentReferenc
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.error === 'Payment not successful' && onFailure) {
+          onFailure();
+        }
         throw new Error(data.error || 'Failed to activate subscription');
       }
 

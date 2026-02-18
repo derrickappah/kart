@@ -16,15 +16,39 @@ export default async function SellerAnalyticsPage() {
     .select('*')
     .eq('seller_id', user.id);
 
-  // Fetch orders for seller
+  // Fetch orders for seller - include all successful statuses
   const { data: orders } = await supabase
     .from('orders')
     .select('*, product:products(id, title, image_url)')
-    .eq('seller_id', user.id);
+    .eq('seller_id', user.id)
+    .in('status', ['Paid', 'Completed', 'Delivered']);
 
   // Calculate stats
   const totalSales = orders?.length || 0;
-  const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.seller_payout_amount || 0), 0) || 0;
+  const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.seller_payout_amount || order.total_amount || 0), 0) || 0;
+
+  // 7-Day Chart Data Calculation
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const chartData = Array(7).fill(0);
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  // Align day labels with actual days
+  const actualDayLabels = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sevenDaysAgo);
+    d.setDate(d.getDate() + i);
+    actualDayLabels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+
+    const dayTotal = orders?.filter(order => {
+      const orderDate = new Date(order.created_at);
+      return orderDate.toDateString() === d.toDateString();
+    }).reduce((sum, order) => sum + parseFloat(order.seller_payout_amount || order.total_amount || 0), 0) || 0;
+
+    chartData[i] = dayTotal;
+  }
 
   // Real data from products
   const totalViews = products?.reduce((sum, p) => sum + (p.views_count || 0), 0) || 0;
@@ -77,9 +101,7 @@ export default async function SellerAnalyticsPage() {
                   </div>
                   Total Revenue
                 </div>
-                <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold px-2.5 py-1 rounded-lg ring-1 ring-emerald-500/20">
-                  <span className="material-symbols-outlined text-[14px]">trending_up</span> +5%
-                </span>
+
               </div>
               <p className="text-3xl font-black tracking-tight text-slate-900 dark:text-white relative z-10">₵{totalRevenue.toFixed(2)}</p>
             </div>
@@ -92,10 +114,7 @@ export default async function SellerAnalyticsPage() {
                   <p className="text-2xl font-black text-slate-900 dark:text-white">{totalSales}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 mt-4 text-[10px] font-bold text-emerald-500">
-                <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
-                2 vs last mo.
-              </div>
+
             </div>
 
             {/* Total Views */}
@@ -120,10 +139,7 @@ export default async function SellerAnalyticsPage() {
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Earnings Overview</h3>
                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Past 7 days performance</p>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">Growth</p>
-                <p className="text-primary font-black text-base">+12.4%</p>
-              </div>
+
             </div>
 
             {/* Chart Container */}
@@ -140,14 +156,39 @@ export default async function SellerAnalyticsPage() {
                     <stop offset="100%" style={{ stopColor: '#1daddd', stopOpacity: 0 }} />
                   </linearGradient>
                 </defs>
-                <path d="M0,50 L0,35 Q10,35 15,25 T30,20 T45,30 T60,15 T75,20 T90,5 L100,10 L100,50 Z" fill="url(#gradient)" />
-                <path d="M0,35 Q10,35 15,25 T30,20 T45,30 T60,15 T75,20 T90,5 L100,10" fill="none" stroke="#1daddd" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-                <circle className="fill-white dark:fill-[#1e292b] stroke-primary stroke-[2.5px]" cx="60" cy="15" r="3" />
-                <circle className="fill-white dark:fill-[#1e292b] stroke-primary stroke-[2.5px]" cx="90" cy="5" r="3" />
+
+                {(() => {
+                  const max = Math.max(...chartData, 10);
+                  const points = chartData.map((val, i) => ({
+                    x: (i * (100 / 6)),
+                    y: 50 - ((val / max) * 40 + 5) // Scale to 5-45 range
+                  }));
+
+                  const d = points.reduce((acc, p, i) =>
+                    i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, "");
+
+                  const areaD = `${d} L 100 50 L 0 50 Z`;
+
+                  return (
+                    <>
+                      <path d={areaD} fill="url(#gradient)" />
+                      <path d={d} fill="none" stroke="#1daddd" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                      {points.map((p, i) => (
+                        <circle
+                          key={i}
+                          className="fill-white dark:fill-[#1e292b] stroke-primary stroke-[2.5px]"
+                          cx={p.x}
+                          cy={p.y}
+                          r="2.5"
+                        />
+                      ))}
+                    </>
+                  );
+                })()}
               </svg>
             </div>
             <div className="flex justify-between mt-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => <span key={day}>{day}</span>)}
+              {actualDayLabels.map(day => <span key={day}>{day}</span>)}
             </div>
           </section>
 

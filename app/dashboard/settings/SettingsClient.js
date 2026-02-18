@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signout } from '../../auth/actions';
+import DeleteAccountModal from '@/components/DeleteAccountModal';
 
 export default function SettingsClient({ initialProfile, initialUser }) {
   const router = useRouter();
@@ -14,8 +15,38 @@ export default function SettingsClient({ initialProfile, initialUser }) {
   const [profileData, setProfileData] = useState({
     display_name: initialProfile?.display_name || initialUser?.user_metadata?.full_name || '',
     email: initialProfile?.email || initialUser?.email || '',
+    phone: initialProfile?.phone || initialUser?.phone || '',
     campus: initialProfile?.campus || '',
   });
+
+  // Deletion request state
+  const [deletionRequest, setDeletionRequest] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loadingDeletion, setLoadingDeletion] = useState(true);
+
+  // Fetch deletion request status on mount
+  useEffect(() => {
+    const fetchDeletionStatus = async () => {
+      try {
+        const response = await fetch('/api/account/request-deletion');
+        const data = await response.json();
+        if (response.ok && data.request) {
+          setDeletionRequest(data.request);
+        }
+      } catch (err) {
+        console.error('Error fetching deletion status:', err);
+      } finally {
+        setLoadingDeletion(false);
+      }
+    };
+    fetchDeletionStatus();
+  }, []);
+
+  const handleDeletionSuccess = (request) => {
+    setDeletionRequest(request);
+    setSuccess('Account deletion request submitted successfully');
+    setTimeout(() => setSuccess(null), 5000);
+  };
 
   return (
     <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased transition-colors duration-200">
@@ -46,14 +77,18 @@ export default function SettingsClient({ initialProfile, initialUser }) {
 
             {/* Phone Item */}
             <Link href="/dashboard/settings/account/phone" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 overflow-hidden">
                 <div className="flex items-center justify-center size-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shrink-0">
                   <span className="material-symbols-outlined">call</span>
                 </div>
-                <span className="text-base font-semibold text-slate-900 dark:text-white">Phone</span>
+                <div className="flex flex-col truncate">
+                  <span className="text-base font-semibold text-slate-900 dark:text-white">Phone</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                    {profileData.phone || 'Add phone number'}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-400 dark:text-slate-500 hidden sm:block">Update Phone</span>
+              <div className="flex items-center gap-2 pl-4 shrink-0">
                 <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
               </div>
             </Link>
@@ -167,6 +202,53 @@ export default function SettingsClient({ initialProfile, initialUser }) {
           </div>
         </section>
 
+        {/* Danger Zone Section */}
+        <section>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Danger Zone</h3>
+          <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden border-2 border-red-100 dark:border-red-900/30">
+            <div className="p-4">
+              <div className="flex items-start gap-4">
+                <div className="flex items-center justify-center size-10 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 shrink-0">
+                  <span className="material-symbols-outlined">delete_forever</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-base font-semibold text-slate-900 dark:text-white mb-1">Delete Account</h4>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                    {deletionRequest?.status === 'pending'
+                      ? 'Your account deletion request is pending review. This may take up to 30 days.'
+                      : deletionRequest?.status === 'approved'
+                        ? 'Your account deletion has been approved and will be processed soon.'
+                        : deletionRequest?.status === 'rejected'
+                          ? 'Your previous deletion request was rejected. You can submit a new request.'
+                          : 'Permanently delete your account and all associated data. This action cannot be undone.'}
+                  </p>
+
+                  {deletionRequest?.status === 'pending' ? (
+                    <div className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/30 rounded-lg px-3 py-2">
+                      <span className="material-symbols-outlined text-yellow-600 dark:text-yellow-400 text-sm">schedule</span>
+                      <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">Deletion Pending</span>
+                    </div>
+                  ) : deletionRequest?.status === 'approved' ? (
+                    <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 rounded-lg px-3 py-2">
+                      <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-sm">check_circle</span>
+                      <span className="text-sm font-medium text-red-700 dark:text-red-300">Approved - Processing Soon</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      disabled={loadingDeletion}
+                      className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-lg text-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-red-600/25 flex items-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-base">warning</span>
+                      Request Account Deletion
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Footer Actions */}
         <div className="pt-4 pb-12 flex flex-col items-center gap-4">
           <button
@@ -179,6 +261,13 @@ export default function SettingsClient({ initialProfile, initialUser }) {
           <p className="text-xs text-slate-400 dark:text-slate-600 font-medium">Version 2.4.0 (Build 302)</p>
         </div>
       </main>
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onSuccess={handleDeletionSuccess}
+      />
     </div>
   );
 }

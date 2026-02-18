@@ -17,6 +17,16 @@ export default async function SubscriptionPage() {
     .select('*')
     .order('duration_months', { ascending: true });
 
+  // Fetch user's current subscription status
+  const { data: currentSubscription } = await supabase
+    .from('subscriptions')
+    .select('*, plan:subscription_plans(name)')
+    .eq('user_id', user.id)
+    .in('status', ['Active', 'Pending'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   return (
     <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#0e171b] dark:text-slate-100 min-h-screen transition-colors duration-200 subscription-page">
       <div className="relative flex h-auto min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden border-x border-slate-200 dark:border-slate-800 shadow-xl bg-white dark:bg-[#111d21]">
@@ -27,7 +37,7 @@ export default async function SubscriptionPage() {
         </div>
 
         {/* Subscription Content */}
-        <SubscriptionClient plans={plans || []} />
+        <SubscriptionClient plans={plans || []} currentSubscription={currentSubscription} />
 
         {/* Sticky Bottom Navigation */}
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-30 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-[#111d21]/95 backdrop-blur-md px-6 pb-6 pt-3 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">

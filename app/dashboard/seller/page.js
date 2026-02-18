@@ -53,15 +53,40 @@ export default async function SellerDashboard() {
     const products = listings || [];
     const activeListings = products.filter(p => p.status === 'Active' || !p.status).length;
 
-    // Calculate total earnings from orders
+    // Calculate total earnings from orders - include all successful order statuses
     const { data: sellerOrders } = await supabase
         .from('orders')
-        .select('total_amount, status')
+        .select('total_amount, status, seller_payout_amount, created_at')
         .eq('seller_id', user.id)
-        .eq('status', 'Completed');
+        .in('status', ['Paid', 'Completed', 'Delivered']);
 
-    const totalEarnings = sellerOrders?.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0) || 0;
+    const totalEarnings = sellerOrders?.reduce((sum, order) => {
+        // Use seller_payout_amount if available, otherwise fall back to total_amount
+        const amount = parseFloat(order.seller_payout_amount || order.total_amount || 0);
+        return sum + amount;
+    }, 0) || 0;
     const itemsSold = sellerOrders?.length || 0;
+
+    // 5.5. Calculate Last 7 Days Earnings for Chart
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const chartData = Array(7).fill(0);
+    const dayLabels = [];
+
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(sevenDaysAgo);
+        d.setDate(d.getDate() + i);
+        dayLabels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+
+        const dayTotal = sellerOrders?.filter(order => {
+            const orderDate = new Date(order.created_at);
+            return orderDate.toDateString() === d.toDateString();
+        }).reduce((sum, order) => sum + parseFloat(order.seller_payout_amount || order.total_amount || 0), 0) || 0;
+
+        chartData[i] = dayTotal;
+    }
 
     // 6. Fetch Promotions Count
     const { count: activePromotions } = await supabase
@@ -83,6 +108,8 @@ export default async function SellerDashboard() {
             activeListings={activeListings}
             daysUntilExpiry={daysUntilExpiry}
             activePromotions={activePromotions || 0}
+            chartData={chartData}
+            dayLabels={dayLabels}
         />
     );
 }

@@ -72,6 +72,13 @@ export async function POST(request) {
       subscription = subs[0];
     }
 
+    // 2.5 Fetch user profile to check for admin status
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+
     console.log('[Manual Activate] Found subscription:', {
       subscription_id: subscription.id,
       current_status: subscription.status,
@@ -89,34 +96,51 @@ export async function POST(request) {
 
     // Verify payment with Paystack using the payment reference
     const paymentReference = reference || subscription.payment_reference;
-    
+
     if (!paymentReference) {
+      if (profile?.is_admin) {
+        console.warn('[Manual Activate] No payment reference but user is admin. Bypassing.');
+      } else {
+        return NextResponse.json({
+          error: 'No payment reference found. Cannot verify payment.',
+        }, { status: 400 });
+      }
+    }
+
+    let verificationSucceeded = false;
+    if (paymentReference) {
+      console.log('[Manual Activate] Verifying transaction with Paystack:', paymentReference);
+      try {
+        const verification = await verifyTransaction(paymentReference);
+        console.log('[Manual Activate] Paystack verification result:', {
+          status: verification.data?.status,
+          reference: verification.data?.reference,
+        });
+
+        if (verification.data.status === 'success') {
+          verificationSucceeded = true;
+        }
+      } catch (verifyError) {
+        console.error('[Manual Activate] Paystack verification failed:', verifyError);
+        // Only error out if NOT an admin
+        if (!profile?.is_admin) {
+          return NextResponse.json({
+            error: 'Failed to verify payment with Paystack',
+            details: verifyError.message,
+          }, { status: 500 });
+        }
+      }
+    }
+
+    // Check if we can proceed (either verification succeeded or user is admin)
+    if (!verificationSucceeded && !profile?.is_admin) {
       return NextResponse.json({
-        error: 'No payment reference found. Cannot verify payment.',
+        error: 'Payment not successful. Please ensure you have completed the payment.',
       }, { status: 400 });
     }
 
-    console.log('[Manual Activate] Verifying transaction with Paystack:', paymentReference);
-    let verification;
-    try {
-      verification = await verifyTransaction(paymentReference);
-      console.log('[Manual Activate] Paystack verification result:', {
-        status: verification.data?.status,
-        reference: verification.data?.reference,
-      });
-    } catch (verifyError) {
-      console.error('[Manual Activate] Paystack verification failed:', verifyError);
-      return NextResponse.json({
-        error: 'Failed to verify payment with Paystack',
-        details: verifyError.message,
-      }, { status: 500 });
-    }
-
-    if (verification.data.status !== 'success') {
-      return NextResponse.json({
-        error: 'Payment not successful',
-        status: verification.data.status,
-      }, { status: 400 });
+    if (!verificationSucceeded && profile?.is_admin) {
+      console.warn('[Manual Activate] Force-activating subscription for admin user');
     }
 
     // Update subscription to Active

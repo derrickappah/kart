@@ -16,10 +16,16 @@ export default function SellerDashboardClient({
     itemsSold,
     activeListings,
     daysUntilExpiry,
-    activePromotions
+    activePromotions,
+    chartData = [],
+    dayLabels = []
 }) {
     const router = useRouter();
     console.log('[SellerDashboardClient] Rendered');
+
+    const [hiddenSubs, setHiddenSubs] = useState([]);
+    const visiblePendingSubs = pendingSubscriptions?.filter(sub => !hiddenSubs.includes(sub.id)) || [];
+
     const displayName = profile?.display_name || user.email.split('@')[0];
 
     // Greeting based on time of day
@@ -89,12 +95,12 @@ export default function SellerDashboardClient({
                         <div className="bg-white dark:bg-[#1e292b] rounded-3xl p-6 shadow-soft border border-transparent dark:border-white/5">
                             <div className="flex items-start justify-between mb-8">
                                 <div>
-                                    <h3 className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Views Last 7 Days</h3>
+                                    <h3 className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Quick Overview</h3>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-3xl font-black text-slate-900 dark:text-white">245</span>
-                                        <span className="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-1 rounded-lg font-bold flex items-center ring-1 ring-emerald-500/20">
-                                            <span className="material-symbols-outlined text-[14px] mr-0.5 font-bold">trending_up</span>
-                                            +12%
+                                        <span className="text-3xl font-black text-slate-900 dark:text-white">{activeListings}</span>
+                                        <span className="bg-primary/10 text-primary text-[10px] px-2 py-1 rounded-lg font-bold flex items-center ring-1 ring-primary/20">
+                                            <span className="material-symbols-outlined text-[14px] mr-0.5 font-bold">inventory</span>
+                                            Active
                                         </span>
                                     </div>
                                 </div>
@@ -105,36 +111,64 @@ export default function SellerDashboardClient({
                             </div>
 
                             <div className="h-28 w-full relative">
-                                <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 350 100">
-                                    <defs>
-                                        <linearGradient id="chartLineGradient" x1="0" x2="0" y1="0" y2="1">
-                                            <stop offset="0%" stopColor="#1daddd" stopOpacity="0.2"></stop>
-                                            <stop offset="100%" stopColor="#1daddd" stopOpacity="0"></stop>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M0 80 C 40 80, 50 40, 100 40 C 150 40, 160 70, 200 60 C 240 50, 260 20, 300 30 C 330 38, 340 10, 350 10" fill="none" stroke="#1daddd" strokeLinecap="round" strokeWidth="3.5" vectorEffect="non-scaling-stroke"></path>
-                                    <path d="M0 80 C 40 80, 50 40, 100 40 C 150 40, 160 70, 200 60 C 240 50, 260 20, 300 30 C 330 38, 340 10, 350 10 V 100 H 0 Z" fill="url(#chartLineGradient)" stroke="none"></path>
-                                    <circle className="fill-white dark:fill-[#1e292b] stroke-primary stroke-[3px]" cx="300" cy="30" r="4.5"></circle>
-                                </svg>
+                                {chartData.length > 0 ? (
+                                    <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 350 100">
+                                        <defs>
+                                            <linearGradient id="chartLineGradient" x1="0" x2="0" y1="0" y2="1">
+                                                <stop offset="0%" stopColor="#1daddd" stopOpacity="0.2"></stop>
+                                                <stop offset="100%" stopColor="#1daddd" stopOpacity="0"></stop>
+                                            </linearGradient>
+                                        </defs>
+
+                                        {(() => {
+                                            const max = Math.max(...chartData, 10); // Minimum max for scaling
+                                            const points = chartData.map((val, i) => ({
+                                                x: (i * (350 / 6)),
+                                                y: 100 - ((val / max) * 80 + 10) // Scale to 10-90 range
+                                            }));
+
+                                            const d = points.reduce((acc, p, i) =>
+                                                i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, "");
+
+                                            const areaD = `${d} V 100 H 0 Z`;
+
+                                            return (
+                                                <>
+                                                    <path d={d} fill="none" stroke="#1daddd" strokeLinecap="round" strokeWidth="3.5" vectorEffect="non-scaling-stroke"></path>
+                                                    <path d={areaD} fill="url(#chartLineGradient)" stroke="none"></path>
+                                                    {points.map((p, i) => (
+                                                        <circle
+                                                            key={i}
+                                                            className="fill-white dark:fill-[#1e292b] stroke-primary stroke-[3px]"
+                                                            cx={p.x}
+                                                            cy={p.y}
+                                                            r="3.5"
+                                                        />
+                                                    ))}
+                                                </>
+                                            );
+                                        })()}
+                                    </svg>
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
+                                        <span className="text-xs font-bold uppercase tracking-widest">No data available</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="flex justify-between mt-5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                                <span>Mon</span>
-                                <span>Tue</span>
-                                <span>Wed</span>
-                                <span>Thu</span>
-                                <span>Fri</span>
-                                <span>Sat</span>
-                                <span>Sun</span>
+                                {dayLabels.map((day, idx) => (
+                                    <span key={idx}>{day}</span>
+                                ))}
                             </div>
                         </div>
                     </section>
 
                     {/* Subscriptions Status / Alerts */}
-                    {(pendingSubscriptions?.length > 0 || !isSubscribed || daysUntilExpiry <= 7) && (
+                    {(visiblePendingSubs.length > 0 || !isSubscribed || daysUntilExpiry <= 7) && (
                         <section className="space-y-4">
                             <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 px-1 uppercase tracking-widest leading-none">Important Alerts</h3>
 
-                            {pendingSubscriptions?.map(sub => (
+                            {visiblePendingSubs.map(sub => (
                                 <div key={sub.id} className="bg-amber-500/10 dark:bg-amber-500/5 ring-1 ring-amber-500/20 p-5 rounded-2xl shadow-sm space-y-4">
                                     <div className="flex items-center gap-3">
                                         <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -148,6 +182,7 @@ export default function SellerDashboardClient({
                                     <ManualActivationButton
                                         subscriptionId={sub.id}
                                         paymentReference={sub.payment_reference}
+                                        onFailure={() => setHiddenSubs(prev => [...prev, sub.id])}
                                     />
                                 </div>
                             ))}
