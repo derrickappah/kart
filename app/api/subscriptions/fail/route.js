@@ -42,14 +42,14 @@ export async function POST(request) {
         const { error: updateError } = await adminSupabase
             .from('subscriptions')
             .update({
-                status: 'Cancelled', // Changed from 'Failed' to satisfy DB check constraint
+                status: 'Cancelled', // User confirmed 'Cancelled' is correct
                 updated_at: new Date().toISOString()
             })
             .eq('id', subscriptionId);
 
         if (updateError) {
             console.error('[Subscription Fail API] Update error:', updateError);
-            return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
+            return NextResponse.json({ error: 'Failed to update subscription status: ' + updateError.message }, { status: 500 });
         }
 
         return NextResponse.json({ success: true, message: 'Subscription marked as cancelled' });

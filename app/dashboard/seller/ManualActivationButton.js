@@ -26,7 +26,8 @@ export default function ManualActivationButton({ subscriptionId, paymentReferenc
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.error === 'Payment not successful' && onFailure) {
+        // Check for specific payment failure message (case-insensitive and partial match)
+        if (data.error?.toLowerCase().includes('payment not successful') && onFailure) {
           onFailure();
         }
         throw new Error(data.error || 'Failed to activate subscription');
@@ -118,8 +119,8 @@ export default function ManualActivationButton({ subscriptionId, paymentReferenc
 
       {message && (
         <div className={`mt-4 p-4 rounded-xl text-xs font-bold flex items-center gap-2 border animate-in slide-in-from-top-2 duration-300 ${message.type === 'success'
-            ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-            : 'bg-red-500/10 text-red-600 border-red-500/20'
+          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+          : 'bg-red-500/10 text-red-600 border-red-500/20'
           }`}>
           <span className="material-symbols-outlined text-[18px]">
             {message.type === 'success' ? 'check_circle' : 'error'}
