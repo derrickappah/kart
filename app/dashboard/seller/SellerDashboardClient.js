@@ -24,6 +24,25 @@ export default function SellerDashboardClient({
     console.log('[SellerDashboardClient] Rendered');
 
     const [hiddenSubs, setHiddenSubs] = useState([]);
+
+    // Load permanently dismissed subs from localStorage
+    useEffect(() => {
+        const dismissed = localStorage.getItem('dismissed_pending_subs');
+        if (dismissed) {
+            try {
+                setHiddenSubs(JSON.parse(dismissed));
+            } catch (e) {
+                console.error('Error parsing dismissed_pending_subs', e);
+            }
+        }
+    }, []);
+
+    const handleDismissSub = (subId) => {
+        const updated = [...hiddenSubs, subId];
+        setHiddenSubs(updated);
+        localStorage.setItem('dismissed_pending_subs', JSON.stringify(updated));
+    };
+
     const visiblePendingSubs = pendingSubscriptions?.filter(sub => !hiddenSubs.includes(sub.id)) || [];
 
     const displayName = profile?.display_name || user.email.split('@')[0];
@@ -182,7 +201,17 @@ export default function SellerDashboardClient({
                                     <ManualActivationButton
                                         subscriptionId={sub.id}
                                         paymentReference={sub.payment_reference}
-                                        onFailure={() => setHiddenSubs(prev => [...prev, sub.id])}
+                                        onFailure={() => {
+                                            const subAgeMs = new Date() - new Date(sub.created_at);
+                                            const tenMinutesMs = 10 * 60 * 1000;
+
+                                            if (subAgeMs > tenMinutesMs) {
+                                                console.log('[Dashboard] Sub is older than 10 min and activation failed. Hiding persistently.');
+                                                handleDismissSub(sub.id);
+                                            } else {
+                                                console.log('[Dashboard] Activation failed but sub is recent. Keeping on dashboard.');
+                                            }
+                                        }}
                                     />
                                 </div>
                             ))}
