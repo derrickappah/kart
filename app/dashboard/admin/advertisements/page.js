@@ -20,7 +20,7 @@ export default async function AdminAdvertisementsPage({ searchParams }) {
     // Build query
     let query = supabase
         .from('advertisements')
-        .select('*, product:products(id, title, image_url), seller:profiles!seller_id(email, display_name)')
+        .select('*')
         .order('created_at', { ascending: false });
 
     // Apply status filter
@@ -33,7 +33,31 @@ export default async function AdminAdvertisementsPage({ searchParams }) {
         query = query.eq('ad_type', adTypeFilter);
     }
 
-    const { data: advertisements, error } = await query;
+    const { data: rawAds, error } = await query;
+    let advertisements = rawAds || [];
+
+    // Manually fetch related data
+    if (advertisements.length > 0) {
+        const productIds = [...new Set(advertisements.map(a => a.product_id).filter(Boolean))];
+        const sellerIds = [...new Set(advertisements.map(a => a.seller_id).filter(Boolean))];
+
+        const [productsResult, profilesResult] = await Promise.all([
+            productIds.length > 0 ? supabase.from('products').select('id, title, image_url').in('id', productIds) : { data: [] },
+            sellerIds.length > 0 ? supabase.from('profiles').select('id, email, display_name').in('id', sellerIds) : { data: [] }
+        ]);
+
+        const products = productsResult.data || [];
+        const profiles = profilesResult.data || [];
+
+        const productMap = new Map(products.map(p => [p.id, p]));
+        const profileMap = new Map(profiles.map(p => [p.id, p]));
+
+        advertisements = advertisements.map(ad => ({
+            ...ad,
+            product: productMap.get(ad.product_id) || null,
+            seller: profileMap.get(ad.seller_id) || null
+        }));
+    }
 
     // Calculate stats
     const totalCount = advertisements?.length || 0;

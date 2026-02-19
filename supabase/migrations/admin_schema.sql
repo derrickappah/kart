@@ -6,7 +6,13 @@ add column if not exists is_admin boolean default false;
 -- (Existing policies might restrict this, so we might need a new one)
 create policy "Admins can view all profiles"
   on profiles for select
-  using ( is_admin = true );
+  using (
+    exists (
+      select 1 from profiles
+      where id = auth.uid()
+      and is_admin = true
+    )
+  );
 
 -- 3. Policy: Admins can delete any product (Moderation)
 create policy "Admins can delete any product"

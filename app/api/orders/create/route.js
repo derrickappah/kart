@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { initializePayment } from '@/lib/paystack';
 
-const PLATFORM_FEE_PERCENTAGE = parseFloat(process.env.PLATFORM_FEE_PERCENTAGE || '3');
-const PLATFORM_FEE_FIXED = parseFloat(process.env.PLATFORM_FEE_FIXED || '1');
+
+// Platform fees are now fetched dynamically from the platform_settings table in the handler
 
 export async function POST(request) {
   try {
@@ -82,9 +82,30 @@ export async function POST(request) {
     // 4. Calculate amounts
     const unitPrice = parseFloat(product.price);
     const subtotal = unitPrice * quantity;
-    const platformFeeTotal = ((subtotal * PLATFORM_FEE_PERCENTAGE) / 100) + PLATFORM_FEE_FIXED;
+
+    // Fetch dynamic fees from settings
+    const adminSupabase = createServiceRoleClient();
+    const { data: settings } = await adminSupabase
+      .from('platform_settings')
+      .select('key, value')
+      .in('key', ['transaction_fee_percent', 'transaction_fee_fixed', 'marketplace_service_fee']);
+
+    const getParam = (key, fallback) => {
+      const setting = settings?.find(s => s.key === key);
+      if (!setting) return fallback;
+      return typeof setting.value === 'number' ? setting.value : parseFloat(setting.value);
+    };
+
+    const feePercent = getParam('transaction_fee_percent', 3);
+    const feeFixed = getParam('transaction_fee_fixed', 1);
+    const marketplaceFee = getParam('marketplace_service_fee', 0); // Flat fee per order
+
+    // Calculate platform fee
+    const percentageFee = (subtotal * feePercent) / 100;
+    const platformFeeTotal = percentageFee + feeFixed + marketplaceFee;
+
     const totalAmount = subtotal + platformFeeTotal;
-    const sellerPayoutAmount = subtotal - platformFeeTotal;
+    const sellerPayoutAmount = subtotal; // Buyer pays the fee explicitly in this model
 
     // 5. Create order in database
     const { data: order, error: orderError } = await supabase
@@ -96,8 +117,8 @@ export async function POST(request) {
         quantity,
         unit_price: unitPrice,
         total_amount: totalAmount,
-        platform_fee_percentage: PLATFORM_FEE_PERCENTAGE,
-        platform_fee_fixed: PLATFORM_FEE_FIXED,
+        platform_fee_percentage: feePercent,
+        platform_fee_fixed: feeFixed + marketplaceFee, // Combine fixed components
         platform_fee_total: platformFeeTotal,
         seller_payout_amount: sellerPayoutAmount,
         status: 'Pending',
@@ -134,7 +155,6 @@ export async function POST(request) {
     });
 
     // 7. Success! Update and finish using service role client to bypass RLS
-    const adminSupabase = createServiceRoleClient();
     await adminSupabase.from('orders').update({ payment_reference: reference }).eq('id', order.id);
     await adminSupabase.from('order_status_history').insert({
       order_id: order.id,

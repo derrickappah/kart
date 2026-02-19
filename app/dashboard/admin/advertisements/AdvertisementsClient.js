@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
 
@@ -11,6 +11,11 @@ export default function AdvertisementsClient({ initialAdvertisements, stats = {}
     const searchParams = useSearchParams();
     const currentStatusFilter = searchParams?.get('status') || 'all';
     const currentTypeFilter = searchParams?.get('type') || 'all';
+
+    // Sync state with props when server data changes
+    useEffect(() => {
+        setAdvertisements(initialAdvertisements);
+    }, [initialAdvertisements]);
 
     const handleFilterChange = (filterType, value) => {
         const params = new URLSearchParams();

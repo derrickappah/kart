@@ -15,7 +15,7 @@ export default async function AdminVerificationsPage({ searchParams }) {
     const resolvedSearchParams = await searchParams;
     const statusFilter = resolvedSearchParams?.status || 'all';
 
-    // Build query - fetch verification requests
+    // 1. Build query for filtered verifications
     let query = supabase
         .from('verification_requests')
         .select('*')
@@ -28,7 +28,7 @@ export default async function AdminVerificationsPage({ searchParams }) {
 
     const { data: verifications, error } = await query;
 
-    // Fetch user profiles for each verification request
+    // Manual mapping for profiles since relationship is with auth.users
     let verificationsWithUsers = [];
     if (verifications && verifications.length > 0) {
         const userIds = [...new Set(verifications.map(v => v.user_id))];
@@ -37,26 +37,26 @@ export default async function AdminVerificationsPage({ searchParams }) {
             .select('id, email, display_name, is_verified')
             .in('id', userIds);
 
-        // Map profiles to verifications
         verificationsWithUsers = verifications.map(verification => ({
             ...verification,
             user: profiles?.find(p => p.id === verification.user_id) || null
         }));
     }
 
-    if (error) {
-        console.error('Error fetching verification requests:', error);
-    }
+    // 2. Fetch Global Stats (Independent of filters)
+    const { data: allStats } = await supabase
+        .from('verification_requests')
+        .select('status');
 
-    // Calculate stats
-    const totalCount = verificationsWithUsers?.length || 0;
-    const pendingCount = verificationsWithUsers?.filter(v => v.status === 'Pending').length || 0;
-    const approvedCount = verificationsWithUsers?.filter(v => v.status === 'Approved').length || 0;
-    const rejectedCount = verificationsWithUsers?.filter(v => v.status === 'Rejected').length || 0;
+    const stats = {
+        total: allStats?.length || 0,
+        pending: allStats?.filter(v => v.status === 'Pending').length || 0,
+        approved: allStats?.filter(v => v.status === 'Approved').length || 0,
+        rejected: allStats?.filter(v => v.status === 'Rejected').length || 0
+    };
 
     return (
         <div className="space-y-8">
-
             {error && (
                 <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-500 text-sm font-medium">
                     Error loading verification requests: {error.message}
@@ -65,12 +65,7 @@ export default async function AdminVerificationsPage({ searchParams }) {
 
             <VerificationsClient
                 initialVerifications={verificationsWithUsers || []}
-                stats={{
-                    total: totalCount,
-                    pending: pendingCount,
-                    approved: approvedCount,
-                    rejected: rejectedCount
-                }}
+                stats={stats}
             />
         </div>
     );

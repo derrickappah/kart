@@ -141,5 +141,29 @@ export default async function CheckoutPage({ params }) {
         walletBalance = 52.00; // Mock default from design
     }
 
-    return <CheckoutClient product={product} user={user} walletBalance={walletBalance} />;
+    // 4. Fetch Marketplace Service Fee & Transaction Fees
+    let serviceFee = 1.50;
+    let feePercent = 3;
+    let feeFixed = 1;
+
+    try {
+        const { data: settings } = await supabase
+            .from('platform_settings')
+            .select('key, value')
+            .in('key', ['marketplace_service_fee', 'transaction_fee_percent', 'transaction_fee_fixed']);
+
+        const getParam = (key, fallback) => {
+            const setting = settings?.find(s => s.key === key);
+            if (!setting) return fallback;
+            return typeof setting.value === 'number' ? setting.value : parseFloat(setting.value);
+        };
+
+        serviceFee = getParam('marketplace_service_fee', 1.50);
+        feePercent = getParam('transaction_fee_percent', 3);
+        feeFixed = getParam('transaction_fee_fixed', 1);
+    } catch (err) {
+        console.log("Error fetching service fee setting:", err);
+    }
+
+    return <CheckoutClient product={product} user={user} walletBalance={walletBalance} serviceFee={serviceFee} feePercent={feePercent} feeFixed={feeFixed} />;
 }

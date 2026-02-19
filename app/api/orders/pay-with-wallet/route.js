@@ -65,8 +65,31 @@ export async function POST(request) {
 
         // 3. Calculate totals (using same logic as Paystack if possible)
         const price = parseFloat(product.price);
-        const serviceFee = 1.50; // Matching CheckoutClient.js fixed fee
-        const totalAmount = price + serviceFee;
+
+        // Use service role client to bypass RLS for administrative updates
+        const adminSupabase = createServiceRoleClient();
+
+        // Fetch dynamic fees from settings
+        const { data: settings } = await adminSupabase
+            .from('platform_settings')
+            .select('key, value')
+            .in('key', ['transaction_fee_percent', 'transaction_fee_fixed', 'marketplace_service_fee']);
+
+        const getParam = (key, fallback) => {
+            const setting = settings?.find(s => s.key === key);
+            if (!setting) return fallback;
+            return typeof setting.value === 'number' ? setting.value : parseFloat(setting.value);
+        };
+
+        const feePercent = getParam('transaction_fee_percent', 3);
+        const feeFixed = getParam('transaction_fee_fixed', 1);
+        const marketplaceFee = getParam('marketplace_service_fee', 0);
+
+        // Calculate platform fee
+        const percentageFee = (price * feePercent) / 100;
+        const platformFeeTotal = percentageFee + feeFixed + marketplaceFee;
+
+        const totalAmount = price + platformFeeTotal;
         const sellerPayoutAmount = price; // In this flow, service fee is on top of price
 
         // 4. Check buyer wallet balance
@@ -81,9 +104,6 @@ export async function POST(request) {
         }
 
         // 5. Perform transaction
-        // Use service role client to bypass RLS for administrative updates
-        const adminSupabase = createServiceRoleClient();
-
         // A. Deduct balance from buyer (Using admin client for sequential consistency)
         const { error: deductError } = await adminSupabase
             .from('wallets')
@@ -105,7 +125,9 @@ export async function POST(request) {
                 quantity: 1,
                 unit_price: price,
                 total_amount: totalAmount,
-                platform_fee_total: serviceFee,
+                platform_fee_percentage: feePercent,
+                platform_fee_fixed: feeFixed + marketplaceFee,
+                platform_fee_total: platformFeeTotal,
                 seller_payout_amount: sellerPayoutAmount,
                 status: 'Paid',
                 escrow_status: 'Held',

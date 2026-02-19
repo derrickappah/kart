@@ -4,6 +4,7 @@ import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export default function UserManagementClient({ initialUsers, stats = {} }) {
+    const [users, setUsers] = useState(initialUsers);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -26,6 +27,10 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
 
             if (error) throw error;
 
+            // Update local state for immediate UI feedback
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, banned: !currentStatus } : u));
+
+            // Still refresh in background to sync server data
             router.refresh();
         } catch (err) {
             alert('Error updating user: ' + err.message);
@@ -100,7 +105,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[#dce3e5] dark:divide-[#2d3b41]">
-                        {initialUsers.map((user) => (
+                        {users.map((user) => (
                             <tr key={user.id} className="hover:bg-primary/[0.02] transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
@@ -129,7 +134,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                                         </span>
                                         <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase bg-[#4b636c]/10 text-[#4b636c] w-fit ${user.is_admin ? 'text-primary' : ''
                                             }`}>
-                                            {user.is_admin ? 'Authority Admin' : 'Active Member'}
+                                            {user.is_admin ? 'Super Admin' : 'Admin User'}
                                         </span>
                                     </div>
                                 </td>

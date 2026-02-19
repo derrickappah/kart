@@ -1,7 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import EscrowManagementClient from '../EscrowManagementClient';
+import OrderStatusManager from '../OrderStatusManager';
 
 export default async function AdminOrderDetailPage({ params }) {
   const { id } = await params;
@@ -88,7 +90,7 @@ export default async function AdminOrderDetailPage({ params }) {
           <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
             <div className="p-1 responsive-aspect-square md:aspect-[21/9] bg-gray-100 dark:bg-[#212b30] relative overflow-hidden group">
               {productImage ? (
-                <img src={productImage} alt="" className="size-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={productImage} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
               ) : (
                 <div className="size-full flex items-center justify-center text-[#4b636c]/20">
                   <span className="material-symbols-outlined text-8xl">box</span>
@@ -175,9 +177,15 @@ export default async function AdminOrderDetailPage({ params }) {
                 <span>GH₵ {(parseFloat(order.unit_price || 0) * order.quantity).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center text-sm font-medium">
-                <span className="text-white/60">Platform Fees ({order.platform_fee_percentage}%)</span>
-                <span className="text-red-400">- GH₵ {parseFloat(order.platform_fee_total || 0).toFixed(2)}</span>
+                <span className="text-white/60">Commission ({order.platform_fee_percentage || 0}%)</span>
+                <span className="text-red-400">- GH₵ {((parseFloat(order.unit_price || 0) * order.quantity) * (parseFloat(order.platform_fee_percentage || 0) / 100)).toFixed(2)}</span>
               </div>
+              {(parseFloat(order.platform_fee_fixed) > 0) && (
+                <div className="flex justify-between items-center text-sm font-medium">
+                  <span className="text-white/60">Service Fee (Flat)</span>
+                  <span className="text-red-400">- GH₵ {parseFloat(order.platform_fee_fixed).toFixed(2)}</span>
+                </div>
+              )}
               <div className="h-px bg-white/10 my-6"></div>
               <div className="flex justify-between items-end">
                 <div>
@@ -205,7 +213,7 @@ export default async function AdminOrderDetailPage({ params }) {
                 <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black">B</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Buyer Account</p>
-                  <p className="text-xs font-black uppercase tracking-tighter truncate">{order.buyer?.display_name || 'Anonymous'}</p>
+                  <p className="text-xs font-black uppercase tracking-tight truncate">{order.buyer?.display_name || 'Anonymous'}</p>
                   <p className="text-[9px] text-[#4b636c] font-black uppercase tracking-widest truncate">{order.buyer?.email}</p>
                 </div>
               </div>
@@ -224,6 +232,9 @@ export default async function AdminOrderDetailPage({ params }) {
               </div>
             </div>
           </div>
+
+          {/* Status Override Controller */}
+          <OrderStatusManager order={order} />
 
           {/* Technical Metadata */}
           <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] p-6">

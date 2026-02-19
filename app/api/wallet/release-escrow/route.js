@@ -46,9 +46,9 @@ export async function POST(request) {
       );
     }
 
-    if (order.status !== 'Paid') {
+    if (order.status !== 'Paid' && order.status !== 'Delivered') {
       return NextResponse.json(
-        { error: `Order status must be Paid to release escrow` },
+        { error: `Order status must be Paid or Delivered to release escrow` },
         { status: 400 }
       );
     }
@@ -101,20 +101,20 @@ export async function POST(request) {
           hint: walletCreateError?.hint,
           seller_id: order.seller_id,
         });
-        
+
         // If RLS policy error, provide more specific message
         if (walletCreateError?.code === '42501' || walletCreateError?.message?.includes('policy')) {
           return NextResponse.json(
-            { 
+            {
               error: 'Permission denied: Admin cannot create wallet for seller. Please ensure SUPABASE_SERVICE_ROLE_KEY is set or RLS policy allows admin inserts.',
               details: process.env.NODE_ENV === 'development' ? walletCreateError.message : undefined
             },
             { status: 403 }
           );
         }
-        
+
         return NextResponse.json(
-          { 
+          {
             error: 'Failed to create seller wallet',
             details: process.env.NODE_ENV === 'development' ? walletCreateError?.message : undefined
           },

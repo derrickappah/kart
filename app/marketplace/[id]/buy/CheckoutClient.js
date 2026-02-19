@@ -3,15 +3,16 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 
-export default function CheckoutClient({ product, user, walletBalance }) {
+export default function CheckoutClient({ product, user, walletBalance, serviceFee, feePercent, feeFixed }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet' or 'paystack'
 
-    // Calculate totals
+    // Calculate totals matching the backend logic
     const price = parseFloat(product.price);
-    const serviceFee = 1.50; // Fixed fee for now as per design
-    const total = price + serviceFee;
+    const percentageFee = (price * feePercent) / 100;
+    const platformFeeTotal = percentageFee + feeFixed + serviceFee;
+    const total = price + platformFeeTotal;
 
     // Determine image to show
     const productImage = product.images?.[0] || product.image_url;
@@ -121,8 +122,12 @@ export default function CheckoutClient({ product, user, walletBalance }) {
                                 <p className="text-[#0e181b] dark:text-white text-base font-semibold">GHS {price.toFixed(2)}</p>
                             </div>
                             <div className="flex justify-between py-2.5">
-                                <p className="text-[#7A818C] dark:text-gray-400 text-base font-medium">Small Service Fee</p>
-                                <p className="text-[#0e181b] dark:text-white text-base font-semibold">GHS {serviceFee.toFixed(2)}</p>
+                                <p className="text-[#7A818C] dark:text-gray-400 text-base font-medium">Commission ({feePercent}%)</p>
+                                <p className="text-[#0e181b] dark:text-white text-base font-semibold">GHS {percentageFee.toFixed(2)}</p>
+                            </div>
+                            <div className="flex justify-between py-2.5">
+                                <p className="text-[#7A818C] dark:text-gray-400 text-base font-medium">Service Fee (Flat)</p>
+                                <p className="text-[#0e181b] dark:text-white text-base font-semibold">GHS {(feeFixed + serviceFee).toFixed(2)}</p>
                             </div>
                             <div className="flex justify-between pt-3 pb-1">
                                 <p className="text-[#0e181b] dark:text-white text-lg font-bold">Total</p>

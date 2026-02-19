@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function PromotionClient({ product }) {
+export default function PromotionClient({ product, pricing = {} }) {
     const router = useRouter();
     const [selectedTier, setSelectedTier] = useState('daily');
     const [loading, setLoading] = useState(false);
@@ -13,7 +13,7 @@ export default function PromotionClient({ product }) {
         {
             id: 'daily',
             name: 'Daily Blast',
-            price: 5,
+            price: pricing.promo_daily_price || 5,
             duration: '24 hours',
             tag: 'Most Popular',
             tagColor: 'bg-primary/10 text-primary',
@@ -27,7 +27,7 @@ export default function PromotionClient({ product }) {
         {
             id: 'weekly',
             name: 'Weekly Saver',
-            price: 25,
+            price: pricing.promo_weekly_price || 25,
             duration: '7 days',
             tag: 'Best Value',
             tagColor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
@@ -41,7 +41,7 @@ export default function PromotionClient({ product }) {
         {
             id: 'featured',
             name: 'Featured Spotlight',
-            price: 50,
+            price: pricing.promo_featured_price || 50,
             duration: 'Lifetime badge',
             tag: 'Premium',
             tagColor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
@@ -152,8 +152,8 @@ export default function PromotionClient({ product }) {
                             key={tier.id}
                             onClick={() => setSelectedTier(tier.id)}
                             className={`group relative flex flex-col p-5 rounded-2xl border-2 transition-all shadow-sm cursor-pointer ${selectedTier === tier.id
-                                    ? 'border-[#ff9f0f] bg-white dark:bg-slate-800 shadow-lg ring-1 ring-[#ff9f0f]/20'
-                                    : 'bg-white dark:bg-slate-800/60 border-transparent hover:border-primary/20'
+                                ? 'border-[#ff9f0f] bg-white dark:bg-slate-800 shadow-lg ring-1 ring-[#ff9f0f]/20'
+                                : 'bg-white dark:bg-slate-800/60 border-transparent hover:border-primary/20'
                                 }`}
                         >
                             <div className="flex justify-between items-start mb-4">
@@ -181,8 +181,8 @@ export default function PromotionClient({ product }) {
                                 ))}
                             </ul>
                             <div className={`mt-2 flex items-center justify-center py-3 rounded-xl font-bold text-sm transition-all border ${selectedTier === tier.id
-                                    ? 'bg-[#ff9f0f] text-white border-[#ff9f0f] shadow-md shadow-orange-500/20'
-                                    : 'bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-white/5'
+                                ? 'bg-[#ff9f0f] text-white border-[#ff9f0f] shadow-md shadow-orange-500/20'
+                                : 'bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-white/5'
                                 }`}>
                                 {selectedTier === tier.id ? 'Selected Plan' : 'Select Plan'}
                             </div>

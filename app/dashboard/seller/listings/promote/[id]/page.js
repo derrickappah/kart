@@ -16,5 +16,16 @@ export default async function PromotionSelectionPage({ params }) {
         notFound();
     }
 
-    return <PromotionClient product={product} />;
+    // Fetch dynamic promotion pricing from platform settings
+    const { data: promoSettings } = await supabase
+        .from('platform_settings')
+        .select('key, value')
+        .eq('category', 'promotion');
+
+    const pricing = {};
+    (promoSettings || []).forEach(s => {
+        pricing[s.key] = typeof s.value === 'number' ? s.value : parseFloat(s.value) || 0;
+    });
+
+    return <PromotionClient product={product} pricing={pricing} />;
 }

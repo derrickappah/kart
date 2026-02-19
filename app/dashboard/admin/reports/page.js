@@ -18,7 +18,7 @@ export default async function AdminReportsPage({ searchParams }) {
   // Fetch reports
   let query = supabase
     .from('reports')
-    .select('*, reporter:profiles!reports_reporter_id_fkey(id, display_name, email), product:products(id, title)')
+    .select('*')
     .order('created_at', { ascending: false });
 
   // Apply status filter
@@ -26,7 +26,31 @@ export default async function AdminReportsPage({ searchParams }) {
     query = query.eq('status', statusFilter);
   }
 
-  const { data: reports, error } = await query;
+  const { data: rawReports, error } = await query;
+  let reports = rawReports || [];
+
+  // Manually fetch related data
+  if (reports.length > 0) {
+    const productIds = [...new Set(reports.map(r => r.product_id).filter(Boolean))];
+    const reporterIds = [...new Set(reports.map(r => r.reporter_id).filter(Boolean))];
+
+    const [productsResult, reportersResult] = await Promise.all([
+      productIds.length > 0 ? supabase.from('products').select('id, title').in('id', productIds) : { data: [] },
+      reporterIds.length > 0 ? supabase.from('profiles').select('id, email, display_name').in('id', reporterIds) : { data: [] }
+    ]);
+
+    const products = productsResult.data || [];
+    const reporters = reportersResult.data || [];
+
+    const productMap = new Map(products.map(p => [p.id, p]));
+    const reporterMap = new Map(reporters.map(p => [p.id, p]));
+
+    reports = reports.map(r => ({
+      ...r,
+      product: productMap.get(r.product_id) || null,
+      reporter: reporterMap.get(r.reporter_id) || null
+    }));
+  }
 
   // Fetch all reports for stats (unfiltered)
   const { data: allReports } = await supabase

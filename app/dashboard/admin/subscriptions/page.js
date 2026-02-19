@@ -19,7 +19,7 @@ export default async function AdminSubscriptionsPage({ searchParams }) {
     // Build query
     let query = supabase
         .from('subscriptions')
-        .select('*, plan:subscription_plans(*), user:profiles!user_id(email, display_name)')
+        .select('*, plan:subscription_plans(*)')
         .order('created_at', { ascending: false });
 
     // Apply status filter
@@ -27,13 +27,24 @@ export default async function AdminSubscriptionsPage({ searchParams }) {
         query = query.eq('status', statusFilter);
     }
 
-    // Apply search filter (by email)
-    if (searchQuery) {
-        // We need to filter by user email, so we'll fetch all and filter client-side
-        // Or use a more complex query with joins
-    }
+    const { data: rawSubscriptions, error } = await query;
+    let subscriptions = rawSubscriptions || [];
 
-    const { data: subscriptions, error } = await query;
+    // Manually fetch profiles since the foreign key relationship might be missing
+    if (subscriptions.length > 0) {
+        const userIds = [...new Set(subscriptions.map(s => s.user_id).filter(Boolean))];
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, email, display_name')
+            .in('id', userIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.id, p]));
+
+        subscriptions = subscriptions.map(sub => ({
+            ...sub,
+            user: profileMap.get(sub.user_id) || null
+        }));
+    }
 
     // Filter by search query if provided (client-side filtering for email)
     let filteredSubscriptions = subscriptions || [];
