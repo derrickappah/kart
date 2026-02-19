@@ -100,12 +100,17 @@ export async function POST(request) {
     const feeFixed = getParam('transaction_fee_fixed', 1);
     const marketplaceFee = getParam('marketplace_service_fee', 0); // Flat fee per order
 
-    // Calculate platform fee
+    // Calculate platform fees
     const percentageFee = (subtotal * feePercent) / 100;
-    const platformFeeTotal = percentageFee + feeFixed + marketplaceFee;
 
-    const totalAmount = subtotal + platformFeeTotal;
-    const sellerPayoutAmount = subtotal; // Buyer pays the fee explicitly in this model
+    // Buyer pays: Subtotal + Marketplace Fee
+    const totalAmount = subtotal + marketplaceFee;
+
+    // Seller receives: Subtotal - Commission
+    const sellerPayoutAmount = subtotal - percentageFee - feeFixed;
+
+    // Total platform engine revenue for this order
+    const platformFeeTotal = marketplaceFee + percentageFee + feeFixed;
 
     // 5. Create order in database
     const { data: order, error: orderError } = await supabase

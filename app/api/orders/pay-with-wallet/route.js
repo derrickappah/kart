@@ -85,12 +85,17 @@ export async function POST(request) {
         const feeFixed = getParam('transaction_fee_fixed', 1);
         const marketplaceFee = getParam('marketplace_service_fee', 0);
 
-        // Calculate platform fee
+        // Calculate platform fees
         const percentageFee = (price * feePercent) / 100;
-        const platformFeeTotal = percentageFee + feeFixed + marketplaceFee;
 
-        const totalAmount = price + platformFeeTotal;
-        const sellerPayoutAmount = price; // In this flow, service fee is on top of price
+        // Buyer pays: Price + Marketplace Fee
+        const totalAmount = price + marketplaceFee;
+
+        // Seller receives: Price - Commission (Deducted from payout)
+        const sellerPayoutAmount = price - percentageFee - feeFixed;
+
+        // Total platform engine revenue for this order
+        const platformFeeTotal = marketplaceFee + percentageFee + feeFixed;
 
         // 4. Check buyer wallet balance
         const { data: buyerWallet, error: walletError } = await supabase

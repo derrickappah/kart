@@ -173,28 +173,34 @@ export default async function AdminOrderDetailPage({ params }) {
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-6">Settlement Breakdown</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm font-medium">
-                <span className="text-white/60">Subtotal Gross</span>
+                <span className="text-white/60">Gross Sale Price</span>
                 <span>GH₵ {(parseFloat(order.unit_price || 0) * order.quantity).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center text-sm font-medium">
-                <span className="text-white/60">Commission ({order.platform_fee_percentage || 0}%)</span>
-                <span className="text-red-400">- GH₵ {((parseFloat(order.unit_price || 0) * order.quantity) * (parseFloat(order.platform_fee_percentage || 0) / 100)).toFixed(2)}</span>
+                <span className="text-white/60">App Service Fee (Buyer)</span>
+                <span className="text-blue-400">+ GH₵ {(parseFloat(order.total_amount || 0) - (parseFloat(order.unit_price || 0) * order.quantity)).toFixed(2)}</span>
               </div>
-              {(parseFloat(order.platform_fee_fixed) > 0) && (
-                <div className="flex justify-between items-center text-sm font-medium">
-                  <span className="text-white/60">Service Fee (Flat)</span>
-                  <span className="text-red-400">- GH₵ {parseFloat(order.platform_fee_fixed).toFixed(2)}</span>
-                </div>
-              )}
+              <div className="h-px bg-white/5 my-2"></div>
+              <div className="flex justify-between items-center text-sm font-medium">
+                <span className="text-white/60">Seller Commission ({order.platform_fee_percentage || 0}%)</span>
+                <span className="text-red-400">- GH₵ {(parseFloat(order.platform_fee_total || 0) - (parseFloat(order.total_amount || 0) - (parseFloat(order.unit_price || 0) * order.quantity))).toFixed(2)}</span>
+              </div>
+
               <div className="h-px bg-white/10 my-6"></div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Total Paid</p>
-                  <p className="text-3xl font-black tracking-tighter">GH₵ {parseFloat(order.total_amount || 0).toFixed(2)}</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Total Paid</p>
+                  <p className="text-2xl font-black tracking-tighter">GH₵ {parseFloat(order.total_amount || 0).toFixed(2)}</p>
+                </div>
+                <div className="bg-primary/10 rounded-xl p-4 border border-primary/10">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">App Revenue</p>
+                  <p className="text-2xl font-black text-primary tracking-tighter">GH₵ {parseFloat(order.platform_fee_total || 0).toFixed(2)}</p>
                 </div>
               </div>
-              <div className="mt-8 bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Seller Payout</p>
+
+              <div className="mt-4 bg-green-500/5 rounded-xl p-4 border border-green-500/10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-green-500/70 mb-1">Seller Final Payout</p>
                 <div className="flex items-center justify-between">
                   <p className="text-xl font-black text-green-400 uppercase tracking-tighter">GH₵ {parseFloat(order.seller_payout_amount || 0).toFixed(2)}</p>
                   <span className="material-symbols-outlined text-green-400">payments</span>
