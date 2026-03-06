@@ -96,7 +96,6 @@ export default async function Home() {
     { name: 'Games & Consoles', active: false },
     { name: 'Health & Wellness', active: false },
     { name: 'Arts & Crafts', active: false },
-    { name: 'Lost & Found', active: false },
     { name: 'Home Appliances', active: false }
   ];
 

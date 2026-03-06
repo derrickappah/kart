@@ -18,7 +18,6 @@ const categories = [
     'Games & Consoles',
     'Health & Wellness',
     'Arts & Crafts',
-    'Lost & Found',
     'Home Appliances'
 ];
 const conditions = ['New', 'Like New', 'Good', 'Fair'];
@@ -183,8 +182,8 @@ export default function FilterSidebar({ hideHeader = false }) {
                                     key={con}
                                     onClick={() => toggleCondition(con)}
                                     className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-bold text-sm ${selectedConditions.includes(con)
-                                            ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20'
-                                            : 'border-transparent bg-gray-100 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                        ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20'
+                                        : 'border-transparent bg-gray-100 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                                         }`}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">
@@ -208,8 +207,8 @@ export default function FilterSidebar({ hideHeader = false }) {
                                     key={cat}
                                     onClick={() => toggleCategory(cat)}
                                     className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)
-                                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
-                                            : 'bg-gray-50 dark:bg-[#2d2d32] text-gray-500 border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                        ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
+                                        : 'bg-gray-50 dark:bg-[#2d2d32] text-gray-500 border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                 >
                                     {cat}
