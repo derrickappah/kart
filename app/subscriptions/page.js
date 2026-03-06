@@ -22,7 +22,6 @@ export default async function SubscriptionPage() {
     .from('subscriptions')
     .select('*, plan:subscription_plans(name)')
     .eq('user_id', user.id)
-    .in('status', ['Active', 'Pending'])
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();

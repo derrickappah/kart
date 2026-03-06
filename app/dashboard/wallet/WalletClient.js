@@ -99,13 +99,25 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                         {/* Decorative background elements */}
                         <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#1daddd]/10 rounded-full blur-3xl"></div>
 
-                        <div className="relative flex flex-col items-center justify-center gap-2 py-10 px-6">
+                        <div className="relative flex flex-col items-center justify-center gap-1 py-8 px-6">
                             <p className="text-[#4f8596] dark:text-slate-400 text-sm font-bold tracking-wide uppercase">Total Balance</p>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-2xl font-black text-[#1daddd]">GHS</span>
-                                <p className="text-5xl font-black tracking-tight">{parseFloat(wallet?.balance || 0).toFixed(2)}</p>
+                                <p className="text-5xl font-black tracking-tight">
+                                    {(parseFloat(wallet?.balance || 0) + parseFloat(wallet?.pending_balance || 0)).toFixed(2)}
+                                </p>
                             </div>
-                            <div className="mt-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-black">
+
+                            {parseFloat(wallet?.pending_balance || 0) > 0 && (
+                                <div className="flex items-center gap-1.5 mt-1 text-[#4f8596] dark:text-slate-400">
+                                    <span className="material-symbols-outlined text-sm">schedule</span>
+                                    <p className="text-xs font-bold">
+                                        GHS {parseFloat(wallet.pending_balance).toFixed(2)} Pending
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="mt-3 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-black">
                                 + 12% this month
                             </div>
                         </div>

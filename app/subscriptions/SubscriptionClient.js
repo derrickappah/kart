@@ -9,8 +9,11 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
     const [billingCycle, setBillingCycle] = useState('Monthly');
     const router = useRouter();
 
-    const isActive = currentSubscription?.status === 'Active';
-    const isPending = currentSubscription?.status === 'Pending';
+    const isActive = (currentSubscription?.status === 'Active' || currentSubscription?.status === 'active') &&
+        new Date(currentSubscription.end_date) > new Date();
+    const isPending = (currentSubscription?.status === 'Pending' || currentSubscription?.status === 'pending');
+    const isExpired = (currentSubscription?.status === 'Active' || currentSubscription?.status === 'active') &&
+        new Date(currentSubscription.end_date) <= new Date();
 
     const handleSubscribe = async (planId) => {
         try {
@@ -97,6 +100,16 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
                     <div>
                         <p className="font-bold">You have an active {currentSubscription.plan?.name} subscription</p>
                         <p className="text-xs opacity-80">Valid until {new Date(currentSubscription.end_date).toLocaleDateString()}</p>
+                    </div>
+                </div>
+            )}
+
+            {isExpired && (
+                <div className="p-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-sm border border-red-100 dark:border-red-500/20 mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[20px] fill-current">error</span>
+                    <div>
+                        <p className="font-bold">Your {currentSubscription.plan?.name} subscription has expired</p>
+                        <p className="text-xs opacity-80">Expired on {new Date(currentSubscription.end_date).toLocaleDateString()}</p>
                     </div>
                 </div>
             )}

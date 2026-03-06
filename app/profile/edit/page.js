@@ -22,7 +22,7 @@ export default function EditProfilePage() {
         username: '',
         bio: '',
         instagram: '',
-        linkedin: '',
+        snapchat: '',
         phone: '',
         campus: ''
     });
@@ -50,7 +50,7 @@ export default function EditProfilePage() {
                     username: profileData.username || '',
                     bio: profileData.bio || '',
                     instagram: profileData.instagram || '',
-                    linkedin: profileData.linkedin || '',
+                    snapchat: profileData.snapchat || '',
                     phone: profileData.phone || '',
                     campus: profileData.campus || ''
                 });
@@ -181,7 +181,7 @@ export default function EditProfilePage() {
                     username: formData.username,
                     bio: formData.bio,
                     instagram: formData.instagram,
-                    linkedin: formData.linkedin,
+                    snapchat: formData.snapchat,
                     phone: formData.phone,
                     campus: formData.campus,
                     avatar_url: avatarUrl,
@@ -433,17 +433,17 @@ export default function EditProfilePage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">LinkedIn</label>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Snapchat</label>
                                     <div className="relative group">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#0077b5] transition-colors">
-                                            <span className="material-symbols-outlined text-[22px]">work</span>
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FFFC00] transition-colors">
+                                            <span className="material-symbols-outlined text-[22px]">camera_alt</span>
                                         </div>
                                         <input
-                                            className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#0077b5] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
-                                            placeholder="LinkedIn profile URL"
+                                            className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#FFFC00] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
+                                            placeholder="Snapchat username"
                                             type="text"
-                                            value={formData.linkedin}
-                                            onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                                            value={formData.snapchat}
+                                            onChange={(e) => handleInputChange('snapchat', e.target.value)}
                                         />
                                     </div>
                                 </div>

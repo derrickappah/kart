@@ -223,7 +223,7 @@ export default function SellerProfilePage() {
                 </section>
 
                 {/* Contact Information Section - Premium Redesign */}
-                {(profile.phone || profile.instagram || profile.linkedin) && (
+                {(profile.phone || profile.instagram || profile.snapchat) && (
                     <section className="px-4 py-4">
                         <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/40 dark:border-slate-800/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-3xl shadow-2xl p-7 transition-all duration-500 hover:shadow-primary/20">
                             {/* Decorative Background Elements */}
@@ -288,21 +288,21 @@ export default function SellerProfilePage() {
                                                 </div>
                                             </a>
                                         )}
-                                        {profile.linkedin && (
+                                        {profile.snapchat && (
                                             <a
-                                                href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://linkedin.com/in/${profile.linkedin}`}
+                                                href={`https://snapchat.com/add/${profile.snapchat.replace('@', '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500"
                                             >
-                                                <div className="size-12 rounded-2xl bg-[#0077b5] flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                                                <div className="size-12 rounded-2xl bg-[#FFFC00] flex items-center justify-center text-black shadow-lg shadow-yellow-500/20">
                                                     <svg className="size-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                        <path fillRule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clipRule="evenodd" />
+                                                        <path d="M12 2.944c-3.181 0-4.706 2.059-4.706 4.312 0 .546.104.912.104.912s-1.879.314-1.879 1.5c0 .332.128.572.338.74.218.175.52.28 1.157.348-.12.3-.398.918-.398.918s-.863.155-1.125.393c-.263.238-.34.618-.34.904 0 .825.962 1.353 1.94 1.353.493 0 .809-.044.809-.044s.306 1.168 2.043 1.168c1.328 0 1.547-.48 2.057-2.008.51 1.528.73 2.008 2.057 2.008 1.737 0 2.043-1.168 2.043-1.168s.316.044.809.044c.978 0 1.94-.528 1.94-1.353 0-.286-.077-.666-.34-.904-.262-.238-1.125-.393-1.125-.393s-.278-.618-.398-.918c.637-.068.939-.173 1.157-.348.21-.168.338-.408.338-.74 0-1.186-1.879-1.5-1.879-1.5s.104-.366.104-.912c0-2.253-1.525-4.312-4.706-4.312z" />
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">LinkedIn</p>
-                                                    <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">Professional</p>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Snapchat</p>
+                                                    <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">@{profile.snapchat.replace('@', '')}</p>
                                                 </div>
                                             </a>
                                         )}
