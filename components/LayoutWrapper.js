@@ -13,7 +13,9 @@ export default function LayoutWrapper({ children, user }) {
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
 
     // List of paths that should hide global navigation components
-    const isEditingPage = (pathname?.includes('/create') ||
+    const isEditingPage = (pathname === '/login' ||
+        pathname === '/signup' ||
+        pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
         pathname?.includes('/promote/') || // Specific to promote action, not promotions list
         pathname?.includes('/withdraw') ||

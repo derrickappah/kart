@@ -28,17 +28,14 @@ function SignupForm() {
         <main className="bg-[#fafafa] dark:bg-[#21242c] antialiased">
             <div className="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden font-display">
                 {/* TopAppBar */}
-                <header className="flex items-center bg-[#fafafa] dark:bg-[#21242c] p-4 pb-2 justify-between sticky top-0 z-10">
-                    <Link href="/login" className="text-[#0e181b] dark:text-white flex size-12 shrink-0 items-center justify-center cursor-pointer">
-                        <span className="material-symbols-outlined">arrow_back_ios</span>
-                    </Link>
-                    <h2 className="text-[#0e181b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Create Account</h2>
+                <header className="flex items-center bg-[#fafafa] dark:bg-[#21242c] p-4 pb-2 justify-center sticky top-0 z-10">
+                    <h2 className="text-[#0e181b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] text-center">Create Account</h2>
                 </header>
 
                 <div className="flex-1 flex flex-col px-6 pt-4 pb-12">
                     {/* HeadlineText */}
                     <div className="mb-2">
-                        <h1 className="text-[#0e181b] dark:text-white tracking-tight text-[32px] font-bold leading-tight text-center pb-2">Join the Campus Market</h1>
+                        <h1 className="text-[#0e181b] dark:text-white tracking-tight text-2xl font-bold leading-tight text-center pb-2">Join the Campus Market</h1>
                     </div>
                     {/* BodyText */}
                     <div className="mb-8">
