@@ -70,6 +70,21 @@ export async function signup(formData) {
     redirect('/profile') // Or /verify-email if you enable that
 }
 
+export async function forgotPassword(formData) {
+    const supabase = await createClient()
+    const email = formData.get('email')
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/dashboard/settings/security`,
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    return { success: "Password reset link sent to your email." }
+}
+
 export async function signout() {
     const supabase = await createClient()
     await supabase.auth.signOut()

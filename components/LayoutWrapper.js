@@ -15,6 +15,7 @@ export default function LayoutWrapper({ children, user }) {
     // List of paths that should hide global navigation components
     const isEditingPage = (pathname === '/login' ||
         pathname === '/signup' ||
+        pathname === '/forgot-password' ||
         pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
         pathname?.includes('/promote/') || // Specific to promote action, not promotions list
