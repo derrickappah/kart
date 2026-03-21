@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '../../utils/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { timeAgo } from '../../utils/dateUtils';
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -100,8 +101,8 @@ export default function ProfilePage() {
                         <h1 className="text-[26px] font-bold leading-tight tracking-tight text-[#111618] dark:text-white">
                             {displayName}
                         </h1>
-                        <p className="text-[#5e7d87] dark:text-gray-400 text-base font-medium">
-                            {university}
+                        <p className="text-[#5e7d87] dark:text-gray-400 text-sm font-medium">
+                            {university} • Joined {timeAgo(user?.created_at)}
                         </p>
                     </div>
                 </section>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
 import BuyButton from './BuyButton';
 import { toSentenceCase } from '../../../utils/formatters';
+import { timeAgo } from '../../../utils/dateUtils';
 
 export default function ProductDetailsClient({ product }) {
     const [loadingChat, setLoadingChat] = useState(false);
@@ -286,6 +287,10 @@ export default function ProductDetailsClient({ product }) {
                             </span>
                             <span className="bg-green-500/10 text-green-600 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
                                 {product.condition}
+                            </span>
+                            <span className="text-[#5e7d87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider ml-auto flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                                {timeAgo(product.created_at)}
                             </span>
                         </div>
                         <h1 className="text-[#0e181b] dark:text-white text-3xl font-extrabold leading-tight mt-2">
