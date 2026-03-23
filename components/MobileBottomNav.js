@@ -37,7 +37,7 @@ export default function MobileBottomNav({ user }) {
     };
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-70 flex w-full justify-center border-t border-gray-100 bg-white/95 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-lg dark:border-gray-800 dark:bg-[#242428]/95 overflow-visible">
+        <nav className="fixed bottom-0 left-0 right-0 z-[70] flex w-full justify-center border-t border-gray-100 bg-white/95 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-lg dark:border-gray-800 dark:bg-[#242428]/95 overflow-visible">
             <div className="flex w-full max-w-md items-center justify-between px-8">
                 {/* Home */}
                 <Link href="/" className="group flex flex-col items-center">
