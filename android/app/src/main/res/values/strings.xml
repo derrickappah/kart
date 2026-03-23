@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KART</string>
+    <string name="title_activity_main">KART</string>
+    <string name="package_name">com.derrickappah.kart</string>
+    <string name="custom_url_scheme">com.derrickappah.kart</string>
+</resources>
