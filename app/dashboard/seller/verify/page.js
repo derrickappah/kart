@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '../../../utils/supabase/client';
 import Link from 'next/link';
 import { signout } from '../../../auth/actions';
 
@@ -24,7 +24,10 @@ export default function VerificationPage() {
         const fetchData = async () => {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
+                if (!user) {
+                    router.push('/login');
+                    return;
+                }
 
                 // Fetch user profile
                 const { data: profile } = await supabase
@@ -62,7 +65,7 @@ export default function VerificationPage() {
         };
 
         fetchData();
-    }, [supabase]);
+    }, [supabase, router]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -127,7 +130,8 @@ export default function VerificationPage() {
             }
 
             setSuccess(true);
-            // Refresh verification status (user is already available from above)
+            
+            // Refresh verification status
             const { data: requests } = await supabase
                 .from('verification_requests')
                 .select('*')
@@ -160,204 +164,137 @@ export default function VerificationPage() {
         : 'U';
 
     return (
-        <main className={styles.container}>
-            <aside className={styles.sidebar}>
-                {userProfile && (
-                    <div className={styles.userProfile}>
-                        <div className={styles.avatar}>{initials}</div>
-                        <div className={styles.userInfo}>
-                            <h3 className={styles.userName}>{displayName}</h3>
-                            <p className={styles.userRole}>{role}</p>
-                        </div>
+        <div className="bg-[#f6f7f8] dark:bg-[#131d1f] min-h-screen font-display antialiased">
+            <div className="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#131d1f] shadow-2xl overflow-hidden pb-20">
+                {/* Header */}
+                <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#f6f7f8]/90 dark:bg-[#131d1f]/90 backdrop-blur-md z-10 border-b border-gray-100 dark:border-gray-800">
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 dark:text-white">Verification</h1>
+                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Get verified to sell</p>
                     </div>
-                )}
-
-                <nav className={styles.nav}>
-                    <Link href="/profile" className={styles.navItem}>
-                        <svg className={styles.navIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        My Profile
-                    </Link>
-                    <Link href="/dashboard/seller/ads" className={styles.navItem}>
-                        <svg className={styles.navIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Ad Management
-                    </Link>
-                    <Link href="/dashboard/seller/analytics" className={styles.navItem}>
-                        <svg className={styles.navIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 3V21H21M7 16L12 11L16 15L21 10M21 10H16M21 10V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Analytics
-                    </Link>
-                    <Link href="/dashboard/seller/verify" className={`${styles.navItem} ${styles.navItemActive}`}>
-                        <svg className={styles.navIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Verification
-                    </Link>
-                    <form action={signout}>
-                        <button type="submit" className={styles.logoutBtn}>
-                            <svg className={styles.logoutIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            Log Out
-                        </button>
-                    </form>
-                </nav>
-            </aside>
-
-            <div className={styles.content}>
-                <header className={verifyStyles.header}>
-                    <div className={verifyStyles.headerContent}>
-                        <h1 className={verifyStyles.title}>Seller Verification</h1>
-                        <p className={verifyStyles.subtitle}>Verify your identity to start selling</p>
-                    </div>
-                    <Link href="/dashboard/seller" className={verifyStyles.backButton}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Back to Dashboard
+                    <Link href="/dashboard/seller" className="size-10 rounded-xl bg-white dark:bg-white/5 shadow-soft border border-transparent dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+                        <span className="material-symbols-outlined text-xl">close</span>
                     </Link>
                 </header>
 
-                {fetchingStatus ? (
-                    <div className={verifyStyles.loadingCard}>
-                        <p>Loading verification status...</p>
-                    </div>
-                ) : verificationStatus?.status === 'Approved' ? (
-                    <div className={verifyStyles.statusCard}>
-                        <svg className={verifyStyles.statusIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#6ee7b7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        <h2 className={`${verifyStyles.statusTitle} ${verifyStyles.statusTitleApproved}`}>Verification Approved</h2>
-                        <p className={verifyStyles.statusText}>
-                            Your seller verification has been approved! You can now sell on KART.
-                        </p>
-                        <Link href="/dashboard/seller" className={verifyStyles.statusAction}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            Go to Seller Dashboard
-                        </Link>
-                    </div>
-                ) : verificationStatus?.status === 'Pending' ? (
-                    <div className={verifyStyles.statusCard}>
-                        <svg className={verifyStyles.statusIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 9V12M12 15H12.01M13 16H11C9.89543 16 9 15.1046 9 14V10C9 8.89543 9.89543 8 11 8H13C14.1046 8 15 8.89543 15 10V14C15 15.1046 14.1046 16 13 16Z" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        <h2 className={`${verifyStyles.statusTitle} ${verifyStyles.statusTitlePending}`}>Verification Pending</h2>
-                        <p className={verifyStyles.statusText}>
-                            Your verification request is currently under review.
-                        </p>
-                        <p className={verifyStyles.statusDate}>
-                            Submitted: {new Date(verificationStatus.created_at).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                            })}
-                        </p>
-                        <p className={verifyStyles.statusText} style={{ marginTop: '1rem' }}>
-                            Our admin team will review it within 24-48 hours. You'll be notified once a decision is made.
-                        </p>
-                    </div>
-                ) : success ? (
-                    <div className={verifyStyles.statusCard}>
-                        <svg className={verifyStyles.statusIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#6ee7b7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        <h2 className={verifyStyles.statusTitle}>Verification Request Submitted</h2>
-                        <p className={verifyStyles.statusText}>
-                            Your verification request has been submitted. Our admin team will review it within 24-48 hours.
-                        </p>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className={verifyStyles.formCard}>
-                        {verificationStatus?.status === 'Rejected' && (
-                            <div className={`${verifyStyles.alertMessage} ${verifyStyles.alertRejected}`}>
-                                <div className={verifyStyles.alertTitle}>
-                                    <svg className={verifyStyles.alertIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9 3L3 9M3 3L9 9M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                    Previous Request Rejected
-                                </div>
-                                {verificationStatus.admin_notes && (
-                                    <p className={verifyStyles.alertNotes}>
-                                        <strong>Reason:</strong> {verificationStatus.admin_notes}
-                                    </p>
-                                )}
-                                <p className={verifyStyles.alertSubtext}>
-                                    You can submit a new verification request below. Please ensure all information is correct.
+                <main className="flex-1 px-6 py-8 space-y-8">
+                    {fetchingStatus ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1e292b] rounded-3xl shadow-soft border border-transparent dark:border-white/5 space-y-4">
+                            <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                            <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Checking status...</p>
+                        </div>
+                    ) : verificationStatus?.status === 'Approved' ? (
+                        <div className="bg-emerald-500/10 dark:bg-emerald-500/5 ring-1 ring-emerald-500/20 p-8 rounded-3xl shadow-sm text-center space-y-6">
+                            <div className="size-20 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+                                <span className="material-symbols-outlined text-4xl font-bold">verified</span>
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-tight">Profile Verified</h2>
+                                <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                                    Your seller verification has been approved! You now have full access to KART's selling features.
                                 </p>
                             </div>
-                        )}
-
-                        {error && (
-                            <div className={verifyStyles.alertError}>
-                                {error}
+                            <Link href="/dashboard/seller" className="h-12 w-full flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]">
+                                Start Selling
+                            </Link>
+                        </div>
+                    ) : verificationStatus?.status === 'Pending' ? (
+                        <div className="bg-amber-500/10 dark:bg-amber-500/5 ring-1 ring-amber-500/20 p-8 rounded-3xl shadow-sm text-center space-y-6">
+                            <div className="size-20 bg-amber-500 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
+                                <span className="material-symbols-outlined text-4xl font-bold">pending_actions</span>
                             </div>
-                        )}
-
-                        <div className={verifyStyles.formGroup}>
-                            <label className={verifyStyles.formLabel}>
-                                Student ID Number
-                            </label>
-                            <input
-                                type="text"
-                                name="studentId"
-                                required
-                                className={verifyStyles.formInput}
-                                placeholder="Enter your student ID"
-                                value={formData.studentId}
-                                onChange={handleChange}
-                            />
+                            <div>
+                                <h2 className="text-xl font-black text-amber-600 dark:text-amber-500 uppercase tracking-tight">Review in Progress</h2>
+                                <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                                    Your verification request is currently being reviewed by our team. This usually takes 24-48 hours.
+                                </p>
+                            </div>
+                            <div className="pt-4 border-t border-amber-500/10 text-[10px] font-bold text-amber-600/60 dark:text-amber-500/40 uppercase tracking-widest text-center">
+                                Submitted {new Date(verificationStatus.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </div>
                         </div>
-
-                        <div className={verifyStyles.formGroup}>
-                            <label className={verifyStyles.formLabel}>
-                                Student ID Photo
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className={verifyStyles.formInput}
-                            />
-                            {formData.studentIdImage && (
-                                <img src={formData.studentIdImage} alt="Student ID" className={verifyStyles.imagePreview} />
+                    ) : (
+                        <div className="space-y-6">
+                            {verificationStatus?.status === 'Rejected' && (
+                                <div className="bg-red-500/10 dark:bg-red-500/5 ring-1 ring-red-500/20 p-5 rounded-2xl space-y-3">
+                                    <div className="flex items-center gap-2 text-red-600 dark:text-red-500">
+                                        <span className="material-symbols-outlined text-lg font-bold">error</span>
+                                        <h3 className="text-xs font-black uppercase tracking-wider">Previous Request Rejected</h3>
+                                    </div>
+                                    {verificationStatus.admin_notes && (
+                                        <p className="text-[11px] font-medium text-red-500/80 leading-relaxed">
+                                            <span className="font-bold">Reason:</span> {verificationStatus.admin_notes}
+                                        </p>
+                                    )}
+                                </div>
                             )}
-                            <p className={verifyStyles.formHelpText}>
-                                Upload a clear photo of your student ID card
-                            </p>
+
+                            <div className="bg-white dark:bg-[#1e292b] p-6 rounded-3xl shadow-soft border border-transparent dark:border-white/5 space-y-6">
+                                <section className="space-y-4">
+                                    <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Verify Your Identity</h3>
+                                    
+                                    <form onSubmit={handleSubmit} className="space-y-5">
+                                        {error && (
+                                            <div className="bg-red-500/10 text-red-500 p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider text-center">
+                                                {error}
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Student ID Number</label>
+                                            <input
+                                                type="text"
+                                                name="studentId"
+                                                required
+                                                className="w-full bg-slate-50 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-xl py-3.5 px-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all focus:bg-white"
+                                                placeholder="e.g. 202412345"
+                                                value={formData.studentId}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Student ID Photo</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleFileChange}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                />
+                                                <div className="w-full bg-slate-50 dark:bg-white/5 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl py-8 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors">
+                                                    <span className="material-symbols-outlined text-3xl text-slate-300 dark:text-slate-600 group-hover:text-primary transition-colors">add_a_photo</span>
+                                                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                                        {formData.studentIdImage ? 'Change Photo' : 'Upload ID Photo'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            {formData.studentIdImage && (
+                                                <div className="mt-4 rounded-xl overflow-hidden shadow-md ring-1 ring-black/5">
+                                                    <img src={formData.studentIdImage} alt="ID Preview" className="w-full h-auto" />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="w-full h-14 flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
+                                        >
+                                            {loading ? (
+                                                <div className="size-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                            ) : (
+                                                'Submit Verification'
+                                            )}
+                                        </button>
+                                    </form>
+                                </section>
+                            </div>
                         </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={verifyStyles.submitButton}
-                        >
-                            {loading ? (
-                                <>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 1s linear infinite' }}>
-                                        <path d="M12 2V6M12 18V22M6 12H2M22 12H18M19.07 19.07L16.24 16.24M19.07 4.93L16.24 7.76M4.93 19.07L7.76 16.24M4.93 4.93L7.76 7.76" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                    Submitting...
-                                </>
-                            ) : (
-                                <>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                    {verificationStatus?.status === 'Rejected' ? 'Resubmit Verification Request' : 'Submit Verification Request'}
-                                </>
-                            )}
-                        </button>
-                    </form>
-                )}
+                    )}
+                </main>
             </div>
-        </main>
+        </div>
     );
 }
