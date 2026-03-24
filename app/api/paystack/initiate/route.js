@@ -12,7 +12,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { orderId, amount, email, callbackUrl } = body;
+    const { orderId, amount, email, callbackUrl, isApp } = body;
 
     if (!orderId || !amount || !email) {
       return NextResponse.json(
@@ -48,7 +48,9 @@ export async function POST(request) {
       amount,
       email: email || order.buyer?.email || user.email,
       reference,
-      callback_url: callbackUrl || `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/orders/${orderId}`,
+      callback_url: isApp 
+        ? `kart-app://checkout-success?orderId=${orderId}`
+        : (callbackUrl || `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/orders/${orderId}`),
       metadata: {
         order_id: orderId,
         buyer_id: user.id,

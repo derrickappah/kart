@@ -15,7 +15,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { productId, quantity = 1 } = body;
+    const { productId, quantity = 1, isApp } = body;
 
     if (!productId) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
@@ -145,7 +145,9 @@ export async function POST(request) {
       .single();
 
     const reference = `order_${order.id}_${Date.now()}`;
-    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/orders/${order.id}`;
+    const callbackUrl = isApp 
+      ? `kart-app://checkout-success?orderId=${order.id}`
+      : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/orders/${order.id}`;
 
     const paymentData = await initializePayment({
       amount: totalAmount,

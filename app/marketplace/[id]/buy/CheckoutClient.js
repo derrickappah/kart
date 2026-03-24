@@ -1,6 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 import Link from 'next/link';
 
 export default function CheckoutClient({ product, user, walletBalance, serviceFee, feePercent, feeFixed }) {
@@ -50,7 +51,8 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                     },
                     body: JSON.stringify({
                         productId: product.id,
-                        quantity: 1
+                        quantity: 1,
+                        isApp: Capacitor.isNativePlatform()
                     }),
                 });
 

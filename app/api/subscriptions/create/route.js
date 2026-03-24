@@ -12,7 +12,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { planId } = body;
+    const { planId, isApp } = body;
 
     if (!planId) {
       return NextResponse.json({ error: 'Plan ID is required' }, { status: 400 });
@@ -89,7 +89,9 @@ export async function POST(request) {
         amount: plan.price,
         email: profile?.email || user.email,
         reference,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
+        callback_url: isApp 
+          ? `kart-app://checkout-success?subscriptionId=${subscription.id}`
+          : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
         // Explicitly pass undefined to ensure no currency is sent
         currency: undefined,
         metadata: {
@@ -184,7 +186,9 @@ export async function POST(request) {
             amount: plan.price,
             email: profile?.email || user.email,
             reference: `sub_${subscription.id}_${Date.now()}_retry`,
-            callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
+            callback_url: isApp 
+              ? `kart-app://checkout-success?subscriptionId=${subscription.id}`
+              : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
             currency: undefined, // Explicitly don't send currency
             metadata: {
               subscription_id: subscription.id,

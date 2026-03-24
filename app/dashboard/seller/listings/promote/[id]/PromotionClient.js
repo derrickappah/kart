@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Capacitor } from '@capacitor/core';
 import Link from 'next/link';
 
 export default function PromotionClient({ product, pricing = {} }) {
@@ -70,7 +71,8 @@ export default function PromotionClient({ product, pricing = {} }) {
                     productId: product.id,
                     tierId: selectedTier,
                     adType: currentTier.adType,
-                    amount: currentTier.price
+                    amount: currentTier.price,
+                    isApp: Capacitor.isNativePlatform()
                 }),
             });
 

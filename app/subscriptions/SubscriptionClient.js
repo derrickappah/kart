@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Capacitor } from '@capacitor/core';
 
 export default function SubscriptionClient({ plans = [], currentSubscription = null }) {
     const [loading, setLoading] = useState(false);
@@ -25,7 +26,10 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ planId }),
+                body: JSON.stringify({ 
+                    planId,
+                    isApp: Capacitor.isNativePlatform()
+                }),
             });
 
             const data = await response.json();

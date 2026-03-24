@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { createClient } from '../utils/supabase/client';
 import Navbar from './Navbar';
 import MobileBottomNav from './MobileBottomNav';
+import AppDeepLinkHandler from './AppDeepLinkHandler';
 
 const supabase = createClient();
 
@@ -43,6 +44,7 @@ export default function LayoutWrapper({ children }) {
 
     return (
         <>
+            <AppDeepLinkHandler />
             {!isEditingPage && <Navbar user={user} />}
             <main className={isProductPage ? "" : (isEditingPage ? "" : "pt-16 pb-[66px]")}>
                 {children}

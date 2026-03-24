@@ -12,7 +12,7 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { productId, tierId, adType, amount } = body;
+        const { productId, tierId, adType, amount, isApp } = body;
 
         if (!productId || !tierId || !adType || !amount) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -65,7 +65,9 @@ export async function POST(request) {
                 amount: amount,
                 email: profile?.email || user.email,
                 reference,
-                callback_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/seller/listings/promote/success?adId=${advertisement.id}&productId=${productId}`,
+                callback_url: isApp 
+                    ? `kart-app://checkout-success?adId=${advertisement.id}&productId=${productId}`
+                    : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/seller/listings/promote/success?adId=${advertisement.id}&productId=${productId}`,
                 currency: undefined,
                 metadata: {
                     advertisement_id: advertisement.id,
