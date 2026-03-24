@@ -1,17 +1,18 @@
-import { createClient } from '../../../utils/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 import ProductDetailsClient from './ProductDetailsClient';
 
 export const revalidate = 3600;
 
 export default async function ProductDetails({ params }) {
-    const { id } = await params;
+    const resolvedParams = await params;
+    const id = decodeURIComponent(resolvedParams.id);
     const supabase = await createClient();
 
     const { data: product, error } = await supabase
         .from('products')
         .select(`
             *,
-            seller:profiles!products_seller_id_fkey (
+            seller:profiles (
                 display_name,
                 email,
                 created_at,
@@ -22,7 +23,7 @@ export default async function ProductDetails({ params }) {
             )
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
     if (error || !product) {
         // Fallback for missing products or errors
