@@ -118,7 +118,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
             <div className="flex flex-col p-4">
               <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
               <div className="mt-2 flex items-center justify-between">
-                <p className="text-lg font-bold text-primary">GHS {product.price}</p>
+                <p className="text-lg font-bold text-primary">₵ {product.price}</p>
                 <div className="flex items-center gap-1.5 overflow-hidden">
                   {product.seller?.avatar_url ? (
                     <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0" alt={product.seller.display_name} />
@@ -181,7 +181,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
                     {product.seller?.is_verified && <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>}
                   </div>
                 </div>
-                <p className="shrink-0 text-xl font-black text-primary tracking-tighter">GHS {product.price}</p>
+                <p className="shrink-0 text-xl font-black text-primary tracking-tighter">₵ {product.price}</p>
               </div>
             </div>
           </Link>

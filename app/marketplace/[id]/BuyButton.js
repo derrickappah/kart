@@ -52,7 +52,7 @@ export default function BuyButton({ product }) {
     }
 
     return (
-        <div className="flex-[2] flex flex-col gap-2">
+        <div className="flex-1 flex flex-col gap-2">
             {error && (
                 <div className="text-red-600 dark:text-red-400 text-xs font-semibold px-1">
                     {error}
@@ -61,10 +61,10 @@ export default function BuyButton({ product }) {
             <button
                 onClick={handleBuyNow}
                 disabled={loading}
-                className="w-full h-14 rounded-xl bg-primary text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
+                className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-[#159ac6] text-white font-bold text-base flex items-center justify-center gap-3 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.5)] active:scale-[0.98] transition-all disabled:opacity-50 whitespace-nowrap px-6"
             >
-                <span className="material-symbols-outlined">shopping_bag</span>
-                {loading ? 'Processing...' : `Buy Now - GHS ${parseFloat(product.price).toFixed(2)}`}
+                <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
+                {loading ? 'Processing...' : 'Buy Now'}
             </button>
         </div>
     );

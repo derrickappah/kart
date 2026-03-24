@@ -104,7 +104,7 @@ export default async function Marketplace({ searchParams }) {
                                     </div>
                                     <div className="flex flex-col gap-0.5 px-1">
                                         <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(p.title)}</h3>
-                                        <p className="text-primary text-base font-extrabold">GHS {p.price}</p>
+                                        <p className="text-primary text-base font-extrabold">₵ {p.price}</p>
                                         <div className="flex items-center gap-1 text-gray-400">
                                             <span className="material-symbols-outlined text-[14px]">location_on</span>
                                             <p className="text-[10px] font-bold truncate uppercase">{p.campus || 'On Campus'}</p>

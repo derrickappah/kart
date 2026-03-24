@@ -267,7 +267,7 @@ export default function ProductDetailsClient({ product }) {
                         <h1 className="text-[#0e181b] dark:text-white text-3xl font-extrabold leading-tight mt-2">
                             {toSentenceCase(product.title)}
                         </h1>
-                        <p className="text-primary text-3xl font-bold mt-2">GHS {product.price}</p>
+                        <p className="text-primary text-3xl font-bold mt-2">₵ {product.price}</p>
                     </div>
 
                     {/* Seller Info */}
@@ -354,7 +354,7 @@ export default function ProductDetailsClient({ product }) {
                                         </div>
                                         <div className="flex flex-col gap-0.5 px-1">
                                             <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">{toSentenceCase(p.title)}</h3>
-                                            <p className="text-primary text-base font-extrabold">GHS {p.price}</p>
+                                            <p className="text-primary text-base font-extrabold">₵ {p.price}</p>
                                         </div>
                                     </Link>
                                 ))}
@@ -366,15 +366,19 @@ export default function ProductDetailsClient({ product }) {
 
             {/* Persistent Bottom Action Bar */}
             {!isOwner && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#22262a]/80 backdrop-blur-xl border-t border-black/5 dark:border-white/5 p-4 pb-8 z-50">
-                    <div className="max-w-screen-md mx-auto flex items-center gap-4">
+                <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#22262a]/90 backdrop-blur-2xl border-t border-black/5 dark:border-white/5 p-4 pb-8 z-50">
+                    <div className="max-w-screen-md mx-auto flex items-center gap-3">
                         <button
                             onClick={handleContactSeller}
                             disabled={loadingChat}
-                            className="flex-1 h-14 rounded-xl border-2 border-primary text-primary font-bold text-base flex items-center justify-center gap-2 hover:bg-primary/5 active:scale-95 transition-all disabled:opacity-50"
+                            className="flex-1 h-14 rounded-2xl border border-primary/20 text-primary font-bold text-base flex items-center justify-center gap-3 bg-primary/[0.04] dark:bg-primary/10 hover:bg-primary/10 active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.2)]"
                         >
-                            <span className="material-symbols-outlined">chat_bubble</span>
-                            {loadingChat ? '...' : 'Chat'}
+                            <span className="material-symbols-outlined text-[22px]">chat_bubble</span>
+                            {loadingChat ? '...' : (
+                                <span className="flex items-center gap-1.5">
+                                    Chat
+                                </span>
+                            )}
                         </button>
                         <BuyButton product={product} />
                     </div>

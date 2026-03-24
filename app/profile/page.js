@@ -139,7 +139,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex-1 flex flex-col text-left">
                             <span className="text-base font-semibold text-[#111618] dark:text-white">KART Wallet</span>
-                            <span className="text-xs font-bold text-[#1daddd]">GHS {wallet?.balance ? parseFloat(wallet.balance).toFixed(2) : '0.00'}</span>
+                            <span className="text-xs font-bold text-[#1daddd]">₵ {wallet?.balance ? parseFloat(wallet.balance).toFixed(2) : '0.00'}</span>
                         </div>
                         <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
                     </Link>
