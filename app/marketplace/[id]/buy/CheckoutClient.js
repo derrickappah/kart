@@ -1,8 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
 import Link from 'next/link';
 
 export default function CheckoutClient({ product, user, walletBalance, serviceFee, feePercent, feeFixed }) {
@@ -45,6 +43,9 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                 router.refresh();
             } else {
                 // Paystack Payment
+                const { Capacitor } = await import('@capacitor/core');
+                const isNative = Capacitor.isNativePlatform();
+
                 const response = await fetch('/api/orders/create', {
                     method: 'POST',
                     headers: {
@@ -53,7 +54,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                     body: JSON.stringify({
                         productId: product.id,
                         quantity: 1,
-                        isApp: Capacitor.isNativePlatform()
+                        isApp: isNative
                     }),
                 });
 
@@ -65,7 +66,8 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
 
                 if (data.payment?.authorization_url) {
                     // Redirect to Paystack
-                    if (Capacitor.isNativePlatform()) {
+                    if (isNative) {
+                        const { Browser } = await import('@capacitor/browser');
                         await Browser.open({ url: data.payment.authorization_url, presentationStyle: 'popover' });
                     } else {
                         window.location.href = data.payment.authorization_url;

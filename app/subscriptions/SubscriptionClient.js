@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
 
 export default function SubscriptionClient({ plans = [], currentSubscription = null }) {
     const [loading, setLoading] = useState(false);
@@ -22,6 +20,9 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
             setLoading(true);
             setError(null);
 
+            const { Capacitor } = await import('@capacitor/core');
+            const isNative = Capacitor.isNativePlatform();
+
             const response = await fetch('/api/subscriptions/create', {
                 method: 'POST',
                 headers: {
@@ -29,7 +30,7 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
                 },
                 body: JSON.stringify({ 
                     planId,
-                    isApp: Capacitor.isNativePlatform()
+                    isApp: isNative
                 }),
             });
 
@@ -41,7 +42,8 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
 
             if (data.authorization_url) {
                 // Redirect to Paystack
-                if (Capacitor.isNativePlatform()) {
+                if (isNative) {
+                    const { Browser } = await import('@capacitor/browser');
                     await Browser.open({ url: data.authorization_url, presentationStyle: 'popover' });
                 } else {
                     window.location.href = data.authorization_url;
