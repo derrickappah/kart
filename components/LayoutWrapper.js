@@ -1,13 +1,25 @@
 "use client";
-// Force re-render to fix hydration mismatch
 
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import useSWR from 'swr';
+import { createClient } from '../utils/supabase/client';
 import Navbar from './Navbar';
 import MobileBottomNav from './MobileBottomNav';
 
-export default function LayoutWrapper({ children, user }) {
+const supabase = createClient();
+
+const userFetcher = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user || null;
+};
+
+export default function LayoutWrapper({ children }) {
     const pathname = usePathname();
+
+    const { data: user } = useSWR('layout-user', userFetcher, {
+        revalidateOnFocus: false,
+        dedupingInterval: 60000,
+    });
 
     // Check if we are on a product details page
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
@@ -18,20 +30,16 @@ export default function LayoutWrapper({ children, user }) {
         pathname === '/forgot-password' ||
         pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
-        pathname?.includes('/promote/') || // Specific to promote action, not promotions list
+        pathname?.includes('/promote/') ||
         pathname?.includes('/withdraw') ||
         pathname?.includes('/buy') ||
         pathname?.includes('/review') ||
         pathname?.includes('/verify') ||
         pathname?.includes('/success') ||
-        pathname?.startsWith('/dashboard/admin') || // Hide on all admin pages
-        (pathname?.startsWith('/dashboard/messages/') && pathname !== '/dashboard/messages') || // Hide on message details
+        pathname?.startsWith('/dashboard/admin') ||
+        (pathname?.startsWith('/dashboard/messages/') && pathname !== '/dashboard/messages') ||
         (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
-        !pathname?.includes('/profile/edit'); // Show navigation on profile edit page
-
-    console.log('[LayoutWrapper] Rendered at:', pathname, 'isEditingPage:', isEditingPage);
-
-
+        !pathname?.includes('/profile/edit');
 
     return (
         <>

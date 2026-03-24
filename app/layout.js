@@ -1,6 +1,5 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
 import LayoutWrapper from "../components/LayoutWrapper";
-import { createClient } from "../utils/supabase/server";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -17,39 +16,17 @@ export const metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
-
-export default async function RootLayout({ children }) {
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    const supabase = await createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-    return (
-      <html lang="en" className={`${jakarta.variable}`}>
-        <head>
-          <link rel="manifest" href="/manifest.json" />
-        </head>
-        <body className="antialiased">
-          <LayoutWrapper user={user}>
-            {children}
-          </LayoutWrapper>
-        </body>
-      </html>
-    );
-  } catch (error) {
-    return (
-      <html lang="en">
-        <body>
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <h1>System Error</h1>
-            <p>Please check Vercel logs for [RootLayout] Critical Error</p>
-            <pre style={{ textAlign: 'left', display: 'inline-block' }}>{error.message}</pre>
-          </div>
-        </body>
-      </html>
-    );
-  }
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={`${jakarta.variable}`}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body className="antialiased">
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
+      </body>
+    </html>
+  );
 }

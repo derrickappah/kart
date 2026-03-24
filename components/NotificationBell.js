@@ -3,82 +3,68 @@ import { useEffect, useState } from 'react';
 import { createClient } from '../utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
+const supabase = createClient();
+
 export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUnreadCount = async () => {
+    let insertChannel;
+    let updateChannel;
+
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
       }
 
+      // Fetch initial count
       const { count } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('is_read', false);
-
       setUnreadCount(count || 0);
       setLoading(false);
-    };
 
-    fetchUnreadCount();
-
-    // Subscribe to new notifications
-    const setupSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const channel = supabase
-        .channel('notifications')
+      // Subscribe to new notifications
+      insertChannel = supabase
+        .channel('notifications-insert')
         .on(
           'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`,
-          },
-          () => {
-            setUnreadCount((prev) => prev + 1);
-          }
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          () => setUnreadCount((prev) => prev + 1)
         )
         .subscribe();
 
-      return channel;
+      // Subscribe to read status updates
+      updateChannel = supabase
+        .channel('notifications-updates')
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          async () => {
+            const { count: newCount } = await supabase
+              .from('notifications')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('is_read', false);
+            setUnreadCount(newCount || 0);
+          }
+        )
+        .subscribe();
     };
 
-    let channel;
-    setupSubscription().then((ch) => {
-      channel = ch;
-    });
-
-    // Also listen for updates (when notifications are marked as read)
-    const updateChannel = supabase
-      .channel('notifications-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-        },
-        () => {
-          fetchUnreadCount();
-        }
-      )
-      .subscribe();
+    init();
 
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      if (insertChannel) supabase.removeChannel(insertChannel);
       if (updateChannel) supabase.removeChannel(updateChannel);
     };
-  }, []); // Run only once on mount
+  }, []);
 
   if (loading) {
     return <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-[#2d2d32] animate-pulse" />;
@@ -99,3 +85,4 @@ export default function NotificationBell() {
     </button>
   );
 }
+

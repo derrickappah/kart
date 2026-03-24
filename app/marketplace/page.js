@@ -45,14 +45,19 @@ export default async function Marketplace({ searchParams }) {
         default:          query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }); break;
     }
 
-    // Run user auth and product query in parallel
-    const { data: { user } } = await supabase.auth.getUser();
-    const [wishlistRes, productsRes] = await Promise.all([
+    // Run auth and product query in parallel
+    const [authRes, wishlistProduct] = await Promise.all([
+        supabase.auth.getUser(),
+        query.limit(40)
+    ]);
+    const user = authRes.data?.user;
+
+    const [wishlistRes] = await Promise.all([
         user
             ? supabase.from('wishlist').select('product_id').eq('user_id', user.id)
             : Promise.resolve({ data: [] }),
-        query.limit(40)
     ]);
+    const productsRes = wishlistProduct;
 
     const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
     const rawProducts = productsRes.data;

@@ -7,9 +7,10 @@ import { useState, useEffect } from 'react';
 import { createClient } from '../utils/supabase/client';
 import NotificationBell from './NotificationBell';
 
+const supabase = createClient();
+
 export default function Navbar({ user }) {
     const pathname = usePathname();
-    const supabase = createClient();
 
     // Check if we are on a product details page
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';

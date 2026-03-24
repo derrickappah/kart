@@ -76,23 +76,7 @@ function ProductCardSkeleton() {
   );
 }
 
-async function FeaturedSection({ wishlistIds }) {
-  const supabase = await createClient();
-  const { data: rawBoostedProducts } = await supabase
-    .from('products')
-    .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-    .eq('is_boosted', true)
-    .eq('status', 'Active')
-    .limit(20);
-  const { data: rawLatestProducts } = await supabase
-    .from('products')
-    .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-    .eq('status', 'Active')
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  const boostedProducts = rawBoostedProducts ? [...rawBoostedProducts].sort(() => Math.random() - 0.5) : [];
-  const latestProducts = rawLatestProducts ? [...rawLatestProducts].sort(() => Math.random() - 0.5) : [];
+async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts }) {
   const displayFeatured = boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 10);
 
   const getRecReason = (product) => {
@@ -211,7 +195,7 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [wishlistRes, bannerRes] = await Promise.all([
+  const [wishlistRes, bannerRes, boostedRes, latestRes] = await Promise.all([
     user
       ? supabase.from('wishlist').select('product_id').eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
@@ -221,10 +205,24 @@ export default async function Home() {
       .or('is_featured.eq.true,is_boosted.eq.true')
       .eq('status', 'Active')
       .limit(15),
+    supabase
+      .from('products')
+      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
+      .eq('is_boosted', true)
+      .eq('status', 'Active')
+      .limit(20),
+    supabase
+      .from('products')
+      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
+      .eq('status', 'Active')
+      .order('created_at', { ascending: false })
+      .limit(20),
   ]);
 
   const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
   const bannerProducts = bannerRes.data ? [...bannerRes.data].sort(() => Math.random() - 0.5) : [];
+  const boostedProducts = boostedRes.data ? [...boostedRes.data].sort(() => Math.random() - 0.5) : [];
+  const latestProducts = latestRes.data ? [...latestRes.data].sort(() => Math.random() - 0.5) : [];
 
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">
@@ -256,7 +254,7 @@ export default async function Home() {
             </div>
           </div>
         }>
-          <FeaturedSection wishlistIds={wishlistIds} />
+          <FeaturedSection wishlistIds={wishlistIds} boostedProducts={boostedProducts} latestProducts={latestProducts} />
         </Suspense>
       </div>
     </div>

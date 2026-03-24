@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
+const supabase = createClient();
+
 export default function WishlistButton({ productId, initialIsSaved }) {
     const [isSaved, setIsSaved] = useState(initialIsSaved);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const supabase = createClient();
 
     const handleToggle = async (e) => {
         // CRITICAL: Prevent navigation to the product detail page
@@ -35,11 +36,10 @@ export default function WishlistButton({ productId, initialIsSaved }) {
                 body: JSON.stringify({ productId }),
             });
 
-            if (response.ok) {
-                router.refresh();
-            } else {
+            if (!response.ok) {
                 throw new Error('Failed to update wishlist');
             }
+            // Removed router.refresh() — optimistic state is already correct
         } catch (error) {
             console.error('Wishlist error:', error);
             // Revert on error
@@ -64,3 +64,4 @@ export default function WishlistButton({ productId, initialIsSaved }) {
         </button>
     );
 }
+

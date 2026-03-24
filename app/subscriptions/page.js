@@ -38,31 +38,8 @@ export default async function SubscriptionPage() {
         {/* Subscription Content */}
         <SubscriptionClient plans={plans || []} currentSubscription={currentSubscription} />
 
-        {/* Sticky Bottom Navigation */}
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-30 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-[#111d21]/95 backdrop-blur-md px-6 pb-6 pt-3 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
-          <div className="flex justify-between items-center max-w-sm mx-auto">
-            <Link href="/" className="flex flex-col items-center gap-1 text-slate-400">
-              <span className="material-symbols-outlined text-[26px]">home</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest">Home</span>
-            </Link>
-            <Link href="/marketplace" className="flex flex-col items-center gap-1 text-slate-400">
-              <span className="material-symbols-outlined text-[26px]">search</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest">Search</span>
-            </Link>
-            <Link href="/dashboard/seller/create" className="flex flex-col items-center gap-1 bg-[#1daddd] text-white size-14 -mt-8 rounded-full shadow-lg border-4 border-white dark:border-[#111d21]">
-              <span className="material-symbols-outlined text-[32px] mt-2">add</span>
-            </Link>
-            <Link href="/notifications" className="flex flex-col items-center gap-1 text-slate-400">
-              <span className="material-symbols-outlined text-[26px]">notifications</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest">Activity</span>
-            </Link>
-            <Link href="/profile" className="flex flex-col items-center gap-1 text-[#1daddd]">
-              <span className="material-symbols-outlined text-[26px] fill-current">account_circle</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest">Profile</span>
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );
 }
+

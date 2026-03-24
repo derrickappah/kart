@@ -1,11 +1,12 @@
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function SearchInput({ placeholder }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [query, setQuery] = useState('');
+    const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
         // Sync local state with URL param on mount and update
@@ -13,19 +14,19 @@ function SearchInput({ placeholder }) {
         if (search) {
             setQuery(search);
         } else {
-            // If navigating away or clearing, we might want to clear or keep.
-            // Usually keeping it simple: if URL has search, show it.
             setQuery('');
         }
     }, [searchParams]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        if (query.trim()) {
-            router.push(`/marketplace?search=${encodeURIComponent(query)}`);
-        } else {
-            router.push('/marketplace');
-        }
+        const targetUrl = query.trim() 
+            ? `/marketplace?search=${encodeURIComponent(query)}` 
+            : '/marketplace';
+            
+        startTransition(() => {
+            router.push(targetUrl);
+        });
     };
 
     return (

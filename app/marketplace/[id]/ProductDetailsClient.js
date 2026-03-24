@@ -7,6 +7,8 @@ import BuyButton from './BuyButton';
 import { toSentenceCase } from '../../../utils/formatters';
 import { timeAgo } from '../../../utils/dateUtils';
 
+const supabase = createClient();
+
 export default function ProductDetailsClient({ product }) {
     const [loadingChat, setLoadingChat] = useState(false);
     const [isInWishlist, setIsInWishlist] = useState(false);
@@ -22,7 +24,6 @@ export default function ProductDetailsClient({ product }) {
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
     const router = useRouter();
-    const supabase = createClient();
 
     // Min swipe distance in pixels
     const minSwipeDistance = 50;
@@ -49,58 +50,79 @@ export default function ProductDetailsClient({ product }) {
         }
     };
 
-    // Check if user is owner and wishlist status
+    // Combined data fetch — runs on mount, all requests run in parallel
     useEffect(() => {
-        const checkStatus = async () => {
+        // Fire-and-forget: don't block UI for view tracking
+        const sessionKey = `viewed_${product.id}`;
+        if (!sessionStorage.getItem(sessionKey)) {
+            fetch(`/api/products/${product.id}/increment-views`, { method: 'POST' })
+                .then(() => sessionStorage.setItem(sessionKey, 'true'))
+                .catch(() => {});
+        }
+
+        const checkWishlist = async (userId) => {
+            const { data: wishlistItem } = await supabase
+                .from('wishlist')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('product_id', product.id)
+                .maybeSingle();
+            setIsInWishlist(!!wishlistItem);
+        };
+
+        const fetchSimilar = async () => {
+            if (!product?.category) return;
+            const { data } = await supabase
+                .from('products')
+                .select('*, seller:profiles(display_name, avatar_url)')
+                .eq('category', product.category)
+                .eq('status', 'Active')
+                .neq('id', product.id)
+                .limit(12);
+            if (data) {
+                setSimilarProducts([...data].sort(() => Math.random() - 0.5).slice(0, 4));
+            }
+            setLoadingSimilar(false);
+        };
+
+        const init = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setIsOwner(user.id === product.seller_id);
-
-                const { data: wishlistItem } = await supabase
-                    .from('wishlist')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .eq('product_id', product.id)
-                    .maybeSingle();
-
-                setIsInWishlist(!!wishlistItem);
             }
+            // Run wishlist check and similar fetch in parallel
+            await Promise.all([
+                user ? checkWishlist(user.id) : Promise.resolve(),
+                fetchSimilar(),
+            ]);
         };
-        checkStatus();
-    }, [product.id, product.seller_id, supabase]);
+
+        init();
+    }, [product.id, product.seller_id, product.category]);
 
     const handleWishlistToggle = async () => {
         setLoadingWishlist(true);
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             router.push('/login');
+            setLoadingWishlist(false);
             return;
         }
-
+        const optimisticState = !isInWishlist;
+        setIsInWishlist(optimisticState);
         try {
-            if (isInWishlist) {
-                const response = await fetch('/api/wishlist/remove', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId: product.id }),
-                });
-                if (response.ok) {
-                    setIsInWishlist(false);
-                    router.refresh();
-                }
-            } else {
-                const response = await fetch('/api/wishlist/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId: product.id }),
-                });
-                if (response.ok) {
-                    setIsInWishlist(true);
-                    router.refresh();
-                }
+            const endpoint = isInWishlist ? '/api/wishlist/remove' : '/api/wishlist/add';
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: product.id }),
+            });
+            if (!response.ok) {
+                setIsInWishlist(!optimisticState); // revert
             }
         } catch (error) {
             console.error('Wishlist error:', error);
+            setIsInWishlist(!optimisticState); // revert
         } finally {
             setLoadingWishlist(false);
         }
@@ -113,32 +135,25 @@ export default function ProductDetailsClient({ product }) {
             router.push('/login');
             return;
         }
-
         if (user.id === product.seller_id) {
             alert("You cannot message yourself!");
             setLoadingChat(false);
             return;
         }
-
         try {
             const { data: myConvs } = await supabase
                 .from('conversations')
                 .select('*')
                 .contains('participants', [user.id]);
-
             const existingConv = myConvs?.find(c => c.participants.includes(product.seller_id));
-
             if (existingConv) {
                 router.push(`/dashboard/messages/${existingConv.id}`);
             } else {
                 const { data: newConv, error } = await supabase
                     .from('conversations')
-                    .insert([{
-                        participants: [user.id, product.seller_id]
-                    }])
+                    .insert([{ participants: [user.id, product.seller_id] }])
                     .select()
                     .single();
-
                 if (error) throw error;
                 router.push(`/dashboard/messages/${newConv.id}`);
             }
@@ -148,50 +163,6 @@ export default function ProductDetailsClient({ product }) {
             setLoadingChat(false);
         }
     };
-
-    // Track views
-    useEffect(() => {
-        const incrementViews = async () => {
-            try {
-                // Check if we've already viewed this product in this session to avoid double counting
-                const sessionKey = `viewed_${product.id}`;
-                if (!sessionStorage.getItem(sessionKey)) {
-                    await fetch(`/api/products/${product.id}/increment-views`, { method: 'POST' });
-                    sessionStorage.setItem(sessionKey, 'true');
-                }
-            } catch (error) {
-                console.error('Error incrementing views:', error);
-            }
-        };
-        incrementViews();
-    }, [product.id]);
-
-    // Fetch similar products
-    useEffect(() => {
-        const fetchSimilar = async () => {
-            if (!product?.category) return;
-            try {
-                const { data } = await supabase
-                    .from('products')
-                    .select('*, seller:profiles(display_name, avatar_url)')
-                    .eq('category', product.category)
-                    .eq('status', 'Active')
-                    .neq('id', product.id)
-                    .limit(12);
-
-                if (data) {
-                    // Shuffle the results and take top 4
-                    const shuffled = [...data].sort(() => Math.random() - 0.5);
-                    setSimilarProducts(shuffled.slice(0, 4));
-                }
-            } catch (err) {
-                console.error("Error fetching similar products:", err);
-            } finally {
-                setLoadingSimilar(false);
-            }
-        };
-        fetchSimilar();
-    }, [product.id, product.category, supabase]);
 
     const handleShare = async () => {
         try {
