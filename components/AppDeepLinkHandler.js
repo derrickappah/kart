@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 
 export default function AppDeepLinkHandler() {
@@ -15,6 +16,9 @@ export default function AppDeepLinkHandler() {
         const handleAppUrlOpen = async (event) => {
             const url = event.url;
             console.log('App URL opened:', url);
+
+            // Close the in-app browser if it's open
+            await Browser.close();
 
             // Handle kart-app://checkout-success?orderId=...
             if (url.startsWith('kart-app://checkout-success')) {

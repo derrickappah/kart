@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import Link from 'next/link';
 
 export default function PromotionClient({ product, pricing = {} }) {
@@ -83,7 +84,11 @@ export default function PromotionClient({ product, pricing = {} }) {
             }
 
             if (data.authorization_url) {
-                window.location.href = data.authorization_url;
+                if (Capacitor.isNativePlatform()) {
+                    await Browser.open({ url: data.authorization_url, presentationStyle: 'popover' });
+                } else {
+                    window.location.href = data.authorization_url;
+                }
             } else {
                 throw new Error('No payment URL received');
             }

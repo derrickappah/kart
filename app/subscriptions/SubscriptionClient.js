@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
 export default function SubscriptionClient({ plans = [], currentSubscription = null }) {
     const [loading, setLoading] = useState(false);
@@ -40,7 +41,11 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
 
             if (data.authorization_url) {
                 // Redirect to Paystack
-                window.location.href = data.authorization_url;
+                if (Capacitor.isNativePlatform()) {
+                    await Browser.open({ url: data.authorization_url, presentationStyle: 'popover' });
+                } else {
+                    window.location.href = data.authorization_url;
+                }
             } else {
                 throw new Error('No payment URL received');
             }

@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import Link from 'next/link';
 
 export default function CheckoutClient({ product, user, walletBalance, serviceFee, feePercent, feeFixed }) {
@@ -64,7 +65,11 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
 
                 if (data.payment?.authorization_url) {
                     // Redirect to Paystack
-                    window.location.href = data.payment.authorization_url;
+                    if (Capacitor.isNativePlatform()) {
+                        await Browser.open({ url: data.payment.authorization_url, presentationStyle: 'popover' });
+                    } else {
+                        window.location.href = data.payment.authorization_url;
+                    }
                 } else {
                     throw new Error('Payment URL not received');
                 }
