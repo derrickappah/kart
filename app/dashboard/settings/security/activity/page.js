@@ -52,8 +52,13 @@ export default function LoginActivityPage() {
                     </div>
 
                     {loading ? (
-                        <div className="p-12 flex justify-center">
-                            <div className="size-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                        <div className="p-4 flex items-center gap-4 animate-pulse">
+                            <div className="size-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+                            <div className="flex-1 flex flex-col gap-2">
+                                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                                <div className="h-3 w-48 bg-gray-100 dark:bg-gray-800 rounded-full" />
+                            </div>
+                            <div className="h-5 w-16 bg-gray-100 dark:bg-gray-800 rounded-full" />
                         </div>
                     ) : session ? (
                         <div className="p-4 flex items-center gap-4">

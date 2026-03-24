@@ -73,9 +73,30 @@ export default function PayoutDetailsPage() {
     };
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-[#f6f7f8] dark:bg-[#131d1f]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>;
+        return (
+            <div className="bg-[#f6f7f8] dark:bg-[#131d1f] min-h-screen animate-pulse">
+                <div className="px-4 pt-6 pb-2 flex items-center gap-4">
+                    <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                    <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                </div>
+                <div className="px-4 pt-4 space-y-8">
+                    {[1, 2].map(section => (
+                        <div key={section} className="space-y-4">
+                            <div className="h-5 w-36 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                            <div className="bg-white dark:bg-[#1E292B] rounded-2xl p-6 space-y-5">
+                                {[1, 2, 3].map(row => (
+                                    <div key={row} className="space-y-2">
+                                        <div className="h-3.5 w-24 bg-gray-100 dark:bg-gray-800 rounded-full" />
+                                        <div className="h-12 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                    <div className="h-14 bg-gray-200 dark:bg-gray-700 rounded-xl" />
+                </div>
+            </div>
+        );
     }
 
     return (

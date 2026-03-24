@@ -15,7 +15,8 @@
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-phone-number-input": "^3.4.14"
+    "react-phone-number-input": "^3.4.14",
+    "swr": "^2.4.1"
   },
   "devDependencies": {
     "@capacitor/android": "^8.2.0",

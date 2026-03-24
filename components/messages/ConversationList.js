@@ -1,123 +1,83 @@
 'use client';
+import useSWR from 'swr';
 import { useEffect, useState } from 'react';
 import { createClient } from '../../utils/supabase/client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+const supabase = createClient();
+
+const fetchConversations = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { user: null, conversations: [] };
+
+    const { data: convs, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .contains('participants', [user.id])
+        .order('updated_at', { ascending: false });
+
+    const convsToProcess = error
+        ? (await supabase.from('conversations').select('*').order('updated_at', { ascending: false })).data?.filter(c => c.participants?.includes(user.id)) || []
+        : convs || [];
+
+    if (convsToProcess.length === 0) return { user, conversations: [] };
+
+    const otherUserIds = [...new Set(convsToProcess.map(c => c.participants?.find(p => p !== user.id)).filter(Boolean))];
+    const productIds = [...new Set(convsToProcess.map(c => c.product_id).filter(Boolean))];
+
+    const [profilesResult, productsResult] = await Promise.all([
+        otherUserIds.length > 0
+            ? supabase.from('profiles').select('id, display_name, email, avatar_url').in('id', otherUserIds)
+            : Promise.resolve({ data: [] }),
+        productIds.length > 0
+            ? supabase.from('products').select('id, title, image_url').in('id', productIds)
+            : Promise.resolve({ data: [] })
+    ]);
+
+    const profilesMap = (profilesResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+    const productsMap = (productsResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+
+    const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
+        const otherUserId = c.participants?.find(p => p !== user.id);
+        const lastMsgResult = await supabase
+            .from('messages')
+            .select('content, created_at')
+            .eq('conversation_id', c.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        return {
+            ...c,
+            otherUser: profilesMap[otherUserId] || { display_name: 'Unknown User', email: '', avatar_url: null },
+            product: productsMap[c.product_id] || null,
+            lastMessage: lastMsgResult.data
+        };
+    }));
+
+    return { user, conversations: enrichedConvs };
+};
+
 export default function ConversationList() {
-    const supabase = createClient();
-    const [conversations, setConversations] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
     const pathname = usePathname();
+    const [searchQuery, setSearchQuery] = useState('');
 
+    const { data, isLoading, mutate } = useSWR('conversations', fetchConversations, {
+        revalidateOnFocus: true,
+        dedupingInterval: 5000,
+    });
+
+    const conversations = data?.conversations || [];
+
+    // Real-time subscription that invalidates the SWR cache on new messages/conversations
     useEffect(() => {
-        const fetchConversations = async () => {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                setUser(user);
-
-                if (!user) {
-                    setLoading(false);
-                    return;
-                }
-
-                // Fetch conversation IDs and basic info first to isolate the 400 error source
-                const { data: convs, error } = await supabase
-                    .from('conversations')
-                    .select('*')
-                    .contains('participants', [user.id])
-                    .order('updated_at', { ascending: false });
-
-                if (error) {
-                    console.error("DEBUG: Conversation fetch error:", error);
-                    // Fallback to fetching all and filtering locally if .contains fails
-                    const { data: allConvs, error: allErr } = await supabase
-                        .from('conversations')
-                        .select('*')
-                        .order('updated_at', { ascending: false });
-
-                    if (allErr) {
-                        setLoading(false);
-                        return;
-                    }
-                    const filtered = allConvs?.filter(c => c.participants?.includes(user.id)) || [];
-                    processConversations(filtered, user);
-                } else {
-                    processConversations(convs, user);
-                }
-            } catch (err) {
-                console.error("DEBUG: ConversationList fetch error:", err);
-                setLoading(false);
-            }
-        };
-
-        const processConversations = async (convsToProcess, currentUser) => {
-            if (convsToProcess && convsToProcess.length > 0 && currentUser) {
-                // Collect all unique IDs for batch fetching
-                const otherUserIds = [...new Set(convsToProcess.map(c => c.participants?.find(p => p !== currentUser.id)).filter(Boolean))];
-                const productIds = [...new Set(convsToProcess.map(c => c.product_id).filter(Boolean))];
-
-                // Fetch all profiles and products in parallel batches
-                const [profilesResult, productsResult] = await Promise.all([
-                    otherUserIds.length > 0
-                        ? supabase.from('profiles').select('id, display_name, email, avatar_url').in('id', otherUserIds)
-                        : Promise.resolve({ data: [] }),
-                    productIds.length > 0
-                        ? supabase.from('products').select('id, title, image_url').in('id', productIds)
-                        : Promise.resolve({ data: [] })
-                ]);
-
-                const profilesMap = (profilesResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
-                const productsMap = (productsResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
-
-                // Last messages still need individual fetch or a complex group-by query 
-                // but we can at least parallelize them
-                const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
-                    const otherUserId = c.participants?.find(p => p !== currentUser.id);
-                    const lastMsgResult = await supabase
-                        .from('messages')
-                        .select('content, created_at')
-                        .eq('conversation_id', c.id)
-                        .order('created_at', { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-
-                    return {
-                        ...c,
-                        otherUser: profilesMap[otherUserId] || { display_name: 'Unknown User', email: '', avatar_url: null },
-                        product: productsMap[c.product_id] || null,
-                        lastMessage: lastMsgResult.data
-                    };
-                }));
-
-                setConversations(enrichedConvs);
-            }
-            setLoading(false);
-        };
-
-        fetchConversations();
-
-        // Subscribe to changes in conversations or messages to refresh the list
         const channel = supabase
             .channel('public:conversations')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'conversations'
-            }, () => fetchConversations())
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'messages'
-            }, () => fetchConversations()) // Refresh on new messages
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => mutate())
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => mutate())
             .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [supabase, user?.id]);
+        return () => { supabase.removeChannel(channel); };
+    }, [mutate]);
 
     const timeAgo = (date) => {
         if (!date) return '';
@@ -161,12 +121,18 @@ export default function ConversationList() {
             </header>
 
             <main className="flex-1 px-4 pt-2 pb-24 overflow-y-auto no-scrollbar">
-                {loading ? (
-                    <div className="flex-1 flex items-center justify-center p-8 text-slate-400 mt-12">
-                        <div className="animate-pulse flex flex-col items-center gap-2">
-                            <span className="material-symbols-outlined text-4xl">chat_bubble</span>
-                            <p className="text-sm font-medium">Loading inbox...</p>
-                        </div>
+                {isLoading ? (
+                    <div className="flex flex-col gap-2 animate-pulse">
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628]">
+                                <div className="size-14 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0" />
+                                <div className="flex-1 flex flex-col gap-2">
+                                    <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                                    <div className="h-3 w-52 bg-gray-100 dark:bg-gray-800 rounded-full" />
+                                </div>
+                                <div className="h-3 w-8 bg-gray-100 dark:bg-gray-800 rounded-full" />
+                            </div>
+                        ))}
                     </div>
                 ) : filteredConversations.length === 0 ? (
                     <div className="text-center py-12 px-6">

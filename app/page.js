@@ -1,64 +1,89 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { Suspense } from 'react';
 import { createClient } from '../utils/supabase/server';
-import NotificationBell from "../components/NotificationBell";
 import SearchBar from "../components/SearchBar";
 import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
 import { toSentenceCase } from '../utils/formatters';
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
-export default async function Home() {
-  console.log('[HomePage] Execution started');
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  console.log('[HomePage] Supabase URL:', supabaseUrl);
-  console.log('[HomePage] Key Length:', supabaseAnonKey?.length || 0);
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('[HomePage] Missing Supabase environment variables');
-  }
-
+async function getHomeData() {
   const supabase = await createClient();
-
-  // Get current user for wishlist check
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Fetch user's wishlist IDs
-  let wishlistIds = [];
-  if (user) {
-    const { data: wishlistItems } = await supabase
-      .from('wishlist')
-      .select('product_id')
-      .eq('user_id', user.id);
-    wishlistIds = wishlistItems?.map(item => item.product_id) || [];
-  }
+  const [wishlistRes, bannerRes, boostedRes, latestRes] = await Promise.all([
+    user
+      ? supabase.from('wishlist').select('product_id').eq('user_id', user.id)
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from('products')
+      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
+      .or('is_featured.eq.true,is_boosted.eq.true')
+      .eq('status', 'Active')
+      .limit(15),
+    supabase
+      .from('products')
+      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
+      .eq('is_boosted', true)
+      .eq('status', 'Active')
+      .limit(20),
+    supabase
+      .from('products')
+      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
+      .eq('status', 'Active')
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
 
-  // Fetch banner products (Featured & Boosted)
-  const { data: rawBannerProducts } = await supabase
-    .from('products')
-    .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-    .or('is_featured.eq.true,is_boosted.eq.true')
-    .eq('status', 'Active')
-    .limit(15);
+  return {
+    wishlistIds: wishlistRes.data?.map(item => item.product_id) || [],
+    bannerProducts: bannerRes.data ? [...bannerRes.data].sort(() => Math.random() - 0.5) : [],
+    boostedProducts: boostedRes.data ? [...boostedRes.data].sort(() => Math.random() - 0.5) : [],
+    latestProducts: latestRes.data ? [...latestRes.data].sort(() => Math.random() - 0.5) : [],
+  };
+}
 
-  // Shuffle the products randomly
-  const bannerProducts = rawBannerProducts ? [...rawBannerProducts].sort(() => Math.random() - 0.5) : [];
+const categories = [
+  { name: 'All' },
+  { name: 'Textbooks' },
+  { name: 'Electronics' },
+  { name: 'Dorm Furniture' },
+  { name: 'Clothing' },
+  { name: 'School Supplies' },
+  { name: 'Tickets & Events' },
+  { name: 'Services & Tutoring' },
+  { name: 'Beauty & Grooming' },
+  { name: 'Sports & Fitness' },
+  { name: 'Kitchenware' },
+  { name: 'Musical Instruments' },
+  { name: 'Games & Consoles' },
+  { name: 'Health & Wellness' },
+  { name: 'Arts & Crafts' },
+  { name: 'Home Appliances' },
+];
 
-  // Fetch boosted products (for horizontal scroll)
+function ProductCardSkeleton() {
+  return (
+    <div className="min-w-[280px] flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#2d2d32] border dark:border-gray-700/50">
+      <div className="animate-pulse bg-gray-100 dark:bg-gray-800 aspect-[4/3] w-full" />
+      <div className="flex flex-col p-4 gap-2">
+        <div className="animate-pulse h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
+        <div className="animate-pulse h-4 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
+      </div>
+    </div>
+  );
+}
+
+async function FeaturedSection({ wishlistIds }) {
+  const supabase = await createClient();
   const { data: rawBoostedProducts } = await supabase
     .from('products')
     .select('*, seller:profiles(display_name, avatar_url, is_verified)')
     .eq('is_boosted', true)
     .eq('status', 'Active')
     .limit(20);
-
-  // Shuffle boosted products
-  const boostedProducts = rawBoostedProducts ? [...rawBoostedProducts].sort(() => Math.random() - 0.5) : [];
-
-  // Fetch latest products
   const { data: rawLatestProducts } = await supabase
     .from('products')
     .select('*, seller:profiles(display_name, avatar_url, is_verified)')
@@ -66,11 +91,9 @@ export default async function Home() {
     .order('created_at', { ascending: false })
     .limit(20);
 
-  // Shuffle latest products
+  const boostedProducts = rawBoostedProducts ? [...rawBoostedProducts].sort(() => Math.random() - 0.5) : [];
   const latestProducts = rawLatestProducts ? [...rawLatestProducts].sort(() => Math.random() - 0.5) : [];
-
-  // Fallback for featured section if no boosted products
-  const displayFeatured = boostedProducts && boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 10);
+  const displayFeatured = boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 10);
 
   const getRecReason = (product) => {
     if (product.is_boosted) return "Highest Priority";
@@ -79,33 +102,135 @@ export default async function Home() {
     return "Based on your search interest";
   };
 
+  return (
+    <>
+      {/* Featured Section */}
+      <div className="flex items-center justify-between px-5 pt-2 pb-4">
+        <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Featured for You</h2>
+        <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">See All</Link>
+      </div>
+      <div className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-4">
+        {displayFeatured.map(product => (
+          <Link
+            key={product.id}
+            href={`/marketplace/${product.id}`}
+            className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
+          >
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
+              <Image
+                src={product.image_url || product.images?.[0] || '/placeholder.png'}
+                alt={product.title}
+                fill
+                sizes="280px"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              {product.condition && (
+                <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
+                  {product.condition}
+                </div>
+              )}
+              <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
+            </div>
+            <div className="flex flex-col p-4">
+              <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-lg font-bold text-primary">GHS {product.price}</p>
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                  {product.seller?.avatar_url ? (
+                    <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0" alt={product.seller.display_name} />
+                  ) : (
+                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold shrink-0">
+                      {product.seller?.display_name?.[0] || 'U'}
+                    </div>
+                  )}
+                  <p className="text-xs font-semibold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
+                  {product.seller?.is_verified && <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>}
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
 
-  const categories = [
-    { name: 'All', active: true },
-    { name: 'Textbooks', active: false },
-    { name: 'Electronics', active: false },
-    { name: 'Dorm Furniture', active: false },
-    { name: 'Clothing', active: false },
-    { name: 'School Supplies', active: false },
-    { name: 'Tickets & Events', active: false },
-    { name: 'Services & Tutoring', active: false },
-    { name: 'Beauty & Grooming', active: false },
-    { name: 'Sports & Fitness', active: false },
-    { name: 'Kitchenware', active: false },
-    { name: 'Musical Instruments', active: false },
-    { name: 'Games & Consoles', active: false },
-    { name: 'Health & Wellness', active: false },
-    { name: 'Arts & Crafts', active: false },
-    { name: 'Home Appliances', active: false }
-  ];
+      {/* Recommended Section */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-4">
+        <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Recommended for You</h2>
+        <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">View New</Link>
+      </div>
+      <div className="flex flex-col gap-6 px-5">
+        {latestProducts.map(product => (
+          <Link
+            key={product.id}
+            href={`/marketplace/${product.id}`}
+            className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
+          >
+            <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-200">
+              <Image
+                src={product.image_url || product.images?.[0] || '/placeholder.png'}
+                alt={product.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 448px"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              {product.condition && (
+                <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
+                  {product.condition}
+                </div>
+              )}
+              <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
+            </div>
+            <div className="flex flex-col p-4">
+              <div className="mb-2 flex flex-wrap gap-2">
+                <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-black uppercase tracking-widest border border-primary/20">{getRecReason(product)}</span>
+                <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">{product.category || 'General'}</span>
+              </div>
+              <div className="mb-3 flex items-start justify-between">
+                <div className="pr-4 flex-1">
+                  <h3 className="text-lg font-bold leading-tight text-gray-900 dark:text-white line-clamp-2">{toSentenceCase(product.title)}</h3>
+                  <div className="mt-1 flex items-center gap-2">
+                    {product.seller?.avatar_url ? (
+                      <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover" alt={product.seller.display_name} />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[10px] text-white font-bold">{product.seller?.display_name?.[0] || 'U'}</div>
+                    )}
+                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate">{product.seller?.display_name || 'Seller'}</p>
+                    {product.seller?.is_verified && <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>}
+                  </div>
+                </div>
+                <p className="shrink-0 text-xl font-black text-primary tracking-tighter">GHS {product.price}</p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </>
+  );
+}
+
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [wishlistRes, bannerRes] = await Promise.all([
+    user
+      ? supabase.from('wishlist').select('product_id').eq('user_id', user.id)
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from('products')
+      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
+      .or('is_featured.eq.true,is_boosted.eq.true')
+      .eq('status', 'Active')
+      .limit(15),
+  ]);
+
+  const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
+  const bannerProducts = bannerRes.data ? [...bannerRes.data].sort(() => Math.random() - 0.5) : [];
 
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">
       <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24 max-w-md mx-auto bg-white dark:bg-[#242428]">
-        {/* Promoted Banner Section */}
         <PromotedBanner products={bannerProducts} />
 
-        {/* Search Bar */}
         <div className="px-5 py-2">
           <SearchBar placeholder="Search campus finds..." />
         </div>
@@ -115,151 +240,24 @@ export default async function Home() {
             <Link
               key={cat.name}
               href={cat.name === 'All' ? '/marketplace' : `/marketplace?category=${cat.name}`}
-              className={`chip ${cat.active ? 'chip-active' : 'chip-inactive'} whitespace-nowrap`}
+              className="chip chip-inactive whitespace-nowrap"
             >
               <span>{cat.name}</span>
             </Link>
           ))}
         </div>
 
-        {/* Featured Section */}
-        <div className="flex items-center justify-between px-5 pt-2 pb-4">
-          <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Featured for You</h1>
-          <button className="text-sm font-semibold text-primary hover:text-primary-dark">See All</button>
-        </div>
-
-        {/* Horizontal Featured Feed */}
-        <div className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-4">
-          {displayFeatured && displayFeatured.length > 0 ? (
-            displayFeatured.map(product => (
-              <Link
-                key={product.id}
-                href={`/marketplace/${product.id}`}
-                className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
-              >
-                {/* Image */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
-                  <img
-                    src={product.image_url || product.images?.[0]}
-                    alt={product.title}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {product.condition && (
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
-                      {product.condition}
-                    </div>
-                  )}
-                  <WishlistButton
-                    productId={product.id}
-                    initialIsSaved={wishlistIds.includes(product.id)}
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="flex flex-col p-4">
-                  <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
-                  <div className="mt-2 flex items-center justify-between">
-                    <p className="text-lg font-bold text-primary">GHS {product.price}</p>
-                    <div className="flex items-center gap-1.5 overflow-hidden">
-                      {product.seller?.avatar_url ? (
-                        <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0" alt={product.seller.display_name} />
-                      ) : (
-                        <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold shrink-0">
-                          {product.seller?.display_name?.[0] || 'U'}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
-                        {product.seller?.is_verified && (
-                          <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div className="w-full text-center py-8">
-              <p className="text-gray-500 text-sm">No featured listings.</p>
+        {/* Heavy products section is streamed separately — page renders above instantly */}
+        <Suspense fallback={
+          <div className="px-5">
+            <div className="h-7 w-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-full mb-4" />
+            <div className="flex gap-4 overflow-hidden pb-6">
+              {[1,2,3].map(i => <ProductCardSkeleton key={i} />)}
             </div>
-          )}
-        </div>
-
-        {/* Recommended Section Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-4">
-          <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Recommended for You</h1>
-          <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">View New</Link>
-        </div>
-
-        {/* Vertical Recommended Feed */}
-        <div className="flex flex-col gap-6 px-5">
-          {latestProducts && latestProducts.length > 0 ? (
-            latestProducts.map(product => (
-              <Link
-                key={product.id}
-                href={`/marketplace/${product.id}`}
-                className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
-              >
-                {/* Image */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-200">
-                  <img
-                    src={product.image_url || product.images?.[0]}
-                    alt={product.title}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {product.condition && (
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
-                      {product.condition}
-                    </div>
-                  )}
-                  <WishlistButton
-                    productId={product.id}
-                    initialIsSaved={wishlistIds.includes(product.id)}
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="flex flex-col p-4">
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-black uppercase tracking-widest border border-primary/20">
-                      {getRecReason(product)}
-                    </span>
-                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">
-                      {product.category || 'General'}
-                    </span>
-                  </div>
-
-                  <div className="mb-3 flex items-start justify-between">
-                    <div className="pr-4 flex-1">
-                      <h3 className="text-lg font-bold leading-tight text-gray-900 dark:text-white line-clamp-2">{toSentenceCase(product.title)}</h3>
-                      <div className="mt-1 flex items-center gap-2">
-                        {product.seller?.avatar_url ? (
-                          <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover" alt={product.seller.display_name} />
-                        ) : (
-                          <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[10px] text-white font-bold">
-                            {product.seller?.display_name?.[0] || 'U'}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate">{product.seller?.display_name || 'Seller'}</p>
-                          {product.seller?.is_verified && (
-                            <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="shrink-0 text-xl font-black text-primary tracking-tighter">GHS {product.price}</p>
-                  </div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">No recommendations found.</p>
-            </div>
-          )}
-        </div>
+          </div>
+        }>
+          <FeaturedSection wishlistIds={wishlistIds} />
+        </Suspense>
       </div>
     </div>
   );

@@ -264,9 +264,31 @@ export default function ChatPage() {
 
     if (loading) {
         return (
-        <div className="flex flex-col h-full bg-[#f6f7f8] dark:bg-[#111d21] items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1daddd]"></div>
-                <p className="mt-4 text-sm font-medium text-gray-500">Loading conversation...</p>
+            <div className="flex flex-col h-full bg-[#f6f7f8] dark:bg-[#111d21] animate-pulse">
+                {/* Header skeleton */}
+                <div className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                    <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                    <div className="flex flex-col gap-1 flex-1">
+                        <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                        <div className="h-3 w-16 bg-gray-100 dark:bg-gray-800 rounded-full" />
+                    </div>
+                    <div className="size-8 rounded-full bg-gray-200 dark:bg-gray-700" />
+                </div>
+                {/* Messages skeleton */}
+                <main className="flex-1 px-4 pt-4 pb-4 flex flex-col gap-3">
+                    <div className="flex justify-start"><div className="h-10 w-48 bg-white dark:bg-[#232628] rounded-2xl" /></div>
+                    <div className="flex justify-end"><div className="h-10 w-36 bg-[#1daddd]/30 dark:bg-[#1daddd]/20 rounded-2xl" /></div>
+                    <div className="flex justify-start"><div className="h-16 w-56 bg-white dark:bg-[#232628] rounded-2xl" /></div>
+                    <div className="flex justify-end"><div className="h-10 w-44 bg-[#1daddd]/30 dark:bg-[#1daddd]/20 rounded-2xl" /></div>
+                    <div className="flex justify-start"><div className="h-10 w-32 bg-white dark:bg-[#232628] rounded-2xl" /></div>
+                    <div className="flex justify-end"><div className="h-20 w-52 bg-[#1daddd]/30 dark:bg-[#1daddd]/20 rounded-2xl" /></div>
+                </main>
+                {/* Footer skeleton */}
+                <div className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 flex items-center gap-3">
+                    <div className="size-11 rounded-full bg-gray-100 dark:bg-gray-800" />
+                    <div className="flex-1 h-11 bg-gray-100 dark:bg-gray-800 rounded-2xl" />
+                    <div className="size-11 rounded-full bg-[#1daddd]/30 dark:bg-[#1daddd]/20" />
+                </div>
             </div>
         );
     }
