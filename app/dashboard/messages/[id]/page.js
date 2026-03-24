@@ -264,16 +264,16 @@ export default function ChatPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col h-full bg-white dark:bg-[#242428] items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2e8ab8]"></div>
+        <div className="flex flex-col h-full bg-[#f6f7f8] dark:bg-[#111d21] items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1daddd]"></div>
                 <p className="mt-4 text-sm font-medium text-gray-500">Loading conversation...</p>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-100 font-display">
-            <header className="flex-none bg-white dark:bg-[#242428] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-30 shadow-sm relative">
+        <div className="flex flex-col h-full overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] text-[#111618] dark:text-gray-100 font-display">
+            <header className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-30 shadow-sm relative">
                 <button
                     onClick={() => router.back()}
                     className="size-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300"
@@ -302,7 +302,7 @@ export default function ChatPage() {
 
                     {/* Dropdown Menu */}
                     {showOptions && (
-                        <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#242428] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#232628] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                             {otherUser && (
                                 <Link
                                     href={`/profile/${otherUser.id}`}
@@ -328,19 +328,19 @@ export default function ChatPage() {
                 </div>
             </header>
             {productContext && (
-                <div className="flex-none z-10 bg-[#f6f7f8] dark:bg-[#131b1f] px-4 py-3">
+                <div className="flex-none z-10 bg-[#f6f7f8] dark:bg-[#111d21] px-4 py-3">
                     <Link
                         href={`/marketplace/${productContext.id}`}
-                        className="flex items-center gap-3 p-3 bg-white dark:bg-[#1e282c] rounded-xl shadow-soft border border-gray-100 dark:border-gray-800 relative overflow-hidden group cursor-pointer transition-transform active:scale-[0.99]"
+                        className="flex items-center gap-3 p-3 bg-white dark:bg-[#232628] rounded-xl shadow-soft border border-gray-100 dark:border-gray-800 relative overflow-hidden group cursor-pointer transition-transform active:scale-[0.99]"
                     >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2e8ab8]"></div>
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1daddd]"></div>
                         <div
                             className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 bg-cover bg-center shrink-0"
                             style={{ backgroundImage: `url('${productContext.images?.[0] || productContext.image_url}')` }}
                         ></div>
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate pr-2">{productContext.title}</h3>
-                            <p className="text-[#2e8ab8] font-bold text-sm">GHS {productContext.price} <span className="text-xs font-normal text-gray-400 dark:text-gray-500 ml-1">• {productContext.condition}</span></p>
+                            <p className="text-[#1daddd] font-bold text-sm">GHS {productContext.price} <span className="text-xs font-normal text-gray-400 dark:text-gray-500 ml-1">• {productContext.condition}</span></p>
                         </div>
                         <div className="shrink-0 pr-1">
                             <span className="material-symbols-outlined text-gray-300 dark:text-gray-600">chevron_right</span>
@@ -425,8 +425,8 @@ export default function ChatPage() {
 
                                 <div className={`flex flex-col group max-w-[85%] ${isMe ? 'items-end' : 'items-start'}`}>
                                     <div className={`p-2 px-3 shadow-sm text-[15px] leading-[1.45] transition-all ${bubbleShapeClass} ${isMe
-                                        ? `bg-[#2e8ab8] text-white`
-                                        : `bg-white dark:bg-[#1e282c] text-gray-800 dark:text-gray-200 border border-gray-100/50 dark:border-gray-800/50`
+                                        ? `bg-[#1daddd] text-white`
+                                        : `bg-white dark:bg-[#232628] text-[#111618] dark:text-gray-200 border border-gray-100 dark:border-gray-800`
                                         }`}>
                                         <div className="flex flex-col gap-1">
                                             <div className="break-words">
@@ -482,10 +482,10 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#242428] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
+            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
                 {/* Emoji Picker Popover */}
                 {showEmojiPicker && (
-                    <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#1e282c] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
                         {['😀', '😂', '😍', '👍', '🙏', '🔥', '✨', '💯', '🙌', '🎉', '👋', '❤️'].map(emoji => (
                             <button
                                 key={emoji}
@@ -510,15 +510,15 @@ export default function ChatPage() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="p-3 text-gray-400 hover:text-[#2e8ab8] dark:text-gray-500 dark:hover:text-[#2e8ab8] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0 disabled:opacity-50"
+                        className="p-3 text-gray-400 hover:text-[#1daddd] dark:text-gray-500 dark:hover:text-[#1daddd] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0 disabled:opacity-50"
                     >
                         {uploading ? (
-                            <div className="size-6 border-2 border-[#2e8ab8]/30 border-t-[#2e8ab8] rounded-full animate-spin"></div>
+                            <div className="size-6 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
                         ) : (
                             <span className="material-symbols-outlined text-[24px]">add</span>
                         )}
                     </button>
-                    <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#2e8ab8]/50 focus-within:bg-white dark:focus-within:bg-black transition-all">
+                    <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#1daddd]/50 focus-within:bg-white dark:focus-within:bg-[#111d21] transition-all">
                         <textarea
                             ref={textareaRef}
                             className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-3 px-4 max-h-24"
@@ -537,7 +537,7 @@ export default function ChatPage() {
                         <button
                             type="button"
                             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                            className={`p-2 mr-1 transition-colors ${showEmojiPicker ? 'text-[#2e8ab8]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
+                            className={`p-2 mr-1 transition-colors ${showEmojiPicker ? 'text-[#1daddd]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
                         >
                             <span className="material-symbols-outlined text-[20px]">sentiment_satisfied</span>
                         </button>
@@ -545,7 +545,7 @@ export default function ChatPage() {
                     <button
                         type="submit"
                         disabled={!newMessage.trim() || sending || uploading}
-                        className="p-3 bg-[#2e8ab8] text-white rounded-full shadow-lg shadow-[#2e8ab8]/30 hover:bg-[#2e8ab8]/90 transition-colors transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none min-w-[48px]"
+                        className="p-3 bg-[#1daddd] text-white rounded-full shadow-lg shadow-[#1daddd]/30 hover:bg-[#159ac6] transition-colors transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none min-w-[48px]"
                     >
                         {sending ? (
                             <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

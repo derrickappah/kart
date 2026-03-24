@@ -194,34 +194,7 @@ export default function ProfilePage() {
                 </section>
             </main>
 
-            {/* Bottom Navigation Bar (iOS Style) */}
-            <nav className="fixed bottom-0 w-full bg-[#f6f7f8] dark:bg-[#111d21] border-t border-gray-100 dark:border-gray-800 pb-safe pt-2 z-50">
-                <div className="max-w-md mx-auto flex justify-around items-end h-[60px] pb-3">
-                    <Link href="/" className="flex flex-col items-center gap-1 w-full text-gray-400 hover:text-[#1daddd] transition-colors">
-                        <span className="material-symbols-outlined text-[28px]">home</span>
-                        <span className="text-[10px] font-medium">Home</span>
-                    </Link>
-                    <Link href="/marketplace" className="flex flex-col items-center gap-1 w-full text-gray-400 hover:text-[#1daddd] transition-colors">
-                        <span className="material-symbols-outlined text-[28px]">search</span>
-                        <span className="text-[10px] font-medium">Search</span>
-                    </Link>
-                    <Link href="/dashboard/seller/create" className="flex flex-col items-center justify-center w-full relative -top-5">
-                        <div className="size-14 bg-[#1daddd] rounded-full shadow-lg shadow-[#1daddd]/30 flex items-center justify-center text-white hover:scale-105 transition-transform">
-                            <span className="material-symbols-outlined text-[32px]">add</span>
-                        </div>
-                    </Link>
-                    <Link href="/dashboard/messages" className="flex flex-col items-center gap-1 w-full text-gray-400 hover:text-[#1daddd] transition-colors">
-                        <span className="material-symbols-outlined text-[28px]">chat</span>
-                        <span className="text-[10px] font-medium">Chat</span>
-                    </Link>
-                    <Link href="/profile" className="flex flex-col items-center gap-1 w-full text-[#1daddd] transition-colors">
-                        <span className="material-symbols-outlined filled text-[28px]">person</span>
-                        <span className="text-[10px] font-bold">Profile</span>
-                    </Link>
-                </div>
-            </nav>
 
-            <div className="h-6"></div>
         </div>
     );
 }
