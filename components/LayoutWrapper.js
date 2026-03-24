@@ -6,6 +6,7 @@ import { createClient } from '../utils/supabase/client';
 import Navbar from './Navbar';
 import MobileBottomNav from './MobileBottomNav';
 import AppDeepLinkHandler from './AppDeepLinkHandler';
+import PageTransition from './PageTransition';
 
 const supabase = createClient();
 
@@ -46,8 +47,10 @@ export default function LayoutWrapper({ children }) {
         <>
             <AppDeepLinkHandler />
             {!isEditingPage && <Navbar user={user} />}
-            <main className={isProductPage ? "" : (isEditingPage ? "" : "pt-16 pb-[66px]")}>
-                {children}
+            <main className={`overflow-hidden bg-white dark:bg-[#242428] ${isProductPage ? "" : (isEditingPage ? "" : "pt-16 pb-[66px]")}`}>
+                <PageTransition>
+                    {children}
+                </PageTransition>
             </main>
             {!isEditingPage && <MobileBottomNav user={user} />}
         </>

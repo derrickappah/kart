@@ -198,3 +198,20 @@ a {
 .product-details-page .bottom-nav-fixed {
   display: none !important;
 }
+
+/* Page slide-in transition */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.page-slide-in {
+  animation: slideInFromRight 0.45s ease-out both;
+  will-change: transform, opacity;
+}
