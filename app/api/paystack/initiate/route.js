@@ -49,7 +49,7 @@ export async function POST(request) {
       email: email || order.buyer?.email || user.email,
       reference,
       callback_url: isApp 
-        ? `kart-app://checkout-success?orderId=${orderId}`
+        ? `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/api/payment-redirect?path=checkout-success&orderId=${orderId}`
         : (callbackUrl || `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/orders/${orderId}`),
       metadata: {
         order_id: orderId,

@@ -90,7 +90,7 @@ export async function POST(request) {
         email: profile?.email || user.email,
         reference,
         callback_url: isApp 
-          ? `kart-app://checkout-success?subscriptionId=${subscription.id}`
+          ? `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/api/payment-redirect?path=checkout-success&subscriptionId=${subscription.id}`
           : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
         // Explicitly pass undefined to ensure no currency is sent
         currency: undefined,
@@ -187,7 +187,7 @@ export async function POST(request) {
             email: profile?.email || user.email,
             reference: `sub_${subscription.id}_${Date.now()}_retry`,
             callback_url: isApp 
-              ? `kart-app://checkout-success?subscriptionId=${subscription.id}`
+              ? `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/api/payment-redirect?path=checkout-success&subscriptionId=${subscription.id}`
               : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/subscriptions/success?subscriptionId=${subscription.id}`,
             currency: undefined, // Explicitly don't send currency
             metadata: {

@@ -145,9 +145,10 @@ export async function POST(request) {
       .single();
 
     const reference = `order_${order.id}_${Date.now()}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000');
     const callbackUrl = isApp 
-      ? `kart-app://checkout-success?orderId=${order.id}`
-      : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/orders/${order.id}`;
+      ? `${baseUrl}/api/payment-redirect?path=checkout-success&orderId=${order.id}`
+      : `${baseUrl}/dashboard/orders/${order.id}`;
 
     const paymentData = await initializePayment({
       amount: totalAmount,

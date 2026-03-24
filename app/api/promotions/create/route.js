@@ -66,7 +66,7 @@ export async function POST(request) {
                 email: profile?.email || user.email,
                 reference,
                 callback_url: isApp 
-                    ? `kart-app://checkout-success?adId=${advertisement.id}&productId=${productId}`
+                    ? `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/api/payment-redirect?path=checkout-success&adId=${advertisement.id}&productId=${productId}`
                     : `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/seller/listings/promote/success?adId=${advertisement.id}&productId=${productId}`,
                 currency: undefined,
                 metadata: {
