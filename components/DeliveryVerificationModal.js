@@ -65,14 +65,14 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
 
     return (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-[#1e292b] rounded-[32px] shadow-2xl max-w-sm w-full p-8 space-y-8 animate-in zoom-in-95 duration-300 border border-white/10">
+            <div className="bg-white dark:bg-[#1e292b] rounded-[32px] shadow-2xl max-w-sm w-full p-6 sm:p-8 space-y-8 animate-in zoom-in-95 duration-300 border border-white/10 relative">
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="size-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
                         <span className="material-symbols-outlined text-3xl">mark_email_unread</span>
                     </div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Verify Delivery</h2>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+                    <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
                         We've sent a 6-digit verification code to <br />
                         <span className="font-bold text-slate-900 dark:text-white">{email}</span>
                     </p>
@@ -80,7 +80,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
 
                 {/* OTP Inputs */}
                 <div className="space-y-6">
-                    <div className="flex justify-between gap-2">
+                    <div className="flex justify-between gap-1 sm:gap-2">
                         {otp.map((digit, index) => (
                             <input
                                 key={index}
@@ -91,7 +91,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
                                 onChange={(e) => handleChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
-                                className="size-11 sm:size-12 text-center text-xl font-black bg-slate-50 dark:bg-white/5 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-transparent rounded-xl shadow-inner outline-none transition-all dark:text-white"
+                                className="size-10 sm:size-12 text-center text-lg sm:text-xl font-black bg-slate-50 dark:bg-white/5 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-transparent rounded-xl shadow-inner outline-none transition-all dark:text-white"
                                 placeholder="•"
                                 disabled={loading}
                             />
