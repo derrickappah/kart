@@ -8,7 +8,9 @@ import MobileBottomNav from './MobileBottomNav';
 import AppDeepLinkHandler from './AppDeepLinkHandler';
 import PageTransition from './PageTransition';
 import PullToRefresh from './PullToRefresh';
+import FilterSidebar from './FilterSidebar';
 import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
 
 const supabase = createClient();
 
@@ -66,6 +68,9 @@ export default function LayoutWrapper({ children }) {
                 </PullToRefresh>
             </main>
             {!isEditingPage && <MobileBottomNav user={user} />}
+            <Suspense fallback={null}>
+                <FilterSidebar />
+            </Suspense>
         </>
     );
 }

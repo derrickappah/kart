@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
-import FilterSidebar from '../../components/FilterSidebar';
 import SearchBar from '../../components/SearchBar';
 import MarketplaceControls from '../../components/MarketplaceControls';
 import WishlistButton from '../../components/WishlistButton';
@@ -122,9 +121,6 @@ export default async function Marketplace({ searchParams }) {
                 </main>
 
             </div>
-            <Suspense fallback={null}>
-                <FilterSidebar />
-            </Suspense>
         </div>
     );
 }
