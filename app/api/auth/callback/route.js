@@ -18,10 +18,9 @@ export async function GET(request) {
         if (!error) {
             const isLocalEnv = process.env.NODE_ENV === 'development'
             if (isLocalEnv) {
-                // we can be loose with redirect origin in development
-                return NextResponse.redirect(`${requestOrigin}${next}`)
+                return NextResponse.redirect(`${origin}${next}`)
             } else {
-                return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL || requestOrigin}${next}`)
+                return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL || origin}${next}`)
             }
         }
     }

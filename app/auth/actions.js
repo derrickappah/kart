@@ -98,7 +98,22 @@ export async function signInWithGoogle(isApp = false) {
     const headerList = await headers()
     const host = headerList.get('host')
     const protocol = headerList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https')
-    const origin = headerList.get('origin') || (host ? `${protocol}://${host}` : process.env.NEXT_PUBLIC_APP_URL) || 'http://localhost:3000'
+    
+    // Prioritize NEXT_PUBLIC_SITE_URL for production
+    // If we're on mobile, the 'origin' header might be 'http://localhost' (Capacitor)
+    // which is not where we want to redirect to.
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL
+    const headerOrigin = headerList.get('origin')
+    
+    let origin = headerOrigin
+    
+    // If header origin is missing or is Capacitor's local origin, use host or siteUrl
+    if (!origin || origin === 'http://localhost' || origin === 'capacitor://localhost') {
+        origin = host ? `${protocol}://${host}` : siteUrl
+    }
+    
+    // Final fallback
+    if (!origin) origin = 'http://localhost:3000'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
