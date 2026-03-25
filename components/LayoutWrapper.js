@@ -7,6 +7,8 @@ import Navbar from './Navbar';
 import MobileBottomNav from './MobileBottomNav';
 import AppDeepLinkHandler from './AppDeepLinkHandler';
 import PageTransition from './PageTransition';
+import PullToRefresh from './PullToRefresh';
+import { useRouter } from 'next/navigation';
 
 const supabase = createClient();
 
@@ -17,11 +19,20 @@ const userFetcher = async () => {
 
 export default function LayoutWrapper({ children }) {
     const pathname = usePathname();
-
-    const { data: user } = useSWR('layout-user', userFetcher, {
+    const router = useRouter();
+    const { data: user, mutate } = useSWR('layout-user', userFetcher, {
         revalidateOnFocus: false,
         dedupingInterval: 60000,
     });
+
+    const handleRefresh = async () => {
+        // Refresh the user data
+        await mutate();
+        // Refresh all Server Components
+        router.refresh();
+        // Add a small delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 800));
+    };
 
     // Check if we are on a product details page
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
@@ -48,9 +59,11 @@ export default function LayoutWrapper({ children }) {
             <AppDeepLinkHandler />
             {!isEditingPage && <Navbar user={user} />}
             <main className={`overflow-hidden bg-white dark:bg-[#242428] ${isProductPage ? "" : (isEditingPage ? "" : "pt-16 pb-[66px]")}`}>
-                <PageTransition>
-                    {children}
-                </PageTransition>
+                <PullToRefresh onRefresh={handleRefresh} disabled={isEditingPage}>
+                    <PageTransition>
+                        {children}
+                    </PageTransition>
+                </PullToRefresh>
             </main>
             {!isEditingPage && <MobileBottomNav user={user} />}
         </>
