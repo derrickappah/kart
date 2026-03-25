@@ -61,35 +61,52 @@ export async function POST(request) {
 
         // Send Email via Resend
         if (resend) {
+            console.log('Attempting to send OTP email to:', order.buyer.email);
             try {
                 const { data, error: emailError } = await resend.emails.send({
-                    from: 'Kart <notifications@kart.com>',
+                    // Use onboarding@resend.dev if kart.com isn't verified yet
+                    from: 'Kart <onboarding@resend.dev>',
                     to: [order.buyer.email],
-                    subject: `Verification Code for Order #${orderId.slice(0, 8)}`,
+                    subject: 'Verify your order delivery - Kart',
                     html: `
-                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-                            <h2 style="color: #1a202c; margin-bottom: 16px;">Confirm Your Delivery</h2>
-                            <p style="color: #4a5568; line-height: 1.5;">Hello ${order.buyer.display_name || 'there'},</p>
-                            <p style="color: #4a5568; line-height: 1.5;">You are about to mark your order as delivered. Please use the verification code below to confirm this action:</p>
-                            <div style="background-color: #f7fafc; padding: 24px; text-align: center; border-radius: 8px; margin: 24px 0;">
-                                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #3182ce;">${otp}</span>
+                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; rounded: 12px;">
+                            <h2 style="color: #1daddd; font-size: 24px; font-weight: 800; text-transform: uppercase;">Verify Delivery</h2>
+                            <p style="color: #666; font-size: 16px;">Hello,</p>
+                            <p style="color: #666; font-size: 16px;">Please use the following 6-digit code to verify your delivery for order <strong>#${order.id.slice(0, 8)}</strong>:</p>
+                            <div style="background: #f6f7f8; padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0;">
+                                <span style="font-size: 42px; font-weight: 900; letter-spacing: 12px; color: #0e181b;">${otp}</span>
                             </div>
-                            <p style="color: #718096; font-size: 14px;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
-                            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
-                            <p style="color: #a0aec0; font-size: 12px; text-align: center;">Kart - Your Student Marketplace</p>
+                            <p style="color: #999; font-size: 12px;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+                            <p style="color: #999; font-size: 10px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">&copy; ${new Date().getFullYear()} Kart Marketplace</p>
                         </div>
                     `,
                 });
 
                 if (emailError) {
-                    console.error('Resend error:', emailError);
+                    console.error('Resend API Error:', emailError);
+                    // Return specific Resend errors in development to help debug
+                    if (process.env.NODE_ENV === 'development') {
+                        return NextResponse.json({
+                            error: 'Resend Error: ' + emailError.message,
+                            details: emailError
+                        }, { status: 400 });
+                    }
                     // Continue anyway in development if key is 're_...' mock or something
+                } else {
+                    console.log('Email sent successfully:', data);
                 }
             } catch (err) {
-                console.error('Email sending failed:', err);
+                console.error('Failed to send email:', err);
+                if (process.env.NODE_ENV === 'development') {
+                    return NextResponse.json({ error: 'Mail Client Error: ' + err.message }, { status: 500 });
+                }
             }
         } else {
-            console.warn('RESEND_API_KEY not found. Email not sent.');
+            console.warn('Resend instance is null. Check RESEND_API_KEY environment variable.');
+            if (process.env.NODE_ENV === 'development') {
+                return NextResponse.json({ error: 'RESEND_API_KEY is missing in .env.local' }, { status: 500 });
+            }
         }
 
         // Record in history
