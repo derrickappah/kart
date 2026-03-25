@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request) {
     try {
+        const apiKey = process.env.RESEND_API_KEY;
+        const resend = apiKey ? new Resend(apiKey) : null;
+
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -59,7 +60,7 @@ export async function POST(request) {
         }
 
         // Send Email via Resend
-        if (process.env.RESEND_API_KEY) {
+        if (resend) {
             try {
                 const { data, error: emailError } = await resend.emails.send({
                     from: 'Kart <notifications@kart.com>',
