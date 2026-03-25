@@ -64,6 +64,8 @@ export async function POST(request) {
             .update({
                 status: 'Delivered',
                 updated_at: new Date().toISOString(),
+                delivery_verification_otp: null,
+                delivery_verification_expires_at: null,
             })
             .eq('id', order.id);
 
