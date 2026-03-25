@@ -121,10 +121,10 @@ export default async function Marketplace({ searchParams }) {
                     </div>
                 </main>
 
-                <Suspense fallback={null}>
-                    <FilterSidebar />
-                </Suspense>
             </div>
+            <Suspense fallback={null}>
+                <FilterSidebar />
+            </Suspense>
         </div>
     );
 }
