@@ -11,10 +11,14 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { orderId } = body;
+        const { orderId, verificationCode } = body;
 
         if (!orderId) {
             return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
+        }
+
+        if (!verificationCode) {
+            return NextResponse.json({ error: 'Verification code is required' }, { status: 400 });
         }
 
         // Get order
@@ -31,6 +35,16 @@ export async function POST(request) {
         // Verify user is the buyer
         if (order.buyer_id !== user.id) {
             return NextResponse.json({ error: 'Only the buyer can confirm delivery' }, { status: 403 });
+        }
+
+        // Verify OTP
+        if (!order.delivery_verification_otp || order.delivery_verification_otp !== verificationCode) {
+            return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
+        }
+
+        // Check if OTP is expired
+        if (new Date(order.delivery_verification_expires_at) < new Date()) {
+            return NextResponse.json({ error: 'Verification code has expired. Please request a new one.' }, { status: 400 });
         }
 
         // Check if order is paid
