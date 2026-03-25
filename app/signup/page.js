@@ -29,9 +29,25 @@ function SignupForm() {
     async function handleGoogleLogin() {
         setSocialLoading(true);
         setError(null);
-        const result = await signInWithGoogle();
-        if (result?.error) {
-            setError(result.error);
+        try {
+            const { Capacitor } = await import('@capacitor/core');
+            const isNative = Capacitor.isNativePlatform();
+
+            const result = await signInWithGoogle(isNative);
+            
+            if (result?.error) {
+                setError(result.error);
+                setSocialLoading(false);
+                return;
+            }
+
+            if (isNative && result?.url) {
+                const { Browser } = await import('@capacitor/browser');
+                await Browser.open({ url: result.url, presentationStyle: 'popover' });
+            }
+        } catch (err) {
+            console.error('Google signup error:', err);
+            setError('Failed to initiate Google signup');
             setSocialLoading(false);
         }
     }

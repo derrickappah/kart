@@ -93,9 +93,12 @@ export async function signout() {
     redirect('/login')
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(isApp = false) {
     const supabase = await createClient()
-    const origin = (await headers()).get('origin')
+    const headerList = await headers()
+    const host = headerList.get('host')
+    const protocol = headerList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https')
+    const origin = headerList.get('origin') || (host ? `${protocol}://${host}` : process.env.NEXT_PUBLIC_APP_URL) || 'http://localhost:3000'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -107,6 +110,10 @@ export async function signInWithGoogle() {
     if (error) {
         console.error('Google sign in error:', error)
         return { error: error.message }
+    }
+
+    if (isApp && data.url) {
+        return { url: data.url }
     }
 
     if (data.url) {

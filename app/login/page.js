@@ -23,9 +23,26 @@ export default function Login() {
     async function handleGoogleLogin() {
         setSocialLoading(true);
         setError(null);
-        const result = await signInWithGoogle();
-        if (result?.error) {
-            setError(result.error);
+        try {
+            const { Capacitor } = await import('@capacitor/core');
+            const isNative = Capacitor.isNativePlatform();
+
+            const result = await signInWithGoogle(isNative);
+            
+            if (result?.error) {
+                setError(result.error);
+                setSocialLoading(false);
+                return;
+            }
+
+            if (isNative && result?.url) {
+                const { Browser } = await import('@capacitor/browser');
+                await Browser.open({ url: result.url, presentationStyle: 'popover' });
+                // Note: Social loading stays true until page redirects or user returns
+            }
+        } catch (err) {
+            console.error('Google login error:', err);
+            setError('Failed to initiate Google login');
             setSocialLoading(false);
         }
     }
