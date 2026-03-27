@@ -50,13 +50,16 @@ export default function Login() {
                     }
                 } catch (nativeErr) {
                     console.warn('Native Google Auth failed, falling back to browser:', nativeErr);
-                    // Fall back to browser-based flow below
+                    // Add alert to help developer debug why Native Auth failed
+                    if (typeof window !== 'undefined') {
+                        alert("Native Auth Failed: " + (nativeErr?.message || JSON.stringify(nativeErr)) + ". Falling back to web flow.");
+                    }
                 }
 
                 // Fallback for Native: Browser-based OAuth
                 const result = await signInWithGoogle(true);
                 if (result?.url) {
-                    await Browser.open({ url: result.url, presentationStyle: 'popover' });
+                    await Browser.open({ url: result.url }); // Removed presentationStyle: 'popover' to encourage Custom Tabs
                     // The AppDeepLinkHandler will handle the redirect back
                 } else if (result?.error) {
                     setError(result.error);
