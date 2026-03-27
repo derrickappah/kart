@@ -1,11 +1,12 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { signup, signInWithGoogle } from '../auth/actions';
+import { signup, signInWithGoogle, signInWithGoogleToken } from '../auth/actions';
 import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 function SignupForm() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const ref = searchParams.get('ref');
     const [error, setError] = useState(null);
@@ -33,17 +34,32 @@ function SignupForm() {
             const { Capacitor } = await import('@capacitor/core');
             const isNative = Capacitor.isNativePlatform();
 
-            const result = await signInWithGoogle(isNative);
-            
-            if (result?.error) {
-                setError(result.error);
-                setSocialLoading(false);
-                return;
-            }
+            if (isNative) {
+                const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+                // Ensure initialization if not already done
+                try { await GoogleAuth.initialize(); } catch (e) {}
 
-            if (isNative && result?.url) {
-                const { Browser } = await import('@capacitor/browser');
-                await Browser.open({ url: result.url, presentationStyle: 'popover' });
+                const user = await GoogleAuth.signIn();
+                if (user?.authentication?.idToken) {
+                    const result = await signInWithGoogleToken(user.authentication.idToken);
+                    if (result?.error) {
+                        setError(result.error);
+                        setSocialLoading(false);
+                    } else if (result?.success) {
+                        router.push('/profile');
+                    }
+                } else {
+                    setError('Failed to get Google authentication token');
+                    setSocialLoading(false);
+                }
+            } else {
+                const result = await signInWithGoogle(false);
+                if (result?.url) {
+                    window.location.href = result.url;
+                } else if (result?.error) {
+                    setError(result.error);
+                    setSocialLoading(false);
+                }
             }
         } catch (err) {
             console.error('Google signup error:', err);

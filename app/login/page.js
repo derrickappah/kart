@@ -1,10 +1,12 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { login, signInWithGoogle } from '../auth/actions';
+import { login, signInWithGoogle, signInWithGoogleToken } from '../auth/actions';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
+    const router = useRouter();
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [socialLoading, setSocialLoading] = useState(false);
@@ -27,18 +29,48 @@ export default function Login() {
             const { Capacitor } = await import('@capacitor/core');
             const isNative = Capacitor.isNativePlatform();
 
-            const result = await signInWithGoogle(isNative);
-            
-            if (result?.error) {
-                setError(result.error);
-                setSocialLoading(false);
-                return;
-            }
-
-            if (isNative && result?.url) {
+            if (isNative) {
+                const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
                 const { Browser } = await import('@capacitor/browser');
-                await Browser.open({ url: result.url, presentationStyle: 'popover' });
-                // Note: Social loading stays true until page redirects or user returns
+                
+                // Ensure initialization
+                try { await GoogleAuth.initialize(); } catch (e) {}
+                
+                try {
+                    const user = await GoogleAuth.signIn();
+                    if (user?.authentication?.idToken) {
+                        const result = await signInWithGoogleToken(user.authentication.idToken);
+                        if (result?.error) {
+                            setError(result.error);
+                            setSocialLoading(false);
+                        } else if (result?.success) {
+                            router.push('/profile');
+                        }
+                        return; // Success
+                    }
+                } catch (nativeErr) {
+                    console.warn('Native Google Auth failed, falling back to browser:', nativeErr);
+                    // Fall back to browser-based flow below
+                }
+
+                // Fallback for Native: Browser-based OAuth
+                const result = await signInWithGoogle(true);
+                if (result?.url) {
+                    await Browser.open({ url: result.url, presentationStyle: 'popover' });
+                    // The AppDeepLinkHandler will handle the redirect back
+                } else if (result?.error) {
+                    setError(result.error);
+                    setSocialLoading(false);
+                }
+            } else {
+                // Web platform
+                const result = await signInWithGoogle(false);
+                if (result?.url) {
+                    window.location.href = result.url;
+                } else if (result?.error) {
+                    setError(result.error);
+                    setSocialLoading(false);
+                }
             }
         } catch (err) {
             console.error('Google login error:', err);

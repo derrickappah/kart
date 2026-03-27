@@ -100,25 +100,22 @@ export async function signInWithGoogle(isApp = false) {
     const protocol = headerList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https')
     
     // Prioritize NEXT_PUBLIC_SITE_URL for production
-    // If we're on mobile, the 'origin' header might be 'http://localhost' (Capacitor)
-    // which is not where we want to redirect to.
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL
-    const headerOrigin = headerList.get('origin')
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || (host ? `${protocol}://${host}` : 'http://localhost:3000')
+    const currentOrigin = host ? `${protocol}://${host}` : 'http://localhost:3000'
     
-    let origin = headerOrigin
-    
-    // If header origin is missing or is Capacitor's local origin, use host or siteUrl
-    if (!origin || origin === 'http://localhost' || origin === 'capacitor://localhost') {
-        origin = host ? `${protocol}://${host}` : siteUrl
-    }
-    
-    // Final fallback
-    if (!origin) origin = 'http://localhost:3000'
+    // Determine the redirect URL
+    // We use a unique 'return_to_app' parameter to ensure it's not stripped by Supabase
+    const finalRedirectTo = isApp 
+        ? `${siteUrl}/api/auth/callback?return_to_app=true` 
+        : `${currentOrigin}/api/auth/callback`
     
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${origin}/api/auth/callback`,
+            redirectTo: finalRedirectTo,
+            queryParams: {
+                prompt: 'select_account',
+            }
         },
     })
 
@@ -127,11 +124,24 @@ export async function signInWithGoogle(isApp = false) {
         return { error: error.message }
     }
 
-    if (isApp && data.url) {
+    if (data.url) {
         return { url: data.url }
     }
+}
 
-    if (data.url) {
-        redirect(data.url)
+export async function signInWithGoogleToken(idToken) {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
+    })
+
+    if (error) {
+        console.error('Google token sign in error:', error)
+        return { error: error.message }
     }
+
+    revalidatePath('/', 'layout')
+    return { success: true }
 }
