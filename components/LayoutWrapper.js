@@ -10,7 +10,7 @@ import PageTransition from './PageTransition';
 import PullToRefresh from './PullToRefresh';
 import FilterSidebar from './FilterSidebar';
 import { useRouter } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 
 const supabase = createClient();
 
@@ -23,9 +23,22 @@ export default function LayoutWrapper({ children }) {
     const pathname = usePathname();
     const router = useRouter();
     const { data: user, mutate } = useSWR('layout-user', userFetcher, {
-        revalidateOnFocus: false,
-        dedupingInterval: 60000,
+        revalidateOnFocus: true,
+        dedupingInterval: 5000, // Reduced from 60s to 5s
     });
+
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+                mutate(); // Update the layout-user SWR cache
+                router.refresh(); // Refresh server components
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [mutate, router]);
 
     const handleRefresh = async () => {
         // Refresh the user data

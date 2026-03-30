@@ -8,7 +8,14 @@ import { timeAgo } from '../../utils/dateUtils';
 const supabase = createClient();
 
 const profileFetcher = async () => {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
+    let { data: { user: authUser } } = await supabase.auth.getUser();
+    
+    // If no user, wait a tiny bit and try getSession (sometimes faster during initial load)
+    if (!authUser) {
+        const { data: { session } } = await supabase.auth.getSession();
+        authUser = session?.user || null;
+    }
+
     if (!authUser) return null;
 
     const [profileRes, listingsRes, walletRes, settingsRes] = await Promise.all([
