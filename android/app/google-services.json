@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "619280398298",
+    "project_id": "kart-e2825",
+    "storage_bucket": "kart-e2825.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619280398298:android:bb1c65bce4490182d8b2e3",
+        "android_client_info": {
+          "package_name": "com.derrickappah.kart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "619280398298-k61jk3980dbvd0b9k15ai63l6pp56v4g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCx-6dVCQ2FuqH3vOyEPXFkj44uzH2UHP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "619280398298-k61jk3980dbvd0b9k15ai63l6pp56v4g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

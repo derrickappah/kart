@@ -4,4 +4,5 @@
     <string name="title_activity_main">KART</string>
     <string name="package_name">com.derrickappah.kart</string>
     <string name="custom_url_scheme">com.derrickappah.kart</string>
+    <string name="server_client_id">619280398298-k61jk3980dbvd0b9k15ai63l6pp56v4g.apps.googleusercontent.com</string>
 </resources>

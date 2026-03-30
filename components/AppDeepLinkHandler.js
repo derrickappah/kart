@@ -45,6 +45,27 @@ export default function AppDeepLinkHandler() {
                     } else if (adId) {
                         router.push(`/dashboard/seller/listings/promote/success${queryParams}`);
                     }
+                } 
+                // Handle kart-app://auth-tokens?refresh_token=...
+                else if (url.includes('auth-tokens')) {
+                    console.log('Detected auth-tokens scheme. Parsing...');
+                    
+                    // Failsafe parsing for refresh_token only
+                    let refreshToken = '';
+                    try {
+                        const urlObj = new URL(url.replace(/^[a-zA-Z.-0-9]+:\/\/?/, 'http://localhost/'));
+                        refreshToken = urlObj.searchParams.get('refresh_token');
+                    } catch (e) {
+                        const match = url.match(/[?&]refresh_token=([^&#]+)/);
+                        if (match) refreshToken = match[1];
+                    }
+                    
+                    if (refreshToken) {
+                        console.log('Detected refresh token, navigating to adoption page...');
+                        router.push(`/auth/success?refresh_token=${refreshToken}`);
+                    } else {
+                        console.warn('No refresh token found in the URL:', url);
+                    }
                 }
             };
 

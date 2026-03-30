@@ -24,6 +24,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="kart-app" />
+                <data android:scheme="com.derrickappah.kart" />
             </intent-filter>
         </activity>
 

@@ -18,6 +18,7 @@ export async function GET(request) {
       <head>
         <title>Completing Payment...</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="refresh" content="2;url=${deepLinkUrl}">
         <style>
           body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 

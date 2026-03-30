@@ -51,7 +51,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                 // Wrap strings in quotes for JSONB, keep numbers as-is
                 if (s.key === 'maintenance_mode') {
                     val = val === 'true' || val === true ? true : false;
-                } else if (s.key === 'platform_support_email') {
+                } else if (s.key === 'platform_support_email' || s.key === 'whatsapp_support_number') {
                     val = `"${val}"`;
                 } else if (!isNaN(val) && val !== '' && val !== true && val !== false) {
                     val = parseFloat(val);

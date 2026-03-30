@@ -1,30 +1,35 @@
+import { createClient } from '../../../utils/supabase/server'
 import { NextResponse } from 'next/server'
-import { createClient } from '../../../../utils/supabase/server'
 
 export async function GET(request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    // if "next" is in search params, use it as the redirection URL
-    let next = searchParams.get('next') ?? '/'
-
-    // Handle legacy/incorrect security path
-    if (next === '/dashboard/settings/security') {
-        next = '/dashboard/settings/security/password'
-    }
+    const returnToApp = searchParams.get('return_to_app') === 'true'
+    const next = searchParams.get('next') ?? '/'
 
     if (code) {
         const supabase = await createClient()
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (!error) {
-            const isLocalEnv = process.env.NODE_ENV === 'development'
-            if (isLocalEnv) {
-                return NextResponse.redirect(`${origin}${next}`)
-            } else {
-                return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL || origin}${next}`)
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        
+        if (!error && data?.session) {
+            // Short-Token Handoff: only pass the refresh_token to avoid URL length issues
+            if (returnToApp || next === 'app' || next.includes('payment-redirect')) {
+                const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || origin
+                const { refresh_token } = data.session
+                
+                // Pivot to bridge with ONLY the refresh token
+                return NextResponse.redirect(
+                    `${siteUrl}/api/payment-redirect?path=auth-tokens&refresh_token=${refresh_token}`
+                )
             }
+
+            // Normal web flow
+            const isLocalEnv = process.env.NODE_ENV === 'development'
+            const redirectBase = isLocalEnv ? origin : (process.env.NEXT_PUBLIC_SITE_URL || origin)
+            return NextResponse.redirect(`${redirectBase}${next}`)
         }
     }
 
-    // return the user to an error page with instructions
+    // Default error fallback
     return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
