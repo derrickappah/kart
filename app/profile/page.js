@@ -135,7 +135,7 @@ export default function ProfilePage() {
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Saved Items</span>
                         <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
                     </Link>
-                    <Link href={`https://wa.me/${data.whatsappSupportNumber.replace(/[^0-9]/g, '')}`} target="_blank" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <Link href="/dashboard/wallet" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
                             <span className="material-symbols-outlined">account_balance_wallet</span>
                         </div>
