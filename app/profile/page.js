@@ -25,11 +25,20 @@ const profileFetcher = async () => {
         supabase.from('platform_settings').select('value').eq('key', 'whatsapp_support_number').maybeSingle(),
     ]);
 
+    let whatsappSupportNumber = '0500502158';
+    try {
+        if (settingsRes.data?.value) {
+            whatsappSupportNumber = JSON.parse(settingsRes.data.value);
+        }
+    } catch (e) {
+        console.error('Failed to parse whatsapp support number', e);
+    }
+
     return {
         user: authUser,
         profile: profileRes.data,
         wallet: walletRes.data,
-        whatsappSupportNumber: settingsRes.data?.value ? JSON.parse(settingsRes.data.value) : '0500502158',
+        whatsappSupportNumber,
         stats: {
             listings: listingsRes.count || 0,
             reviews: profileRes.data?.average_rating || 0,
@@ -39,7 +48,7 @@ const profileFetcher = async () => {
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { data, isLoading } = useSWR('profile-data', profileFetcher, {
+    const { data, error, isLoading } = useSWR('profile-data', profileFetcher, {
         revalidateOnFocus: false,
         dedupingInterval: 30000,
     });
@@ -72,10 +81,20 @@ export default function ProfilePage() {
         );
     }
 
-    if (!data) {
+    if (data === null) {
         router.push('/login');
         return null;
     }
+
+    if (error) {
+        return (
+            <div className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex items-center justify-center p-4">
+                <p className="text-red-500 font-medium">Failed to load profile. Please refresh the page.</p>
+            </div>
+        );
+    }
+
+    if (!data) return null;
 
     const { user, profile, wallet, stats } = data;
     const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
