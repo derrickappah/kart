@@ -60,7 +60,11 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
     };
 
     const handleCancelPending = async () => {
-        if (!currentSubscription?.id) return;
+        if (!currentSubscription?.id) {
+            console.error('No subscription ID found to cancel');
+            alert('Error: Could not find subscription details. Please refresh the page.');
+            return;
+        }
         
         try {
             setLoading(true);
@@ -82,11 +86,12 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
                 throw new Error(data.error || 'Failed to cancel pending subscription');
             }
 
-            // Refresh to show plans again
-            router.refresh();
+            // Forced reload to clear any server-side caching and re-fetch everything
+            window.location.reload();
         } catch (err) {
             console.error('Cancel error:', err);
             setError(err.message);
+            alert(`Failed to cancel: ${err.message}`);
         } finally {
             setLoading(false);
         }
