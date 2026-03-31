@@ -116,10 +116,6 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                                     </p>
                                 </div>
                             )}
-
-                            <div className="mt-3 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-black">
-                                + 12% this month
-                            </div>
                         </div>
 
                         {/* Action Button Group */}
