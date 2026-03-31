@@ -29,7 +29,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
     }
 
-    // Cancel subscription (disable auto-renew, mark as cancelled at end date)
+    // Handle pending subscriptions by deleting them (allows clean retry)
+    // Handle active subscriptions by marking as Cancelled
+    if (subscription.status === 'Pending' || subscription.status === 'pending') {
+      const { error: deleteError } = await supabase
+        .from('subscriptions')
+        .delete()
+        .eq('id', subscriptionId);
+
+      if (deleteError) {
+        console.error('Error deleting pending subscription:', deleteError);
+        return NextResponse.json({ error: 'Failed to clear pending subscription' }, { status: 500 });
+      }
+
+      return NextResponse.json({ message: 'Pending subscription cleared' });
+    }
+
+    // Cancel active subscription (disable auto-renew, mark as cancelled at end date)
     const { error: updateError } = await supabase
       .from('subscriptions')
       .update({

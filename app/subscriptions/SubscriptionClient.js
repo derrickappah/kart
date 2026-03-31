@@ -59,6 +59,39 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
         }
     };
 
+    const handleCancelPending = async () => {
+        if (!currentSubscription?.id) return;
+        
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch('/api/subscriptions/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    subscriptionId: currentSubscription.id
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to cancel pending subscription');
+            }
+
+            // Refresh to show plans again
+            router.refresh();
+        } catch (err) {
+            console.error('Cancel error:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const filteredPlans = plans.filter(plan => {
         if (billingCycle === 'Monthly') return plan.duration_months === 1;
         if (billingCycle === 'Annual') return plan.duration_months === 12;
@@ -126,12 +159,21 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
             )}
 
             {isPending && !isActive && (
-                <div className="p-4 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl text-sm border border-amber-100 dark:border-amber-500/20 mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px] fill-current">pending</span>
-                    <div>
-                        <p className="font-bold">You have a pending subscription</p>
-                        <p className="text-xs opacity-80">Please complete your payment to activate.</p>
+                <div className="p-4 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl text-sm border border-amber-100 dark:border-amber-500/20 mb-4 flex items-center justify-between gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[20px] fill-current">pending</span>
+                        <div>
+                            <p className="font-bold">You have a pending subscription</p>
+                            <p className="text-xs opacity-80">Please complete your payment to activate.</p>
+                        </div>
                     </div>
+                    <button 
+                        onClick={handleCancelPending}
+                        disabled={loading}
+                        className="bg-amber-600 dark:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap active:scale-95 transition-transform"
+                    >
+                        {loading ? '...' : 'Cancel & Retry'}
+                    </button>
                 </div>
             )}
 
