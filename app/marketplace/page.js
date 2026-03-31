@@ -75,7 +75,7 @@ export default async function Marketplace({ searchParams }) {
                 <main className="px-4 pt-4 flex-1">
                     <div className="mb-4">
                         <Suspense fallback={<div className="h-10 w-32 bg-gray-100 animate-pulse rounded-full" />}>
-                            <MarketplaceControls resultCount={products?.length || 0} />
+                            <MarketplaceControls />
                         </Suspense>
                     </div>
 

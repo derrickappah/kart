@@ -1,7 +1,7 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
 
-export default function MarketplaceControls({ resultCount }) {
+export default function MarketplaceControls() {
     const searchParams = useSearchParams();
     
     return (
@@ -16,10 +16,7 @@ export default function MarketplaceControls({ resultCount }) {
                         Filter & Sort
                     </button>
                 </div>
-                <div className="text-right">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Found</p>
-                    <p className="text-xl font-black text-gray-900 dark:text-white leading-none">{resultCount} items</p>
-                </div>
+
             </div>
         </div>
     );
