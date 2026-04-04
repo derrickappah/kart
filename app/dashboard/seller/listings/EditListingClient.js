@@ -36,8 +36,7 @@ export default function EditListingClient({ product }) {
                     price: parseFloat(formData.price),
                     category: formData.category,
                     condition: formData.condition,
-                    description: formData.description,
-                    updated_at: new Date().toISOString()
+                    description: formData.description
                 })
                 .eq('id', product.id);
 
