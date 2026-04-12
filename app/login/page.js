@@ -25,6 +25,17 @@ export default function Login() {
     async function handleGoogleLogin() {
         setSocialLoading(true);
         setError(null);
+
+        if (typeof window !== 'undefined') {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const isIAB = /FBAN|FBAV|Instagram|WhatsApp|Line|Snapchat|LinkedIn|MicroMessenger|TikTok|Threads/i.test(ua);
+            if (isIAB) {
+                setError('Google login is blocked within this browser for your security. Please tap the menu (...) and select "Open in System Browser" or "Open in Chrome/Safari" to continue.');
+                setSocialLoading(false);
+                return;
+            }
+        }
+
         try {
             const { Capacitor } = await import('@capacitor/core');
             const isNative = Capacitor.isNativePlatform();

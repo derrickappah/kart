@@ -45,9 +45,9 @@ export default function WishlistClient({ initialItems }) {
                                         <div className="relative aspect-[4/5]">
                                             <Link href={`/marketplace/${product.id}`}>
                                                 <div className={`w-full h-full relative ${product.status === 'Sold' ? 'grayscale opacity-60' : ''}`}>
-                                                    {product.image_url ? (
+                                                    {product.images?.[0] || product.image_url ? (
                                                         <Image
-                                                            src={product.image_url}
+                                                            src={product.images?.[0] || product.image_url}
                                                             alt={product.title}
                                                             fill
                                                             className="object-cover transition-transform duration-500 group-hover:scale-110"
