@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,24 @@ export default function WishlistClient({ initialItems }) {
     const router = useRouter();
     const supabase = createClient();
     const [items, setItems] = useState(initialItems || []);
+
+    // Sync state if initialItems from server change via Next.js navigation
+    useEffect(() => {
+        setItems(initialItems || []);
+    }, [initialItems]);
+
+    // Safely extract the primary image
+    const getPrimaryImage = (product) => {
+        if (!product) return null;
+        try {
+            if (typeof product.images === 'string') {
+                const parsed = JSON.parse(product.images);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+            }
+            if (Array.isArray(product.images) && product.images.length > 0) return product.images[0];
+        } catch (e) {}
+        return product.image_url;
+    };
 
     const removeFromWishlist = async (wishlistItemId) => {
         const { error } = await supabase
@@ -45,9 +63,9 @@ export default function WishlistClient({ initialItems }) {
                                         <div className="relative aspect-[4/5]">
                                             <Link href={`/marketplace/${product.id}`}>
                                                 <div className={`w-full h-full relative ${product.status === 'Sold' ? 'grayscale opacity-60' : ''}`}>
-                                                    {product.images?.[0] || product.image_url ? (
+                                                    {getPrimaryImage(product) ? (
                                                         <Image
-                                                            src={product.images?.[0] || product.image_url}
+                                                            src={getPrimaryImage(product)}
                                                             alt={product.title}
                                                             fill
                                                             className="object-cover transition-transform duration-500 group-hover:scale-110"
