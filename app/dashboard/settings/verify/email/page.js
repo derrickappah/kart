@@ -16,10 +16,34 @@ export default function EmailVerificationPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setEmail(user.email);
+                // Automatically send OTP on load
+                sendOtp();
             }
         };
         getEmail();
     }, [supabase]);
+
+    const sendOtp = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/auth/send-verification-otp', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                setError(data.error || 'Failed to send verification code');
+                // In development, if it fails but returns OTP, we can still show a hint
+                if (data.otp) {
+                    console.log('Development OTP:', data.otp);
+                }
+            }
+        } catch (err) {
+            setError('Failed to connect to verification service');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleChange = (index, value) => {
         if (value.length > 1) value = value.slice(-1);
@@ -43,27 +67,36 @@ export default function EmailVerificationPage() {
         }
     };
 
-    const handleVerify = async () => {
+    const handleVerify = async (codeOverride) => {
         setLoading(true);
         setError(null);
 
-        const code = otp.join('');
+        const code = codeOverride || otp.join('');
         if (code.length < 5) {
             setError('Please enter the full 5-digit code.');
             setLoading(false);
             return;
         }
 
-        // Simulated verification for now - In a real app, you'd check this via a Supabase Edge Function or similar
-        // For demonstration, let's say '12345' is the magic code
-        setTimeout(() => {
-            if (code === '12345') {
+        try {
+            const response = await fetch('/api/auth/verify-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp: code })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
                 router.push('/dashboard/settings/verify/id-capture');
             } else {
-                setError('Invalid verification code. Try "12345" for testing.');
-                setLoading(false);
+                setError(data.error || 'Invalid verification code');
             }
-        }, 1500);
+        } catch (err) {
+            setError('Failed to verify code');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -116,7 +149,11 @@ export default function EmailVerificationPage() {
                         {loading ? 'Verifying...' : 'Verify Email'}
                     </button>
 
-                    <button className="mt-8 text-[#57858e] dark:text-gray-400 text-sm font-bold hover:text-primary transition-colors">
+                    <button 
+                        onClick={sendOtp}
+                        disabled={loading}
+                        className="mt-8 text-[#57858e] dark:text-gray-400 text-sm font-bold hover:text-primary transition-colors disabled:opacity-50"
+                    >
                         Didn't receive a code? Resend
                     </button>
                 </div>

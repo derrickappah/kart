@@ -31,7 +31,11 @@ export async function POST(request) {
 
     if (error) {
       console.error('Error creating report:', error);
-      return NextResponse.json({ error: 'Failed to create report' }, { status: 500 });
+      return NextResponse.json({ 
+        error: 'Failed to create report', 
+        details: error.message,
+        code: error.code
+      }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Report submitted successfully' });

@@ -40,7 +40,8 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, productId
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to submit report');
+                const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to submit report');
+                throw new Error(errorMsg);
             }
 
             setSuccess(true);
