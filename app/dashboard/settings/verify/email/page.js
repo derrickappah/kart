@@ -142,7 +142,7 @@ export default function EmailVerificationPage() {
                     )}
 
                     <button
-                        onClick={handleVerify}
+                        onClick={() => handleVerify()}
                         disabled={loading || otp.some(d => !d)}
                         className="w-full h-14 bg-primary hover:bg-[#1e6a7a] active:scale-[0.98] transition-all duration-200 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 disabled:opacity-50"
                     >
