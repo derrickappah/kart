@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import ReportModal from '../../../../components/ReportModal';
 
 export default function ChatPage() {
     const { id: conversationId } = useParams();
@@ -17,6 +18,7 @@ export default function ChatPage() {
     const [productContext, setProductContext] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showOptions, setShowOptions] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
     const optionsRef = useRef(null);
     const [sending, setSending] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -337,7 +339,7 @@ export default function ChatPage() {
                             )}
                             <button
                                 onClick={() => {
-                                    alert("Report functionality coming soon!");
+                                    setShowReportModal(true);
                                     setShowOptions(false);
                                 }}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left"
@@ -577,6 +579,13 @@ export default function ChatPage() {
                     </button>
                 </form>
             </footer>
+
+            <ReportModal 
+                isOpen={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                reportedUserId={otherUser?.id}
+                targetName={otherUser?.display_name}
+            />
         </div>
     );
 }

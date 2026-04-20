@@ -3,12 +3,17 @@
 create table if not exists reports (
   id uuid default gen_random_uuid() primary key,
   reporter_id uuid references auth.users(id) on delete cascade not null,
-  product_id uuid references products(id) on delete cascade not null,
+  product_id uuid references products(id) on delete cascade,
+  reported_user_id uuid references auth.users(id) on delete cascade,
   reason text not null,
   description text,
   status text not null default 'Pending' check (status in ('Pending', 'Reviewed', 'Resolved', 'Dismissed')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint reports_check_target check (
+    (product_id is not null and reported_user_id is null) or 
+    (product_id is null and reported_user_id is not null)
+  )
 );
 
 -- Enable RLS

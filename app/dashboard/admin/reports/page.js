@@ -33,22 +33,27 @@ export default async function AdminReportsPage({ searchParams }) {
   if (reports.length > 0) {
     const productIds = [...new Set(reports.map(r => r.product_id).filter(Boolean))];
     const reporterIds = [...new Set(reports.map(r => r.reporter_id).filter(Boolean))];
+    const reportedUserIds = [...new Set(reports.map(r => r.reported_user_id).filter(Boolean))];
 
-    const [productsResult, reportersResult] = await Promise.all([
+    const [productsResult, reportersResult, reportedUsersResult] = await Promise.all([
       productIds.length > 0 ? supabase.from('products').select('id, title').in('id', productIds) : { data: [] },
-      reporterIds.length > 0 ? supabase.from('profiles').select('id, email, display_name').in('id', reporterIds) : { data: [] }
+      reporterIds.length > 0 ? supabase.from('profiles').select('id, email, display_name').in('id', reporterIds) : { data: [] },
+      reportedUserIds.length > 0 ? supabase.from('profiles').select('id, email, display_name').in('id', reportedUserIds) : { data: [] }
     ]);
 
     const products = productsResult.data || [];
     const reporters = reportersResult.data || [];
+    const reportedUsers = reportedUsersResult.data || [];
 
     const productMap = new Map(products.map(p => [p.id, p]));
     const reporterMap = new Map(reporters.map(p => [p.id, p]));
+    const reportedUserMap = new Map(reportedUsers.map(p => [p.id, p]));
 
     reports = reports.map(r => ({
       ...r,
       product: productMap.get(r.product_id) || null,
-      reporter: reporterMap.get(r.reporter_id) || null
+      reporter: reporterMap.get(r.reporter_id) || null,
+      reportedUser: reportedUserMap.get(r.reported_user_id) || null
     }));
   }
 
@@ -156,8 +161,19 @@ export default async function AdminReportsPage({ searchParams }) {
 
               <div className="p-6 flex-1 space-y-4">
                 <div>
-                  <h4 className="text-[9px] font-black uppercase mr-2 tracking-[0.2em] text-[#4b636c] mb-1">Reported Item</h4>
-                  <p className="text-sm font-black tracking-tighter uppercase line-clamp-1">{report.product?.title || 'Unknown Product'}</p>
+                  <h4 className="text-[9px] font-black uppercase mr-2 tracking-[0.2em] text-[#4b636c] mb-1">
+                    {report.reported_user_id ? 'Reported User' : 'Reported Item'}
+                  </h4>
+                  {report.reported_user_id ? (
+                    <div className="flex items-center gap-2">
+                       <div className="size-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[8px] font-black">
+                        {report.reportedUser?.display_name?.charAt(0) || 'U'}
+                      </div>
+                      <p className="text-sm font-black tracking-tighter uppercase line-clamp-1">{report.reportedUser?.display_name || 'Unknown User'}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm font-black tracking-tighter uppercase line-clamp-1">{report.product?.title || 'Unknown Product'}</p>
+                  )}
                 </div>
 
                 <div className="bg-white dark:bg-[#212b30] p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-[0.05em] text-red-500 flex items-center gap-2">
@@ -189,7 +205,7 @@ export default async function AdminReportsPage({ searchParams }) {
 
               <div className="px-6 py-4 bg-background-light dark:bg-[#212b30]/30 mt-auto flex items-center justify-between border-t border-[#dce3e5] dark:border-[#2d3b41]">
                 <Link
-                  href={`/marketplace/${report.product?.id}`}
+                  href={report.reported_user_id ? `/profile/${report.reportedUser?.id}` : `/marketplace/${report.product?.id}`}
                   target="_blank"
                   className="flex items-center gap-2 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors"
                 >

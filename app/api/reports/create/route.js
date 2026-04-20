@@ -11,9 +11,9 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { productId, reason, description } = body;
+    const { productId, reportedUserId, reason, description } = body;
 
-    if (!productId || !reason) {
+    if ((!productId && !reportedUserId) || !reason) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -22,7 +22,8 @@ export async function POST(request) {
       .from('reports')
       .insert({
         reporter_id: user.id,
-        product_id: productId,
+        product_id: productId || null,
+        reported_user_id: reportedUserId || null,
         reason,
         description: description || null,
         status: 'Pending',
