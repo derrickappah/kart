@@ -10,6 +10,7 @@ export default function EmailVerificationPage() {
     const [otp, setOtp] = useState(['', '', '', '', '']);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [resendCooldown, setResendCooldown] = useState(0);
 
     useEffect(() => {
         const getEmail = async () => {
@@ -23,7 +24,16 @@ export default function EmailVerificationPage() {
         getEmail();
     }, [supabase]);
 
+    useEffect(() => {
+        if (resendCooldown > 0) {
+            const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [resendCooldown]);
+
     const sendOtp = async () => {
+        if (resendCooldown > 0) return;
+        
         setLoading(true);
         setError(null);
         try {
@@ -33,10 +43,11 @@ export default function EmailVerificationPage() {
             const data = await response.json();
             if (!response.ok) {
                 setError(data.error || 'Failed to send verification code');
-                // In development, if it fails but returns OTP, we can still show a hint
                 if (data.otp) {
                     console.log('Development OTP:', data.otp);
                 }
+            } else {
+                setResendCooldown(60); // 60 seconds cooldown
             }
         } catch (err) {
             setError('Failed to connect to verification service');
@@ -100,62 +111,100 @@ export default function EmailVerificationPage() {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen antialiased transition-colors duration-200">
-            <main className="flex-1 flex flex-col items-center px-6 pt-12 pb-32">
-                <div className="w-full max-w-sm text-center">
-                    <div className="size-48 bg-primary/10 rounded-[48px] flex items-center justify-center mx-auto mb-10 text-primary">
-                        <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: '120px' }}
-                        >
-                            mark_email_unread
-                        </span>
-                    </div>
+        <div className="bg-[#f0f4f5] dark:bg-[#0a1214] font-display flex flex-col min-h-screen antialiased transition-colors duration-200 overflow-x-hidden">
+            {/* Background Decorative Elements */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]"></div>
+            </div>
 
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Check your email</h1>
-                    <p className="text-gray-600 dark:text-gray-400 text-base mb-10 leading-relaxed">
-                        We've sent a 5-digit verification code to <br />
-                        <span className="font-bold text-gray-900 dark:text-white">{email || 'your email'}</span>
-                    </p>
+            <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative z-10">
+                <div className="w-full max-w-md">
+                    {/* Main Card */}
+                    <div className="bg-white/80 dark:bg-[#1a2628]/80 backdrop-blur-xl rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-none border border-white/20 dark:border-white/5 p-8 md:p-12 text-center animate-in fade-in zoom-in duration-700">
+                        
+                        {/* Header Section */}
+                        <div className="relative inline-block mb-10 text-primary">
+                            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl scale-125"></div>
+                            <div className="size-24 bg-gradient-to-br from-primary to-[#1c6475] rounded-[30px] flex items-center justify-center relative shadow-lg">
+                                <span className="material-symbols-outlined text-white" style={{ fontSize: '48px' }}>
+                                    verified_user
+                                </span>
+                            </div>
+                        </div>
 
-                    {/* OTP Inputs */}
-                    <div className="flex justify-center gap-3 mb-8">
-                        {otp.map((digit, index) => (
-                            <input
-                                key={index}
-                                id={`otp-${index}`}
-                                type="text"
-                                inputMode="numeric"
-                                value={digit}
-                                onChange={(e) => handleChange(index, e.target.value)}
-                                onKeyDown={(e) => handleKeyDown(index, e)}
-                                className="size-14 text-center text-2xl font-bold bg-white dark:bg-[#1e292b] border-2 border-transparent focus:border-primary rounded-xl shadow-sm outline-none transition-all dark:text-white"
-                                placeholder="0"
-                            />
-                        ))}
-                    </div>
-
-                    {error && (
-                        <p className="text-red-500 text-sm font-medium mb-6 bg-red-100 dark:bg-red-900/20 px-4 py-2 rounded-lg inline-block">
-                            {error}
+                        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight">
+                            Verify your email
+                        </h1>
+                        <p className="text-gray-500 dark:text-gray-400 text-lg mb-10 leading-snug max-w-[280px] mx-auto">
+                            We've sent a special code to <br />
+                            <span className="font-bold text-primary block mt-1 break-all">{email || 'your email'}</span>
                         </p>
-                    )}
 
-                    <button
-                        onClick={() => handleVerify()}
-                        disabled={loading || otp.some(d => !d)}
-                        className="w-full h-14 bg-primary hover:bg-[#1e6a7a] active:scale-[0.98] transition-all duration-200 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                        {loading ? 'Verifying...' : 'Verify Email'}
-                    </button>
+                        {/* OTP Inputs Group */}
+                        <div className="flex justify-between gap-2 md:gap-4 mb-10">
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    id={`otp-${index}`}
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={digit}
+                                    onChange={(e) => handleChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                    className="w-full h-16 md:h-18 text-center text-3xl font-black bg-gray-50 dark:bg-[#253335] border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#1e292b] focus:ring-4 focus:ring-primary/10 rounded-2xl outline-none transition-all duration-300 dark:text-white shadow-inner"
+                                    placeholder="-"
+                                />
+                            ))}
+                        </div>
 
-                    <button 
-                        onClick={sendOtp}
-                        disabled={loading}
-                        className="mt-8 text-[#57858e] dark:text-gray-400 text-sm font-bold hover:text-primary transition-colors disabled:opacity-50"
-                    >
-                        Didn't receive a code? Resend
-                    </button>
+                        {error && (
+                            <div className="mb-8 p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <span className="material-symbols-outlined text-red-500 text-xl">error</span>
+                                <p className="text-red-500 text-sm font-semibold">{error}</p>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={() => handleVerify()}
+                            disabled={loading || otp.some(d => !d)}
+                            className="group w-full h-16 bg-gradient-to-r from-primary to-[#1c6475] hover:shadow-2xl hover:shadow-primary/30 active:scale-[0.98] transition-all duration-300 text-white font-black text-xl rounded-2xl flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale disabled:hover:shadow-none shadow-xl shadow-primary/20"
+                        >
+                            {loading ? (
+                                <div className="size-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <>
+                                    Verify Account
+                                    <span className="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">
+                                        arrow_forward
+                                    </span>
+                                </>
+                            )}
+                        </button>
+
+                        <div className="mt-10">
+                            <button 
+                                onClick={sendOtp}
+                                type="button"
+                                disabled={loading || resendCooldown > 0}
+                                className="text-gray-500 dark:text-gray-400 text-sm font-bold hover:text-primary transition-all duration-200 flex items-center justify-center gap-2 mx-auto decoration-2 underline-offset-4 hover:underline disabled:opacity-50 disabled:no-underline"
+                            >
+                                {resendCooldown > 0 ? (
+                                    <>Resend code in <span className="text-primary tabular-nums font-black">{resendCooldown}s</span></>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-sm">refresh</span>
+                                        Didn't receive a code? Resend
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Footer Info */}
+                    <p className="mt-8 text-center text-gray-400 dark:text-gray-500 text-sm font-medium">
+                        Need help? <a href="#" className="text-primary hover:underline font-bold">Contact Support</a>
+                    </p>
                 </div>
             </main>
         </div>
