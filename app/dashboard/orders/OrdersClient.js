@@ -137,7 +137,7 @@ export default function OrdersClient({ orders }) {
                 <span className="material-symbols-outlined text-4xl opacity-50">shopping_cart</span>
               </div>
               <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No items found</p>
-              <p className="text-sm mb-6">You haven't purchased anything yet.</p>
+              <p className="text-sm mb-6">You haven&apos;t purchased anything yet.</p>
               <Link href="/marketplace" className="h-12 flex items-center justify-center px-8 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.98]">
                 Start Shopping
               </Link>

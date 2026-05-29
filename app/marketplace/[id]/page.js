@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import ProductDetailsClient from './ProductDetailsClient';
+import Link from 'next/link';
 
 export const revalidate = 3600;
 
@@ -30,8 +31,8 @@ export default async function ProductDetails({ params }) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-5 text-center">
                 <h1 className="text-2xl font-bold mb-2">Product Not Found</h1>
-                <p className="text-gray-500 mb-6">The item you're looking for might have been removed or is no longer available.</p>
-                <a href="/marketplace" className="btn-primary">Back to Marketplace</a>
+                <p className="text-gray-500 mb-6">The item you&apos;re looking for might have been removed or is no longer available.</p>
+                <Link href="/marketplace" className="btn-primary">Back to Marketplace</Link>
             </div>
         );
     }

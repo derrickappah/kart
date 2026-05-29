@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import OrderPaymentVerification from './OrderPaymentVerification';
 import ConfirmDeliveryButton from './ConfirmDeliveryButton';
+import RefundButton from './RefundButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +37,7 @@ export default async function OrderDetailPage({ params }) {
           <span className="material-symbols-rounded text-red-500 text-3xl">error</span>
         </div>
         <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
-        <p className="text-gray-400 mb-8 max-w-xs">The order you're looking for doesn't exist or you don't have access to it.</p>
+        <p className="text-gray-400 mb-8 max-w-xs">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
         <Link href="/dashboard/orders" className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors font-medium">
           Back to Orders
         </Link>
@@ -92,9 +93,12 @@ export default async function OrderDetailPage({ params }) {
           >
             <span className="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
           </Link>
-          <div className="flex-1 text-center pr-10">
+          <div className="flex-1 text-center">
             <h1 className="text-lg font-bold">Order Details</h1>
             <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold font-mono">#{order.id.slice(0, 8).toUpperCase()}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {isBuyer && <RefundButton orderId={order.id} orderStatus={order.status} refundStatus={order.refund_status} />}
           </div>
         </header>
 
@@ -138,7 +142,7 @@ export default async function OrderDetailPage({ params }) {
                   <div className="flex-1 pb-4">
                     <p className="text-sm font-bold">{history.new_status}</p>
                     <p className="text-[10px] text-gray-400">{new Date(history.created_at).toLocaleString()}</p>
-                    {history.notes && <p className="text-xs text-gray-400 mt-1 italic opacity-80">"{history.notes}"</p>}
+                    {history.notes && <p className="text-xs text-gray-400 mt-1 italic opacity-80">&quot;{history.notes}&quot;</p>}
                   </div>
                 </div>
               ))}
@@ -266,7 +270,7 @@ export default async function OrderDetailPage({ params }) {
                   <div>
                     <h3 className="font-bold text-base mb-1">Received Your Item?</h3>
                     <p className="text-sm text-gray-400 leading-relaxed">
-                      Once you've received and inspected your item, confirm delivery to release payment to the seller.
+                      Once you&apos;ve received and inspected your item, confirm delivery to release payment to the seller.
                     </p>
                   </div>
                 </div>

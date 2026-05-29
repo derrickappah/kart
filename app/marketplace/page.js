@@ -5,7 +5,7 @@ import SearchBar from '../../components/SearchBar';
 import MarketplaceControls from '../../components/MarketplaceControls';
 import WishlistButton from '../../components/WishlistButton';
 import { createClient } from '../../utils/supabase/server';
-import { toSentenceCase } from '../../utils/formatters';
+import { toSentenceCase, seededShuffle } from '../../utils/formatters';
 
 export const revalidate = 60;
 
@@ -62,7 +62,7 @@ export default async function Marketplace({ searchParams }) {
     const rawProducts = productsRes.data;
 
     const products = (sortOption === 'newest' && !params?.search && !params?.category)
-        ? (rawProducts ? [...rawProducts].sort(() => Math.random() - 0.5) : [])
+        ? seededShuffle(rawProducts, 42)
         : rawProducts;
 
     return (

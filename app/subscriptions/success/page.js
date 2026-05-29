@@ -50,7 +50,7 @@ function SuccessContent() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
         <div className="w-12 h-12 border-4 border-[#1daddd] border-t-transparent rounded-full animate-spin mb-4"></div>
         <h2 className="text-xl font-bold">Verifying your payment...</h2>
-        <p className="text-gray-500 text-center mt-2">Please don't close this page.</p>
+        <p className="text-gray-500 text-center mt-2">Please don&apos;t close this page.</p>
       </div>
     );
   }

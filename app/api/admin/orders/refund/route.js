@@ -130,6 +130,7 @@ export async function POST(request) {
             .update({
                 status: 'Refunded',
                 escrow_status: 'Refunded',
+                refund_status: 'Refunded',
                 updated_at: new Date().toISOString(),
             })
             .eq('id', order.id);
@@ -156,6 +157,17 @@ export async function POST(request) {
             message: `Your payment of GH₵ ${refundAmount.toFixed(2)} for order #${order.id.slice(0, 8)} has been refunded to your wallet.`,
             related_order_id: order.id,
         });
+
+        // 6. Update any associated refund requests to 'Approved'
+        await adminSupabase
+            .from('refund_requests')
+            .update({ 
+                status: 'Approved',
+                admin_notes: `Refund approved by admin. ${reason ? 'Reason: ' + reason : ''}`,
+                updated_at: new Date().toISOString()
+            })
+            .eq('order_id', order.id)
+            .eq('status', 'Pending');
 
         return NextResponse.json({
             success: true,

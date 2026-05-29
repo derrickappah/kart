@@ -11,13 +11,12 @@ function SuccessContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const supabase = createClient();
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
     const productId = searchParams.get('id');
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(!!productId);
 
     useEffect(() => {
         if (!productId) {
-            setLoading(false);
             return;
         }
 

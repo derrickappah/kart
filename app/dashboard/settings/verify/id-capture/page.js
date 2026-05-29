@@ -13,6 +13,7 @@ export default function StudentIDCapturePage() {
     const [isCapturing, setIsCapturing] = useState(false);
     const [showChecking, setShowChecking] = useState(false);
     const [cameraError, setCameraError] = useState(null);
+    const [facingMode, setFacingMode] = useState('environment');
 
     // Initialize Camera
     useEffect(() => {
@@ -29,6 +30,11 @@ export default function StudentIDCapturePage() {
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                     streamRef.current = stream;
+                    const track = stream.getVideoTracks()[0];
+                    const actualFacingMode = track?.getSettings()?.facingMode;
+                    if (actualFacingMode) {
+                        setFacingMode(actualFacingMode);
+                    }
                 }
             } catch (err) {
                 console.error("Error accessing camera:", err);
@@ -116,7 +122,7 @@ export default function StudentIDCapturePage() {
                             playsInline
                             muted
                             className="w-full h-full object-cover scale-x-[-1]" // Mirror for better UX if front camera, though we prefer back
-                            style={{ transform: streamRef.current?.getTracks()[0]?.getSettings()?.facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
+                            style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
                         />
                     )}
                     <div className="absolute inset-0 bg-black/20"></div>

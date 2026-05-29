@@ -83,7 +83,7 @@ export default function LoginActivityPage() {
                 <div className="mt-8 p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/30 flex gap-4">
                     <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">shield</span>
                     <p className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">
-                        If you don't recognize a device or location, we recommend changing your password immediately.
+                        If you don&apos;t recognize a device or location, we recommend changing your password immediately.
                     </p>
                 </div>
             </main>

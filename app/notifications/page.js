@@ -198,55 +198,7 @@ function NotificationItem({ notification }) {
 
     const content = getNotificationContent();
 
-    // Sample notifications to match the design
-    const sampleNotifications = [
-        {
-            id: 'sample-1',
-            type: 'price_drop',
-            title: 'Statistics 101 Textbook',
-            message: 'price dropped.',
-            price: 'Now $45',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw2lhXuAw9JUwW8ISP2dXOqUvlpah2n7pQIdoK9DADfxJN35II58VGYtBvbXzU3bTLUPtX5n2mWUwEcI93apzULB8nTkVf01mzFxW-_TpFMEbUyKBRdqXJ2Gejmv16KsMNEqdpPtZJysu1SPu6d0mEl59JBin5nmrXLnZveAuJfrfgMMg4O7dFYfJ50CnVu1l2gytefNQeOLk7uWun4GeWGJyb6kBPedKG7i5m7QBr0KaF1s0n08rIP5dpEIosjpLIKB-6OmkhQQRJ',
-            is_read: false,
-            created_at: new Date(Date.now() - 2 * 60 * 1000).toISOString() // 2 minutes ago
-        },
-        {
-            id: 'sample-2',
-            type: 'message',
-            title: 'Sarah J.',
-            message: 'sent you an offer for "Dorm Lamp"',
-            preview: '"Hey! Would you take $15 if I pick it up..."',
-            avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAqB50VRBSflybSLeHyfJHKuXIlrqqk4Ab_EnY8bmTMYV9nbv7j2iNE6QtYJzg-EzoKNckdVKGAcl5g5rWkHTZsiOrQV_D3HL79VFBhf-9R-ujL2yUo858QoBjJC6e307fQQhlsvpYJnBBkBW26oa3m8gbjvqZd4jEMyJfJZUF0AwTfgo_Jo8I9zsu-nvHj0bEBZYGDhglqqFtBZNUcoOqU68XgGqe2W8PwYpX-r1g2rokn65rRpBUME7u6sUxsRsYtS5hIZv2QJdU_',
-            is_read: false,
-            created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString() // 1 hour ago
-        },
-        {
-            id: 'sample-3',
-            type: 'system',
-            title: 'Listing Approved',
-            message: 'Your listing "Graphing Calculator" is now live on the marketplace.',
-            is_read: true,
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // Yesterday
-        },
-        {
-            id: 'sample-4',
-            type: 'message',
-            title: 'Mike T.',
-            message: 'replied to your message.',
-            preview: '"Sounds good. See you at the library."',
-            avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMU4T6GRCDyTBZ2swcEKPABogaEc5wZUIJ4pfSrc8byPVlcfgiCnLevUn_NdTei40yapyt9_Rbhd0NjixlsCIVL6uP4rtbpklxXRPM3wn5i0w8o5_p-T96Pk0VwSAyPUHFabCetsJccX7waKo6bzDJeigmvvrUbLyP7MjPrxxXlXBV9_qZwsPc1oPrBaME2fpe5RVRZRW91akG5Lls6jYyK3nUqfE6Oiwlw0adJv55a8r2RWoZMZz9TxzbVIiqkRU2ycbX1I8KO36G',
-            is_read: true,
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
-        },
-        {
-            id: 'sample-5',
-            type: 'system',
-            title: 'Hot Item Alert',
-            message: '3 people saved your "Calculus II Notes" listing today.',
-            is_read: true,
-            created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days ago
-        }
-    ];
+
 
     // Use real notifications if available, otherwise show sample data
     const displayNotification = notifications.length > 0 ? notification : sampleNotifications.find(n => n.id === notification?.id) || sampleNotifications[0];
@@ -309,3 +261,53 @@ function NotificationItem({ notification }) {
         </div>
     );
 }
+
+// Sample notifications to match the design
+const sampleNotifications = [
+    {
+        id: 'sample-1',
+        type: 'price_drop',
+        title: 'Statistics 101 Textbook',
+        message: 'price dropped.',
+        price: 'Now $45',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw2lhXuAw9JUwW8ISP2dXOqUvlpah2n7pQIdoK9DADfxJN35II58VGYtBvbXzU3bTLUPtX5n2mWUwEcI93apzULB8nTkVf01mzFxW-_TpFMEbUyKBRdqXJ2Gejmv16KsMNEqdpPtZJysu1SPu6d0mEl59JBin5nmrXLnZveAuJfrfgMMg4O7dFYfJ50CnVu1l2gytefNQeOLk7uWun4GeWGJyb6kBPedKG7i5m7QBr0KaF1s0n08rIP5dpEIosjpLIKB-6OmkhQQRJ',
+        is_read: false,
+        created_at: new Date(Date.now() - 2 * 60 * 1000).toISOString() // 2 minutes ago
+    },
+    {
+        id: 'sample-2',
+        type: 'message',
+        title: 'Sarah J.',
+        message: 'sent you an offer for "Dorm Lamp"',
+        preview: '"Hey! Would you take $15 if I pick it up..."',
+        avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAqB50VRBSflybSLeHyfJHKuXIlrqqk4Ab_EnY8bmTMYV9nbv7j2iNE6QtYJzg-EzoKNckdVKGAcl5g5rWkHTZsiOrQV_D3HL79VFBhf-9R-ujL2yUo858QoBjJC6e307fQQhlsvpYJnBBkBW26oa3m8gbjvqZd4jEMyJfJZUF0AwTfgo_Jo8I9zsu-nvHj0bEBZYGDhglqqFtBZNUcoOqU68XgGqe2W8PwYpX-r1g2rokn65rRpBUME7u6sUxsRsYtS5hIZv2QJdU_',
+        is_read: false,
+        created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString() // 1 hour ago
+    },
+    {
+        id: 'sample-3',
+        type: 'system',
+        title: 'Listing Approved',
+        message: 'Your listing "Graphing Calculator" is now live on the marketplace.',
+        is_read: true,
+        created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // Yesterday
+    },
+    {
+        id: 'sample-4',
+        type: 'message',
+        title: 'Mike T.',
+        message: 'replied to your message.',
+        preview: '"Sounds good. See you at the library."',
+        avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMU4T6GRCDyTBZ2swcEKPABogaEc5wZUIJ4pfSrc8byPVlcfgiCnLevUn_NdTei40yapyt9_Rbhd0NjixlsCIVL6uP4rtbpklxXRPM3wn5i0w8o5_p-T96Pk0VwSAyPUHFabCetsJccX7waKo6bzDJeigmvvrUbLyP7MjPrxxXlXBV9_qZwsPc1oPrBaME2fpe5RVRZRW91akG5Lls6jYyK3nUqfE6Oiwlw0adJv55a8r2RWoZMZz9TxzbVIiqkRU2ycbX1I8KO36G',
+        is_read: true,
+        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
+    },
+    {
+        id: 'sample-5',
+        type: 'system',
+        title: 'Hot Item Alert',
+        message: '3 people saved your "Calculus II Notes" listing today.',
+        is_read: true,
+        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days ago
+    }
+];

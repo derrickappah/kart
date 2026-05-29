@@ -63,7 +63,7 @@ function PromotionSuccessContent() {
             <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center">
                 <span className="material-symbols-outlined text-red-500 text-7xl mb-6">error</span>
                 <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
-                <p className="text-slate-500 mb-8 text-sm max-w-xs">We couldn't verify your payment. If you've been charged, please contact support.</p>
+                <p className="text-slate-500 mb-8 text-sm max-w-xs">We couldn&apos;t verify your payment. If you&apos;ve been charged, please contact support.</p>
                 <div className="flex flex-col gap-3 w-full max-w-xs">
                     <button
                         onClick={() => window.location.reload()}

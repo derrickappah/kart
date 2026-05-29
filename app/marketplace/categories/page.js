@@ -19,7 +19,7 @@ export default function CategoriesPage() {
       <div className="max-w-md mx-auto min-h-screen px-6 py-12 flex flex-col gap-10">
         <header className="space-y-2">
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Browse by Category</h1>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Find exactly what you're looking for on campus</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Find exactly what you&apos;re looking for on campus</p>
         </header>
 
         <main className="grid grid-cols-2 gap-4">

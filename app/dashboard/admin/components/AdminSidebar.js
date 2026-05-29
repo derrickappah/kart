@@ -22,6 +22,7 @@ export default function AdminSidebar() {
         { href: '/dashboard/admin/orders', label: 'Orders', icon: 'receipt_long' },
         { href: '/dashboard/admin/verifications', label: 'Verifications', icon: 'verified_user' },
         { href: '/dashboard/admin/users', label: 'Users', icon: 'group' },
+        { href: '/dashboard/admin/refund-requests', label: 'Refunds', icon: 'keyboard_return' },
         { href: '/dashboard/admin/reports', label: 'Reports', icon: 'analytics' },
         { href: '/dashboard/admin/withdrawals', label: 'Withdrawals', icon: 'payments' },
         { href: '/dashboard/admin/reviews', label: 'Reviews', icon: 'star' },

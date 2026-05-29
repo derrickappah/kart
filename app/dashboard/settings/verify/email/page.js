@@ -128,7 +128,7 @@ export default function EmailVerificationPage() {
                         </h1>
                         <div className="space-y-1">
                             <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
-                                We've sent a 5-digit verification code to
+                                We&apos;ve sent a 5-digit verification code to
                             </p>
                             <p className="font-bold text-gray-900 dark:text-white text-lg break-all">
                                 {email || 'your email'}
@@ -187,7 +187,7 @@ export default function EmailVerificationPage() {
                                 ) : (
                                     <>
                                         <span className="material-symbols-outlined text-sm">refresh</span>
-                                        Didn't receive a code? Resend
+                                        Didn&apos;t receive a code? Resend
                                     </>
                                 )}
                             </button>

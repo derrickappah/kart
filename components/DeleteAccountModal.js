@@ -126,7 +126,7 @@ export default function DeleteAccountModal({ isOpen, onClose, onSuccess }) {
                         />
                         {confirmText && !isConfirmValid && (
                             <p className="text-xs text-red-600 dark:text-red-400">
-                                Please type exactly "DELETE" in capital letters
+                                Please type exactly &quot;DELETE&quot; in capital letters
                             </p>
                         )}
                     </div>

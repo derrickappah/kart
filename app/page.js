@@ -5,7 +5,7 @@ import { createClient } from '../utils/supabase/server';
 import SearchBar from "../components/SearchBar";
 import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
-import { toSentenceCase } from '../utils/formatters';
+import { toSentenceCase, seededShuffle } from '../utils/formatters';
 
 export const revalidate = 60;
 
@@ -39,9 +39,9 @@ async function getHomeData() {
 
   return {
     wishlistIds: wishlistRes.data?.map(item => item.product_id) || [],
-    bannerProducts: bannerRes.data ? [...bannerRes.data].sort(() => Math.random() - 0.5) : [],
-    boostedProducts: boostedRes.data ? [...boostedRes.data].sort(() => Math.random() - 0.5) : [],
-    latestProducts: latestRes.data ? [...latestRes.data].sort(() => Math.random() - 0.5) : [],
+    bannerProducts: seededShuffle(bannerRes.data, 42),
+    boostedProducts: seededShuffle(boostedRes.data, 43),
+    latestProducts: seededShuffle(latestRes.data, 44),
   };
 }
 
@@ -220,9 +220,9 @@ export default async function Home() {
   ]);
 
   const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
-  const bannerProducts = bannerRes.data ? [...bannerRes.data].sort(() => Math.random() - 0.5) : [];
-  const boostedProducts = boostedRes.data ? [...boostedRes.data].sort(() => Math.random() - 0.5) : [];
-  const latestProducts = latestRes.data ? [...latestRes.data].sort(() => Math.random() - 0.5) : [];
+  const bannerProducts = seededShuffle(bannerRes.data, 42);
+  const boostedProducts = seededShuffle(boostedRes.data, 43);
+  const latestProducts = seededShuffle(latestRes.data, 44);
 
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">

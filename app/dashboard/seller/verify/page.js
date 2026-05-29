@@ -191,7 +191,7 @@ export default function VerificationPage() {
                             <div>
                                 <h2 className="text-xl font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-tight">Profile Verified</h2>
                                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-                                    Your seller verification has been approved! You now have full access to KART's selling features.
+                                    Your seller verification has been approved! You now have full access to KART&apos;s selling features.
                                 </p>
                             </div>
                             <Link href="/dashboard/seller" className="h-12 w-full flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]">

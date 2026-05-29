@@ -30,7 +30,7 @@ export default async function ReviewPage({ params }) {
                     <span className="material-symbols-outlined text-red-500 text-3xl">error</span>
                 </div>
                 <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
-                <p className="text-gray-400 mb-8 max-w-xs">The order you're looking for doesn't exist or you don't have access to it.</p>
+                <p className="text-gray-400 mb-8 max-w-xs">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
                 <Link href="/dashboard/orders" className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors font-medium">
                     Back to Orders
                 </Link>

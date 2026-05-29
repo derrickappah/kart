@@ -34,6 +34,7 @@ export default async function AdminDashboard() {
         { count: activeSubscriptions },
         { count: pendingVerifications },
         { count: pendingReports },
+        { count: pendingRefunds },
         { data: recentUsers },
         { data: recentListings },
         { data: recentOrders },
@@ -45,6 +46,7 @@ export default async function AdminDashboard() {
         adminSupabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'Active'),
         adminSupabase.from('verification_requests').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
         adminSupabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
+        adminSupabase.from('refund_requests').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
         adminSupabase.from('profiles').select('id, display_name, created_at').order('created_at', { ascending: false }).limit(3),
         adminSupabase.from('products').select('id, title, created_at, seller:profiles!seller_id(email)').order('created_at', { ascending: false }).limit(5),
         adminSupabase.from('orders').select('id, created_at, product:products(title), buyer:profiles!orders_buyer_id_profiles_fkey(email)').order('created_at', { ascending: false }).limit(3),
@@ -253,6 +255,23 @@ export default async function AdminDashboard() {
                             <p className="text-xs font-bold text-[#4b636c] dark:text-gray-400 uppercase tracking-widest">Orders in system</p>
                             <div className="mt-8 flex items-center text-green-500 font-bold text-[10px] uppercase tracking-widest gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
                                 All Ledgers <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                            </div>
+                        </div>
+                    </Link>
+
+                    <Link href="/dashboard/admin/refund-requests" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-1 hover:border-red-500/50 dark:hover:border-red-500/50">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity scale-150 origin-top-right translate-x-4 -translate-y-4">
+                            <span className="material-symbols-outlined text-8xl text-red-500">keyboard_return</span>
+                        </div>
+                        <div className="flex flex-col h-full relative z-10">
+                            <div className="size-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative">
+                                <span className="material-symbols-outlined text-red-500 text-2xl">keyboard_return</span>
+                                {pendingRefunds > 0 && <span className="absolute -top-1 -right-1 size-3 bg-red-500 rounded-full border-2 border-white dark:border-[#131d21] animate-pulse"></span>}
+                            </div>
+                            <h4 className="text-2xl font-black tracking-tight mb-1">{pendingRefunds} Pending</h4>
+                            <p className="text-xs font-bold text-[#4b636c] dark:text-gray-400 uppercase tracking-widest">Refund requests</p>
+                            <div className="mt-8 flex items-center text-red-500 font-bold text-[10px] uppercase tracking-widest gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                                Review Disputes <span className="material-symbols-outlined text-sm">arrow_forward</span>
                             </div>
                         </div>
                     </Link>

@@ -25,15 +25,25 @@ export default function FilterSidebar() {
     const [animatingOut, setAnimatingOut] = useState(false);
 
     // Initialize state from URL params
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [selectedConditions, setSelectedConditions] = useState([]);
-    const [minPrice, setMinPrice] = useState('');
-    const [maxPrice, setMaxPrice] = useState('');
-    const [campus, setCampus] = useState('');
-    const [sort, setSort] = useState('newest');
+    const getInitialCategories = () => searchParams?.get('category') ? searchParams.get('category').split(',') : [];
+    const getInitialConditions = () => searchParams?.get('condition') ? searchParams.get('condition').split(',') : [];
+    const getInitialMinPrice = () => searchParams?.get('minPrice') || '';
+    const getInitialMaxPrice = () => searchParams?.get('maxPrice') || '';
+    const getInitialCampus = () => searchParams?.get('campus') || '';
+    const getInitialSort = () => searchParams?.get('sort') || 'newest';
 
-    // Sync with URL params when they change
-    useEffect(() => {
+    const [selectedCategories, setSelectedCategories] = useState(getInitialCategories);
+    const [selectedConditions, setSelectedConditions] = useState(getInitialConditions);
+    const [minPrice, setMinPrice] = useState(getInitialMinPrice);
+    const [maxPrice, setMaxPrice] = useState(getInitialMaxPrice);
+    const [campus, setCampus] = useState(getInitialCampus);
+    const [sort, setSort] = useState(getInitialSort);
+    const [prevSearchQuery, setPrevSearchQuery] = useState(searchParams?.toString() || '');
+
+    // Sync with URL params when they change directly during render
+    const currentSearchQuery = searchParams?.toString() || '';
+    if (currentSearchQuery !== prevSearchQuery) {
+        setPrevSearchQuery(currentSearchQuery);
         const categoryParam = searchParams?.get('category');
         const conditionParam = searchParams?.get('condition');
         setSelectedCategories(categoryParam ? categoryParam.split(',') : []);
@@ -42,7 +52,7 @@ export default function FilterSidebar() {
         setMaxPrice(searchParams?.get('maxPrice') || '');
         setCampus(searchParams?.get('campus') || '');
         setSort(searchParams?.get('sort') || 'newest');
-    }, [searchParams]);
+    }
 
     // Handle Open Event
     useEffect(() => {

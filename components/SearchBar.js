@@ -5,18 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 function SearchInput({ placeholder }) {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const [query, setQuery] = useState('');
+    const searchVal = searchParams.get('search') || '';
+    const [query, setQuery] = useState(searchVal);
+    const [prevSearch, setPrevSearch] = useState(searchVal);
     const [isPending, startTransition] = useTransition();
 
-    useEffect(() => {
-        // Sync local state with URL param on mount and update
-        const search = searchParams.get('search');
-        if (search) {
-            setQuery(search);
-        } else {
-            setQuery('');
-        }
-    }, [searchParams]);
+    if (searchVal !== prevSearch) {
+        setPrevSearch(searchVal);
+        setQuery(searchVal);
+    }
 
     const handleSearch = (e) => {
         e.preventDefault();

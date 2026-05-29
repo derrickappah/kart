@@ -9,11 +9,12 @@ export default function WishlistClient({ initialItems }) {
     const router = useRouter();
     const supabase = createClient();
     const [items, setItems] = useState(initialItems || []);
+    const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
 
-    // Sync state if initialItems from server change via Next.js navigation
-    useEffect(() => {
+    if (initialItems !== prevInitialItems) {
+        setPrevInitialItems(initialItems);
         setItems(initialItems || []);
-    }, [initialItems]);
+    }
 
     // Safely extract the primary image
     const getPrimaryImage = (product) => {

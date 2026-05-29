@@ -214,7 +214,7 @@ export default function MyListingsClient({ initialProducts }) {
                                 <span className="material-symbols-outlined text-4xl opacity-50">inventory_2</span>
                             </div>
                             <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No {activeTab.toLowerCase()} listings</p>
-                            <p className="text-sm mb-6 text-center">You don't have any items in this category yet.</p>
+                            <p className="text-sm mb-6 text-center">You don&apos;t have any items in this category yet.</p>
                             <Link href="/dashboard/seller/create" className="h-12 flex items-center justify-center px-8 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.98]">
                                 Create New Listing
                             </Link>
@@ -244,7 +244,7 @@ export default function MyListingsClient({ initialProducts }) {
                                 <h2 className="text-[22px] font-extrabold text-slate-900 dark:text-white text-center leading-tight mb-3">Delete Listing?</h2>
                                 <p className="text-center text-slate-500 dark:text-slate-400 text-[15px] leading-relaxed mb-8">
                                     Are you sure you want to remove <br />
-                                    <span className="font-bold text-slate-800 dark:text-slate-200 block mt-1">"{productToDelete?.title}"</span>
+                                    <span className="font-bold text-slate-800 dark:text-slate-200 block mt-1">&quot;{productToDelete?.title}&quot;</span>
                                     This action cannot be undone.
                                 </p>
 

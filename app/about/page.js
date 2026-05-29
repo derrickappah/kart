@@ -21,7 +21,7 @@ export default function AboutPage() {
                             Founded in 2024, KART was born from a simple observation: university students need a safer, easier, and more reliable way to buy and sell within their community.
                         </p>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                            Current solutions were either too broad, unsafe, or cluttered. KART provides a specialized platform tailored to the unique needs of campus life—whether it's finding affordable textbooks, selling furniture at the end of the semester, or discovering student-made crafts.
+                            Current solutions were either too broad, unsafe, or cluttered. KART provides a specialized platform tailored to the unique needs of campus life—whether it&apos;s finding affordable textbooks, selling furniture at the end of the semester, or discovering student-made crafts.
                         </p>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
@@ -92,7 +92,7 @@ export default function AboutPage() {
             <section className="py-24 px-6 text-center max-w-4xl mx-auto">
                 <h2 className="text-4xl font-black mb-6 tracking-tight text-[#0e171b] dark:text-white uppercase transition-all duration-500 hover:tracking-tighter">Get in Touch</h2>
                 <p className="text-slate-500 font-medium mb-10 leading-relaxed text-lg italic">
-                    Have questions or feedback? We'd love to hear from you. Reach out to our team directly.
+                    Have questions or feedback? We&apos;d love to hear from you. Reach out to our team directly.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="mailto:support@kart.com" className="bg-primary text-white px-10 py-4 rounded-2xl font-black uppercase text-sm tracking-widest shadow-lg shadow-primary/25 hover:scale-105 transition-all">

@@ -4,12 +4,19 @@ import { useState, useEffect, useRef } from 'react';
 export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, onResend, email, loading, error }) {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(0);
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
     const inputs = useRef([]);
+
+    if (isOpen !== prevIsOpen) {
+        setPrevIsOpen(isOpen);
+        if (isOpen) {
+            setTimer(60);
+            setOtp(['', '', '', '', '', '']);
+        }
+    }
 
     useEffect(() => {
         if (isOpen) {
-            setTimer(60); // 60 seconds resend timer
-            setOtp(['', '', '', '', '', '']);
             // Focus first input after a short delay to allow modal animation
             setTimeout(() => inputs.current[0]?.focus(), 100);
         }
@@ -73,7 +80,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
                     </div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Verify Delivery</h2>
                     <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
-                        We've sent a 6-digit verification code to <br />
+                        We&apos;ve sent a 6-digit verification code to <br />
                         <span className="font-bold text-slate-900 dark:text-white">{email}</span>
                     </p>
                 </div>
@@ -134,7 +141,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
                                 disabled={loading}
                                 className="text-[10px] font-black text-primary hover:text-primary/80 uppercase tracking-widest transition-colors"
                             >
-                                Didn't receive code? Resend
+                                Didn&apos;t receive code? Resend
                             </button>
                         )}
                     </div>

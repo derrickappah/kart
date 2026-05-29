@@ -42,7 +42,7 @@ export default function ForgotPassword() {
                 {/* Headline Text */}
                 <div className="text-center">
                     <h1 className="text-[#24282D] dark:text-white text-2xl font-bold leading-tight">Forgot Password?</h1>
-                    <p className="text-[#4f8596] mt-2 text-sm">Enter your email and we'll send you a link to reset your password.</p>
+                    <p className="text-[#4f8596] mt-2 text-sm">Enter your email and we&apos;ll send you a link to reset your password.</p>
                 </div>
 
                 {/* Form Section */}

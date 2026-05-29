@@ -1,6 +1,7 @@
 import { createClient } from '../../../../utils/supabase/server';
 import CheckoutClient from './CheckoutClient';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export default async function CheckoutPage({ params }) {
     // Await params for Next.js 15 compatibility
@@ -11,6 +12,28 @@ export default async function CheckoutPage({ params }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         redirect(`/login?next=/marketplace/${id}/buy`);
+    }
+
+    // Fetch Wallet Balance early to prevent ReferenceError in early returns
+    let walletBalance = 0.00;
+    try {
+        const { data: wallet } = await supabase
+            .from('wallets')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single();
+
+        if (wallet) {
+            walletBalance = wallet.balance;
+        } else {
+            // Mock balance for now if user has no wallet record yet
+            // or if the table doesn't exist in this environment yet
+            walletBalance = 150.00;
+        }
+    } catch (err) {
+        // Table might not exist, ignore
+        console.log("Wallet fetch error (expected if table missing):", err.message);
+        walletBalance = 52.00; // Mock default from design
     }
 
     // 2. Fetch Product & Seller
@@ -111,7 +134,7 @@ export default async function CheckoutPage({ params }) {
             <div className="flex flex-col items-center justify-center min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] p-6 text-center">
                 <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">inventory_2</span>
                 <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Item Not Found</h1>
-                <p className="text-gray-500 mb-6 max-w-xs">We couldn't find the item you're looking for. It might have been sold or removed.</p>
+                <p className="text-gray-500 mb-6 max-w-xs">We couldn&apos;t find the item you&apos;re looking for. It might have been sold or removed.</p>
                 <Link href="/marketplace" className="btn-primary w-full max-w-xs justify-center">
                     Back to Marketplace
                 </Link>
@@ -119,29 +142,7 @@ export default async function CheckoutPage({ params }) {
         );
     }
 
-    // 3. Fetch Wallet Balance
-    let walletBalance = 0.00;
-    try {
-        const { data: wallet } = await supabase
-            .from('wallets')
-            .select('balance')
-            .eq('user_id', user.id)
-            .single();
-
-        if (wallet) {
-            walletBalance = wallet.balance;
-        } else {
-            // Mock balance for now if user has no wallet record yet
-            // or if the table doesn't exist in this environment yet
-            walletBalance = 150.00;
-        }
-    } catch (err) {
-        // Table might not exist, ignore
-        console.log("Wallet fetch error (expected if table missing):", err.message);
-        walletBalance = 52.00; // Mock default from design
-    }
-
-    // 4. Fetch Marketplace Service Fee & Transaction Fees
+    // 3. Fetch Marketplace Service Fee & Transaction Fees
     let serviceFee = 1.50;
     let feePercent = 3;
     let feeFixed = 1;

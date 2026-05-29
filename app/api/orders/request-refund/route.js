@@ -1,0 +1,105 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+
+export async function POST(request) {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { orderId, reason, description } = body;
+
+        if (!orderId || !reason) {
+            return NextResponse.json({ error: 'Order ID and reason are required' }, { status: 400 });
+        }
+
+        // 1. Get order and verify buyer
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+
+        if (orderError || !order) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        if (order.buyer_id !== user.id) {
+            return NextResponse.json({ error: 'Unauthorized. Only the buyer can request a refund.' }, { status: 403 });
+        }
+
+        // 2. Verify order is in a refundable state (Paid or Shipped, but not Completed or Refunded)
+        const allowedStatuses = ['Paid', 'Shipped', 'Delivered'];
+        if (!allowedStatuses.includes(order.status)) {
+            return NextResponse.json({ 
+                error: `Refunds can only be requested for orders with status: ${allowedStatuses.join(', ')}. Current status: ${order.status}` 
+            }, { status: 400 });
+        }
+
+        if (order.escrow_status !== 'Held') {
+            return NextResponse.json({ error: `Order escrow is already ${order.escrow_status}.` }, { status: 400 });
+        }
+
+        // 3. Check if a request already exists
+        const { data: existingRequest } = await supabase
+            .from('refund_requests')
+            .select('id')
+            .eq('order_id', orderId)
+            .eq('status', 'Pending')
+            .maybeSingle();
+
+        if (existingRequest) {
+            return NextResponse.json({ error: 'A pending refund request already exists for this order.' }, { status: 400 });
+        }
+
+        // 4. Create refund request
+        const { data: refundRequest, error: refundError } = await supabase
+            .from('refund_requests')
+            .insert({
+                order_id: orderId,
+                buyer_id: user.id,
+                reason,
+                description,
+                status: 'Pending'
+            })
+            .select()
+            .single();
+
+        if (refundError) {
+            console.error('Error creating refund request:', refundError);
+            return NextResponse.json({ error: 'Failed to submit refund request' }, { status: 500 });
+        }
+
+        // 5. Update order refund_status
+        await supabase
+            .from('orders')
+            .update({ refund_status: 'Requested' })
+            .eq('id', orderId);
+
+        // 6. Record history
+        await supabase.from('order_status_history').insert({
+            order_id: orderId,
+            old_status: order.status,
+            new_status: order.status, // Status doesn't change yet, but we record the event
+            changed_by: user.id,
+            notes: `Buyer requested a refund. Reason: ${reason}`,
+        });
+
+        // 7. Notify admins (Optional: could be a trigger or separate logic)
+        // For now, we'll just return success
+
+        return NextResponse.json({
+            success: true,
+            message: 'Refund request submitted successfully. An admin will review it shortly.',
+            data: refundRequest
+        });
+
+    } catch (error) {
+        console.error('Request refund error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}

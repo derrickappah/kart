@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function EscrowManagementClient({ order }) {
   const [loading, setLoading] = useState(false);
@@ -112,10 +113,25 @@ export default function EscrowManagementClient({ order }) {
             </div>
           </div>
 
+          {order.refund_status === 'Requested' && (
+            <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-amber-500">warning</span>
+                <div>
+                  <p className="text-xs font-black text-amber-500 uppercase tracking-tight">Refund Requested</p>
+                  <p className="text-[10px] text-amber-500/70 font-bold">The buyer has formally requested a refund for this order.</p>
+                </div>
+              </div>
+              <Link href="/dashboard/admin/refund-requests" className="px-4 py-2 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-600 transition-colors">
+                Review Request
+              </Link>
+            </div>
+          )}
+
           <div className="mt-8 pt-8 border-t border-[#dce3e5] dark:border-[#2d3b41] flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="max-w-md">
               <p className="text-[11px] text-[#4b636c] font-bold uppercase tracking-widest leading-relaxed">
-                <strong className="text-[#111618] dark:text-white">Security Protocol:</strong> Releasing escrow will instantly transfer <span className="text-primary font-black">GH₵ {parseFloat(order.seller_payout_amount || 0).toFixed(2)}</span> to the seller's wallet. This action is <span className="underline decoration-red-500/50">irreversible</span>.
+                <strong className="text-[#111618] dark:text-white">Security Protocol:</strong> Releasing escrow will instantly transfer <span className="text-primary font-black">GH₵ {parseFloat(order.seller_payout_amount || 0).toFixed(2)}</span> to the seller&apos;s wallet. This action is <span className="underline decoration-red-500/50">irreversible</span>.
               </p>
             </div>
 

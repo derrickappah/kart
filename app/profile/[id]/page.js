@@ -429,7 +429,7 @@ export default function SellerProfilePage() {
                                     </div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">No reviews yet</h3>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
-                                        This seller hasn't received any reviews from buyers yet.
+                                        This seller hasn&apos;t received any reviews from buyers yet.
                                     </p>
                                 </div>
                             )}
