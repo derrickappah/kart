@@ -28,10 +28,6 @@ export async function middleware(request) {
     },
   })
 
-  const host = request.headers.get('host')
-  const cleanHost = host ? host.split(':')[0] : ''
-  const cookieDomain = cleanHost.endsWith('kart.cx') ? '.kart.cx' : undefined
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -51,7 +47,6 @@ export async function middleware(request) {
             response.cookies.set(name, value, {
               ...options,
               secure: process.env.NODE_ENV === 'production',
-              ...(cookieDomain ? { domain: cookieDomain } : {})
             })
           )
         },
