@@ -44,7 +44,18 @@ export async function GET(request) {
             }
         )
 
+        console.log('--- Auth Callback Diagnosing ---')
+        console.log('Auth Code:', code ? 'present' : 'missing')
+        const cookieStoreForLog = await cookies()
+        console.log('Available Cookies:', cookieStoreForLog.getAll().map(c => c.name))
+
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        
+        if (error) {
+            console.error('exchangeCodeForSession API Error:', error.message, 'Status:', error.status)
+        } else {
+            console.log('exchangeCodeForSession Success!')
+        }
         
         if (!error && data?.session) {
             // Short-Token Handoff: only pass the refresh_token to avoid URL length issues
