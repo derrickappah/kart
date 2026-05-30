@@ -67,21 +67,16 @@ export default function NotificationBell() {
     };
   }, []);
 
-  if (loading) {
-    return <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-[#2d2d32] animate-pulse" />;
-  }
-
   return (
     <button
       className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-[#2d2d32] overflow-hidden"
       onClick={() => router.push('/dashboard/notifications')}
       aria-label="Notifications"
     >
-      <DynamicLucideIcon name="notifications" style={{ fontSize: '28px' }} className="text-gray-900 dark:text-white w-[28px] h-[28px] overflow-hidden flex justify-center items-center" />
-      {unreadCount > 0 && (
-        <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#242428]"></span>
+      <DynamicLucideIcon name="notifications" size={26} className="text-gray-900 dark:text-white" />
+      {!loading && unreadCount > 0 && (
+        <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#242428]"></span>
       )}
     </button>
   );
 }
-
