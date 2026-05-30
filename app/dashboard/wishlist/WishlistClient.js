@@ -74,7 +74,7 @@ export default function WishlistClient({ initialItems }) {
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600">
-                                                            <span className="material-symbols-outlined text-3xl">image</span>
+                                                        <DynamicLucideIcon name="image" className="text-3xl" />
                                                         </div>
                                                     )}
                                                 </div>
@@ -85,7 +85,7 @@ export default function WishlistClient({ initialItems }) {
                                                 onClick={() => removeFromWishlist(item.id)}
                                                 className="absolute top-2 right-2 size-9 bg-white/90 dark:bg-black/50 backdrop-blur-md rounded-full shadow-sm flex items-center justify-center hover:scale-110 transition-all active:scale-95 text-primary"
                                             >
-                                                <span className="material-symbols-outlined text-[20px] fill-1">favorite</span>
+                                                <DynamicLucideIcon name="favorite" className="text-[20px]" fill="currentColor" />
                                             </button>
 
                                             {product.status === 'Sold' && (
@@ -96,7 +96,7 @@ export default function WishlistClient({ initialItems }) {
 
                                             {hasPriceDrop && product.status !== 'Sold' && (
                                                 <div className="absolute bottom-2 left-2 bg-[#ff7b5c] text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-lg shadow-[#ff7b5c]/30 flex items-center gap-1 ring-1 ring-white/20">
-                                                    <span className="material-symbols-outlined text-[12px]">trending_down</span>
+                                                    <DynamicLucideIcon name="trending_down" className="text-[12px]" />
                                                     <span>Price Drop</span>
                                                 </div>
                                             )}
@@ -138,7 +138,7 @@ export default function WishlistClient({ initialItems }) {
                                                         href={`/dashboard/messages/new?seller=${product.seller_id}`}
                                                         className="w-full h-9 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-[11px] font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
                                                     >
-                                                        <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
+                                                        <DynamicLucideIcon name="chat_bubble" className="text-[16px]" />
                                                         <span>Chat</span>
                                                     </Link>
                                                 )}
@@ -151,7 +151,7 @@ export default function WishlistClient({ initialItems }) {
                     ) : (
                         <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-slate-600">
                             <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                                <span className="material-symbols-outlined text-4xl opacity-50">favorite</span>
+                                <DynamicLucideIcon name="favorite" className="text-4xl opacity-50" />
                             </div>
                             <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">Your wishlist is empty</p>
                             <p className="text-sm mb-6">Explore the marketplace for items you love.</p>
