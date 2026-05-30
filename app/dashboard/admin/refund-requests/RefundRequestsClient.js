@@ -15,7 +15,9 @@ export default function RefundRequestsClient({ initialRequests }) {
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
   };
 
-  const handleRefund = async (orderId) => {
+  // BUG-06: Pass the requestId to the API so it can update refund_requests.status
+  // alongside the order. Previously only orderId was passed, leaving refund_requests.status as 'Pending'.
+  const handleRefund = async (requestId, orderId) => {
     if (!confirm('Are you sure you want to approve this refund? This will credit the buyer\'s wallet and cannot be undone.')) return;
     
     setLoading(true);
@@ -23,7 +25,7 @@ export default function RefundRequestsClient({ initialRequests }) {
       const response = await fetch('/api/admin/orders/refund', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, reason: 'Approved buyer refund request' }),
+        body: JSON.stringify({ orderId, requestId, reason: 'Approved buyer refund request' }),
       });
 
       if (!response.ok) {
@@ -32,9 +34,9 @@ export default function RefundRequestsClient({ initialRequests }) {
       }
 
       showToast('Refund processed successfully!');
-      // Update local state
+      // BUG-06: Match by request.id (not order_id) to correctly identify the specific request
       setRequests(requests.map(r => 
-        r.order_id === orderId ? { ...r, status: 'Approved' } : r
+        r.id === requestId ? { ...r, status: 'Approved' } : r
       ));
       router.refresh();
     } catch (err) {
@@ -143,7 +145,7 @@ export default function RefundRequestsClient({ initialRequests }) {
                             <DynamicLucideIcon name="close" className="text-sm" />
                           </button>
                           <button
-                            onClick={() => handleRefund(request.order_id)}
+                            onClick={() => handleRefund(request.id, request.order_id)}
                             disabled={loading}
                             className="p-2 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors disabled:opacity-50"
                             title="Approve Refund"

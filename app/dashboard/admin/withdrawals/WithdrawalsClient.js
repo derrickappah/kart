@@ -243,6 +243,8 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
 
   const handleReject = async (requestId) => {
     const reason = prompt('Enter rejection reason (optional):');
+    // BUG-23: prompt() returns null when user clicks Cancel — abort without calling the API
+    if (reason === null) return;
 
     setLoading((prev) => ({ ...prev, [requestId]: true }));
     setError(null);
@@ -295,7 +297,9 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
           { label: 'Pending Payouts', value: stats.pending, color: 'primary', icon: 'pending_actions', sub: `GH₵ ${stats.pendingAmount?.toFixed(2)} volume` },
           { label: 'Completed Transfers', value: stats.completed, color: 'green-500', icon: 'check_circle', sub: 'Successfully processed' },
           { label: 'Total Volume', value: `GH₵ ${stats.totalAmount?.toFixed(2)}`, color: 'amber-500', icon: 'payments', sub: `${stats.total} total requests` },
-          { label: 'In Queue', value: stats.total - stats.completed - stats.rejected, color: 'blue-500', icon: 'account_balance_wallet', sub: 'Awaiting settlement' }
+          // BUG-11: 'In Queue' = pending + approved (actively processing), not total minus completed/rejected
+          // The old formula (total - completed - rejected) excluded approved, causing wrong counts.
+          { label: 'In Queue', value: (stats.pending || 0) + (stats.approved || 0), color: 'blue-500', icon: 'account_balance_wallet', sub: 'Awaiting settlement' }
         ].map((stat, i) => (
           <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm">
             <div className="flex items-center gap-4 mb-4">

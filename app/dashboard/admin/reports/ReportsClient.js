@@ -206,8 +206,9 @@ export default function ReportsClient({ initialReports, stats = {} }) {
                             </div>
 
                             <div className="px-6 py-4 bg-background-light dark:bg-[#212b30]/30 mt-auto flex items-center justify-between border-t border-[#dce3e5] dark:border-[#2d3b41]">
+                                {/* BUG-18: Fall back to reported_user_id if join relation is null to avoid /profile/undefined */}
                                 <Link
-                                    href={report.reported_user_id ? `/profile/${report.reportedUser?.id}` : `/marketplace/${report.product?.id}`}
+                                    href={report.reported_user_id ? `/profile/${report.reportedUser?.id || report.reported_user_id}` : `/marketplace/${report.product?.id}`}
                                     target="_blank"
                                     className="flex items-center gap-2 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors"
                                 >

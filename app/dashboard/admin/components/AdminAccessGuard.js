@@ -4,12 +4,13 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useAdminAccess } from '../../../hooks/useAdminAccess';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 export default function AdminAccessGuard({ children }) {
     const { isAdmin, loading, error, user } = useAdminAccess();
     const router = useRouter();
-    const supabase = createClient();
+    // BUG-21: Wrap in useMemo to prevent a new client being created on every render
+    const supabase = useMemo(() => createClient(), []);
 
     useEffect(() => {
         if (!loading && !isAdmin && !error) {
@@ -26,7 +27,11 @@ export default function AdminAccessGuard({ children }) {
         );
     }
 
-    if (!isAdmin) {
+    // BUG-16: Only show the 'Access Required' error screen when there is an actual error
+    // (e.g. network failure, DB error). When simply not admin (!isAdmin && !error), silently
+    // return null — the useEffect redirect above handles navigation. This prevents the
+    // 'Admin Access Required' screen flashing briefly before the redirect fires.
+    if (error) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center max-w-2xl mx-auto bg-background-light dark:bg-background-dark font-display">
                 <div className="bg-red-100 dark:bg-red-900/20 text-red-500 p-4 rounded-full mb-2">
@@ -39,13 +44,11 @@ export default function AdminAccessGuard({ children }) {
                     You do not have the necessary permissions to view this page. This area is restricted to platform administrators.
                 </p>
 
-                {error && (
-                    <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 w-full text-left mb-8">
-                        <p className="text-red-800 dark:text-red-400 text-sm font-mono">
-                            <strong className="font-bold">Error Detail:</strong> {error}
-                        </p>
-                    </div>
-                )}
+                <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 w-full text-left mb-8">
+                    <p className="text-red-800 dark:text-red-400 text-sm font-mono">
+                        <strong className="font-bold">Error Detail:</strong> {error}
+                    </p>
+                </div>
 
                 <div className="flex flex-wrap gap-4 justify-center">
                     <button
@@ -74,6 +77,9 @@ export default function AdminAccessGuard({ children }) {
             </div>
         );
     }
+
+    // Silently return null while redirect is in progress (no flash of error screen)
+    if (!isAdmin) return null;
 
     return children;
 }

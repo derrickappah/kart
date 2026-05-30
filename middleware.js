@@ -24,7 +24,10 @@ export async function middleware(request) {
             },
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, {
+              ...options,
+              secure: process.env.NODE_ENV === 'production',
+            })
           )
         },
       },
@@ -33,6 +36,9 @@ export async function middleware(request) {
 
   // IMPORTANT: This prevents the redirection loop by ensuring the session is refreshed
   await supabase.auth.getUser()
+
+  // Prevent caching of the auth state check response on mobile browsers
+  response.headers.set('x-middleware-cache', 'no-cache')
 
   return response
 }
