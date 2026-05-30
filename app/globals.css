@@ -54,6 +54,9 @@ body {
   font-family: var(--font-jakarta), sans-serif !important;
 }
 
+/* Commented out the local 3.88MB font file load to make icons load instantly.
+   We now load the font using the Google Fonts API in app/layout.js, which dynamically
+   serves lightweight subsets (typically ~20KB) containing only the characters/icons used.
 @font-face {
   font-family: 'Material Symbols Outlined';
   font-style: normal;
@@ -61,6 +64,7 @@ body {
   font-display: block;
   src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
 }
+*/
 
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined' !important;
