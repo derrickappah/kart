@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { signup, signInWithGoogle, signInWithGoogleToken } from '../auth/actions';
+import { createClient } from '@/utils/supabase/client';
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
@@ -52,12 +53,18 @@ function SignupForm() {
 
                 const user = await GoogleAuth.signIn();
                 if (user?.authentication?.idToken) {
-                    const result = await signInWithGoogleToken(user.authentication.idToken);
-                    if (result?.error) {
-                        setError(result.error);
+                    const supabase = createClient();
+                    const { error: signInError } = await supabase.auth.signInWithIdToken({
+                        provider: 'google',
+                        token: user.authentication.idToken,
+                    });
+                    
+                    if (signInError) {
+                        setError(signInError.message);
                         setSocialLoading(false);
-                    } else if (result?.success) {
+                    } else {
                         router.push('/profile');
+                        router.refresh();
                     }
                 } else {
                     setError('Failed to get Google authentication token');

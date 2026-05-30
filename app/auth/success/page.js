@@ -21,10 +21,8 @@ function SuccessContent() {
             try {
                 const supabase = createClient();
                 
-                // Establish session using the refresh token
-                // We pass an empty access_token; Supabase will automatically refresh it
-                const { error: sessionError } = await supabase.auth.setSession({
-                    access_token: '',
+                // Establish session by exchanging the refresh token for a new active session
+                const { error: sessionError } = await supabase.auth.refreshSession({
                     refresh_token: refreshToken,
                 });
 
