@@ -208,7 +208,7 @@ export default async function AdminDashboard() {
 
             {/* Redesigned Quick Actions Grid */}
             <div className="p-2 rounded-3xl border border-[#dce3e5]/60 dark:border-[#2d3b41]/60 bg-white/5 dark:bg-white/[0.02]">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Link href="/dashboard/admin/verifications" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/50 dark:hover:border-primary/50">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity scale-150 origin-top-right translate-x-4 -translate-y-4">
                             <span className="material-symbols-outlined text-8xl text-primary">pending_actions</span>

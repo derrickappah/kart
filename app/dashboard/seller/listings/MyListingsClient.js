@@ -3,9 +3,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
 export default function MyListingsClient({ initialProducts }) {
     const router = useRouter();
+    const supabase = createClient();
     const [activeTab, setActiveTab] = useState('Active');
     const [products, setProducts] = useState(initialProducts || []);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -29,17 +31,19 @@ export default function MyListingsClient({ initialProducts }) {
         if (!productToDelete) return;
         setIsDeleting(true);
         try {
-            // Mock delete for now, integrate with Supabase later if needed
-            // const { error } = await supabase.from('products').delete().eq('id', productToDelete.id);
+            const { error } = await supabase.from('products').delete().eq('id', productToDelete.id);
+            if (error) throw error;
             setProducts(products.filter(p => p.id !== productToDelete.id));
             setIsDeleteModalOpen(false);
             setProductToDelete(null);
         } catch (error) {
             console.error('Error deleting product:', error);
+            alert('Failed to delete product. Please try again.');
         } finally {
             setIsDeleting(false);
         }
     };
+
 
     const filteredProducts = products.filter(product => {
         const status = product.status || 'Active';
