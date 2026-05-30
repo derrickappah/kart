@@ -1,9 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 
-export default function AuthCodeError() {
+function AuthCodeErrorContent() {
+    const searchParams = useSearchParams();
+    const errorParam = searchParams.get('error');
+    const statusParam = searchParams.get('status');
+
     return (
         <main className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
             <div className="w-full max-w-[440px] flex flex-col items-stretch space-y-8 font-display">
@@ -23,6 +29,16 @@ export default function AuthCodeError() {
                             We couldn't verify your login. This can happen if the authentication link has expired, has already been used, or if the login session was started on a different domain or device.
                         </p>
                     </div>
+
+                    {/* API Error Info */}
+                    {errorParam && (
+                        <div className="w-full bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-950/30 rounded-2xl p-4 text-xs text-left text-red-600 dark:text-red-400">
+                            <div className="font-semibold mb-1">Detailed Error Info:</div>
+                            <code className="block break-all font-mono opacity-80">
+                                {errorParam} {statusParam ? `(Status: ${statusParam})` : ''}
+                            </code>
+                        </div>
+                    )}
 
                     {/* Suggestions */}
                     <div className="w-full text-left bg-slate-50 dark:bg-[#20363d] rounded-2xl p-4 text-xs text-slate-500 dark:text-slate-400 space-y-2">
@@ -47,5 +63,17 @@ export default function AuthCodeError() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function AuthCodeError() {
+    return (
+        <Suspense fallback={
+            <main className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
+                <div className="animate-pulse text-[#4f8596]">Loading error details...</div>
+            </main>
+        }>
+            <AuthCodeErrorContent />
+        </Suspense>
     );
 }

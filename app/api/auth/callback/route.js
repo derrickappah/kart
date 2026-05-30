@@ -53,11 +53,12 @@ export async function GET(request) {
         
         if (error) {
             console.error('exchangeCodeForSession API Error:', error.message, 'Status:', error.status)
+            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(error.message)}&status=${error.status}`)
         } else {
             console.log('exchangeCodeForSession Success!')
         }
         
-        if (!error && data?.session) {
+        if (data?.session) {
             // Short-Token Handoff: only pass the refresh_token to avoid URL length issues
             if (returnToApp || next === 'app' || next.includes('payment-redirect')) {
                 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || origin
@@ -151,9 +152,13 @@ export async function GET(request) {
             });
 
             return htmlResponse;
+        } else {
+            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=session_empty`)
         }
+    } else {
+        return NextResponse.redirect(`${origin}/auth/auth-code-error?error=missing_code`)
     }
 
     // Default error fallback
-    return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+    return NextResponse.redirect(`${origin}/auth/auth-code-error?error=unknown_error`)
 }
