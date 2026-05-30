@@ -2,6 +2,19 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function middleware(request) {
+  const url = new URL(request.url)
+  const code = url.searchParams.get('code')
+
+  // Self-healing: if we receive an auth code on a page other than the callback,
+  // redirect to the callback route handler to exchange the code for a session.
+  if (code && !url.pathname.startsWith('/api/auth/callback')) {
+    const callbackUrl = new URL('/api/auth/callback', request.url)
+    url.searchParams.forEach((value, key) => {
+      callbackUrl.searchParams.set(key, value)
+    })
+    return NextResponse.redirect(callbackUrl)
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
