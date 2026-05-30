@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -52,7 +53,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                     <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
                         <div className="flex items-center gap-4">
                             <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
-                                <span className="material-symbols-outlined">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
                                 <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
@@ -66,7 +67,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
             {/* Filter & Search Bar */}
             <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-wrap items-center justify-between gap-4">
                 <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors">search</span>
+                    <DynamicLucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors" />
                     <input
                         className="w-full bg-background-light dark:bg-[#212b30] border-none rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-[#4b636c]"
                         placeholder="Search Executive Directory..."
@@ -78,15 +79,15 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
 
                 <div className="flex items-center gap-2">
                     <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
-                        <span className="material-symbols-outlined text-sm">filter_list</span>
+                        <DynamicLucideIcon name="filter_list" className="text-sm" />
                         Campus
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
-                        <span className="material-symbols-outlined text-sm">sort</span>
+                        <DynamicLucideIcon name="sort" className="text-sm" />
                         Role
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
-                        <span className="material-symbols-outlined text-sm">history</span>
+                        <DynamicLucideIcon name="history" className="text-sm" />
                         Status
                     </button>
                 </div>
@@ -145,7 +146,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center justify-center gap-2">
                                         <button className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20">
-                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                            <DynamicLucideIcon name="visibility" className="text-[18px]" />
                                         </button>
                                         <button
                                             onClick={() => toggleBan(user.id, user.banned)}
@@ -155,12 +156,10 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                                                 : 'bg-red-500/10 text-red-600 hover:bg-red-500/20 hover:border-red-500/20'
                                                 }`}
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">
-                                                {user.banned ? 'undo' : 'block'}
-                                            </span>
+                                            <DynamicLucideIcon name={user.banned ? 'undo' : 'block'} className="text-[18px]" />
                                         </button>
                                         <button className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20">
-                                            <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                                            <DynamicLucideIcon name="admin_panel_settings" className="text-[18px]" />
                                         </button>
                                     </div>
                                 </td>
@@ -175,10 +174,10 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                 <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">Record <span className="text-[#111618] dark:text-white">1-{initialUsers.length}</span> of <span className="text-[#111618] dark:text-white">{stats.total}</span></p>
                 <div className="flex gap-2">
                     <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
-                        <span className="material-symbols-outlined">chevron_left</span>
+                        <DynamicLucideIcon name="chevron_left" />
                     </button>
                     <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
-                        <span className="material-symbols-outlined">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" />
                     </button>
                 </div>
             </div>

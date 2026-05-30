@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
@@ -56,7 +57,7 @@ export default function SuccessClient({ seller, product }) {
                             <p className="text-sm font-bold text-[#0e181b] dark:text-white truncate">{product?.title || 'Item purchased'}</p>
                         </div>
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#1daddd]/20 text-[#6cd49d]">
-                            <span className="material-symbols-outlined text-green-700 dark:text-green-300">check</span>
+                            <DynamicLucideIcon name="check" className="text-green-700 dark:text-green-300" />
                         </div>
                     </div>
                 </main>
@@ -73,7 +74,7 @@ export default function SuccessClient({ seller, product }) {
                         {/* Secondary Action */}
                         <Link href={seller?.id ? `/profile/${seller.id}` : '#'} className="flex w-full group cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-transparent text-gray-600 dark:text-gray-300 hover:text-[#0e181b] dark:hover:text-white text-sm font-semibold transition-colors">
                             <span>View Seller&apos;s Profile</span>
-                            <span className="material-symbols-outlined text-[18px] ml-1 transition-transform group-hover:translate-x-1">arrow_forward</span>
+                            <DynamicLucideIcon name="arrow_forward" className="text-[18px] ml-1 transition-transform group-hover:translate-x-1" />
                         </Link>
                     </div>
                 </footer>

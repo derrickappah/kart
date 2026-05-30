@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useRouter } from 'next/navigation';
 import Lottie from 'lottie-react';
 import successAnimation from '@/public/Success.json';
@@ -42,7 +43,7 @@ export default function VerificationSuccessPage() {
                     {/* Status Card */}
                     <div className="mt-10 w-full bg-white dark:bg-[#2d3139] rounded-2xl p-4 border border-zinc-100 dark:border-zinc-800 flex items-center gap-4 shadow-sm">
                         <div className="bg-primary/20 p-3 rounded-full">
-                            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
+                            <DynamicLucideIcon name="schedule" style={{ fontVariationSettings: "'FILL' 1" }} className="text-primary" />
                         </div>
                         <div className="text-left">
                             <p className="text-sm font-bold text-[#0e181b] dark:text-white">Estimated Time</p>

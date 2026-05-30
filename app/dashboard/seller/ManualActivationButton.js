@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 
 export default function ManualActivationButton({ subscriptionId, paymentReference, onFailure }) {
@@ -75,7 +76,7 @@ export default function ManualActivationButton({ subscriptionId, paymentReferenc
           </span>
         ) : (
           <>
-            <span className="material-symbols-outlined text-[20px]">verified_user</span>
+            <DynamicLucideIcon name="verified_user" className="text-[20px]" />
             Verify & Activate
           </>
         )}
@@ -91,7 +92,7 @@ export default function ManualActivationButton({ subscriptionId, paymentReferenc
           <div className="relative bg-white dark:bg-[#1e292b] w-full max-w-sm rounded-[32px] p-8 shadow-2xl border border-slate-100 dark:border-white/5 animate-in zoom-in-95 fade-in duration-300">
             <div className="flex flex-col items-center text-center">
               <div className="size-16 rounded-3xl bg-amber-500/10 flex items-center justify-center mb-6">
-                <span className="material-symbols-outlined text-amber-500 text-4xl font-bold">handyman</span>
+                <DynamicLucideIcon name="handyman" className="text-amber-500 text-4xl font-bold" />
               </div>
               <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Manual Activation</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
@@ -122,9 +123,7 @@ export default function ManualActivationButton({ subscriptionId, paymentReferenc
           ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
           : 'bg-red-500/10 text-red-600 border-red-500/20'
           }`}>
-          <span className="material-symbols-outlined text-[18px]">
-            {message.type === 'success' ? 'check_circle' : 'error'}
-          </span>
+          <DynamicLucideIcon name={message.type === 'success' ? 'check_circle' : 'error'} className="text-[18px]" />
           {message.text}
         </div>
       )}

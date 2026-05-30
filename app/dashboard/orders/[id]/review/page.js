@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import ReviewClient from './ReviewClient';
 import { redirect } from 'next/navigation';
@@ -27,7 +28,7 @@ export default async function ReviewPage({ params }) {
         return (
             <div className="min-h-screen bg-[#f6f7f8] dark:bg-[#131d1f] text-[#0e181b] dark:text-white flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-                    <span className="material-symbols-outlined text-red-500 text-3xl">error</span>
+                    <DynamicLucideIcon name="error" className="text-red-500 text-3xl" />
                 </div>
                 <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
                 <p className="text-gray-400 mb-8 max-w-xs">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>

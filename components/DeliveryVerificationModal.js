@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect, useRef } from 'react';
 
 export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, onResend, email, loading, error }) {
@@ -76,7 +77,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="size-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
-                        <span className="material-symbols-outlined text-3xl">mark_email_unread</span>
+                        <DynamicLucideIcon name="mark_email_unread" className="text-3xl" />
                     </div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Verify Delivery</h2>
                     <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -107,7 +108,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
 
                     {error && (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-2 animate-in slide-in-from-top-2">
-                            <span className="material-symbols-outlined text-red-500 text-lg shrink-0">error</span>
+                            <DynamicLucideIcon name="error" className="text-red-500 text-lg shrink-0" />
                             <p className="text-red-500 text-[11px] font-bold uppercase tracking-wider leading-tight">{error}</p>
                         </div>
                     )}
@@ -119,12 +120,12 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
                     >
                         {loading ? (
                             <>
-                                <span className="material-symbols-outlined animate-spin">refresh</span>
+                                <DynamicLucideIcon name="refresh" className="animate-spin" />
                                 <span>Verifying...</span>
                             </>
                         ) : (
                             <>
-                                <span className="material-symbols-outlined">verified</span>
+                                <DynamicLucideIcon name="verified" />
                                 <span>Confirm Delivery</span>
                             </>
                         )}
@@ -152,7 +153,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, o
                     disabled={loading}
                     className="absolute top-4 right-4 size-8 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
                 >
-                    <span className="material-symbols-outlined text-xl">close</span>
+                    <DynamicLucideIcon name="close" className="text-xl" />
                 </button>
             </div>
         </div>

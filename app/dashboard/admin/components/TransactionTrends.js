@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 
 export default function TransactionTrends({ totalRevenue, totalVolume, monthlyData = [], weeklyData = [] }) {
@@ -51,7 +52,7 @@ export default function TransactionTrends({ totalRevenue, totalVolume, monthlyDa
                     </div>
                 )) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-[#4b636c]">
-                        <span className="material-symbols-outlined text-4xl mb-2 opacity-20">bar_chart</span>
+                        <DynamicLucideIcon name="bar_chart" className="text-4xl mb-2 opacity-20" />
                         <p className="text-xs font-black uppercase tracking-widest opacity-40">No Recent Activity</p>
                     </div>
                 )}

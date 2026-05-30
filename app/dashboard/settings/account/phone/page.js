@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -84,7 +85,7 @@ export default function PhoneUpdatePage() {
         <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <header className="px-4 pt-6 flex items-center gap-4">
                 <button onClick={() => router.back()} className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm">
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <DynamicLucideIcon name="arrow_back" />
                 </button>
                 <h1 className="text-xl font-bold">Update Phone</h1>
             </header>

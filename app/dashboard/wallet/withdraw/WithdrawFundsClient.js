@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -97,7 +98,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
                     onClick={() => router.back()}
                     className="btn-ghost size-10 !p-0 rounded-full"
                 >
-                    <span className="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-300">arrow_back_ios_new</span>
+                    <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-slate-600 dark:text-slate-300" />
                 </button>
                 <h1 className="text-lg font-bold tracking-tight">Withdraw Funds</h1>
                 <div className="w-10"></div>
@@ -112,14 +113,14 @@ export default function WithdrawFundsClient({ initialWallet }) {
 
                 {success && (
                     <div className="mx-6 mb-6 p-4 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-2xl border border-green-100 dark:border-green-900/30 flex items-center gap-3">
-                        <span className="material-symbols-outlined">check_circle</span>
+                        <DynamicLucideIcon name="check_circle" />
                         <p className="text-sm font-bold">Withdrawal request submitted! Redirecting...</p>
                     </div>
                 )}
 
                 {error && (
                     <div className="mx-6 mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-900/30 flex items-center gap-3">
-                        <span className="material-symbols-outlined">error</span>
+                        <DynamicLucideIcon name="error" />
                         <p className="text-sm font-bold">{error}</p>
                     </div>
                 )}
@@ -161,7 +162,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
                         className={`relative flex items-center p-5 bg-white dark:bg-gray-900 border-2 rounded-2xl cursor-pointer group shadow-soft transition-all ${payoutMethod === 'bank' ? 'border-primary ring-1 ring-primary' : 'border-gray-100 dark:border-gray-800'}`}
                     >
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mr-4">
-                            <span className="material-symbols-outlined text-primary text-3xl">account_balance</span>
+                            <DynamicLucideIcon name="account_balance" className="text-primary text-3xl" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="font-black text-base">Bank Transfer</p>
@@ -184,7 +185,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
                         className={`relative flex items-center p-5 bg-white dark:bg-gray-900 border-2 rounded-2xl cursor-pointer group shadow-soft transition-all ${payoutMethod === 'momo' ? 'border-primary ring-1 ring-primary' : 'border-gray-100 dark:border-gray-800'}`}
                     >
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mr-4">
-                            <span className="material-symbols-outlined text-primary text-3xl">smartphone</span>
+                            <DynamicLucideIcon name="smartphone" className="text-primary text-3xl" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="font-black text-base">Mobile Money</p>
@@ -214,7 +215,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
                         {loading ? 'Processing...' : 'Confirm Withdrawal'}
                     </button>
                     <div className="flex items-center justify-center gap-2 opacity-60">
-                        <span className="material-symbols-outlined text-sm">lock</span>
+                        <DynamicLucideIcon name="lock" className="text-sm" />
                         <p className="text-xs font-black uppercase tracking-widest">Secure encrypted transaction</p>
                     </div>
                 </div>

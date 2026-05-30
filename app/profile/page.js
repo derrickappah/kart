@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -114,7 +115,7 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <Link href="/profile/edit" className="absolute bottom-1 right-1 bg-[#1daddd] text-white rounded-full p-2 shadow-lg ring-4 ring-[#f6f7f8] dark:ring-[#111d21] flex items-center justify-center hover:scale-105 transition-transform">
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                            <DynamicLucideIcon name="edit" className="text-[18px]" />
                         </Link>
                     </div>
                     <div className="mt-4 space-y-1">
@@ -134,7 +135,7 @@ export default function ProfilePage() {
                     <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all cursor-default">
                         <div className="flex items-center gap-1">
                             <p className="text-2xl font-bold text-[#111618] dark:text-white">{parseFloat(stats.reviews).toFixed(1)}</p>
-                            <span className="material-symbols-outlined filled text-yellow-500 text-lg">star</span>
+                            <DynamicLucideIcon name="star" className="filled text-yellow-500 text-lg" />
                         </div>
                         <p className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Reviews</p>
                     </div>
@@ -144,61 +145,61 @@ export default function ProfilePage() {
                 <section className="flex flex-col space-y-1">
                     <Link href="/dashboard/seller/listings" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <span className="material-symbols-outlined">storefront</span>
+                            <DynamicLucideIcon name="storefront" />
                         </div>
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">My Listings</span>
-                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                     <Link href="/dashboard/orders" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <span className="material-symbols-outlined">shopping_bag</span>
+                            <DynamicLucideIcon name="shopping_bag" />
                         </div>
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Purchased Items</span>
-                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                     <Link href="/dashboard/wishlist" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <span className="material-symbols-outlined">bookmark</span>
+                            <DynamicLucideIcon name="bookmark" />
                         </div>
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Saved Items</span>
-                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                     <Link href="/dashboard/wallet" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <span className="material-symbols-outlined">account_balance_wallet</span>
+                            <DynamicLucideIcon name="account_balance_wallet" />
                         </div>
                         <div className="flex-1 flex flex-col text-left">
                             <span className="text-base font-semibold text-[#111618] dark:text-white">KART Wallet</span>
                             <span className="text-xs font-bold text-[#1daddd]">₵ {wallet?.balance ? parseFloat(wallet.balance).toFixed(2) : '0.00'}</span>
                         </div>
-                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                     <Link href="/dashboard/settings" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <span className="material-symbols-outlined">settings</span>
+                            <DynamicLucideIcon name="settings" />
                         </div>
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Account Settings</span>
-                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                     <Link href={`https://wa.me/${String(data.whatsappSupportNumber || '').replace(/[^0-9]/g, '')}`} target="_blank" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <span className="material-symbols-outlined">chat</span>
+                            <DynamicLucideIcon name="chat" />
                         </div>
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Contact Support (WhatsApp)</span>
-                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                     <Link href="mailto:kartzendo@gmail.com" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
                         <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <span className="material-symbols-outlined">mail</span>
+                            <DynamicLucideIcon name="mail" />
                         </div>
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Email Support</span>
-                        <span className="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                 </section>
 
                 <section className="mt-2 pb-6">
                     <Link href="/dashboard/seller" className="w-full relative overflow-hidden rounded-xl h-14 bg-[#1daddd] text-white text-base font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-[#1daddd]/20 flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined">store</span>
+                        <DynamicLucideIcon name="store" />
                         <span>Switch to Seller Dashboard</span>
                     </Link>
                 </section>

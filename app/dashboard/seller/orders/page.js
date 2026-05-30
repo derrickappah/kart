@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -69,7 +70,7 @@ export default function SellerOrdersPage() {
             <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Track your orders</p>
           </div>
           <Link href="/dashboard/seller" className="size-10 rounded-xl bg-white dark:bg-white/5 shadow-soft border border-transparent dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
-            <span className="material-symbols-outlined text-xl">grid_view</span>
+            <DynamicLucideIcon name="grid_view" className="text-xl" />
           </Link>
         </header>
 
@@ -88,7 +89,7 @@ export default function SellerOrdersPage() {
           ) : orders.length === 0 ? (
             <div className="bg-white dark:bg-[#1e292b] p-10 rounded-3xl shadow-soft border border-transparent dark:border-white/5 text-center space-y-6">
               <div className="size-20 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">shopping_cart_off</span>
+                <DynamicLucideIcon name="shopping_cart_off" className="text-4xl text-slate-300 dark:text-slate-600" />
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">No orders yet</p>

@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect, Suspense, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -28,7 +29,7 @@ function SearchInput({ placeholder }) {
 
     return (
         <form className="group flex w-full items-center rounded-2xl bg-white dark:bg-surface-dark px-4 py-3.5 transition-all focus-within:ring-2 focus-within:ring-primary border border-gray-200 dark:border-gray-700 shadow-soft" onSubmit={handleSearch}>
-            <span className="material-symbols-outlined text-primary dark:text-primary text-[24px] font-bold">search</span>
+            <DynamicLucideIcon name="search" className="text-primary dark:text-primary text-[24px] font-bold" />
             <input
                 type="text"
                 className="ml-3 flex-1 bg-transparent text-base font-semibold text-gray-900 placeholder-gray-500 focus:outline-none dark:text-white dark:placeholder-gray-400 border-none p-0 focus:ring-0"

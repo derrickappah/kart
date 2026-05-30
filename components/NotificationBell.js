@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState } from 'react';
 import { createClient } from '../utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -76,9 +77,7 @@ export default function NotificationBell() {
       onClick={() => router.push('/dashboard/notifications')}
       aria-label="Notifications"
     >
-      <span className="material-symbols-outlined text-gray-900 dark:text-white w-[28px] h-[28px] overflow-hidden flex justify-center items-center" style={{ fontSize: '28px' }}>
-        notifications
-      </span>
+      <DynamicLucideIcon name="notifications" style={{ fontSize: '28px' }} className="text-gray-900 dark:text-white w-[28px] h-[28px] overflow-hidden flex justify-center items-center" />
       {unreadCount > 0 && (
         <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#242428]"></span>
       )}

@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '../../../../../../utils/supabase/client';
@@ -61,7 +62,7 @@ function PromotionSuccessContent() {
     if (status === 'error') {
         return (
             <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center">
-                <span className="material-symbols-outlined text-red-500 text-7xl mb-6">error</span>
+                <DynamicLucideIcon name="error" className="text-red-500 text-7xl mb-6" />
                 <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
                 <p className="text-slate-500 mb-8 text-sm max-w-xs">We couldn&apos;t verify your payment. If you&apos;ve been charged, please contact support.</p>
                 <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -113,7 +114,7 @@ function PromotionSuccessContent() {
                         className="w-full h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
                         View Listing Stats
-                        <span className="material-symbols-outlined text-xl">bar_chart</span>
+                        <DynamicLucideIcon name="bar_chart" className="text-xl" />
                     </button>
                     <button
                         onClick={() => router.push('/dashboard/seller')}

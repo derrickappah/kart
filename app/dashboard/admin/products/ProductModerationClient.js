@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -95,7 +96,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                     <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
                         <div className="flex items-center gap-4">
                             <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
-                                <span className="material-symbols-outlined">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
                                 <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
@@ -109,7 +110,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
             {/* Catalog Filters */}
             <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-wrap items-center justify-between gap-4">
                 <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors">search</span>
+                    <DynamicLucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors" />
                     <input
                         className="w-full bg-background-light dark:bg-[#212b30] border-none rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-[#4b636c]"
                         placeholder="Inspect Marketplace Inventory..."
@@ -188,7 +189,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                                 />
                                             ) : (
                                                 <div className="size-full flex items-center justify-center text-[#4b636c]/30">
-                                                    <span className="material-symbols-outlined text-2xl">image</span>
+                                                    <DynamicLucideIcon name="image" className="text-2xl" />
                                                 </div>
                                             )}
                                         </div>
@@ -201,7 +202,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                                 className="text-[9px] text-primary font-black uppercase mt-1.5 flex items-center gap-1 hover:underline tracking-widest"
                                             >
                                                 View Live Pulse
-                                                <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                                                <DynamicLucideIcon name="open_in_new" className="text-[10px]" />
                                             </Link>
                                         </div>
                                     </div>
@@ -227,7 +228,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                             disabled={loading}
                                             title="Inspect Protocol"
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                            <DynamicLucideIcon name="visibility" className="text-[18px]" />
                                         </button>
 
                                         {product.status !== 'Banned' ? (
@@ -237,9 +238,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                                 className="size-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center hover:bg-red-500/20 transition-colors disabled:opacity-50"
                                                 title="Flag for Deletion"
                                             >
-                                                <span className="material-symbols-outlined text-[18px]">
-                                                    {loading ? 'sync' : 'flag'}
-                                                </span>
+                                                <DynamicLucideIcon name={loading ? 'sync' : 'flag'} className="text-[18px]" />
                                             </button>
                                         ) : (
                                             <button
@@ -248,9 +247,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                                 className="size-8 rounded-lg bg-green-500/10 text-green-600 flex items-center justify-center hover:bg-green-500/20 transition-colors disabled:opacity-50"
                                                 title="Restore Policy"
                                             >
-                                                <span className="material-symbols-outlined text-[18px]">
-                                                    {loading ? 'sync' : 'restore'}
-                                                </span>
+                                                <DynamicLucideIcon name={loading ? 'sync' : 'restore'} className="text-[18px]" />
                                             </button>
                                         )}
 
@@ -260,9 +257,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                             className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-red-500 transition-colors border border-transparent hover:border-red-500/20 disabled:opacity-50"
                                             title="Purge Record"
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">
-                                                {loading ? 'sync' : 'delete'}
-                                            </span>
+                                            <DynamicLucideIcon name={loading ? 'sync' : 'delete'} className="text-[18px]" />
                                         </button>
                                     </div>
                                 </td>
@@ -283,7 +278,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                 <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-[0.2em] mt-1">Registry ID: {inspectProduct.id.slice(0, 8)}</p>
                             </div>
                             <button onClick={() => setInspectProduct(null)} className="size-10 rounded-full hover:bg-gray-100 dark:hover:bg-[#212b30] flex items-center justify-center transition-colors">
-                                <span className="material-symbols-outlined text-[20px]">close</span>
+                                <DynamicLucideIcon name="close" className="text-[20px]" />
                             </button>
                         </div>
 
@@ -294,7 +289,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                         <Image src={inspectProduct.image_url} alt="" fill className="object-cover" />
                                     ) : (
                                         <div className="size-full flex items-center justify-center text-[#4b636c]/20">
-                                            <span className="material-symbols-outlined text-4xl">image</span>
+                                            <DynamicLucideIcon name="image" className="text-4xl" />
                                         </div>
                                     )}
                                 </div>
@@ -374,9 +369,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                     <div className="relative bg-white dark:bg-[#182125] w-full max-w-md rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="p-8 text-center space-y-4">
                             <div className={`mx-auto size-16 rounded-2xl flex items-center justify-center ${confirmModal.type === 'delete' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'}`}>
-                                <span className="material-symbols-outlined text-3xl">
-                                    {confirmModal.type === 'delete' ? 'warning' : 'info'}
-                                </span>
+                                <DynamicLucideIcon name={confirmModal.type === 'delete' ? 'warning' : 'info'} className="text-3xl" />
                             </div>
                             <h3 className="text-xl font-black tracking-tighter">
                                 {confirmModal.type === 'delete' ? 'Authorize Record Purge?' : 'Confirm Registry Update?'}
@@ -415,9 +408,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
             {toast.show && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300">
                     <div className={`${toast.type === 'success' ? 'bg-primary shadow-primary/20' : 'bg-red-500 shadow-red-500/20'} text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-2xl`}>
-                        <span className="material-symbols-outlined text-sm">
-                            {toast.type === 'success' ? 'check_circle' : 'error'}
-                        </span>
+                        <DynamicLucideIcon name={toast.type === 'success' ? 'check_circle' : 'error'} className="text-sm" />
                         <span className="text-[10px] font-black uppercase tracking-widest">{toast.message}</span>
                     </div>
                 </div>

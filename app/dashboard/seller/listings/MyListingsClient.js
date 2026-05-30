@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -107,7 +108,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
-                                                    <span className="material-symbols-outlined text-3xl">image</span>
+                                                    <DynamicLucideIcon name="image" className="text-3xl" />
                                                 </div>
                                             )}
 
@@ -130,7 +131,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                             onClick={(e) => toggleMenu(product.id, e)}
                                                             className="text-slate-400 hover:text-primary transition-colors p-1"
                                                         >
-                                                            <span className="material-symbols-outlined text-lg">more_horiz</span>
+                                                            <DynamicLucideIcon name="more_horiz" className="text-lg" />
                                                         </button>
 
                                                         {activeMenuId === product.id && (
@@ -144,7 +145,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                                         onClick={(e) => handleEditClick(product.id, e)}
                                                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                                                                     >
-                                                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                                        <DynamicLucideIcon name="edit" className="text-[20px]" />
                                                                         Edit Listing
                                                                     </button>
                                                                     <div className="h-px bg-slate-50 dark:bg-white/5 mx-2 my-1"></div>
@@ -152,7 +153,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                                         onClick={(e) => handleDeleteClick(product, e)}
                                                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                                                                     >
-                                                                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                                        <DynamicLucideIcon name="delete" className="text-[20px]" />
                                                                         Delete Listing
                                                                     </button>
                                                                 </div>
@@ -162,11 +163,11 @@ export default function MyListingsClient({ initialProducts }) {
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                                        <span className="material-symbols-outlined text-[14px] mr-1">monitoring</span>
+                                                        <DynamicLucideIcon name="monitoring" className="text-[14px] mr-1" />
                                                         {product.views || 0} views
                                                     </span>
                                                     <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                                        <span className="material-symbols-outlined text-[14px] mr-1 text-primary">favorite</span>
+                                                        <DynamicLucideIcon name="favorite" className="text-[14px] mr-1 text-primary" />
                                                         {product.likes || 0} likes
                                                     </span>
                                                 </div>
@@ -193,7 +194,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                 onClick={(e) => handleEditClick(product.id, e)}
                                                 className="flex-1 flex items-center justify-center py-3 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                                             >
-                                                <span className="material-symbols-outlined text-[16px] mr-1.5">edit_square</span>
+                                                <DynamicLucideIcon name="edit_square" className="text-[16px] mr-1.5" />
                                                 Edit
                                             </button>
                                             <div className="w-px bg-slate-50 dark:bg-white/5"></div>
@@ -204,7 +205,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                 }}
                                                 className="flex-1 flex items-center justify-center py-3 text-[11px] font-bold text-primary hover:bg-primary/5 transition-all"
                                             >
-                                                <span className="material-symbols-outlined text-[16px] mr-1.5">rocket_launch</span>
+                                                <DynamicLucideIcon name="rocket_launch" className="text-[16px] mr-1.5" />
                                                 Promote
                                             </button>
                                         </div>
@@ -215,7 +216,7 @@ export default function MyListingsClient({ initialProducts }) {
                     ) : (
                         <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-slate-600">
                             <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                                <span className="material-symbols-outlined text-4xl opacity-50">inventory_2</span>
+                                <DynamicLucideIcon name="inventory_2" className="text-4xl opacity-50" />
                             </div>
                             <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No {activeTab.toLowerCase()} listings</p>
                             <p className="text-sm mb-6 text-center">You don&apos;t have any items in this category yet.</p>
@@ -240,7 +241,7 @@ export default function MyListingsClient({ initialProducts }) {
                                 <div className="relative mb-5 group">
                                     <div className="absolute inset-0 rounded-full bg-red-500/20 animate-ping opacity-20"></div>
                                     <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center relative ring-4 ring-white dark:ring-[#1a1d21]">
-                                        <span className="material-symbols-outlined text-[32px] text-red-500 fill-1">warning</span>
+                                        <DynamicLucideIcon name="warning" className="text-[32px] text-red-500 fill-1" />
                                     </div>
                                 </div>
 

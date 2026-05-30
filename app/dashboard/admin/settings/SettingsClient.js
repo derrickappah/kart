@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -279,7 +280,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                             {saving ? (
                                 <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
-                                <span className="material-symbols-outlined text-[18px]">save</span>
+                                <DynamicLucideIcon name="save" className="text-[18px]" />
                             )}
                             Save Changes
                         </button>
@@ -310,7 +311,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                             {saving ? (
                                 <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
-                                <span className="material-symbols-outlined text-[18px]">save</span>
+                                <DynamicLucideIcon name="save" className="text-[18px]" />
                             )}
                             Save Changes
                         </button>
@@ -321,7 +322,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                 <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl border border-primary/20 p-6">
                     <div className="flex items-center gap-4">
                         <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                            <span className="material-symbols-outlined text-[28px]">monetization_on</span>
+                            <DynamicLucideIcon name="monetization_on" className="text-[28px]" />
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Revenue Model Overview</p>
@@ -352,7 +353,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                     onClick={() => setShowNewPlanModal(true)}
                     className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
                 >
-                    <span className="material-symbols-outlined text-[18px]">add</span>
+                    <DynamicLucideIcon name="add" className="text-[18px]" />
                     New Plan
                 </button>
             </div>
@@ -374,13 +375,13 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                                         })}
                                         className="size-8 rounded-lg bg-white/50 dark:bg-white/10 hover:bg-primary hover:text-white transition-all flex items-center justify-center"
                                     >
-                                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                                        <DynamicLucideIcon name="edit" className="text-[16px]" />
                                     </button>
                                     <button
                                         onClick={() => handleDeletePlan(plan.id)}
                                         className="size-8 rounded-lg bg-white/50 dark:bg-white/10 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
                                     >
-                                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                                        <DynamicLucideIcon name="delete" className="text-[16px]" />
                                     </button>
                                 </div>
                             </div>
@@ -395,7 +396,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                             <ul className="space-y-2">
                                 {(plan.features || []).map((feature, idx) => (
                                     <li key={idx} className="flex items-start gap-2">
-                                        <span className="material-symbols-outlined text-primary text-[16px] mt-0.5">check_circle</span>
+                                        <DynamicLucideIcon name="check_circle" className="text-primary text-[16px] mt-0.5" />
                                         <span className="text-xs font-bold text-[#4b636c]">{feature}</span>
                                     </li>
                                 ))}
@@ -411,7 +412,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
             {plans.length === 0 && (
                 <div className="py-20 flex flex-col items-center justify-center text-center">
                     <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">card_membership</span>
+                        <DynamicLucideIcon name="card_membership" className="text-4xl text-[#4b636c]/30" />
                     </div>
                     <h3 className="text-xl font-black tracking-tighter uppercase">No Plans Created</h3>
                     <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest mt-2 max-w-xs">Create your first subscription plan to start monetizing.</p>
@@ -438,7 +439,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                             {saving ? (
                                 <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
-                                <span className="material-symbols-outlined text-[18px]">save</span>
+                                <DynamicLucideIcon name="save" className="text-[18px]" />
                             )}
                             Save Changes
                         </button>
@@ -469,7 +470,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                                             tier.color === 'green' ? 'bg-green-500/10 text-green-500' :
                                                 'bg-blue-500/10 text-blue-500'
                                             }`}>
-                                            <span className="material-symbols-outlined text-[24px]">{tier.icon}</span>
+                                            <DynamicLucideIcon name={tier.icon} className="text-[24px]" />
                                         </div>
                                         <div>
                                             <h4 className="text-base font-black tracking-tighter">{tier.name}</h4>
@@ -527,7 +528,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                                 </p>
                             </div>
                             <button onClick={onClose} className="size-10 rounded-xl hover:bg-gray-100 dark:hover:bg-[#212b30] flex items-center justify-center transition-colors">
-                                <span className="material-symbols-outlined">close</span>
+                                <DynamicLucideIcon name="close" />
                             </button>
                         </div>
                     </div>
@@ -595,7 +596,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                             {saving ? (
                                 <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
-                                <span className="material-symbols-outlined text-[18px]">{isEdit ? 'check' : 'add'}</span>
+                                <DynamicLucideIcon name={isEdit ? 'check' : 'add'} className="text-[18px]" />
                             )}
                             {isEdit ? 'Update Plan' : 'Create Plan'}
                         </button>
@@ -616,7 +617,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                 <div>
                     <div className="flex items-center gap-3 mb-2">
                         <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                            <span className="material-symbols-outlined text-[24px]">settings</span>
+                            <DynamicLucideIcon name="settings" className="text-[24px]" />
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Control Center</p>
@@ -637,7 +638,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                             : 'text-[#4b636c] hover:bg-gray-100 dark:hover:bg-[#212b30]'
                             }`}
                     >
-                        <span className={`material-symbols-outlined text-[18px] ${activeTab === tab.id ? 'text-white' : ''}`}>{tab.icon}</span>
+                        <DynamicLucideIcon name={tab.icon} className={`text-[18px] ${activeTab === tab.id ? 'text-white' : ''}`} />
                         {tab.label}
                     </button>
                 ))}
@@ -663,9 +664,7 @@ export default function SettingsClient({ initialSettings, groupedSettings, initi
                         ? 'bg-[#111618]/90 text-white'
                         : 'bg-green-500/90 text-white'
                     }`}>
-                    <span className="material-symbols-outlined text-[20px]">
-                        {toast.type === 'error' ? 'error' : toast.type === 'info' ? 'info' : 'check_circle'}
-                    </span>
+                    <DynamicLucideIcon name={toast.type === 'error' ? 'error' : toast.type === 'info' ? 'info' : 'check_circle'} className="text-[20px]" />
                     <p className="text-sm font-black tracking-tight">{toast.message}</p>
                 </div>
             )}

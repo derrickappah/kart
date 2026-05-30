@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useAdminAccess } from '../../../hooks/useAdminAccess';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
@@ -29,7 +30,7 @@ export default function AdminAccessGuard({ children }) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center max-w-2xl mx-auto bg-background-light dark:bg-background-dark font-display">
                 <div className="bg-red-100 dark:bg-red-900/20 text-red-500 p-4 rounded-full mb-2">
-                    <span className="material-symbols-outlined text-5xl">lock</span>
+                    <DynamicLucideIcon name="lock" className="text-5xl" />
                 </div>
 
                 <h1 className="text-3xl font-extrabold text-[#111618] dark:text-white mb-6">Admin Access Required</h1>

@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -87,7 +88,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
                                     stat.color === 'green-500' ? 'bg-green-500/10 text-green-500' :
                                         'bg-gray-500/10 text-gray-500'
                                 }`}>
-                                <span className="material-symbols-outlined text-[24px] font-bold">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} className="text-[24px] font-bold" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">{stat.label}</p>
@@ -124,7 +125,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
 
                 {/* Search Bar */}
                 <div className="relative w-full md:w-80 group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4b636c] group-focus-within:text-primary transition-colors">search</span>
+                    <DynamicLucideIcon name="search" className="absolute left-4 top-1/2 -translate-y-1/2  text-[#4b636c] group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
                         value={search}
@@ -145,9 +146,9 @@ export default function ReportsClient({ initialReports, stats = {} }) {
                                     {report.status === 'Pending' ? (
                                         <span className="size-2 bg-amber-500 rounded-full animate-pulse"></span>
                                     ) : report.status === 'Resolved' ? (
-                                        <span className="material-symbols-outlined text-green-500 text-[14px]">verified</span>
+                                        <DynamicLucideIcon name="verified" className="text-green-500 text-[14px]" />
                                     ) : (
-                                        <span className="material-symbols-outlined text-gray-400 text-[14px]">block</span>
+                                        <DynamicLucideIcon name="block" className="text-gray-400 text-[14px]" />
                                     )}
                                     <span className={`text-[10px] font-black uppercase tracking-widest ${report.status === 'Pending' ? 'text-amber-500' :
                                         report.status === 'Resolved' ? 'text-green-500' : 'text-[#4b636c]'
@@ -178,7 +179,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
                                 </div>
 
                                 <div className="bg-white dark:bg-[#212b30] p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-[0.05em] text-red-500 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[16px]">report</span>
+                                    <DynamicLucideIcon name="report" className="text-[16px]" />
                                     Reason: {report.reason}
                                 </div>
 
@@ -210,7 +211,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
                                     target="_blank"
                                     className="flex items-center gap-2 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors"
                                 >
-                                    <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                                    <DynamicLucideIcon name="open_in_new" className="text-[16px]" />
                                     Investigate
                                 </Link>
                                 {report.status === 'Pending' ? (
@@ -221,7 +222,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
                                             className="size-8 rounded-lg hover:bg-green-500/10 text-green-600 transition-colors flex items-center justify-center active:scale-95 disabled:opacity-50"
                                             title="Resolve"
                                         >
-                                            <span className="material-symbols-outlined text-[20px]">check</span>
+                                            <DynamicLucideIcon name="check" className="text-[20px]" />
                                         </button>
                                         <button
                                             onClick={() => handleUpdateStatus(report.id, 'Dismissed')}
@@ -229,7 +230,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
                                             className="size-8 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors flex items-center justify-center active:scale-95 disabled:opacity-50"
                                             title="Dismiss"
                                         >
-                                            <span className="material-symbols-outlined text-[20px]">close</span>
+                                            <DynamicLucideIcon name="close" className="text-[20px]" />
                                         </button>
                                     </div>
                                 ) : (
@@ -242,7 +243,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
             ) : (
                 <div className="py-20 flex flex-col items-center justify-center text-center">
                     <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">shield_check</span>
+                        <DynamicLucideIcon name="shield_check" className="text-4xl text-[#4b636c]/30" />
                     </div>
                     <h3 className="text-xl font-black tracking-tighter uppercase">Sector Clear</h3>
                     <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest mt-2 max-w-xs">No pending compliance reports are currently awaiting your review.</p>
@@ -253,9 +254,7 @@ export default function ReportsClient({ initialReports, stats = {} }) {
             {toast.show && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300">
                     <div className={`${toast.type === 'success' ? 'bg-primary shadow-primary/20' : 'bg-red-500 shadow-red-500/20'} text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-2xl`}>
-                        <span className="material-symbols-outlined text-sm">
-                            {toast.type === 'success' ? 'check_circle' : 'error'}
-                        </span>
+                        <DynamicLucideIcon name={toast.type === 'success' ? 'check_circle' : 'error'} className="text-sm" />
                         <span className="text-[10px] font-black uppercase tracking-widest">{toast.message}</span>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useSearchParams } from 'next/navigation';
 
 export default function MarketplaceControls() {
@@ -12,7 +13,7 @@ export default function MarketplaceControls() {
                         className="btn-primary px-6 transition-all active:scale-95"
                         onClick={() => window.dispatchEvent(new CustomEvent('open-filters'))}
                     >
-                        <span className="material-symbols-outlined text-[20px]">tune</span>
+                        <DynamicLucideIcon name="tune" className="text-[20px]" />
                         Filter & Sort
                     </button>
                 </div>

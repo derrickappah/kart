@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -61,7 +62,7 @@ export default function EditListingClient({ product }) {
                             onClick={() => router.back()}
                             className="text-[#0e191b] dark:text-[#e0e6e8] flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         >
-                            <span className="material-symbols-outlined text-2xl">arrow_back</span>
+                            <DynamicLucideIcon name="arrow_back" className="text-2xl" />
                         </button>
                         <h2 className="text-[#0e191b] dark:text-[#e0e6e8] text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">
                             Edit Listing
@@ -79,7 +80,7 @@ export default function EditListingClient({ product }) {
                         <div className="flex gap-4 overflow-x-auto pb-4 -mx-5 px-5 no-scrollbar">
                             <button className="shrink-0 w-28 h-36 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#22262a] flex flex-col items-center justify-center gap-2 text-[#4e8b97] dark:text-[#94aab0] hover:border-[#149cb8] hover:text-[#149cb8] hover:bg-[#149cb8]/5 transition-all group">
                                 <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <span className="material-symbols-outlined text-2xl">add</span>
+                                    <DynamicLucideIcon name="add" className="text-2xl" />
                                 </div>
                                 <span className="text-xs font-bold">Add Photo</span>
                             </button>
@@ -95,7 +96,7 @@ export default function EditListingClient({ product }) {
                                         />
                                     </div>
                                     <button className="absolute -top-2 -right-2 bg-white dark:bg-gray-800 text-red-500 shadow-lg rounded-full w-7 h-7 flex items-center justify-center hover:scale-110 transition-transform border border-gray-100 dark:border-gray-700">
-                                        <span className="material-symbols-outlined text-base">close</span>
+                                        <DynamicLucideIcon name="close" className="text-base" />
                                     </button>
                                     <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-white">Main</div>
                                 </div>
@@ -118,7 +119,7 @@ export default function EditListingClient({ product }) {
                                     onChange={handleChange}
                                 />
                                 <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                    <span className="material-symbols-outlined text-gray-400">edit</span>
+                                    <DynamicLucideIcon name="edit" className="text-gray-400" />
                                 </div>
                             </div>
                         </div>
@@ -156,7 +157,7 @@ export default function EditListingClient({ product }) {
                                         ))}
                                     </select>
                                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
-                                        <span className="material-symbols-outlined text-gray-400">expand_more</span>
+                                        <DynamicLucideIcon name="expand_more" className="text-gray-400" />
                                     </div>
                                 </div>
                             </div>
@@ -214,7 +215,7 @@ export default function EditListingClient({ product }) {
                             </span>
                         ) : (
                             <>
-                                <span className="material-symbols-outlined">save</span>
+                                <DynamicLucideIcon name="save" />
                                 Save Changes
                             </>
                         )}

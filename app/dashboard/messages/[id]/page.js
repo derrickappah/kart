@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -302,7 +303,7 @@ export default function ChatPage() {
                     onClick={() => router.back()}
                     className="size-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300"
                 >
-                    <span className="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+                    <DynamicLucideIcon name="arrow_back_ios_new" className="text-[24px]" />
                 </button>
                 <div className="flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2">
@@ -321,7 +322,7 @@ export default function ChatPage() {
                         onClick={() => setShowOptions(!showOptions)}
                         className={`size-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${showOptions ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}
                     >
-                        <span className="material-symbols-outlined text-[24px]">more_vert</span>
+                        <DynamicLucideIcon name="more_vert" className="text-[24px]" />
                     </button>
 
                     {/* Dropdown Menu */}
@@ -333,7 +334,7 @@ export default function ChatPage() {
                                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#2f2f35] transition-colors"
                                     onClick={() => setShowOptions(false)}
                                 >
-                                    <span className="material-symbols-outlined text-[20px]">person</span>
+                                    <DynamicLucideIcon name="person" className="text-[20px]" />
                                     View Profile
                                 </Link>
                             )}
@@ -344,7 +345,7 @@ export default function ChatPage() {
                                 }}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left"
                             >
-                                <span className="material-symbols-outlined text-[20px]">flag</span>
+                                <DynamicLucideIcon name="flag" className="text-[20px]" />
                                 Report User
                             </button>
                         </div>
@@ -367,7 +368,7 @@ export default function ChatPage() {
                             <p className="text-[#1daddd] font-bold text-sm">GHS {productContext.price} <span className="text-xs font-normal text-gray-400 dark:text-gray-500 ml-1">• {productContext.condition}</span></p>
                         </div>
                         <div className="shrink-0 pr-1">
-                            <span className="material-symbols-outlined text-gray-300 dark:text-gray-600">chevron_right</span>
+                            <DynamicLucideIcon name="chevron_right" className="text-gray-300 dark:text-gray-600" />
                         </div>
                     </Link>
                 </div>
@@ -468,7 +469,7 @@ export default function ChatPage() {
                                                         rel="noopener noreferrer"
                                                         className="flex items-center gap-2 underline break-all"
                                                     >
-                                                        <span className="material-symbols-outlined text-[18px]">attachment</span>
+                                                        <DynamicLucideIcon name="attachment" className="text-[18px]" />
                                                         Attachment
                                                     </a>
                                                 ) : (
@@ -492,7 +493,7 @@ export default function ChatPage() {
                                                     {formatTime(msg.created_at)}
                                                 </span>
                                                 {isMe && (
-                                                    <span className="material-symbols-outlined text-[11px] leading-none">done_all</span>
+                                                    <DynamicLucideIcon name="done_all" className="text-[11px] leading-none" />
                                                 )}
                                             </div>
                                         </div>
@@ -539,7 +540,7 @@ export default function ChatPage() {
                         {uploading ? (
                             <div className="size-6 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
                         ) : (
-                            <span className="material-symbols-outlined text-[24px]">add</span>
+                            <DynamicLucideIcon name="add" className="text-[24px]" />
                         )}
                     </button>
                     <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#1daddd]/50 focus-within:bg-white dark:focus-within:bg-[#111d21] transition-all">
@@ -563,7 +564,7 @@ export default function ChatPage() {
                             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                             className={`p-2 mr-1 transition-colors ${showEmojiPicker ? 'text-[#1daddd]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
                         >
-                            <span className="material-symbols-outlined text-[20px]">sentiment_satisfied</span>
+                            <DynamicLucideIcon name="sentiment_satisfied" className="text-[20px]" />
                         </button>
                     </div>
                     <button
@@ -574,7 +575,7 @@ export default function ChatPage() {
                         {sending ? (
                             <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         ) : (
-                            <span className="material-symbols-outlined text-[20px] ml-0.5">send</span>
+                            <DynamicLucideIcon name="send" className="text-[20px] ml-0.5" />
                         )}
                     </button>
                 </form>

@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -106,7 +107,7 @@ export default function StudentIDCapturePage() {
                 <div className="absolute inset-0 z-0 bg-neutral-900 flex items-center justify-center">
                     {cameraError ? (
                         <div className="text-white text-center px-8">
-                            <span className="material-symbols-outlined text-4xl mb-4 text-red-500">videocam_off</span>
+                            <DynamicLucideIcon name="videocam_off" className="text-4xl mb-4 text-red-500" />
                             <p className="text-sm font-medium">{cameraError}</p>
                             <button
                                 onClick={() => window.location.reload()}
@@ -138,7 +139,7 @@ export default function StudentIDCapturePage() {
                             onClick={() => router.back()}
                             className="flex items-center justify-center size-10 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md border border-white/10"
                         >
-                            <span className="material-symbols-outlined text-xl">arrow_back</span>
+                            <DynamicLucideIcon name="arrow_back" className="text-xl" />
                         </button>
                         <h1 className="text-lg font-bold tracking-tight text-white flex-1 text-center pr-10">Verify Identity</h1>
                     </div>
@@ -204,7 +205,7 @@ export default function StudentIDCapturePage() {
                     {!showChecking && (
                         <div className="mt-10 relative z-20">
                             <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
-                                <span className="material-symbols-outlined text-primary text-lg animate-pulse">wb_incandescent</span>
+                                <DynamicLucideIcon name="wb_incandescent" className="text-primary text-lg animate-pulse" />
                                 <p className="text-white text-sm font-medium tracking-wide">Avoid glare and shadows</p>
                             </div>
                         </div>
@@ -220,7 +221,7 @@ export default function StudentIDCapturePage() {
                             className={`group flex flex-col items-center justify-center gap-1 active:scale-95 transition-all ${flash ? 'text-primary' : 'text-white'}`}
                         >
                             <div className={`flex items-center justify-center size-12 rounded-full ${flash ? 'bg-primary/20 border-primary' : 'bg-white/10 border-white/5'} transition backdrop-blur-md border`}>
-                                <span className="material-symbols-outlined text-xl">{flash ? 'flash_on' : 'flash_off'}</span>
+                                <DynamicLucideIcon name={flash ? 'flash_on' : 'flash_off'} className="text-xl" />
                             </div>
                         </button>
 
@@ -232,7 +233,7 @@ export default function StudentIDCapturePage() {
                         >
                             <div className="absolute inset-0 rounded-full bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <div className={`size-[68px] rounded-full ${isCapturing ? 'bg-gray-400' : 'bg-primary'} group-hover:bg-[#159ac6] transition-colors shadow-inner flex items-center justify-center relative overflow-hidden`}>
-                                <span className="material-symbols-outlined text-black/40 text-4xl opacity-0 group-active:opacity-100 transition-opacity duration-100">camera</span>
+                                <DynamicLucideIcon name="camera" className="text-black/40 text-4xl opacity-0 group-active:opacity-100 transition-opacity duration-100" />
                             </div>
                         </button>
 
@@ -242,7 +243,7 @@ export default function StudentIDCapturePage() {
                             className="group flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
                         >
                             <div className="flex items-center justify-center size-12 rounded-full bg-transparent text-white/60 hover:text-white hover:bg-white/10 transition border border-transparent hover:border-white/10">
-                                <span className="material-symbols-outlined text-xl">help</span>
+                                <DynamicLucideIcon name="help" className="text-xl" />
                             </div>
                         </button>
                     </div>
@@ -257,11 +258,11 @@ export default function StudentIDCapturePage() {
                                 onClick={() => setIsHelpOpen(false)}
                                 className="absolute top-4 right-4 text-white/40 hover:text-white"
                             >
-                                <span className="material-symbols-outlined font-bold">close</span>
+                                <DynamicLucideIcon name="close" className="font-bold" />
                             </button>
                             <div className="flex flex-col items-center text-center">
                                 <div className="size-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary">
-                                    <span className="material-symbols-outlined text-[40px]">info</span>
+                                    <DynamicLucideIcon name="info" className="text-[40px]" />
                                 </div>
                                 <h3 className="text-xl font-bold mb-4">How to take a clear photo</h3>
                                 <ul className="text-sm text-white/60 space-y-3 text-left w-full">

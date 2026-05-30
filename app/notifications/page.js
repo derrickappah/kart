@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { createClient } from '../../utils/supabase/client';
 import Link from 'next/link';
@@ -129,7 +130,7 @@ export default function NotificationsPage() {
 
                 {notifications.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-12">
-                        <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">notifications</span>
+                        <DynamicLucideIcon name="notifications" className="text-6xl text-gray-300 dark:text-gray-600 mb-4" />
                         <p className="text-gray-500 dark:text-gray-400 text-center">No notifications yet</p>
                     </div>
                 )}
@@ -142,24 +143,24 @@ export default function NotificationsPage() {
             <nav className="fixed bottom-0 z-50 w-full bg-white dark:bg-[#2A3036] border-t border-gray-200 dark:border-gray-800">
                 <div className="flex justify-around items-center h-[60px] max-w-lg mx-auto">
                     <Link href="/" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-[#1daddd] transition-colors">
-                        <span className="material-symbols-outlined text-2xl mb-0.5">home</span>
+                        <DynamicLucideIcon name="home" className="text-2xl mb-0.5" />
                         <span className="text-[10px] font-medium">Home</span>
                     </Link>
                     <Link href="/marketplace" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-[#1daddd] transition-colors">
-                        <span className="material-symbols-outlined text-2xl mb-0.5">search</span>
+                        <DynamicLucideIcon name="search" className="text-2xl mb-0.5" />
                         <span className="text-[10px] font-medium">Browse</span>
                     </Link>
                     <Link href="/dashboard/seller/create" className="flex flex-col items-center justify-center w-full relative -top-6">
                         <div className="size-14 bg-[#1daddd] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
-                            <span className="material-symbols-outlined text-3xl">add</span>
+                            <DynamicLucideIcon name="add" className="text-3xl" />
                         </div>
                     </Link>
                     <Link href="/notifications" className="flex flex-col items-center justify-center w-full h-full text-[#1daddd]">
-                        <span className="material-symbols-outlined text-2xl mb-0.5 fill-current">notifications</span>
+                        <DynamicLucideIcon name="notifications" className="text-2xl mb-0.5 fill-current" />
                         <span className="text-[10px] font-medium">Alerts</span>
                     </Link>
                     <Link href="/profile" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-[#1daddd] transition-colors">
-                        <span className="material-symbols-outlined text-2xl mb-0.5">person</span>
+                        <DynamicLucideIcon name="person" className="text-2xl mb-0.5" />
                         <span className="text-[10px] font-medium">Profile</span>
                     </Link>
                 </div>
@@ -228,15 +229,13 @@ function NotificationItem({ notification }) {
                     <div className="size-14 rounded-full bg-gray-200 dark:bg-gray-700 bg-cover bg-center border-2 border-white dark:border-gray-600 shadow-sm"
                          style={{ backgroundImage: `url('${displayNotification.avatar}')` }}>
                         <div className="absolute bottom-0 right-0 bg-[#1daddd] text-white p-1 rounded-full border-2 border-white dark:border-[#2A3036] flex items-center justify-center">
-                            <span className="material-symbols-outlined text-[10px] leading-none">chat</span>
+                            <DynamicLucideIcon name="chat" className="text-[10px] leading-none" />
                         </div>
                     </div>
                 )}
                 {displayNotification.type === 'system' && (
                     <div className="size-14 rounded-full bg-[#1daddd]/10 dark:bg-[#1daddd]/20 flex items-center justify-center text-[#1daddd]">
-                        <span className="material-symbols-outlined text-2xl">
-                            {displayNotification.title.includes('Approved') ? 'verified' : 'local_fire_department'}
-                        </span>
+                        <DynamicLucideIcon name={displayNotification.title.includes('Approved') ? 'verified' : 'local_fire_department'} className="text-2xl" />
                     </div>
                 )}
             </div>

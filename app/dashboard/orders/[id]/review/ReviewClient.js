@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -79,7 +80,7 @@ export default function ReviewClient({ orderId, seller, product }) {
                         onClick={() => router.back()}
                         className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                        <span className="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+                        <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl" />
                     </button>
                     <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Rate Transaction</h2>
                 </div>
@@ -101,7 +102,7 @@ export default function ReviewClient({ orderId, seller, product }) {
                             </div>
                             {seller.is_verified && (
                                 <div className="absolute bottom-0 right-1 z-20 bg-white dark:bg-[#1e292b] rounded-full p-1 shadow-sm border border-gray-100 dark:border-gray-700">
-                                    <span className="material-symbols-outlined text-[#1daddd] text-[18px]">verified</span>
+                                    <DynamicLucideIcon name="verified" className="text-[#1daddd] text-[18px]" />
                                 </div>
                             )}
                         </div>
@@ -127,15 +128,10 @@ export default function ReviewClient({ orderId, seller, product }) {
                                         onClick={() => setRating(star)}
                                         className="group/star focus:outline-none transition-transform active:scale-90 hover:scale-110"
                                     >
-                                        <span
-                                            className={`material-symbols-outlined drop-shadow-sm ${star <= rating ? 'text-[#1daddd]' : 'text-gray-200 dark:text-gray-700'}`}
-                                            style={{
+                                        <DynamicLucideIcon name="star" style={{
                                                 fontSize: '46px',
                                                 fontVariationSettings: star <= rating ? "'FILL' 1, 'opsz' 48" : "'FILL' 0, 'opsz' 48"
-                                            }}
-                                        >
-                                            star
-                                        </span>
+                                            }} className={`drop-shadow-sm ${star <= rating ? 'text-[#1daddd]' : 'text-gray-200 dark:text-gray-700'}`} />
                                     </button>
                                 ))}
                             </div>
@@ -162,12 +158,7 @@ export default function ReviewClient({ orderId, seller, product }) {
                                                 : 'bg-white dark:bg-[#1e292b] border-gray-100 dark:border-gray-800 text-gray-500 hover:border-[#1daddd]/50 hover:text-[#1daddd]'
                                             }`}
                                     >
-                                        <span
-                                            className="material-symbols-outlined text-base"
-                                            style={{ fontVariationSettings: isSelected ? "'FILL' 1" : "'FILL' 0" }}
-                                        >
-                                            {tag.icon}
-                                        </span>
+                                        <DynamicLucideIcon name={tag.icon} style={{ fontVariationSettings: isSelected ? "'FILL' 1" : "'FILL' 0" }} className="text-base" />
                                         {tag.label}
                                     </button>
                                 );
@@ -196,7 +187,7 @@ export default function ReviewClient({ orderId, seller, product }) {
 
                     {/* Safety Banner */}
                     <div className="bg-[#e9f7fb] dark:bg-[#1daddd]/10 p-4 rounded-2xl border border-[#1daddd]/20 flex gap-3">
-                        <span className="material-symbols-outlined text-[#1daddd] shrink-0">verified_user</span>
+                        <DynamicLucideIcon name="verified_user" className="text-[#1daddd] shrink-0" />
                         <p className="text-[#4f8596] dark:text-[#1daddd]/90 text-sm leading-snug font-medium">
                             <span className="font-bold">Trust Note:</span> Your review helps maintain a safe marketplace for the university community.
                         </p>
@@ -212,7 +203,7 @@ export default function ReviewClient({ orderId, seller, product }) {
                         className="w-full bg-[#1daddd] hover:bg-[#159ac6] text-white font-black text-lg py-4 rounded-2xl shadow-xl shadow-[#1daddd]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none uppercase tracking-widest"
                     >
                         {submitting ? 'Submitting...' : 'Submit Review'}
-                        {!submitting && <span className="material-symbols-outlined text-2xl">chevron_right</span>}
+                        {!submitting && <DynamicLucideIcon name="chevron_right" className="text-2xl" />}
                     </button>
                 </footer>
             </div>

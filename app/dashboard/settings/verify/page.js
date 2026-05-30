@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -68,7 +69,7 @@ export default function VerificationIntroPage() {
                             className="w-full h-14 bg-primary hover:bg-[#1e6a7a] active:scale-[0.98] transition-all duration-200 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
                         >
                             <span>Back to Settings</span>
-                            <span className="material-symbols-outlined">arrow_forward</span>
+                            <DynamicLucideIcon name="arrow_forward" />
                         </button>
                     </div>
                 </footer>
@@ -111,7 +112,7 @@ export default function VerificationIntroPage() {
                         {/* Step 1 */}
                         <div className="relative flex items-center gap-4 p-4 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-white/5">
                             <div className="flex items-center justify-center shrink-0 size-12 rounded-xl bg-gray-100 dark:bg-[#2c3b3e] text-primary">
-                                <span className="material-symbols-outlined text-[24px]">school</span>
+                                <DynamicLucideIcon name="school" className="text-[24px]" />
                             </div>
                             <div className="flex flex-col flex-1">
                                 <p className="text-gray-900 dark:text-white text-base font-bold leading-tight">University Email</p>
@@ -123,7 +124,7 @@ export default function VerificationIntroPage() {
                         {/* Step 2 */}
                         <div className="flex items-center gap-4 p-4 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-white/5">
                             <div className="flex items-center justify-center shrink-0 size-12 rounded-xl bg-gray-100 dark:bg-[#2c3b3e] text-primary">
-                                <span className="material-symbols-outlined text-[24px]">badge</span>
+                                <DynamicLucideIcon name="badge" className="text-[24px]" />
                             </div>
                             <div className="flex flex-col flex-1">
                                 <p className="text-gray-900 dark:text-white text-base font-bold leading-tight">Photo ID Check</p>
@@ -139,13 +140,13 @@ export default function VerificationIntroPage() {
                 <div className="max-w-md mx-auto w-full flex flex-col gap-4">
                     {/* Trust Badge */}
                     <div className="flex items-center justify-center gap-2 text-xs font-medium text-[#57858e] dark:text-gray-500 opacity-80">
-                        <span className="material-symbols-outlined text-[14px]">lock</span>
+                        <DynamicLucideIcon name="lock" className="text-[14px]" />
                         <span>Your data is encrypted and secure</span>
                     </div>
                     {/* Primary Button */}
                     <Link href="/dashboard/settings/verify/email" className="w-full h-14 bg-primary hover:bg-[#1e6a7a] active:scale-[0.98] transition-all duration-200 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group">
                         <span>Start Verification</span>
-                        <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        <DynamicLucideIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
             </footer>

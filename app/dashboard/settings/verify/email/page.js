@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -116,9 +117,7 @@ export default function EmailVerificationPage() {
                 <div className="w-full max-w-sm text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {/* Icon Container */}
                     <div className="size-28 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-10 text-primary shadow-sm">
-                        <span className="material-symbols-outlined shrink-0" style={{ fontSize: '56px' }}>
-                            mark_email_unread
-                        </span>
+                        <DynamicLucideIcon name="mark_email_unread" style={{ fontSize: '56px' }} className="shrink-0" />
                     </div>
 
                     {/* Text Content */}
@@ -156,7 +155,7 @@ export default function EmailVerificationPage() {
                     {error && (
                         <div className="mb-8 animate-in fade-in zoom-in duration-300">
                             <p className="text-red-500 text-sm font-bold bg-red-50 dark:bg-red-900/20 px-5 py-3 rounded-2xl inline-flex items-center gap-2 border border-red-100 dark:border-red-950/30">
-                                <span className="material-symbols-outlined text-base">error</span>
+                                <DynamicLucideIcon name="error" className="text-base" />
                                 {error}
                             </p>
                         </div>
@@ -186,7 +185,7 @@ export default function EmailVerificationPage() {
                                     <>Resend code in <span className="text-primary tabular-nums font-black">{resendCooldown}s</span></>
                                 ) : (
                                     <>
-                                        <span className="material-symbols-outlined text-sm">refresh</span>
+                                        <DynamicLucideIcon name="refresh" className="text-sm" />
                                         Didn&apos;t receive a code? Resend
                                     </>
                                 )}

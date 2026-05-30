@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
@@ -105,7 +106,7 @@ export default async function Marketplace({ searchParams }) {
                                         <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(p.title)}</h3>
                                         <p className="text-primary text-base font-extrabold">₵ {p.price}</p>
                                         <div className="flex items-center gap-1 text-gray-400">
-                                            <span className="material-symbols-outlined text-[14px]">location_on</span>
+                                            <DynamicLucideIcon name="location_on" className="text-[14px]" />
                                             <p className="text-[10px] font-bold truncate uppercase">{p.campus || 'On Campus'}</p>
                                         </div>
                                     </div>
@@ -113,7 +114,7 @@ export default async function Marketplace({ searchParams }) {
                             ))
                         ) : (
                             <div className="col-span-2 py-20 text-center flex flex-col items-center justify-center text-gray-500">
-                                <span className="material-symbols-outlined text-6xl mb-4 opacity-20">search_off</span>
+                                <DynamicLucideIcon name="search_off" className="text-6xl mb-4 opacity-20" />
                                 <p className="font-medium">No items found matching your search.</p>
                             </div>
                         )}

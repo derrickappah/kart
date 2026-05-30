@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -34,7 +35,7 @@ export default async function OrderDetailPage({ params }) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] text-white flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-          <span className="material-symbols-rounded text-red-500 text-3xl">error</span>
+          <DynamicLucideIcon name="error" className="text-red-500 text-3xl" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
         <p className="text-gray-400 mb-8 max-w-xs">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
@@ -91,7 +92,7 @@ export default async function OrderDetailPage({ params }) {
             href={isBuyer ? '/dashboard/orders' : '/dashboard/seller/orders'}
             className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            <span className="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+            <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl" />
           </Link>
           <div className="flex-1 text-center">
             <h1 className="text-lg font-bold">Order Details</h1>
@@ -113,7 +114,7 @@ export default async function OrderDetailPage({ params }) {
           {/* Status Timeline Card */}
           <section className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] overflow-hidden relative">
             <div className="absolute top-0 right-0 p-4 opacity-10">
-              <span className="material-symbols-outlined text-6xl" style={{ color: currentStatus.color }}>{currentStatus.icon}</span>
+              <DynamicLucideIcon name={currentStatus.icon} style={{ color: currentStatus.color }} className="text-6xl" />
             </div>
 
             <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-6">Current Status</h2>
@@ -123,7 +124,7 @@ export default async function OrderDetailPage({ params }) {
                 className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
                 style={{ backgroundColor: `${currentStatus.color}15`, border: `1px solid ${currentStatus.color}30` }}
               >
-                <span className="material-symbols-outlined text-3xl" style={{ color: currentStatus.color }}>{currentStatus.icon}</span>
+                <DynamicLucideIcon name={currentStatus.icon} style={{ color: currentStatus.color }} className="text-3xl" />
               </div>
               <div>
                 <h3 className="text-xl font-bold" style={{ color: currentStatus.color }}>{currentStatus.label}</h3>
@@ -158,7 +159,7 @@ export default async function OrderDetailPage({ params }) {
                   <img src={productImage} alt={order.product?.title} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="material-symbols-outlined text-gray-400">image</span>
+                    <DynamicLucideIcon name="image" className="text-gray-400" />
                   </div>
                 )}
               </div>
@@ -230,7 +231,7 @@ export default async function OrderDetailPage({ params }) {
                   <img src={(isBuyer ? order.seller : order.buyer).avatar_url} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-[#1daddd]/10">
-                    <span className="material-symbols-outlined text-[#1daddd]">person</span>
+                    <DynamicLucideIcon name="person" className="text-[#1daddd]" />
                   </div>
                 )}
               </div>
@@ -238,7 +239,7 @@ export default async function OrderDetailPage({ params }) {
                 <div className="flex items-center gap-1.5 overflow-hidden">
                   <h3 className="font-bold truncate text-sm">{(isBuyer ? order.seller : order.buyer).display_name || 'User'}</h3>
                   {(isBuyer ? order.seller : order.buyer).is_verified && (
-                    <span className="material-symbols-outlined text-primary text-[16px] fill-current">verified</span>
+                    <DynamicLucideIcon name="verified" className="text-primary text-[16px] fill-current" />
                   )}
                 </div>
                 <p className="text-xs text-gray-400 truncate font-medium font-mono">{(isBuyer ? order.seller : order.buyer).email}</p>
@@ -247,14 +248,14 @@ export default async function OrderDetailPage({ params }) {
                 href={`/profile/${(isBuyer ? order.seller : order.buyer).id}`}
                 className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center hover:bg-gray-100 transition-all"
               >
-                <span className="material-symbols-outlined text-xl text-[#1daddd]">chevron_right</span>
+                <DynamicLucideIcon name="chevron_right" className="text-xl text-[#1daddd]" />
               </Link>
             </div>
           </section>
 
           {/* Safety Banner */}
           <div className="bg-[#e9f7fb] dark:bg-[#1daddd]/10 p-4 rounded-2xl border border-[#1daddd]/20 flex gap-3">
-            <span className="material-symbols-outlined text-[#1daddd] shrink-0">verified_user</span>
+            <DynamicLucideIcon name="verified_user" className="text-[#1daddd] shrink-0" />
             <p className="text-[#4f8596] dark:text-[#1daddd]/90 text-sm leading-snug font-medium">
               <span className="font-bold">Safety Note:</span> Your funds are held securely in escrow and only released once you confirm the handover.
             </p>
@@ -266,7 +267,7 @@ export default async function OrderDetailPage({ params }) {
               <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Confirm Receipt</h2>
               <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
                 <div className="mb-4 flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[#1daddd] text-2xl shrink-0">local_shipping</span>
+                  <DynamicLucideIcon name="local_shipping" className="text-[#1daddd] text-2xl shrink-0" />
                   <div>
                     <h3 className="font-bold text-base mb-1">Received Your Item?</h3>
                     <p className="text-sm text-gray-400 leading-relaxed">

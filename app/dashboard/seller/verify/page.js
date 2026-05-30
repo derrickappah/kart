@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -173,7 +174,7 @@ export default function VerificationPage() {
                         <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Get verified to sell</p>
                     </div>
                     <Link href="/dashboard/seller" className="size-10 rounded-xl bg-white dark:bg-white/5 shadow-soft border border-transparent dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-xl">close</span>
+                        <DynamicLucideIcon name="close" className="text-xl" />
                     </Link>
                 </header>
 
@@ -186,7 +187,7 @@ export default function VerificationPage() {
                     ) : verificationStatus?.status === 'Approved' ? (
                         <div className="bg-emerald-500/10 dark:bg-emerald-500/5 ring-1 ring-emerald-500/20 p-8 rounded-3xl shadow-sm text-center space-y-6">
                             <div className="size-20 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
-                                <span className="material-symbols-outlined text-4xl font-bold">verified</span>
+                                <DynamicLucideIcon name="verified" className="text-4xl font-bold" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-tight">Profile Verified</h2>
@@ -201,7 +202,7 @@ export default function VerificationPage() {
                     ) : verificationStatus?.status === 'Pending' ? (
                         <div className="bg-amber-500/10 dark:bg-amber-500/5 ring-1 ring-amber-500/20 p-8 rounded-3xl shadow-sm text-center space-y-6">
                             <div className="size-20 bg-amber-500 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
-                                <span className="material-symbols-outlined text-4xl font-bold">pending_actions</span>
+                                <DynamicLucideIcon name="pending_actions" className="text-4xl font-bold" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-black text-amber-600 dark:text-amber-500 uppercase tracking-tight">Review in Progress</h2>
@@ -218,7 +219,7 @@ export default function VerificationPage() {
                             {verificationStatus?.status === 'Rejected' && (
                                 <div className="bg-red-500/10 dark:bg-red-500/5 ring-1 ring-red-500/20 p-5 rounded-2xl space-y-3">
                                     <div className="flex items-center gap-2 text-red-600 dark:text-red-500">
-                                        <span className="material-symbols-outlined text-lg font-bold">error</span>
+                                        <DynamicLucideIcon name="error" className="text-lg font-bold" />
                                         <h3 className="text-xs font-black uppercase tracking-wider">Previous Request Rejected</h3>
                                     </div>
                                     {verificationStatus.admin_notes && (
@@ -263,7 +264,7 @@ export default function VerificationPage() {
                                                     className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                                 />
                                                 <div className="w-full bg-slate-50 dark:bg-white/5 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl py-8 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors">
-                                                    <span className="material-symbols-outlined text-3xl text-slate-300 dark:text-slate-600 group-hover:text-primary transition-colors">add_a_photo</span>
+                                                    <DynamicLucideIcon name="add_a_photo" className="text-3xl text-slate-300 dark:text-slate-600 group-hover:text-primary transition-colors" />
                                                     <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                                         {formData.studentIdImage ? 'Change Photo' : 'Upload ID Photo'}
                                                     </span>

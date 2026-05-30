@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -43,7 +44,7 @@ export default async function PromotionsPage() {
                             href="/dashboard/seller"
                             className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                         >
-                            <span className="material-symbols-outlined text-2xl text-slate-900 dark:text-white">arrow_back_ios_new</span>
+                            <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-slate-900 dark:text-white" />
                         </Link>
                         <h1 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10 text-slate-900 dark:text-white">Promotions</h1>
                     </div>
@@ -65,14 +66,14 @@ export default async function PromotionsPage() {
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 block">Total Views</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-2xl font-black text-slate-900 dark:text-white">{totalViews}</span>
-                                <span className="material-symbols-outlined text-primary text-sm font-bold">visibility</span>
+                                <DynamicLucideIcon name="visibility" className="text-primary text-sm font-bold" />
                             </div>
                         </div>
                         <div className="bg-white dark:bg-[#1e292b] p-5 rounded-2xl shadow-soft border border-transparent dark:border-white/5">
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 block">Total Clicks</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-2xl font-black text-slate-900 dark:text-white">{totalClicks}</span>
-                                <span className="material-symbols-outlined text-[#ff9f0f] text-sm font-bold">touch_app</span>
+                                <DynamicLucideIcon name="touch_app" className="text-[#ff9f0f] text-sm font-bold" />
                             </div>
                         </div>
                     </section>
@@ -90,7 +91,7 @@ export default async function PromotionsPage() {
                                                 <Image src={ad.product.image_url} alt={ad.product.title} fill className="object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
-                                                    <span className="material-symbols-outlined text-2xl">image</span>
+                                                    <DynamicLucideIcon name="image" className="text-2xl" />
                                                 </div>
                                             )}
                                         </div>
@@ -109,7 +110,7 @@ export default async function PromotionsPage() {
                                             </p>
                                         </div>
                                         <div className="size-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
-                                            <span className="material-symbols-outlined text-lg">chevron_right</span>
+                                            <DynamicLucideIcon name="chevron_right" className="text-lg" />
                                         </div>
                                     </Link>
 
@@ -137,7 +138,7 @@ export default async function PromotionsPage() {
                         ) : (
                             <div className="text-center py-16 bg-white dark:bg-[#1e292b] rounded-3xl border-2 border-dashed border-slate-100 dark:border-white/5 shadow-soft">
                                 <div className="size-16 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <span className="material-symbols-outlined text-3xl text-slate-200 dark:text-slate-700">rocket_launch</span>
+                                    <DynamicLucideIcon name="rocket_launch" className="text-3xl text-slate-200 dark:text-slate-700" />
                                 </div>
                                 <p className="text-[11px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">No promotions yet</p>
                                 <Link href="/dashboard/seller/listings" className="text-primary text-[11px] font-bold uppercase tracking-widest mt-2 inline-block hover:underline">Pick an item to boost</Link>

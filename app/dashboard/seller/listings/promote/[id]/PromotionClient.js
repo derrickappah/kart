@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -111,7 +112,7 @@ export default function PromotionClient({ product, pricing = {} }) {
                         onClick={() => router.back()}
                         className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                     >
-                        <span className="material-symbols-outlined text-2xl text-[#111617] dark:text-white">arrow_back_ios_new</span>
+                        <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-[#111617] dark:text-white" />
                     </button>
                     <h1 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10 text-[#111617] dark:text-white">Boost Listing</h1>
                 </div>
@@ -127,7 +128,7 @@ export default function PromotionClient({ product, pricing = {} }) {
                         >
                             {!product.image_url && (
                                 <div className="w-full h-full flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-slate-300">image</span>
+                                    <DynamicLucideIcon name="image" className="text-slate-300" />
                                 </div>
                             )}
                         </div>
@@ -137,7 +138,7 @@ export default function PromotionClient({ product, pricing = {} }) {
                             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">₵{product.price}</p>
                         </div>
                         <div className="pr-2 flex-shrink-0">
-                            <span className="material-symbols-outlined text-green-500 font-bold">check_circle</span>
+                            <DynamicLucideIcon name="check_circle" className="text-green-500 font-bold" />
                         </div>
                     </div>
                 </section>
@@ -183,8 +184,8 @@ export default function PromotionClient({ product, pricing = {} }) {
                             <ul className="space-y-3 mb-4">
                                 {tier.features.map((feature, idx) => (
                                     <li key={idx} className="flex items-center gap-3">
-                                        <span className={`material-symbols-outlined text-xl ${selectedTier === tier.id ? 'text-[#ff9f0f]' : 'text-primary'
-                                            }`}>check_circle</span>
+                                        <DynamicLucideIcon name="check_circle" className={`text-xl ${selectedTier === tier.id ? 'text-[#ff9f0f]' : 'text-primary'
+                                            }`} />
                                         <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{feature}</span>
                                     </li>
                                 ))}
@@ -213,7 +214,7 @@ export default function PromotionClient({ product, pricing = {} }) {
                         className="w-full h-14 bg-primary text-white text-lg font-black rounded-2xl shadow-xl shadow-primary/30 hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         {loading ? 'Initializing...' : 'Continue to Payment'}
-                        {!loading && <span className="material-symbols-outlined font-bold">arrow_forward</span>}
+                        {!loading && <DynamicLucideIcon name="arrow_forward" className="font-bold" />}
                     </button>
                 </div>
             </div>

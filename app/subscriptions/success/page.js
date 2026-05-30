@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
@@ -61,9 +62,7 @@ function SuccessContent() {
       <div className="relative mb-8 flex items-center justify-center">
         <div className="absolute w-32 h-32 bg-[#1daddd]/10 dark:bg-[#1daddd]/5 rounded-full"></div>
         <div className={`relative ${error ? 'bg-red-500' : 'bg-[#1daddd]'} text-white size-24 rounded-full flex items-center justify-center shadow-lg shadow-[#1daddd]/30`}>
-          <span className="material-symbols-outlined !text-5xl" style={{ fontVariationSettings: "'wght' 700" }}>
-            {error ? 'error' : 'check'}
-          </span>
+          <DynamicLucideIcon name={error ? 'error' : 'check'} style={{ fontVariationSettings: "'wght' 700" }} className="!text-5xl" />
         </div>
       </div>
 
@@ -84,7 +83,7 @@ function SuccessContent() {
           <div className="space-y-5">
             <div className="flex items-center gap-4">
               <div className="bg-[#1daddd]/10 dark:bg-[#1daddd]/20 p-2 rounded-lg">
-                <span className="material-symbols-outlined text-[#1daddd]">all_inclusive</span>
+                <DynamicLucideIcon name="all_inclusive" className="text-[#1daddd]" />
               </div>
               <div className="flex-1">
                 <h5 className="text-sm font-bold">Unlimited Listings</h5>
@@ -93,7 +92,7 @@ function SuccessContent() {
             </div>
             <div className="flex items-center gap-4">
               <div className="bg-[#1daddd]/10 dark:bg-[#1daddd]/20 p-2 rounded-lg">
-                <span className="material-symbols-outlined text-[#1daddd]">verified</span>
+                <DynamicLucideIcon name="verified" className="text-[#1daddd]" />
               </div>
               <div className="flex-1">
                 <h5 className="text-sm font-bold">Featured Badges</h5>
@@ -102,7 +101,7 @@ function SuccessContent() {
             </div>
             <div className="flex items-center gap-4">
               <div className="bg-[#1daddd]/10 dark:bg-[#1daddd]/20 p-2 rounded-lg">
-                <span className="material-symbols-outlined text-[#1daddd]">support_agent</span>
+                <DynamicLucideIcon name="support_agent" className="text-[#1daddd]" />
               </div>
               <div className="flex-1">
                 <h5 className="text-sm font-bold">Priority Support</h5>
@@ -117,10 +116,10 @@ function SuccessContent() {
       <div className="w-full space-y-4 mt-auto">
         <Link href="/dashboard/seller" className="w-full bg-[#1daddd] hover:bg-[#1daddd]/90 text-white font-bold py-4 rounded-xl transition-all shadow-[0_10px_40px_-10px_rgba(32,223,96,0.15)] flex items-center justify-center gap-2 block text-center">
           Go to Seller Dashboard
-          <span className="material-symbols-outlined text-lg">arrow_forward</span>
+          <DynamicLucideIcon name="arrow_forward" className="text-lg" />
         </Link>
         <Link href="/subscriptions" className="w-full py-2 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-[#1daddd] transition-colors flex items-center justify-center gap-1 text-center">
-          <span className="material-symbols-outlined text-sm">history</span>
+          <DynamicLucideIcon name="history" className="text-sm" />
           Back to Plans
         </Link>
       </div>
@@ -135,7 +134,7 @@ export default function SubscriptionSuccess() {
         {/* Top App Bar */}
         <div className="flex items-center p-4 justify-between">
           <Link href="/" className="text-[#0e1b12] dark:text-white flex size-12 shrink-0 items-center justify-start">
-            <span className="material-symbols-outlined cursor-pointer">close</span>
+            <DynamicLucideIcon name="close" className="cursor-pointer" />
           </Link>
           <h2 className="text-sm font-bold uppercase tracking-widest flex-1 text-center pr-12 opacity-40">Success</h2>
         </div>

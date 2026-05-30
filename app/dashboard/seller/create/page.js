@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
@@ -215,7 +216,7 @@ export default function CreateListingPage() {
         return (
             <main className="bg-white dark:bg-[#242428] min-h-screen flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6">
-                    <span className="material-symbols-outlined text-4xl">lock</span>
+                    <DynamicLucideIcon name="lock" className="text-4xl" />
                 </div>
                 <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">Subscription Required</h2>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm">
@@ -259,12 +260,12 @@ export default function CreateListingPage() {
                                     onClick={() => removeImage(index)}
                                     className="absolute top-2 right-2 bg-red-500/90 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0"
                                 >
-                                    <span className="material-symbols-outlined text-[16px]">close</span>
+                                    <DynamicLucideIcon name="close" className="text-[16px]" />
                                 </button>
 
                                 <label className="absolute bottom-2 right-2 bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 cursor-pointer border border-gray-100 dark:border-gray-700">
                                     <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileChange(e, index)} />
-                                    <span className="material-symbols-outlined text-[16px]">sync</span>
+                                    <DynamicLucideIcon name="sync" className="text-[16px]" />
                                 </label>
                                 {index === 0 && (
                                     <div className="absolute bottom-2 left-2 bg-[#1daddd] text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm border border-white/20">
@@ -279,7 +280,7 @@ export default function CreateListingPage() {
                                 <input type="file" accept="image/*" multiple onChange={handleFileChange} className="sr-only" />
                                 <div className="aspect-[4/3] w-full rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#2E2E32] flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:border-[#1daddd] hover:bg-[#1daddd]/5 active:scale-[0.98]">
                                     <div className="size-10 rounded-full bg-[#1daddd]/10 flex items-center justify-center text-[#1daddd]">
-                                        <span className="material-symbols-outlined">add_a_photo</span>
+                                        <DynamicLucideIcon name="add_a_photo" />
                                     </div>
                                     <div className="text-center">
                                         <p className="text-[#1daddd] font-bold text-xs uppercase tracking-widest">
@@ -358,7 +359,7 @@ export default function CreateListingPage() {
                                     <option value="Health & Wellness">Health & Wellness</option>
                                     <option value="Home Appliances">Home Appliances</option>
                                 </select>
-                                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xl">expand_more</span>
+                                <DynamicLucideIcon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xl" />
                             </div>
                         </div>
                     </div>
@@ -415,7 +416,7 @@ export default function CreateListingPage() {
 
                     {/* Campus Context: Meetup Spot Suggestion */}
                     <div className="bg-primary/5 dark:bg-primary/10 rounded-xl p-4 flex items-start gap-3 border border-primary/10 mb-8">
-                        <span className="material-symbols-outlined text-primary mt-0.5">location_on</span>
+                        <DynamicLucideIcon name="location_on" className="text-primary mt-0.5" />
                         <div>
                             <h4 className="text-sm font-bold text-gray-900 dark:text-white">Suggested Meetup</h4>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
@@ -434,7 +435,7 @@ export default function CreateListingPage() {
                             className="btn-primary w-full h-14 shadow-xl shadow-primary/20"
                         >
                             <span>{loading ? 'Posting...' : 'Post Item'}</span>
-                            {!loading && <span className="material-symbols-outlined text-xl">arrow_forward</span>}
+                            {!loading && <DynamicLucideIcon name="arrow_forward" className="text-xl" />}
                         </button>
                     </div>
                 </footer>

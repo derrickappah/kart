@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
@@ -100,7 +101,7 @@ export default function SubscriptionsClient({ initialSubscriptions, stats = {} }
                                     stat.color === 'amber-500' ? 'bg-amber-500/10 text-amber-500' :
                                         'bg-red-500/10 text-red-500'
                                 }`}>
-                                <span className="material-symbols-outlined text-[24px] font-bold">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} className="text-[24px] font-bold" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">{stat.label}</p>
@@ -130,7 +131,7 @@ export default function SubscriptionsClient({ initialSubscriptions, stats = {} }
                 </div>
 
                 <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors">search</span>
+                    <DynamicLucideIcon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
                         placeholder="Search system ledger..."
@@ -145,7 +146,7 @@ export default function SubscriptionsClient({ initialSubscriptions, stats = {} }
             {subscriptions.length === 0 ? (
                 <div className="py-20 flex flex-col items-center justify-center text-center">
                     <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">folder_open</span>
+                        <DynamicLucideIcon name="folder_open" className="text-4xl text-[#4b636c]/30" />
                     </div>
                     <h3 className="text-xl font-black tracking-tighter uppercase">Vault Empty</h3>
                     <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest mt-2 max-w-xs">No subscriptions matching your criteria were found in our database.</p>
@@ -221,7 +222,7 @@ export default function SubscriptionsClient({ initialSubscriptions, stats = {} }
                                         disabled={loading}
                                         className="w-full bg-primary hover:bg-primary-dark text-white px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                                     >
-                                        <span className="material-symbols-outlined text-[16px]">verified</span>
+                                        <DynamicLucideIcon name="verified" className="text-[16px]" />
                                         Authorize License
                                     </button>
                                 )}
@@ -231,7 +232,7 @@ export default function SubscriptionsClient({ initialSubscriptions, stats = {} }
                                         disabled={loading}
                                         className="w-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                                     >
-                                        <span className="material-symbols-outlined text-[16px]">close</span>
+                                        <DynamicLucideIcon name="close" className="text-[16px]" />
                                         Revoke Access
                                     </button>
                                 )}

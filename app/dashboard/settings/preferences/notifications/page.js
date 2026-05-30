@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -7,7 +8,7 @@ const Toggle = ({ active, onToggle, label, description, icon }) => (
     <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1E292B] rounded-2xl shadow-sm border border-transparent dark:border-slate-800">
         <div className="flex items-center gap-4">
             <div className={`size-10 rounded-full flex items-center justify-center ${active ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
-                <span className="material-symbols-outlined">{icon}</span>
+                <DynamicLucideIcon name={icon} />
             </div>
             <div>
                 <p className="font-bold text-slate-900 dark:text-white">{label}</p>
@@ -74,7 +75,7 @@ export default function NotificationSettingsPage() {
         <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <header className="px-4 pt-6 flex items-center gap-4">
                 <button onClick={() => router.back()} className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm">
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <DynamicLucideIcon name="arrow_back" />
                 </button>
                 <h1 className="text-xl font-bold">Notifications</h1>
             </header>
@@ -117,7 +118,7 @@ export default function NotificationSettingsPage() {
                 />
 
                 <div className="mt-8 p-4 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center gap-2">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">lock</span>
+                    <DynamicLucideIcon name="lock" className="text-slate-400 text-sm" />
                     <span className="text-xs text-slate-500 font-medium tracking-tight">Preferences are synced across all your devices</span>
                 </div>
             </main>

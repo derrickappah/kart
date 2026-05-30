@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -122,7 +123,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                     <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
                         <div className="flex items-center gap-4">
                             <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
-                                <span className="material-symbols-outlined">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
                                 <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
@@ -150,16 +151,14 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                                 : 'text-[#4b636c] hover:bg-primary/5 hover:text-primary'
                                 }`}
                         >
-                            <span className={`material-symbols-outlined text-[20px] transition-transform group-hover/tab:scale-110 ${currentFilter === tab.value ? 'text-white' : 'text-[#4b636c]/60 group-hover/tab:text-primary/70'}`}>
-                                {tab.icon}
-                            </span>
+                            <DynamicLucideIcon name={tab.icon} className={`text-[20px] transition-transform group-hover/tab:scale-110 ${currentFilter === tab.value ? 'text-white' : 'text-[#4b636c]/60 group-hover/tab:text-primary/70'}`} />
                             {tab.label}
                         </Link>
                     ))}
                 </div>
 
                 <div className="relative w-full md:w-80 group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#4b636c] group-focus-within:text-primary transition-colors">search</span>
+                    <DynamicLucideIcon name="search" className="absolute left-4 top-1/2 -translate-y-1/2  text-[#4b636c] group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
                         value={search}
@@ -185,7 +184,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
 
                 {filteredVerifications.length === 0 ? (
                     <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-12 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-center">
-                        <span className="material-symbols-outlined text-6xl text-[#4b636c]/20 mb-4">search_off</span>
+                        <DynamicLucideIcon name="search_off" className="text-6xl text-[#4b636c]/20 mb-4" />
                         <h3 className="text-xl font-black tracking-tighter uppercase">No Applications Found</h3>
                         <p className="text-[#4b636c] text-[11px] font-black uppercase tracking-widest mt-2">Try changing your filters or check back later</p>
                     </div>
@@ -230,12 +229,12 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                                                 onClick={() => setSelectedImage(verification.student_id_image)}
                                                 className="absolute inset-0 bg-primary/40 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity backdrop-blur-[2px]"
                                             >
-                                                <span className="material-symbols-outlined text-white text-lg">zoom_in</span>
+                                                <DynamicLucideIcon name="zoom_in" className="text-white text-lg" />
                                             </button>
                                         </>
                                     ) : (
                                         <div className="size-full flex items-center justify-center text-[#4b636c]/30">
-                                            <span className="material-symbols-outlined text-xl">no_photography</span>
+                                            <DynamicLucideIcon name="no_photography" className="text-xl" />
                                         </div>
                                     )}
                                 </div>
@@ -262,7 +261,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                                                 className="size-10 bg-primary text-white rounded-xl flex items-center justify-center hover:brightness-110 active:scale-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                                                 title="Approve"
                                             >
-                                                <span className="material-symbols-outlined text-lg">verified</span>
+                                                <DynamicLucideIcon name="verified" className="text-lg" />
                                             </button>
                                             <button
                                                 onClick={() => setConfirmModal({ open: true, type: 'reject', data: verification })}
@@ -270,12 +269,12 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                                                 className="size-10 bg-white dark:bg-[#212b30] text-[#4b636c] rounded-xl flex items-center justify-center border border-[#dce3e5] dark:border-[#2d3b41] hover:text-red-500 active:scale-90 transition-all disabled:opacity-50"
                                                 title="Reject"
                                             >
-                                                <span className="material-symbols-outlined text-lg">rule</span>
+                                                <DynamicLucideIcon name="rule" className="text-lg" />
                                             </button>
                                         </>
                                     ) : (
                                         <div className="size-10 rounded-xl bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c]/50 border border-[#dce3e5] dark:border-[#2d3b41]" title="Processed">
-                                            <span className="material-symbols-outlined text-lg">archive</span>
+                                            <DynamicLucideIcon name="archive" className="text-lg" />
                                         </div>
                                     )}
                                 </div>
@@ -294,7 +293,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                             <div className="p-8">
                                 <div className="text-center space-y-4 mb-8">
                                     <div className="mx-auto size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-3xl">verified</span>
+                                        <DynamicLucideIcon name="verified" className="text-3xl" />
                                     </div>
                                     <h3 className="text-xl font-black tracking-tighter">Authorize Verification?</h3>
                                     <p className="text-xs text-[#4b636c] font-black uppercase tracking-widest leading-relaxed">
@@ -310,7 +309,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                             <div className="p-8">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="size-14 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-3xl">policy</span>
+                                        <DynamicLucideIcon name="policy" className="text-3xl" />
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-black tracking-tighter uppercase">Reject & Flag</h3>
@@ -351,7 +350,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                         <div className="flex items-center gap-4">
                             <button onClick={() => setSelectedImage(null)} className="h-14 px-10 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl hover:bg-primary hover:text-white transition-all">Close Lens</button>
                             <a href={selectedImage} target="_blank" rel="noopener noreferrer" className="size-14 bg-primary/20 text-primary border border-primary/20 rounded-2xl flex items-center justify-center hover:bg-primary hover:text-white transition-all shadow-xl">
-                                <span className="material-symbols-outlined">open_in_new</span>
+                                <DynamicLucideIcon name="open_in_new" />
                             </a>
                         </div>
                     </div>
@@ -362,9 +361,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
             {toast.show && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300">
                     <div className={`${toast.type === 'success' ? 'bg-primary shadow-primary/20' : 'bg-red-500 shadow-red-500/20'} text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-2xl border border-white/10`}>
-                        <span className="material-symbols-outlined text-sm font-black">
-                            {toast.type === 'success' ? 'verified' : 'emergency_home'}
-                        </span>
+                        <DynamicLucideIcon name={toast.type === 'success' ? 'verified' : 'emergency_home'} className="text-sm font-black" />
                         <span className="text-[10px] font-black uppercase tracking-widest">{toast.message}</span>
                     </div>
                 </div>

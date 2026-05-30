@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -78,9 +79,7 @@ export default function SellerDashboardClient({
                             <h2 className="text-2xl font-black text-slate-900 dark:text-white">{displayName}</h2>
                         </div>
                         <div className={`size-12 rounded-2xl flex items-center justify-center transition-colors ${profile?.is_verified ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-400/10 text-slate-400'}`}>
-                            <span className="material-symbols-outlined text-2xl fill-1">
-                                {profile?.is_verified ? 'verified' : 'new_releases'}
-                            </span>
+                            <DynamicLucideIcon name={profile?.is_verified ? 'verified' : 'new_releases'} className="text-2xl fill-1" />
                         </div>
                     </div>
 
@@ -107,12 +106,12 @@ export default function SellerDashboardClient({
                     <section>
                         {isSubscribed ? (
                             <Link href="/dashboard/seller/create" className="h-14 flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group gap-2">
-                                <span className="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform">add</span>
+                                <DynamicLucideIcon name="add" className="text-xl group-hover:rotate-90 transition-transform" />
                                 <span>Create Listing</span>
                             </Link>
                         ) : (
                             <Link href="/subscriptions" className="h-14 flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group gap-2">
-                                <span className="material-symbols-outlined text-xl">loyalty</span>
+                                <DynamicLucideIcon name="loyalty" className="text-xl" />
                                 <span>Subscribe to Sell</span>
                             </Link>
                         )}
@@ -127,14 +126,14 @@ export default function SellerDashboardClient({
                                     <div className="flex items-center gap-2">
                                         <span className="text-3xl font-black text-slate-900 dark:text-white">{activeListings}</span>
                                         <span className="bg-primary/10 text-primary text-[10px] px-2 py-1 rounded-lg font-bold flex items-center ring-1 ring-primary/20">
-                                            <span className="material-symbols-outlined text-[14px] mr-0.5 font-bold">inventory</span>
+                                            <DynamicLucideIcon name="inventory" className="text-[14px] mr-0.5 font-bold" />
                                             Active
                                         </span>
                                     </div>
                                 </div>
                                 <Link href="/dashboard/seller/analytics" className="h-9 px-3 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center gap-1 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Details</span>
-                                    <span className="material-symbols-outlined text-sm text-slate-400">arrow_forward</span>
+                                    <DynamicLucideIcon name="arrow_forward" className="text-sm text-slate-400" />
                                 </Link>
                             </div>
 
@@ -200,7 +199,7 @@ export default function SellerDashboardClient({
                                 <div key={sub.id} className="bg-amber-500/10 dark:bg-amber-500/5 ring-1 ring-amber-500/20 p-5 rounded-2xl shadow-sm space-y-4">
                                     <div className="flex items-center gap-3">
                                         <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-amber-500 text-2xl fill-1">pending_actions</span>
+                                            <DynamicLucideIcon name="pending_actions" className="text-amber-500 text-2xl fill-1" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-black text-amber-900 dark:text-amber-500 uppercase tracking-tight">Payment Processing</p>
@@ -229,7 +228,7 @@ export default function SellerDashboardClient({
                                 <div className="bg-red-500/10 dark:bg-red-500/5 ring-1 ring-red-500/20 p-5 rounded-2xl flex items-center justify-between shadow-sm">
                                     <div className="flex items-center gap-3">
                                         <div className="size-10 rounded-xl bg-red-500/10 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-red-500 text-2xl fill-1">error</span>
+                                            <DynamicLucideIcon name="error" className="text-red-500 text-2xl fill-1" />
                                         </div>
                                         <div>
                                             <p className="text-sm font-black text-red-500 uppercase tracking-tight">Plan Expired</p>
@@ -243,7 +242,7 @@ export default function SellerDashboardClient({
                             {isSubscribed && daysUntilExpiry <= 7 && (
                                 <div className="bg-primary/10 dark:bg-primary/5 ring-1 ring-primary/20 p-5 rounded-2xl flex items-center gap-3 shadow-sm">
                                     <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-primary text-2xl fill-1">info</span>
+                                        <DynamicLucideIcon name="info" className="text-primary text-2xl fill-1" />
                                     </div>
                                     <div>
                                         <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Expiring Soon</p>
@@ -260,7 +259,7 @@ export default function SellerDashboardClient({
                         <Link href="/dashboard/seller/promotions" className="bg-gradient-to-br from-primary to-[#0e95c1] dark:from-primary/20 dark:to-primary/10 p-5 rounded-2xl shadow-lg shadow-primary/10 border border-white/10 flex items-center justify-between group active:scale-[0.98] transition-all">
                             <div className="flex items-center gap-4">
                                 <div className="size-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center pointer-events-none">
-                                    <span className="material-symbols-outlined text-white text-2xl animate-pulse">rocket_launch</span>
+                                    <DynamicLucideIcon name="rocket_launch" className="text-white text-2xl animate-pulse" />
                                 </div>
                                 <div>
                                     <p className="text-sm font-black text-white uppercase tracking-tight">Promoted Items</p>
@@ -270,7 +269,7 @@ export default function SellerDashboardClient({
                                 </div>
                             </div>
                             <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:translate-x-1 transition-transform">
-                                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                                <DynamicLucideIcon name="arrow_forward" className="text-lg" />
                             </div>
                         </Link>
                     </section>
@@ -290,7 +289,7 @@ export default function SellerDashboardClient({
                                             <Image src={item.image_url} alt={item.title} fill className="object-cover transition-transform group-hover:scale-110" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
-                                                <span className="material-symbols-outlined text-2xl">image</span>
+                                                <DynamicLucideIcon name="image" className="text-2xl" />
                                             </div>
                                         )}
                                     </div>
@@ -303,7 +302,7 @@ export default function SellerDashboardClient({
                                         </div>
                                     </div>
                                     <div className="size-10 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
-                                        <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                                        <DynamicLucideIcon name="arrow_forward" className="text-lg" />
                                     </div>
                                 </div>
                             ))}
@@ -311,7 +310,7 @@ export default function SellerDashboardClient({
                             {(!listings || listings.length === 0) && (
                                 <div className="text-center py-16 bg-white dark:bg-[#1e292b] rounded-3xl border-2 border-dashed border-slate-100 dark:border-white/5 shadow-soft">
                                     <div className="size-16 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <span className="material-symbols-outlined text-3xl text-slate-200 dark:text-slate-700">inventory_2</span>
+                                        <DynamicLucideIcon name="inventory_2" className="text-3xl text-slate-200 dark:text-slate-700" />
                                     </div>
                                     <p className="text-[11px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">No listings yet</p>
                                     <Link href="/dashboard/seller/create" className="text-primary text-[11px] font-bold uppercase tracking-widest mt-2 inline-block hover:underline">Start Selling</Link>

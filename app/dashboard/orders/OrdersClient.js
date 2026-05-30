@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -63,7 +64,7 @@ export default function OrdersClient({ orders }) {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
-                            <span className="material-symbols-outlined text-3xl">image</span>
+                            <DynamicLucideIcon name="image" className="text-3xl" />
                           </div>
                         )}
                         {/* Status Overlay */}
@@ -83,7 +84,7 @@ export default function OrdersClient({ orders }) {
                           <p className="text-primary font-bold text-base leading-none">₵{parseFloat(order.total_amount).toFixed(2)}</p>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                          <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                          <DynamicLucideIcon name="calendar_today" className="text-[14px]" />
                           <span>{new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         </div>
                       </div>
@@ -112,7 +113,7 @@ export default function OrdersClient({ orders }) {
                             onClick={() => router.push(`/product/${order.product?.id}`)}
                             className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-white/5 active:scale-[0.98] text-xs font-bold"
                           >
-                            <span className="material-symbols-outlined text-[16px]">refresh</span>
+                            <DynamicLucideIcon name="refresh" className="text-[16px]" />
                             <span>Buy Again</span>
                           </button>
                         )}
@@ -121,7 +122,7 @@ export default function OrdersClient({ orders }) {
                             onClick={() => router.push(`/dashboard/orders/${order.id}/review`)}
                             className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary-dark active:scale-[0.98] text-xs font-bold"
                           >
-                            <span className="material-symbols-outlined text-[16px]">star</span>
+                            <DynamicLucideIcon name="star" className="text-[16px]" />
                             <span>Rate Seller</span>
                           </button>
                         )}
@@ -134,7 +135,7 @@ export default function OrdersClient({ orders }) {
           ) : (
             <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-slate-600">
               <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-4xl opacity-50">shopping_cart</span>
+                <DynamicLucideIcon name="shopping_cart" className="text-4xl opacity-50" />
               </div>
               <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No items found</p>
               <p className="text-sm mb-6">You haven&apos;t purchased anything yet.</p>

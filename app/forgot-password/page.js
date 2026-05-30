@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Image from 'next/image';
 import Link from 'next/link';
 import { forgotPassword } from '../auth/actions';
@@ -64,7 +65,7 @@ export default function ForgotPassword() {
                         <div className="flex flex-col space-y-2">
                             <label className="text-[#24282D] dark:text-gray-300 text-sm font-semibold px-1">Email</label>
                             <div className="relative flex items-center bg-white dark:bg-[#111d21] border border-[#d0e1e6] dark:border-gray-700 rounded-xl transition-all duration-200 shadow-sm focus-within:border-[#1daddd] focus-within:ring-4 focus-within:ring-[#1daddd]/10">
-                                <span className="material-symbols-outlined ml-4 text-[#4f8596] text-[20px]">alternate_email</span>
+                                <DynamicLucideIcon name="alternate_email" className="ml-4 text-[#4f8596] text-[20px]" />
                                 <input 
                                     className="w-full bg-transparent border-none focus:ring-0 h-14 text-[#24282D] dark:text-white placeholder:text-[#4f8596]/60 text-base px-3" 
                                     placeholder="e.g. student@campus.edu" 
@@ -95,7 +96,7 @@ export default function ForgotPassword() {
                                 href="/login"
                                 className="bg-[#24282D] dark:bg-white/10 hover:bg-[#24282D]/90 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] text-base flex items-center justify-center gap-2"
                             >
-                                <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+                                <DynamicLucideIcon name="arrow_back" className="text-[20px]" />
                                 Back to Log In
                             </Link>
                         </div>

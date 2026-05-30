@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
@@ -129,7 +130,7 @@ export default function AdvertisementsClient({ initialAdvertisements, stats = {}
                                     stat.color === 'amber-500' ? 'bg-amber-500/10 text-amber-500' :
                                         'bg-blue-500/10 text-blue-500'
                                 }`}>
-                                <span className="material-symbols-outlined text-[24px] font-bold">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} className="text-[24px] font-bold" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">{stat.label}</p>
@@ -188,7 +189,7 @@ export default function AdvertisementsClient({ initialAdvertisements, stats = {}
             {advertisements.length === 0 ? (
                 <div className="py-20 flex flex-col items-center justify-center text-center">
                     <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">campaign</span>
+                        <DynamicLucideIcon name="campaign" className="text-4xl text-[#4b636c]/30" />
                     </div>
                     <h3 className="text-xl font-black tracking-tighter uppercase">No Active Bids</h3>
                     <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest mt-2 max-w-xs">No advertisement placement records match your current organizational filters.</p>
@@ -202,7 +203,7 @@ export default function AdvertisementsClient({ initialAdvertisements, stats = {}
                                     <img src={ad.product.image_url} alt={ad.product.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-4xl text-[#4b636c]/20">image</span>
+                                        <DynamicLucideIcon name="image" className="text-4xl text-[#4b636c]/20" />
                                     </div>
                                 )}
                                 <div className="absolute top-3 left-3 px-2 py-1 rounded-md bg-[#111618]/80 backdrop-blur-md text-[8px] font-black uppercase tracking-widest text-white">
@@ -245,7 +246,7 @@ export default function AdvertisementsClient({ initialAdvertisements, stats = {}
 
                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-[#4b636c]">
                                     <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                                        <DynamicLucideIcon name="calendar_today" className="text-[14px]" />
                                         <span>{new Date(ad.start_date).toLocaleDateString()} — {new Date(ad.end_date).toLocaleDateString()}</span>
                                     </div>
                                     <div className="text-primary">
@@ -265,15 +266,15 @@ export default function AdvertisementsClient({ initialAdvertisements, stats = {}
                                     <div className="flex gap-2 shrink-0">
                                         {ad.status === 'Active' ? (
                                             <button onClick={() => handlePause(ad.id)} className="size-8 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-[18px]">pause</span>
+                                                <DynamicLucideIcon name="pause" className="text-[18px]" />
                                             </button>
                                         ) : ad.status === 'Paused' ? (
                                             <button onClick={() => handleResume(ad.id)} className="size-8 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-[18px]">play_arrow</span>
+                                                <DynamicLucideIcon name="play_arrow" className="text-[18px]" />
                                             </button>
                                         ) : null}
                                         <button className="size-8 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-[18px]">analytics</span>
+                                            <DynamicLucideIcon name="analytics" className="text-[18px]" />
                                         </button>
                                     </div>
                                 </div>

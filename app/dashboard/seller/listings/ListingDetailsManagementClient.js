@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -69,7 +70,7 @@ export default function ListingDetailsManagementClient({ product }) {
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800">
-                                <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">image</span>
+                                <DynamicLucideIcon name="image" className="text-6xl text-slate-300 dark:text-slate-600" />
                             </div>
                         )}
                         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white dark:from-[#1e292b] to-transparent"></div>
@@ -81,14 +82,14 @@ export default function ListingDetailsManagementClient({ product }) {
                             onClick={() => router.back()}
                             className="bg-black/20 backdrop-blur-md text-white rounded-2xl p-2.5 hover:bg-black/40 transition-all border border-white/10 active:scale-95 flex items-center justify-center"
                         >
-                            <span className="material-symbols-outlined text-2xl">arrow_back</span>
+                            <DynamicLucideIcon name="arrow_back" className="text-2xl" />
                         </button>
                         <div className="relative">
                             <button
                                 onClick={() => setShowMenu(!showMenu)}
                                 className="bg-black/20 backdrop-blur-md text-white rounded-2xl p-2.5 hover:bg-black/40 transition-all border border-white/10 active:scale-95 flex items-center justify-center"
                             >
-                                <span className="material-symbols-outlined text-2xl">more_vert</span>
+                                <DynamicLucideIcon name="more_vert" className="text-2xl" />
                             </button>
 
                             {/* Dropdown Menu */}
@@ -104,7 +105,7 @@ export default function ListingDetailsManagementClient({ product }) {
                                             className="w-full px-5 py-4 flex items-center gap-3 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                                         >
                                             <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                                <span className="material-symbols-outlined text-[20px]">visibility</span>
+                                                <DynamicLucideIcon name="visibility" className="text-[20px]" />
                                             </div>
                                             <span className="text-xs font-black uppercase tracking-widest">View on Site</span>
                                         </Link>
@@ -117,9 +118,7 @@ export default function ListingDetailsManagementClient({ product }) {
                                             className="w-full px-5 py-4 flex items-center gap-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/5 transition-colors text-left"
                                         >
                                             <div className="size-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
-                                                <span className="material-symbols-outlined text-[20px]">
-                                                    {isDeleting ? 'progress_activity' : 'delete'}
-                                                </span>
+                                                <DynamicLucideIcon name={isDeleting ? 'progress_activity' : 'delete'} className="text-[20px]" />
                                             </div>
                                             <span className="text-xs font-black uppercase tracking-widest">{isDeleting ? 'Deleting...' : 'Delete Listing'}</span>
                                         </button>
@@ -133,7 +132,7 @@ export default function ListingDetailsManagementClient({ product }) {
                         href={`/dashboard/seller/listings/edit/${product.id}`}
                         className="absolute bottom-8 right-6 bg-primary text-white rounded-2xl p-3.5 shadow-xl shadow-primary/20 hover:scale-105 transition-all active:scale-95 flex items-center justify-center z-20"
                     >
-                        <span className="material-symbols-outlined text-[20px] fill-1">edit</span>
+                        <DynamicLucideIcon name="edit" className="text-[20px] fill-1" />
                     </Link>
                 </div>
 
@@ -162,26 +161,26 @@ export default function ListingDetailsManagementClient({ product }) {
                         <div className="bg-[#f6f7f8] dark:bg-white/5 rounded-[2.5rem] p-6 border border-transparent dark:border-white/5">
                             <div className="flex items-center justify-between mb-6 px-1">
                                 <h2 className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Performance (7 Days)</h2>
-                                <span className="material-symbols-outlined text-slate-400 text-[18px]">analytics</span>
+                                <DynamicLucideIcon name="analytics" className="text-slate-400 text-[18px]" />
                             </div>
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white dark:bg-[#1e292b] shadow-soft active:scale-[0.98] transition-all">
                                     <div className="flex items-center gap-1.5 text-primary">
-                                        <span className="material-symbols-outlined text-[20px] fill-1">visibility</span>
+                                        <DynamicLucideIcon name="visibility" className="text-[20px] fill-1" />
                                     </div>
                                     <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.views_count || 0}</span>
                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Views</span>
                                 </div>
                                 <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white dark:bg-[#1e292b] shadow-soft active:scale-[0.98] transition-all">
                                     <div className="flex items-center gap-1.5 text-rose-500">
-                                        <span className="material-symbols-outlined text-[20px] fill-1">favorite</span>
+                                        <DynamicLucideIcon name="favorite" className="text-[20px] fill-1" />
                                     </div>
                                     <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.likes_count || 0}</span>
                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Saves</span>
                                 </div>
                                 <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white dark:bg-[#1e292b] shadow-soft active:scale-[0.98] transition-all">
                                     <div className="flex items-center gap-1.5 text-indigo-500">
-                                        <span className="material-symbols-outlined text-[20px] fill-1">shortcut</span>
+                                        <DynamicLucideIcon name="shortcut" className="text-[20px] fill-1" />
                                     </div>
                                     <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{product?.shares_count || 0}</span>
                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Shares</span>
@@ -222,12 +221,10 @@ export default function ListingDetailsManagementClient({ product }) {
                                         }`}
                                 >
                                     {loading ? (
-                                        <span className="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
+                                        <DynamicLucideIcon name="progress_activity" className="animate-spin  text-[18px]" />
                                     ) : (
                                         <>
-                                            <span className="material-symbols-outlined text-[18px] fill-1">
-                                                {isSold ? 'check_circle' : 'sell'}
-                                            </span>
+                                            <DynamicLucideIcon name={isSold ? 'check_circle' : 'sell'} className="text-[18px] fill-1" />
                                             <span>{isSold ? 'Mark Active' : 'Mark Sold'}</span>
                                         </>
                                     )}
@@ -245,7 +242,7 @@ export default function ListingDetailsManagementClient({ product }) {
                         <div className="space-y-3">
                             <div className="bg-[#f6f7f8] dark:bg-white/5 rounded-2xl p-4 flex items-center gap-4 border border-transparent dark:border-white/5 active:scale-[0.99] transition-all">
                                 <div className="bg-white dark:bg-[#1e292b] p-2.5 rounded-xl text-primary shadow-soft flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-[20px] fill-1">add_circle</span>
+                                    <DynamicLucideIcon name="add_circle" className="text-[20px] fill-1" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-slate-900 dark:text-white">Listing created</p>
@@ -264,7 +261,7 @@ export default function ListingDetailsManagementClient({ product }) {
                         href={`/dashboard/seller/listings/edit/${product.id}`}
                         className="flex-1 h-14 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-black text-[13px] uppercase tracking-widest rounded-2xl border border-slate-200 dark:border-white/10 shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
                     >
-                        <span className="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary transition-all">edit_note</span>
+                        <DynamicLucideIcon name="edit_note" className="text-[20px] text-slate-400 group-hover:text-primary transition-all" />
                         Edit
                     </Link>
                     <Link
@@ -272,7 +269,7 @@ export default function ListingDetailsManagementClient({ product }) {
                         className="flex-[1.5] h-14 bg-primary hover:bg-primary-dark text-white font-black text-[13px] uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 overflow-hidden relative"
                     >
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                        <span className="material-symbols-outlined text-[20px] fill-1">rocket_launch</span>
+                        <DynamicLucideIcon name="rocket_launch" className="text-[20px] fill-1" />
                         Promote
                     </Link>
                 </div>

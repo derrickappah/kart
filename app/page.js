@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
@@ -128,7 +129,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
                     </div>
                   )}
                   <p className="text-xs font-semibold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
-                  {product.seller?.is_verified && <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>}
+                  {product.seller?.is_verified && <DynamicLucideIcon name="verified" className="text-primary text-[14px] font-bold" />}
                 </div>
               </div>
             </div>
@@ -178,7 +179,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
                       <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[10px] text-white font-bold">{product.seller?.display_name?.[0] || 'U'}</div>
                     )}
                     <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate">{product.seller?.display_name || 'Seller'}</p>
-                    {product.seller?.is_verified && <span className="material-symbols-outlined text-primary text-[14px] font-bold">verified</span>}
+                    {product.seller?.is_verified && <DynamicLucideIcon name="verified" className="text-primary text-[14px] font-bold" />}
                   </div>
                 </div>
                 <p className="shrink-0 text-xl font-black text-primary tracking-tighter">₵ {product.price}</p>

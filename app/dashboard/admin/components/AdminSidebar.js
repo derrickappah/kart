@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -67,9 +68,7 @@ export default function AdminSidebar() {
                                     : 'hover:bg-primary/5 text-[#4b636c] transition-colors'
                                     }`}
                             >
-                                <span className={`material-symbols-outlined text-[24px] ${isActive(item.href) ? 'text-white' : 'text-[#4b636c] group-hover:text-primary transition-colors'}`}>
-                                    {item.icon}
-                                </span>
+                                <DynamicLucideIcon name={item.icon} className={`text-[24px] ${isActive(item.href) ? 'text-white' : 'text-[#4b636c] group-hover:text-primary transition-colors'}`} />
                                 <p className={`text-sm ${isActive(item.href) ? 'font-bold' : 'font-bold text-[#374151] dark:text-gray-300 group-hover:text-primary transition-colors'}`}>
                                     {item.label}
                                 </p>
@@ -86,7 +85,7 @@ export default function AdminSidebar() {
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 transition-colors cursor-pointer group w-full"
                     >
-                        <span className="material-symbols-outlined text-[24px]">logout</span>
+                        <DynamicLucideIcon name="logout" className="text-[24px]" />
                         <p className="text-sm font-black uppercase tracking-widest">Logout</p>
                     </button>
 

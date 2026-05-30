@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useRouter } from 'next/navigation';
 
 export default function LanguageSettingsPage() {
@@ -8,7 +9,7 @@ export default function LanguageSettingsPage() {
         <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <header className="px-4 pt-6 flex items-center gap-4">
                 <button onClick={() => router.back()} className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm">
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <DynamicLucideIcon name="arrow_back" />
                 </button>
                 <h1 className="text-xl font-bold">Language</h1>
             </header>
@@ -20,7 +21,7 @@ export default function LanguageSettingsPage() {
                             <span className="text-2xl">🇬🇭</span>
                             <span className="font-bold">English (Ghana)</span>
                         </div>
-                        <span className="material-symbols-outlined text-primary">check_circle</span>
+                        <DynamicLucideIcon name="check_circle" className="text-primary" />
                     </div>
 
                     <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">

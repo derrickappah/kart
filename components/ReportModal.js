@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 
 const REPORT_REASONS = [
@@ -74,7 +75,7 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, productId
                 <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center size-10 rounded-xl bg-red-50 dark:bg-red-500/10">
-                            <span className="material-symbols-outlined text-red-600 dark:text-red-400">flag</span>
+                            <DynamicLucideIcon name="flag" className="text-red-600 dark:text-red-400" />
                         </div>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Report {targetName || 'User'}</h2>
                     </div>
@@ -82,14 +83,14 @@ export default function ReportModal({ isOpen, onClose, reportedUserId, productId
                         onClick={handleClose}
                         className="size-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                     >
-                        <span className="material-symbols-outlined text-slate-400">close</span>
+                        <DynamicLucideIcon name="close" className="text-slate-400" />
                     </button>
                 </div>
 
                 {success ? (
                     <div className="p-12 flex flex-col items-center text-center space-y-4">
                         <div className="size-16 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mb-2">
-                            <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-3xl">check_circle</span>
+                            <DynamicLucideIcon name="check_circle" className="text-green-600 dark:text-green-400 text-3xl" />
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Report Submitted</h3>
                         <p className="text-slate-500 dark:text-slate-400">Thank you for helping keep our community safe. Our team will review this report shortly.</p>

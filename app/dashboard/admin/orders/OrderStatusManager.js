@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -59,7 +60,7 @@ export default function OrderStatusManager({ order }) {
     return (
         <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] p-6">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-sm">settings_suggest</span>
+                <DynamicLucideIcon name="settings_suggest" className="text-sm" />
                 Protocol Override
             </h3>
 
@@ -86,7 +87,7 @@ export default function OrderStatusManager({ order }) {
                     <div className="relative bg-white dark:bg-[#182125] w-full max-w-md rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="p-8 text-center space-y-4">
                             <div className="mx-auto size-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-3xl">emergency_home</span>
+                                <DynamicLucideIcon name="emergency_home" className="text-3xl" />
                             </div>
                             <h3 className="text-xl font-black tracking-tighter">Override Order Protocol?</h3>
                             <p className="text-xs text-[#4b636c] font-black uppercase tracking-widest leading-relaxed">
@@ -117,9 +118,7 @@ export default function OrderStatusManager({ order }) {
             {toast.show && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300">
                     <div className={`${toast.type === 'success' ? 'bg-primary shadow-primary/20' : 'bg-red-500 shadow-red-500/20'} text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-2xl`}>
-                        <span className="material-symbols-outlined text-sm">
-                            {toast.type === 'success' ? 'check_circle' : 'error'}
-                        </span>
+                        <DynamicLucideIcon name={toast.type === 'success' ? 'check_circle' : 'error'} className="text-sm" />
                         <span className="text-[10px] font-black uppercase tracking-widest">{toast.message}</span>
                     </div>
                 </div>

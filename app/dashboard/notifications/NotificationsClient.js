@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -130,7 +131,7 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
       <main className="flex-1 w-full max-w-lg mx-auto px-4 pb-24 pt-4 overflow-y-auto no-scrollbar">
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <span className="material-symbols-outlined text-6xl mb-4 opacity-20">notifications_off</span>
+            <DynamicLucideIcon name="notifications_off" className="text-6xl mb-4 opacity-20" />
             <p className="font-medium">No notifications yet</p>
           </div>
         ) : (
@@ -153,10 +154,8 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
                 {/* Icon/Avatar Placeholder */}
                 <div className="shrink-0 relative">
                   <div className="size-14 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[#387d94]">
-                    <span className="material-symbols-outlined text-2xl">
-                      {notification.type === 'order' ? 'shopping_bag' : 
-                       notification.type === 'message' ? 'chat' : 'notifications'}
-                    </span>
+                    <DynamicLucideIcon name={notification.type === 'order' ? 'shopping_bag' : 
+                       notification.type === 'message' ? 'chat' : 'notifications'} className="text-2xl" />
                   </div>
                 </div>
 

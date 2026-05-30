@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -153,7 +154,7 @@ export default function FilterSidebar() {
                     {/* Sort Options */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <span className="material-symbols-outlined text-primary">sort</span>
+                            <DynamicLucideIcon name="sort" className="text-primary" />
                             <h3 className="font-bold text-lg">Sort By</h3>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -167,10 +168,10 @@ export default function FilterSidebar() {
                                     }`}
                                 >
                                     <div className={`flex items-center justify-center size-10 rounded-xl ${sort === opt.value ? 'bg-primary text-white' : 'bg-white dark:bg-[#242428] text-gray-400'}`}>
-                                        <span className="material-symbols-outlined text-[20px]">{opt.icon}</span>
+                                        <DynamicLucideIcon name={opt.icon} className="text-[20px]" />
                                     </div>
                                     <span className="font-bold text-sm flex-1">{opt.label}</span>
-                                    {sort === opt.value && <span className="material-symbols-outlined text-primary">check_circle</span>}
+                                    {sort === opt.value && <DynamicLucideIcon name="check_circle" className="text-primary" />}
                                 </button>
                             ))}
                         </div>
@@ -179,7 +180,7 @@ export default function FilterSidebar() {
                     {/* Price Range */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <span className="material-symbols-outlined text-primary">payments</span>
+                            <DynamicLucideIcon name="payments" className="text-primary" />
                             <h3 className="font-bold text-lg">Price Range</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -207,7 +208,7 @@ export default function FilterSidebar() {
                     {/* Condition */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <span className="material-symbols-outlined text-primary">verified</span>
+                            <DynamicLucideIcon name="verified" className="text-primary" />
                             <h3 className="font-bold text-lg">Condition</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
@@ -220,9 +221,7 @@ export default function FilterSidebar() {
                                         : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                     }`}
                                 >
-                                    <span className="material-symbols-outlined text-[20px]">
-                                        {con === 'New' ? 'new_releases' : con === 'Like New' ? 'thumb_up' : con === 'Good' ? 'handshake' : 'build'}
-                                    </span>
+                                    <DynamicLucideIcon name={con === 'New' ? 'new_releases' : con === 'Like New' ? 'thumb_up' : con === 'Good' ? 'handshake' : 'build'} className="text-[20px]" />
                                     {con}
                                 </button>
                             ))}
@@ -232,7 +231,7 @@ export default function FilterSidebar() {
                     {/* Categories */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <span className="material-symbols-outlined text-primary">category</span>
+                            <DynamicLucideIcon name="category" className="text-primary" />
                             <h3 className="font-bold text-lg">Categories</h3>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -254,11 +253,11 @@ export default function FilterSidebar() {
                     {/* Campus */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <span className="material-symbols-outlined text-primary">near_me</span>
+                            <DynamicLucideIcon name="near_me" className="text-primary" />
                             <h3 className="font-bold text-lg">Location</h3>
                         </div>
                         <div className="relative group">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-xl group-focus-within:text-primary transition-colors">location_searching</span>
+                            <DynamicLucideIcon name="location_searching" className="absolute left-4 top-1/2 -translate-y-1/2  text-gray-400 text-xl group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all"

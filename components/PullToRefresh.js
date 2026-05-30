@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
@@ -91,15 +92,10 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
                     {isRefreshing ? (
                         <div className="w-6 h-6 border-2 border-[#1daddd] border-t-transparent rounded-full animate-spin" />
                     ) : (
-                        <span 
-                            className="material-symbols-outlined text-[#1daddd] transition-transform duration-200"
-                            style={{ 
+                        <DynamicLucideIcon name="arrow_downward" style={{ 
                                 transform: `rotate(${Math.min(pullDelta * 2, 180)}deg)`,
                                 fontSize: '24px'
-                            }}
-                        >
-                            arrow_downward
-                        </span>
+                            }} className="text-[#1daddd] transition-transform duration-200" />
                     )}
                 </div>
             </div>

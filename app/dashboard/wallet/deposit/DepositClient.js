@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -49,7 +50,7 @@ export default function DepositClient({ initialWallet, user }) {
                     onClick={() => router.back()}
                     className="btn-ghost size-10 !p-0 rounded-full"
                 >
-                    <span className="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-300">arrow_back_ios_new</span>
+                    <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-slate-600 dark:text-slate-300" />
                 </button>
                 <h1 className="text-lg font-bold tracking-tight">Add Funds</h1>
                 <div className="w-10"></div>
@@ -58,7 +59,7 @@ export default function DepositClient({ initialWallet, user }) {
             <main className="flex-1 overflow-y-auto pb-40 max-w-md mx-auto w-full no-scrollbar">
                 <div className="px-6 pt-8 pb-6 flex flex-col items-center">
                     <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                        <span className="material-symbols-outlined text-primary text-4xl">add_card</span>
+                        <DynamicLucideIcon name="add_card" className="text-primary text-4xl" />
                     </div>
                     <h2 className="text-2xl font-black tracking-tight">Top Up Wallet</h2>
                     <p className="text-[#57798e] dark:text-gray-400 text-sm font-medium mt-1">Funds will be added instantly after payment</p>
@@ -66,7 +67,7 @@ export default function DepositClient({ initialWallet, user }) {
 
                 {error && (
                     <div className="mx-6 mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-900/30 flex items-center gap-3">
-                        <span className="material-symbols-outlined">error</span>
+                        <DynamicLucideIcon name="error" />
                         <p className="text-sm font-bold">{error}</p>
                     </div>
                 )}
@@ -102,7 +103,7 @@ export default function DepositClient({ initialWallet, user }) {
                     </div>
 
                     <div className="bg-primary/5 dark:bg-primary/10 p-5 rounded-2xl border border-primary/10 flex gap-4">
-                        <span className="material-symbols-outlined text-primary">verified_user</span>
+                        <DynamicLucideIcon name="verified_user" className="text-primary" />
                         <div className="space-y-1">
                             <p className="text-sm font-bold text-primary">Secure Payment</p>
                             <p className="text-[12px] leading-tight text-primary/70 font-medium">Your transaction is processed via Paystack. KART does not store your card or MoMo details.</p>

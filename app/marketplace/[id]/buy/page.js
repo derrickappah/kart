@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '../../../../utils/supabase/server';
 import CheckoutClient from './CheckoutClient';
 import { redirect } from 'next/navigation';
@@ -132,7 +133,7 @@ export default async function CheckoutPage({ params }) {
 
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] p-6 text-center">
-                <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">inventory_2</span>
+                <DynamicLucideIcon name="inventory_2" className="text-6xl text-gray-300 mb-4" />
                 <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Item Not Found</h1>
                 <p className="text-gray-500 mb-6 max-w-xs">We couldn&apos;t find the item you&apos;re looking for. It might have been sold or removed.</p>
                 <Link href="/marketplace" className="btn-primary w-full max-w-xs justify-center">

@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -55,12 +56,7 @@ export default function WishlistButton({ productId, initialIsSaved }) {
             type="button"
             className="absolute top-2 right-2 h-9 w-9 bg-white/80 dark:bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-600 dark:text-white hover:text-red-500 hover:bg-white transition-all active:scale-90 z-20"
         >
-            <span
-                className={`material-symbols-outlined text-[20px] ${isSaved ? 'fill-1 text-red-500' : ''}`}
-                style={{ fontVariationSettings: isSaved ? "'FILL' 1" : "'FILL' 0" }}
-            >
-                favorite
-            </span>
+            <DynamicLucideIcon name="favorite" style={{ fontVariationSettings: isSaved ? "'FILL' 1" : "'FILL' 0" }} className={`text-[20px] ${isSaved ? 'fill-1 text-red-500' : ''}`} />
         </button>
     );
 }

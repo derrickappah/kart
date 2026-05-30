@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -137,7 +138,7 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
             {billingCycle === 'Annual' && (
                 <div className="mb-2">
                     <div className="inline-flex items-center gap-2 bg-[#1daddd]/10 text-[#1daddd] px-3 py-1.5 rounded-full border border-[#1daddd]/20">
-                        <span className="material-symbols-outlined text-[16px] fill-current">auto_awesome</span>
+                        <DynamicLucideIcon name="auto_awesome" className="text-[16px] fill-current" />
                         <span className="text-xs font-bold tracking-wide">SAVE 20% WITH ANNUAL BILLING</span>
                     </div>
                 </div>
@@ -145,7 +146,7 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
 
             {isActive && (
                 <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-sm border border-emerald-100 dark:border-emerald-500/20 mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px] fill-current">check_circle</span>
+                    <DynamicLucideIcon name="check_circle" className="text-[20px] fill-current" />
                     <div>
                         <p className="font-bold">You have an active {currentSubscription.plan?.name} subscription</p>
                         <p className="text-xs opacity-80">Valid until {new Date(currentSubscription.end_date).toLocaleDateString()}</p>
@@ -155,7 +156,7 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
 
             {isExpired && (
                 <div className="p-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-sm border border-red-100 dark:border-red-500/20 mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px] fill-current">error</span>
+                    <DynamicLucideIcon name="error" className="text-[20px] fill-current" />
                     <div>
                         <p className="font-bold">Your {currentSubscription.plan?.name} subscription has expired</p>
                         <p className="text-xs opacity-80">Expired on {new Date(currentSubscription.end_date).toLocaleDateString()}</p>
@@ -166,7 +167,7 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
             {isPending && !isActive && (
                 <div className="p-4 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl text-sm border border-amber-100 dark:border-amber-500/20 mb-4 flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[20px] fill-current">pending</span>
+                        <DynamicLucideIcon name="pending" className="text-[20px] fill-current" />
                         <div>
                             <p className="font-bold">You have a pending subscription</p>
                             <p className="text-xs opacity-80">Please complete your payment to activate.</p>
@@ -217,7 +218,7 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
                             <div className="flex flex-col gap-3">
                                 {plan.features?.map((feature, index) => (
                                     <div key={index} className="text-[14px] font-medium leading-normal flex gap-3 text-slate-700 dark:text-slate-200">
-                                        <span className={`material-symbols-outlined ${plan.duration_months === 12 ? 'text-[#1daddd] fill-current' : 'text-slate-400'} text-[20px]`}>check_circle</span>
+                                        <DynamicLucideIcon name="check_circle" className={`${plan.duration_months === 12 ? 'text-[#1daddd] fill-current' : 'text-slate-400'} text-[20px]`} />
                                         {feature}
                                     </div>
                                 ))}

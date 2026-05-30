@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -58,7 +59,7 @@ export default function ReviewsClient({ initialReviews, stats = {} }) {
                                     stat.color === 'red-500' ? 'bg-red-500/10 text-red-500' :
                                         'bg-blue-500/10 text-blue-500'
                                 }`}>
-                                <span className="material-symbols-outlined text-[24px]">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} className="text-[24px]" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">{stat.label}</p>
@@ -90,7 +91,7 @@ export default function ReviewsClient({ initialReviews, stats = {} }) {
             {reviews.length === 0 ? (
                 <div className="py-20 flex flex-col items-center justify-center text-center">
                     <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">feedback</span>
+                        <DynamicLucideIcon name="feedback" className="text-4xl text-[#4b636c]/30" />
                     </div>
                     <h3 className="text-xl font-black tracking-tighter uppercase">Silence on Deck</h3>
                     <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest mt-2 max-w-xs">No reviews matching this criteria were found in the database.</p>
@@ -102,9 +103,7 @@ export default function ReviewsClient({ initialReviews, stats = {} }) {
                             <div className="p-6 pb-2 border-b border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between bg-background-light dark:bg-[#212b30]/30">
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: 5 }, (_, i) => (
-                                        <span key={i} className={`material-symbols-outlined text-[16px] ${i < review.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`}>
-                                            star
-                                        </span>
+                                        <DynamicLucideIcon name="star" key={i} className={`text-[16px] ${i < review.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`} />
                                     ))}
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">
@@ -119,7 +118,7 @@ export default function ReviewsClient({ initialReviews, stats = {} }) {
                                 </div>
 
                                 <div className="bg-white dark:bg-[#212b30] p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] italic text-xs font-black text-[#4b636c] leading-relaxed relative">
-                                    <span className="material-symbols-outlined absolute -top-2 -left-2 size-6 bg-white dark:bg-[#182125] rounded-full flex items-center justify-center text-[10px] text-primary border border-[#dce3e5] dark:border-[#2d3b41]">format_quote</span>
+                                    <DynamicLucideIcon name="format_quote" className="absolute -top-2 -left-2 size-6 bg-white dark:bg-[#182125] rounded-full flex items-center justify-center text-[10px] text-primary border border-[#dce3e5] dark:border-[#2d3b41]" />
                                     {review.comment || 'No textual feedback provided.'}
                                 </div>
 
@@ -151,7 +150,7 @@ export default function ReviewsClient({ initialReviews, stats = {} }) {
                                     disabled={loading}
                                     className="flex items-center gap-2 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
                                 >
-                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                    <DynamicLucideIcon name="delete" className="text-[16px]" />
                                     {loading ? 'Processing...' : 'Delete Review'}
                                 </button>
                             </div>

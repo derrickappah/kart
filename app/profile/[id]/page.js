@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -180,7 +181,7 @@ export default function SellerProfilePage() {
                             </div>
                             {profile.is_verified && (
                                 <div className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-4 border-[#f6f7f8] dark:border-[#111d21] flex items-center justify-center shadow-lg">
-                                    <span className="material-symbols-outlined text-[16px] font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    <DynamicLucideIcon name="verified" style={{ fontVariationSettings: "'FILL' 1" }} className="text-[16px] font-bold" />
                                 </div>
                             )}
                         </div>
@@ -189,7 +190,7 @@ export default function SellerProfilePage() {
                                 {profile.username || profile.display_name || 'Anonymous'}
                             </h2>
                             <div className="flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 mt-1">
-                                <span className="material-symbols-outlined text-sm">school</span>
+                                <DynamicLucideIcon name="school" className="text-sm" />
                                 <p className="text-sm font-medium">{profile.campus || 'University Campus'}</p>
                             </div>
                             {profile.is_verified && (
@@ -207,7 +208,7 @@ export default function SellerProfilePage() {
                         <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center shadow-sm">
                             <div className="flex items-center justify-center gap-1 text-primary">
                                 <p className="text-2xl font-bold">{parseFloat(profile.average_rating || 0).toFixed(1)}</p>
-                                <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-lg" />
                             </div>
                             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Rating</p>
                         </div>
@@ -240,7 +241,7 @@ export default function SellerProfilePage() {
                                         </div>
                                     </div>
                                     <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-inner">
-                                        <span className="material-symbols-outlined font-bold text-2xl">contact_page</span>
+                                        <DynamicLucideIcon name="contact_page" className="font-bold text-2xl" />
                                     </div>
                                 </div>
 
@@ -256,14 +257,14 @@ export default function SellerProfilePage() {
                                             >
                                                 <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
                                                 <div className="size-14 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md shadow-inner">
-                                                    <span className="material-symbols-outlined text-3xl font-bold">chat</span>
+                                                    <DynamicLucideIcon name="chat" className="text-3xl font-bold" />
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-[11px] font-black uppercase tracking-wider opacity-90">Send WhatsApp Message</p>
                                                     <p className="text-lg font-black tracking-tight">{profile.phone}</p>
                                                 </div>
                                                 <div className="size-10 rounded-full bg-white/10 flex items-center justify-center group-hover/btn:bg-white/20 transition-colors">
-                                                    <span className="material-symbols-outlined text-xl font-bold group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                                                    <DynamicLucideIcon name="arrow_forward" className="text-xl font-bold group-hover/btn:translate-x-1 transition-transform" />
                                                 </div>
                                             </a>
                                         </div>
@@ -385,7 +386,7 @@ export default function SellerProfilePage() {
                                                 </div>
                                                 <div className="flex items-center gap-0.5 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg">
                                                     <span className="text-sm font-bold text-yellow-600 dark:text-yellow-500">{review.rating}</span>
-                                                    <span className="material-symbols-outlined text-sm text-yellow-500 filled">star</span>
+                                                    <DynamicLucideIcon name="star" className="text-sm text-yellow-500 filled" />
                                                 </div>
                                             </div>
 
@@ -400,9 +401,7 @@ export default function SellerProfilePage() {
                                                                         {tags.map((tag, idx) => (
                                                                             <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                                                                                 {tagIcons[tag] && (
-                                                                                    <span className="material-symbols-outlined text-[14px] text-primary">
-                                                                                        {tagIcons[tag]}
-                                                                                    </span>
+                                                                                    <DynamicLucideIcon name={tagIcons[tag]} className="text-[14px] text-primary" />
                                                                                 )}
                                                                                 {tag}
                                                                             </span>
@@ -425,7 +424,7 @@ export default function SellerProfilePage() {
                             ) : (
                                 <div className="text-center py-12 flex flex-col items-center justify-center gap-3">
                                     <div className="size-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-                                        <span className="material-symbols-outlined text-3xl">rate_review</span>
+                                        <DynamicLucideIcon name="rate_review" className="text-3xl" />
                                     </div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">No reviews yet</h3>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
@@ -446,11 +445,11 @@ export default function SellerProfilePage() {
                         disabled={loadingChat}
                         className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-primary/25 active:scale-95 transition-transform disabled:opacity-50"
                     >
-                        <span className="material-symbols-outlined">chat_bubble</span>
+                        <DynamicLucideIcon name="chat_bubble" />
                         {loadingChat ? '...' : `Message ${profile.username || (profile.display_name?.split(' ')[0] || 'Seller')}`}
                     </button>
                     <button className="flex size-14 items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-sm active:scale-95 transition-transform">
-                        <span className="material-symbols-outlined">person_add</span>
+                        <DynamicLucideIcon name="person_add" />
                     </button>
                 </div>
             </div>

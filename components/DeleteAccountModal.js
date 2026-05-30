@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 
 export default function DeleteAccountModal({ isOpen, onClose, onSuccess }) {
@@ -66,7 +67,7 @@ export default function DeleteAccountModal({ isOpen, onClose, onSuccess }) {
                 <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center size-12 rounded-full bg-red-100 dark:bg-red-900/20">
-                            <span className="material-symbols-outlined text-red-600 dark:text-red-400">warning</span>
+                            <DynamicLucideIcon name="warning" className="text-red-600 dark:text-red-400" />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Request Account Deletion</h2>
@@ -80,7 +81,7 @@ export default function DeleteAccountModal({ isOpen, onClose, onSuccess }) {
                     {/* Warning Message */}
                     <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-xl p-4">
                         <div className="flex gap-3">
-                            <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-xl shrink-0">info</span>
+                            <DynamicLucideIcon name="info" className="text-red-600 dark:text-red-400 text-xl shrink-0" />
                             <div className="space-y-2 text-sm text-red-900 dark:text-red-200">
                                 <p className="font-semibold">Your deletion request will be reviewed by our team.</p>
                                 <ul className="list-disc list-inside space-y-1 text-red-800 dark:text-red-300">

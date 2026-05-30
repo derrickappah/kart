@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import ReportsClient from './ReportsClient';
@@ -79,7 +80,7 @@ export default async function AdminReportsPage({ searchParams }) {
     <div className="space-y-8">
       {error && (
         <div className="flex items-center gap-2 text-red-500 bg-red-500/10 p-4 rounded-xl border border-red-500/20">
-          <span className="material-symbols-outlined text-[20px]">error</span>
+          <DynamicLucideIcon name="error" className="text-[20px]" />
           <p className="text-sm font-medium">Error loading compliance data: {error.message}</p>
         </div>
       )}

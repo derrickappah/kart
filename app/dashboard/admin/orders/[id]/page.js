@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -32,7 +33,7 @@ export default async function AdminOrderDetailPage({ params }) {
       <div className="min-h-[80vh] flex items-center justify-center p-6">
         <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-12 rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] text-center max-w-md w-full shadow-2xl">
           <div className="size-20 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <span className="material-symbols-outlined text-4xl">receipt_long</span>
+            <DynamicLucideIcon name="receipt_long" className="text-4xl" />
           </div>
           <h1 className="text-2xl font-black mb-2 tracking-tighter uppercase">Record Not Found</h1>
           <p className="text-[#4b636c] mb-8 text-[11px] font-black uppercase tracking-widest">The transaction record you are looking for does not exist or has been archived.</p>
@@ -40,7 +41,7 @@ export default async function AdminOrderDetailPage({ params }) {
             href="/dashboard/admin/orders"
             className="inline-flex items-center gap-2 bg-primary text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:brightness-110 transition-all shadow-lg shadow-primary/20"
           >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <DynamicLucideIcon name="arrow_back" className="text-[18px]" />
             Back to Ledger
           </Link>
         </div>
@@ -64,16 +65,16 @@ export default async function AdminOrderDetailPage({ params }) {
           href="/dashboard/admin/orders"
           className="flex items-center gap-2 text-[#4b636c] hover:text-primary transition-colors text-xs font-black uppercase tracking-widest group"
         >
-          <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          <DynamicLucideIcon name="arrow_back" className="text-[18px] group-hover:-translate-x-1 transition-transform" />
           Back to Ledger
         </Link>
         <div className="flex items-center gap-3">
           <button className="px-4 py-2 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-primary/5 transition-colors">
-            <span className="material-symbols-outlined text-[18px]">print</span>
+            <DynamicLucideIcon name="print" className="text-[18px]" />
             Invoice
           </button>
           <button className="px-4 py-2 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-primary/5 transition-colors">
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <DynamicLucideIcon name="download" className="text-[18px]" />
             Data Export
           </button>
         </div>
@@ -93,18 +94,18 @@ export default async function AdminOrderDetailPage({ params }) {
                 <Image src={productImage} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
               ) : (
                 <div className="size-full flex items-center justify-center text-[#4b636c]/20">
-                  <span className="material-symbols-outlined text-8xl">box</span>
+                  <DynamicLucideIcon name="box" className="text-8xl" />
                 </div>
               )}
               <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
                 <h2 className="text-2xl font-black text-white tracking-tight">{order.product?.title || 'Unknown Item'}</h2>
                 <div className="flex items-center gap-4 mt-2">
                   <span className="text-white/60 text-xs font-bold uppercase tracking-widest flex items-center gap-1">
-                    <span className="material-symbols-outlined text-xs">category</span>
+                    <DynamicLucideIcon name="category" className="text-xs" />
                     {order.product?.category || 'General'}
                   </span>
                   <span className="text-white/60 text-xs font-bold uppercase tracking-widest flex items-center gap-1">
-                    <span className="material-symbols-outlined text-xs">verified</span>
+                    <DynamicLucideIcon name="verified" className="text-xs" />
                     {order.product?.condition || 'Standard'}
                   </span>
                 </div>
@@ -203,7 +204,7 @@ export default async function AdminOrderDetailPage({ params }) {
                 <p className="text-[10px] font-black uppercase tracking-widest text-green-500/70 mb-1">Seller Final Payout</p>
                 <div className="flex items-center justify-between">
                   <p className="text-xl font-black text-green-400 uppercase tracking-tighter">GH₵ {parseFloat(order.seller_payout_amount || 0).toFixed(2)}</p>
-                  <span className="material-symbols-outlined text-green-400">payments</span>
+                  <DynamicLucideIcon name="payments" className="text-green-400" />
                 </div>
               </div>
             </div>
@@ -229,7 +230,7 @@ export default async function AdminOrderDetailPage({ params }) {
                   <div className="flex items-center gap-2">
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Seller Account</p>
                     {order.seller?.is_verified && (
-                      <span className="material-symbols-outlined text-[12px] text-primary">verified</span>
+                      <DynamicLucideIcon name="verified" className="text-[12px] text-primary" />
                     )}
                   </div>
                   <p className="text-xs font-black uppercase tracking-tighter truncate">{order.seller?.display_name || 'Anonymous'}</p>

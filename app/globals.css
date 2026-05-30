@@ -54,40 +54,6 @@ body {
   font-family: var(--font-jakarta), sans-serif !important;
 }
 
-/* Commented out the local 3.88MB font file load to make icons load instantly.
-   We now load the font using the Google Fonts API in app/layout.js, which dynamically
-   serves lightweight subsets (typically ~20KB) containing only the characters/icons used.
-@font-face {
-  font-family: 'Material Symbols Outlined';
-  font-style: normal;
-  font-weight: 100 700;
-  font-display: block;
-  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
-}
-*/
-
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined' !important;
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  font-feature-settings: 'liga';
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-  width: 1em;
-  height: 1em;
-}
-
 a {
   color: inherit;
   text-decoration: none;

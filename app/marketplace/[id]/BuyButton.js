@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
@@ -45,7 +46,7 @@ export default function BuyButton({ product }) {
                 className="flex-[2] h-14 rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-bold text-base flex items-center justify-center gap-2 cursor-not-allowed" 
                 disabled
             >
-                <span className="material-symbols-outlined">block</span>
+                <DynamicLucideIcon name="block" />
                 {isOutOfStock ? 'Out of Stock' : 'Not Available'}
             </button>
         );
@@ -63,7 +64,7 @@ export default function BuyButton({ product }) {
                 disabled={loading}
                 className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-[#159ac6] text-white font-bold text-base flex items-center justify-center gap-3 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.5)] active:scale-[0.98] transition-all disabled:opacity-50 whitespace-nowrap px-6"
             >
-                <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
+                <DynamicLucideIcon name="shopping_bag" className="text-[22px]" />
                 {loading ? 'Processing...' : 'Buy Now'}
             </button>
         </div>

@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 
 export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess }) {
@@ -58,13 +59,13 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-black tracking-tighter">Request Refund</h3>
             <button onClick={onClose} className="size-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <span className="material-symbols-outlined text-xl">close</span>
+              <DynamicLucideIcon name="close" className="text-xl" />
             </button>
           </div>
 
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3">
-              <span className="material-symbols-outlined text-red-500">error</span>
+              <DynamicLucideIcon name="error" className="text-red-500" />
               <p className="text-xs font-bold text-red-500 uppercase tracking-tight">{error}</p>
             </div>
           )}

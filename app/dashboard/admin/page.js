@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient, createServiceRoleClient } from '../../../utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -111,7 +112,7 @@ export default async function AdminDashboard() {
                 <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
                     <div className="flex justify-between items-start mb-4">
                         <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl">groups</span>
+                            <DynamicLucideIcon name="groups" className="text-3xl" />
                         </div>
                     </div>
                     <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Total Users</p>
@@ -121,7 +122,7 @@ export default async function AdminDashboard() {
                 <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
                     <div className="flex justify-between items-start mb-4">
                         <div className="size-12 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl">verified</span>
+                            <DynamicLucideIcon name="verified" className="text-3xl" />
                         </div>
                     </div>
                     <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Active Subscriptions</p>
@@ -131,7 +132,7 @@ export default async function AdminDashboard() {
                 <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
                     <div className="flex justify-between items-start mb-4">
                         <div className="size-12 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl">inventory_2</span>
+                            <DynamicLucideIcon name="inventory_2" className="text-3xl" />
                         </div>
                     </div>
                     <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Active Listings</p>
@@ -141,7 +142,7 @@ export default async function AdminDashboard() {
                 <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
                     <div className="flex justify-between items-start mb-4">
                         <div className="size-12 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl">payments</span>
+                            <DynamicLucideIcon name="payments" className="text-3xl" />
                         </div>
                     </div>
                     <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Total Revenue</p>
@@ -167,7 +168,7 @@ export default async function AdminDashboard() {
                         {recentOrders?.map(order => (
                             <div key={order.id} className="flex gap-3 group items-center">
                                 <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                                    <span className="material-symbols-outlined text-primary text-base">shopping_bag</span>
+                                    <DynamicLucideIcon name="shopping_bag" className="text-primary text-base" />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-xs font-bold text-[#111618] dark:text-gray-200 truncate group-hover:text-primary transition-colors">{order.product?.title || 'Product'}</p>
@@ -179,7 +180,7 @@ export default async function AdminDashboard() {
                         {pendingVerifications > 0 && (
                             <div className="flex gap-3 group border-y border-gray-100 dark:border-gray-800/20 py-3 items-center">
                                 <div className="size-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
-                                    <span className="material-symbols-outlined text-amber-500 text-base">verified_user</span>
+                                    <DynamicLucideIcon name="verified_user" className="text-amber-500 text-base" />
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-xs font-black text-[#111618] dark:text-gray-200"><span className="text-amber-600">{pendingVerifications}</span> pending apps</p>
@@ -191,7 +192,7 @@ export default async function AdminDashboard() {
                         {recentUsers?.map(user => (
                             <div key={user.id} className="flex gap-3 group items-center">
                                 <div className="size-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
-                                    <span className="material-symbols-outlined text-green-500 text-base">person_add</span>
+                                    <DynamicLucideIcon name="person_add" className="text-green-500 text-base" />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-xs font-bold text-[#111618] dark:text-gray-200 truncate group-hover:text-green-600 transition-colors">{user.display_name || 'New User'}</p>
@@ -211,67 +212,67 @@ export default async function AdminDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Link href="/dashboard/admin/verifications" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/50 dark:hover:border-primary/50">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity scale-150 origin-top-right translate-x-4 -translate-y-4">
-                            <span className="material-symbols-outlined text-8xl text-primary">pending_actions</span>
+                            <DynamicLucideIcon name="pending_actions" className="text-8xl text-primary" />
                         </div>
                         <div className="flex flex-col h-full relative z-10">
                             <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative">
-                                <span className="material-symbols-outlined text-primary text-2xl">pending_actions</span>
+                                <DynamicLucideIcon name="pending_actions" className="text-primary text-2xl" />
                                 {pendingVerifications > 0 && <span className="absolute -top-1 -right-1 size-3 bg-primary rounded-full border-2 border-white dark:border-[#131d21] animate-pulse"></span>}
                             </div>
                             <h4 className="text-2xl font-black tracking-tight mb-1">{pendingVerifications} Pending</h4>
                             <p className="text-xs font-bold text-[#4b636c] dark:text-gray-400 uppercase tracking-widest">Seller verifications</p>
                             <div className="mt-8 flex items-center text-primary font-bold text-[10px] uppercase tracking-widest gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                                Manage Apps <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                Manage Apps <DynamicLucideIcon name="arrow_forward" className="text-sm" />
                             </div>
                         </div>
                     </Link>
 
                     <Link href="/dashboard/admin/reports" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1 hover:border-orange-500/50 dark:hover:border-orange-500/50">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity scale-150 origin-top-right translate-x-4 -translate-y-4">
-                            <span className="material-symbols-outlined text-8xl text-orange-500">report_problem</span>
+                            <DynamicLucideIcon name="report_problem" className="text-8xl text-orange-500" />
                         </div>
                         <div className="flex flex-col h-full relative z-10">
                             <div className="size-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative">
-                                <span className="material-symbols-outlined text-orange-500 text-2xl">report_problem</span>
+                                <DynamicLucideIcon name="report_problem" className="text-orange-500 text-2xl" />
                                 {pendingReports > 0 && <span className="absolute -top-1 -right-1 size-3 bg-orange-500 rounded-full border-2 border-white dark:border-[#131d21] animate-pulse"></span>}
                             </div>
                             <h4 className="text-2xl font-black tracking-tight mb-1">{pendingReports} Flagged</h4>
                             <p className="text-xs font-bold text-[#4b636c] dark:text-gray-400 uppercase tracking-widest">Items to review</p>
                             <div className="mt-8 flex items-center text-orange-500 font-bold text-[10px] uppercase tracking-widest gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                                Investigate <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                Investigate <DynamicLucideIcon name="arrow_forward" className="text-sm" />
                             </div>
                         </div>
                     </Link>
 
                     <Link href="/dashboard/admin/orders" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/10 hover:-translate-y-1 hover:border-green-500/50 dark:hover:border-green-500/50">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity scale-150 origin-top-right translate-x-4 -translate-y-4">
-                            <span className="material-symbols-outlined text-8xl text-green-500">account_balance_wallet</span>
+                            <DynamicLucideIcon name="account_balance_wallet" className="text-8xl text-green-500" />
                         </div>
                         <div className="flex flex-col h-full relative z-10">
                             <div className="size-12 rounded-xl bg-green-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative">
-                                <span className="material-symbols-outlined text-green-500 text-2xl">account_balance_wallet</span>
+                                <DynamicLucideIcon name="account_balance_wallet" className="text-green-500 text-2xl" />
                             </div>
                             <h4 className="text-2xl font-black tracking-tight mb-1">{orderCount} Total</h4>
                             <p className="text-xs font-bold text-[#4b636c] dark:text-gray-400 uppercase tracking-widest">Orders in system</p>
                             <div className="mt-8 flex items-center text-green-500 font-bold text-[10px] uppercase tracking-widest gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                                All Ledgers <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                All Ledgers <DynamicLucideIcon name="arrow_forward" className="text-sm" />
                             </div>
                         </div>
                     </Link>
 
                     <Link href="/dashboard/admin/refund-requests" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-1 hover:border-red-500/50 dark:hover:border-red-500/50">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity scale-150 origin-top-right translate-x-4 -translate-y-4">
-                            <span className="material-symbols-outlined text-8xl text-red-500">keyboard_return</span>
+                            <DynamicLucideIcon name="keyboard_return" className="text-8xl text-red-500" />
                         </div>
                         <div className="flex flex-col h-full relative z-10">
                             <div className="size-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative">
-                                <span className="material-symbols-outlined text-red-500 text-2xl">keyboard_return</span>
+                                <DynamicLucideIcon name="keyboard_return" className="text-red-500 text-2xl" />
                                 {pendingRefunds > 0 && <span className="absolute -top-1 -right-1 size-3 bg-red-500 rounded-full border-2 border-white dark:border-[#131d21] animate-pulse"></span>}
                             </div>
                             <h4 className="text-2xl font-black tracking-tight mb-1">{pendingRefunds} Pending</h4>
                             <p className="text-xs font-bold text-[#4b636c] dark:text-gray-400 uppercase tracking-widest">Refund requests</p>
                             <div className="mt-8 flex items-center text-red-500 font-bold text-[10px] uppercase tracking-widest gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                                Review Disputes <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                Review Disputes <DynamicLucideIcon name="arrow_forward" className="text-sm" />
                             </div>
                         </div>
                     </Link>

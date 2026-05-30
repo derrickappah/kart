@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -87,10 +88,8 @@ export default function EscrowManagementClient({ order }) {
                 order.escrow_status === 'Released' ? 'bg-green-500/10 text-green-500' :
                   'bg-gray-500/10 text-gray-500'
                 }`}>
-                <span className="material-symbols-outlined text-3xl">
-                  {order.escrow_status === 'Held' ? 'lock' :
-                    order.escrow_status === 'Released' ? 'lock_open' : 'history_edu'}
-                </span>
+                <DynamicLucideIcon name={order.escrow_status === 'Held' ? 'lock' :
+                    order.escrow_status === 'Released' ? 'lock_open' : 'history_edu'} className="text-3xl" />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -116,7 +115,7 @@ export default function EscrowManagementClient({ order }) {
           {order.refund_status === 'Requested' && (
             <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-amber-500">warning</span>
+                <DynamicLucideIcon name="warning" className="text-amber-500" />
                 <div>
                   <p className="text-xs font-black text-amber-500 uppercase tracking-tight">Refund Requested</p>
                   <p className="text-[10px] text-amber-500/70 font-bold">The buyer has formally requested a refund for this order.</p>
@@ -142,7 +141,7 @@ export default function EscrowManagementClient({ order }) {
                   disabled={loading}
                   className="px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-all flex items-center gap-2 border border-red-500/20 active:scale-95 disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-[18px]">keyboard_return</span>
+                  <DynamicLucideIcon name="keyboard_return" className="text-[18px]" />
                   Issue Refund
                 </button>
                 <button
@@ -150,13 +149,13 @@ export default function EscrowManagementClient({ order }) {
                   disabled={loading}
                   className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined">verified_user</span>
+                  <DynamicLucideIcon name="verified_user" />
                   Authorize Release
                 </button>
               </div>
             ) : (
               <div className="px-6 py-3 rounded-xl bg-background-light dark:bg-[#212b30] border border-[#dce3e5] dark:border-[#2d3b41] text-[#4b636c] text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">security</span>
+                <DynamicLucideIcon name="security" className="text-[18px]" />
                 {order.escrow_status === 'Released' ? 'Registry Finalized' :
                   order.escrow_status === 'Refunded' ? 'Funds Reversed' :
                     'Protocol Pending'}
@@ -173,9 +172,7 @@ export default function EscrowManagementClient({ order }) {
           <div className="relative bg-white dark:bg-[#182125] w-full max-w-md rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-8 text-center space-y-4">
               <div className={`mx-auto size-16 rounded-2xl ${confirmModal.type === 'refund' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'} flex items-center justify-center`}>
-                <span className="material-symbols-outlined text-3xl">
-                  {confirmModal.type === 'refund' ? 'keyboard_return' : 'info'}
-                </span>
+                <DynamicLucideIcon name={confirmModal.type === 'refund' ? 'keyboard_return' : 'info'} className="text-3xl" />
               </div>
               <h3 className="text-xl font-black tracking-tighter">
                 {confirmModal.type === 'refund' ? 'Confirm Full Refund?' : 'Authorize Escrow Release?'}
@@ -214,9 +211,7 @@ export default function EscrowManagementClient({ order }) {
       {toast.show && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300">
           <div className={`${toast.type === 'success' ? 'bg-primary shadow-primary/20' : 'bg-red-500 shadow-red-500/20'} text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-2xl`}>
-            <span className="material-symbols-outlined text-sm">
-              {toast.type === 'success' ? 'check_circle' : 'error'}
-            </span>
+            <DynamicLucideIcon name={toast.type === 'success' ? 'check_circle' : 'error'} className="text-sm" />
             <span className="text-[10px] font-black uppercase tracking-widest">{toast.message}</span>
           </div>
         </div>

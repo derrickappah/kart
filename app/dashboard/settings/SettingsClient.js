@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -62,7 +63,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             <Link href="/dashboard/settings/account/email" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4 overflow-hidden">
                 <div className="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shrink-0">
-                  <span className="material-symbols-outlined">mail</span>
+                  <DynamicLucideIcon name="mail" />
                 </div>
                 <div className="flex flex-col truncate">
                   <span className="text-base font-semibold text-slate-900 dark:text-white">Email</span>
@@ -70,7 +71,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 </div>
               </div>
               <div className="flex items-center gap-2 pl-4 shrink-0">
-                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+                <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
               </div>
             </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
@@ -79,7 +80,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             <Link href="/dashboard/settings/account/phone" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4 overflow-hidden">
                 <div className="flex items-center justify-center size-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shrink-0">
-                  <span className="material-symbols-outlined">call</span>
+                  <DynamicLucideIcon name="call" />
                 </div>
                 <div className="flex flex-col truncate">
                   <span className="text-base font-semibold text-slate-900 dark:text-white">Phone</span>
@@ -89,7 +90,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 </div>
               </div>
               <div className="flex items-center gap-2 pl-4 shrink-0">
-                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+                <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
               </div>
             </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
@@ -98,23 +99,23 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             <Link href="/dashboard/settings/verify" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-[#247d8f]/10 text-[#247d8f] shrink-0">
-                  <span className="material-symbols-outlined">verified_user</span>
+                  <DynamicLucideIcon name="verified_user" />
                 </div>
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Seller Verification</span>
               </div>
               <div className="flex items-center gap-2">
                 {(initialProfile?.is_verified || initialProfile?.verification_status === 'Approved') ? (
                   <div className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full border border-green-200 dark:border-green-900/50">
-                    <span className="material-symbols-outlined text-[14px] text-green-700 dark:text-green-400" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                    <DynamicLucideIcon name="verified" style={{ fontVariationSettings: "'FILL' 1" }} className="text-[14px] text-green-700 dark:text-green-400" />
                     <span className="text-xs font-bold text-green-700 dark:text-green-400">Verified</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                    <span className="material-symbols-outlined text-[14px] text-slate-500 dark:text-slate-400">pending</span>
+                    <DynamicLucideIcon name="pending" className="text-[14px] text-slate-500 dark:text-slate-400" />
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Not Verified</span>
                   </div>
                 )}
-                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+                <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
               </div>
             </Link>
           </div>
@@ -127,24 +128,24 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             <Link href="/dashboard/settings/security/password" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 shrink-0">
-                  <span className="material-symbols-outlined">lock</span>
+                  <DynamicLucideIcon name="lock" />
                 </div>
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Change Password</span>
               </div>
-              <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+              <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
             </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
             <Link href="/dashboard/settings/security/2fa" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 shrink-0">
-                  <span className="material-symbols-outlined">shield</span>
+                  <DynamicLucideIcon name="shield" />
                 </div>
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Two-Factor Authentication</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-slate-400">Off</span>
-                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+                <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
               </div>
             </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
@@ -152,11 +153,11 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             <Link href="/dashboard/settings/security/activity" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 shrink-0">
-                  <span className="material-symbols-outlined">history</span>
+                  <DynamicLucideIcon name="history" />
                 </div>
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Login Activity</span>
               </div>
-              <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+              <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
             </Link>
           </div>
         </section>
@@ -168,35 +169,35 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             <Link href="/dashboard/settings/payout" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 shrink-0">
-                  <span className="material-symbols-outlined">payments</span>
+                  <DynamicLucideIcon name="payments" />
                 </div>
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Payout Details</span>
               </div>
-              <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+              <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
             </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
             <Link href="/dashboard/settings/preferences/notifications" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shrink-0">
-                  <span className="material-symbols-outlined">notifications</span>
+                  <DynamicLucideIcon name="notifications" />
                 </div>
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Notifications</span>
               </div>
-              <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+              <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
             </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 
             <Link href="/dashboard/settings/preferences/language" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 shrink-0">
-                  <span className="material-symbols-outlined">language</span>
+                  <DynamicLucideIcon name="language" />
                 </div>
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Language</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-slate-500 dark:text-slate-400">English</span>
-                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+                <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
               </div>
             </Link>
           </div>
@@ -209,7 +210,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             <div className="p-4">
               <div className="flex items-start gap-4">
                 <div className="flex items-center justify-center size-10 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 shrink-0">
-                  <span className="material-symbols-outlined">delete_forever</span>
+                  <DynamicLucideIcon name="delete_forever" />
                 </div>
                 <div className="flex-1">
                   <h4 className="text-base font-semibold text-slate-900 dark:text-white mb-1">Delete Account</h4>
@@ -225,12 +226,12 @@ export default function SettingsClient({ initialProfile, initialUser }) {
 
                   {deletionRequest?.status === 'pending' ? (
                     <div className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/30 rounded-lg px-3 py-2">
-                      <span className="material-symbols-outlined text-yellow-600 dark:text-yellow-400 text-sm">schedule</span>
+                      <DynamicLucideIcon name="schedule" className="text-yellow-600 dark:text-yellow-400 text-sm" />
                       <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">Deletion Pending</span>
                     </div>
                   ) : deletionRequest?.status === 'approved' ? (
                     <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 rounded-lg px-3 py-2">
-                      <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-sm">check_circle</span>
+                      <DynamicLucideIcon name="check_circle" className="text-red-600 dark:text-red-400 text-sm" />
                       <span className="text-sm font-medium text-red-700 dark:text-red-300">Approved - Processing Soon</span>
                     </div>
                   ) : (
@@ -239,7 +240,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                       disabled={loadingDeletion}
                       className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-lg text-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-red-600/25 flex items-center gap-1.5"
                     >
-                      <span className="material-symbols-outlined text-base">warning</span>
+                      <DynamicLucideIcon name="warning" className="text-base" />
                       Request Account Deletion
                     </button>
                   )}
@@ -255,7 +256,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
             onClick={() => signout()}
             className="w-full bg-white dark:bg-[#1E292B] border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 font-bold py-4 rounded-xl shadow-sm active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
           >
-            <span className="material-symbols-outlined text-lg">logout</span>
+            <DynamicLucideIcon name="logout" className="text-lg" />
             Log Out
           </button>
           <p className="text-xs text-slate-400 dark:text-slate-600 font-medium">Version 2.4.0 (Build 302)</p>

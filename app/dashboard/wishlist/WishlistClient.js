@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 
 export default function WishlistClient({ initialItems }) {
     const router = useRouter();
@@ -119,7 +120,7 @@ export default function WishlistClient({ initialItems }) {
                                             <div className="space-y-3">
                                                 {seller && (
                                                     <div className="flex items-center gap-2">
-                                                        <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[8px] font-bold ring-1 ring-primary/20 overflow-hidden">
+                                                        <div className="relative size-5 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[8px] font-bold ring-1 ring-primary/20 overflow-hidden">
                                                             {seller.avatar_url ? (
                                                                 <Image src={seller.avatar_url} alt={seller.display_name} fill className="object-cover" />
                                                             ) : (

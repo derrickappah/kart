@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '../../../../../utils/supabase/client';
@@ -121,7 +122,7 @@ function SuccessContent() {
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-gray-300">image</span>
+                                        <DynamicLucideIcon name="image" className="text-gray-300" />
                                     </div>
                                 )}
                             </div>
@@ -148,7 +149,7 @@ function SuccessContent() {
                     >
                         <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                         <span className="relative z-10 flex items-center gap-2 text-white font-bold text-lg">
-                            <span className="material-symbols-outlined text-[20px]">rocket_launch</span>
+                            <DynamicLucideIcon name="rocket_launch" className="text-[20px]" />
                             Promote Listing
                         </span>
                         <span className="relative z-10 bg-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-md backdrop-blur-sm">

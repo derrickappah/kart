@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -245,7 +246,7 @@ export default function EditProfilePage() {
                 <div className="max-w-md mx-auto w-full px-5">
                     <div className="pt-8 pb-4 text-center space-y-1">
                         <Link href="/profile" className="flex items-center text-primary text-sm font-bold gap-1 mb-2">
-                            <span className="material-symbols-outlined text-sm">arrow_back</span>
+                            <DynamicLucideIcon name="arrow_back" className="text-sm" />
                             Back to Profile
                         </Link>
                         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">Profile Settings</h1>
@@ -260,7 +261,7 @@ export default function EditProfilePage() {
 
                     {success && (
                         <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-2 animate-bounce">
-                            <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400">check_circle</span>
+                            <DynamicLucideIcon name="check_circle" className="text-emerald-600 dark:text-emerald-400" />
                             <p className="text-emerald-600 dark:text-emerald-400 text-sm font-bold">Profile updated successfully! Redirecting...</p>
                         </div>
                     )}
@@ -285,7 +286,7 @@ export default function EditProfilePage() {
                                 </div>
                             </div>
                             <div className="absolute bottom-0 right-0 size-9 bg-[#1daddd] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-[#111d21] transform transition-transform group-hover:scale-110">
-                                <span className="material-symbols-outlined text-[20px]">{uploading ? 'hourglass_empty' : 'photo_camera'}</span>
+                                <DynamicLucideIcon name={uploading ? 'hourglass_empty' : 'photo_camera'} className="text-[20px]" />
                             </div>
                         </div>
                         <div className="mt-4 text-center">
@@ -299,7 +300,7 @@ export default function EditProfilePage() {
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <span className="material-symbols-outlined text-[22px]">person</span>
+                                    <DynamicLucideIcon name="person" className="text-[22px]" />
                                 </div>
                                 <input
                                     className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium placeholder-slate-400 shadow-sm transition-all duration-200"
@@ -316,7 +317,7 @@ export default function EditProfilePage() {
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Username</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <span className="material-symbols-outlined text-[22px]">alternate_email</span>
+                                    <DynamicLucideIcon name="alternate_email" className="text-[22px]" />
                                 </div>
                                 <input
                                     className={`w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200 ${errors.username ? 'border-red-400 focus:border-red-400' : ''}`}
@@ -333,7 +334,7 @@ export default function EditProfilePage() {
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Bio</label>
                             <div className="relative group">
                                 <div className="absolute top-4 left-4 pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <span className="material-symbols-outlined text-[22px]">edit_note</span>
+                                    <DynamicLucideIcon name="edit_note" className="text-[22px]" />
                                 </div>
                                 <textarea
                                     className="w-full min-h-[120px] bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 py-4 text-slate-900 dark:text-white font-medium placeholder-slate-400 shadow-sm transition-all duration-200 resize-none"
@@ -357,7 +358,7 @@ export default function EditProfilePage() {
                                     readOnly
                                 />
                                 <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
-                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>lock</span>
+                                    <DynamicLucideIcon name="lock" style={{ fontSize: '20px' }} />
                                 </div>
                             </div>
                         </div>
@@ -369,7 +370,7 @@ export default function EditProfilePage() {
                                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email Address</label>
                                     <div className="relative opacity-60">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                            <span className="material-symbols-outlined text-[22px]">mail</span>
+                                            <DynamicLucideIcon name="mail" className="text-[22px]" />
                                         </div>
                                         <input
                                             className="w-full h-14 bg-gray-100 dark:bg-[#142328] border-none rounded-xl pl-12 pr-4 text-slate-500 font-medium cursor-not-allowed"
@@ -384,7 +385,7 @@ export default function EditProfilePage() {
                                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">WhatsApp / Phone</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                            <span className="material-symbols-outlined text-[22px]">call</span>
+                                            <DynamicLucideIcon name="call" className="text-[22px]" />
                                         </div>
                                         <input
                                             className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
@@ -402,7 +403,7 @@ export default function EditProfilePage() {
                             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Campus / Location</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <span className="material-symbols-outlined text-[22px]">location_on</span>
+                                    <DynamicLucideIcon name="location_on" className="text-[22px]" />
                                 </div>
                                 <input
                                     className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
@@ -421,7 +422,7 @@ export default function EditProfilePage() {
                                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Instagram</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#E1306C] transition-colors">
-                                            <span className="material-symbols-outlined text-[22px]">photo_camera</span>
+                                            <DynamicLucideIcon name="photo_camera" className="text-[22px]" />
                                         </div>
                                         <input
                                             className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#E1306C] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium placeholder-slate-400 shadow-sm transition-all duration-200"
@@ -436,7 +437,7 @@ export default function EditProfilePage() {
                                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Snapchat</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FFFC00] transition-colors">
-                                            <span className="material-symbols-outlined text-[22px]">camera_alt</span>
+                                            <DynamicLucideIcon name="camera_alt" className="text-[22px]" />
                                         </div>
                                         <input
                                             className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#FFFC00] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
@@ -461,7 +462,7 @@ export default function EditProfilePage() {
                         className="w-full h-14 bg-primary hover:bg-primary-dark active:scale-[0.98] text-white font-bold text-lg rounded-2xl shadow-lg shadow-primary/25 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         <span>{saving ? 'Saving Changes...' : uploading ? 'Uploading Photo...' : 'Save All Changes'}</span>
-                        <span className="material-symbols-outlined text-[20px]">{success ? 'done_all' : 'check'}</span>
+                        <DynamicLucideIcon name={success ? 'done_all' : 'check'} className="text-[20px]" />
                     </button>
                 </div>
             </div>

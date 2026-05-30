@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
 import { createClient } from '../../utils/supabase/client';
@@ -108,7 +109,7 @@ export default function ConversationList() {
 
                 {conversations.length > 0 && (
                     <div className="group flex w-full items-center rounded-2xl bg-white dark:bg-[#232628] px-4 py-3.5 transition-all focus-within:ring-2 focus-within:ring-[#1daddd]/50 border border-gray-100 dark:border-gray-800 shadow-sm">
-                        <span className="material-symbols-outlined text-[#1daddd] text-[24px] font-bold">search</span>
+                        <DynamicLucideIcon name="search" className="text-[#1daddd] text-[24px] font-bold" />
                         <input
                             type="text"
                             className="ml-3 flex-1 bg-transparent text-base font-semibold text-gray-900 placeholder-gray-500 focus:outline-none dark:text-white dark:placeholder-gray-400 border-none p-0 focus:ring-0"
@@ -137,7 +138,7 @@ export default function ConversationList() {
                 ) : filteredConversations.length === 0 ? (
                     <div className="text-center py-12 px-6">
                         <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="material-symbols-outlined text-slate-400 text-3xl">inbox</span>
+                            <DynamicLucideIcon name="inbox" className="text-slate-400 text-3xl" />
                         </div>
                         <h3 className="text-slate-900 dark:text-white font-bold mb-1">No messages yet</h3>
                         <p className="text-slate-500 text-sm">When you contact a seller, your conversation will appear here.</p>

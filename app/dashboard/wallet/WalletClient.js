@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { createClient } from '../../../utils/supabase/client';
 import Link from 'next/link';
@@ -110,7 +111,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
 
                             {parseFloat(wallet?.pending_balance || 0) > 0 && (
                                 <div className="flex items-center gap-1.5 mt-1 text-[#4f8596] dark:text-slate-400">
-                                    <span className="material-symbols-outlined text-sm">schedule</span>
+                                    <DynamicLucideIcon name="schedule" className="text-sm" />
                                     <p className="text-xs font-bold">
                                         GHS {parseFloat(wallet.pending_balance).toFixed(2)} Pending
                                     </p>
@@ -121,11 +122,11 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                         {/* Action Button Group */}
                         <div className="flex gap-3 p-4 pt-0">
                             <Link href="/dashboard/wallet/deposit" className="flex-1 btn-primary h-14">
-                                <span className="material-symbols-outlined text-xl">add_circle</span>
+                                <DynamicLucideIcon name="add_circle" className="text-xl" />
                                 <span>Add Funds</span>
                             </Link>
                             <Link href="/dashboard/wallet/withdraw" className="flex-1 btn-primary h-14">
-                                <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
+                                <DynamicLucideIcon name="account_balance_wallet" className="text-xl" />
                                 <span>Withdraw</span>
                             </Link>
                         </div>
@@ -146,7 +147,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                             return (
                                 <div key={t.id} className="flex items-center gap-4 bg-white dark:bg-[#1a2b31] p-4 min-h-[80px] rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                                     <div className={`flex items-center justify-center rounded-xl shrink-0 size-12 ${isCredit ? 'bg-green-50 dark:bg-green-900/20 text-green-600' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
-                                        <span className="material-symbols-outlined">{getTransactionIcon(t.transaction_type)}</span>
+                                        <DynamicLucideIcon name={getTransactionIcon(t.transaction_type)} />
                                     </div>
                                     <div className="flex flex-col flex-1 justify-center min-w-0">
                                         <p className="text-[#0e181b] dark:text-white text-base font-bold leading-tight truncate">
@@ -169,7 +170,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                         })
                     ) : (
                         <div className="text-center py-12 px-6 bg-white dark:bg-[#1a2b31] rounded-2xl border-2 border-dashed border-slate-100 dark:border-slate-800">
-                            <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">history</span>
+                            <DynamicLucideIcon name="history" className="text-4xl text-slate-300 mb-2" />
                             <p className="text-slate-400 font-bold text-sm">No transactions yet</p>
                         </div>
                     )}
@@ -189,7 +190,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                             </button>
                         </div>
                         <div className="absolute -right-4 -bottom-4 opacity-20 rotate-12">
-                            <span className="material-symbols-outlined text-[120px]">share</span>
+                            <DynamicLucideIcon name="share" className="text-[120px]" />
                         </div>
                     </div>
                 </div>
@@ -199,7 +200,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
             {showToast && (
                 <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] animate-bounce-in">
                     <div className="bg-[#1daddd] text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-xl shadow-[#1daddd]/20">
-                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                        <DynamicLucideIcon name="check_circle" className="text-sm" />
                         <span className="text-sm font-bold">{toastMessage}</span>
                     </div>
                 </div>

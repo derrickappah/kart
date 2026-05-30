@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -40,7 +41,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                     <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
                         <div className="flex items-center gap-4">
                             <div className={`size-10 rounded-lg bg-${stat.color === 'primary' ? 'primary' : stat.color === 'amber-500' ? 'amber-500' : stat.color === 'green-500' ? 'green-500' : 'red-500'}/10 text-${stat.color === 'primary' ? 'primary' : stat.color === 'amber-500' ? 'amber-500' : stat.color === 'green-500' ? 'green-500' : 'red-500'} flex items-center justify-center`}>
-                                <span className="material-symbols-outlined">{stat.icon}</span>
+                                <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
                                 <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
@@ -68,14 +69,14 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                 : 'text-[#4b636c] hover:bg-primary/5'
                                 }`}
                         >
-                            <span className="material-symbols-outlined text-[16px]">{tab.icon}</span>
+                            <DynamicLucideIcon name={tab.icon} className="text-[16px]" />
                             {tab.label}
                         </button>
                     ))}
                 </div>
 
                 <form onSubmit={handleSearch} className="relative w-full md:w-80 group">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors text-sm">search</span>
+                    <DynamicLucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors text-sm" />
                     <input
                         className="w-full bg-background-light dark:bg-[#212b30] border-none rounded-xl pl-9 pr-4 py-2.5 text-[10px] font-black tracking-widest uppercase focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-[#4b636c]/50"
                         placeholder="Search Reference or ID..."
@@ -116,7 +117,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                                     <Image src={productImage} alt="" fill className="object-cover group-hover/img:scale-110 transition-transform" sizes="48px" />
                                                 ) : (
                                                     <div className="size-full flex items-center justify-center text-[#4b636c]/30">
-                                                        <span className="material-symbols-outlined text-2xl">package_2</span>
+                                                        <DynamicLucideIcon name="package_2" className="text-2xl" />
                                                     </div>
                                                 )}
                                             </div>
@@ -165,14 +166,14 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                                 className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-[#dce3e5] dark:border-[#2d3b41] hover:border-primary/20"
                                                 title="Execute Protocol"
                                             >
-                                                <span className="material-symbols-outlined text-[18px]">payments</span>
+                                                <DynamicLucideIcon name="payments" className="text-[18px]" />
                                             </Link>
                                             <button
                                                 onClick={() => setInspectOrder(order)}
                                                 className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-[#dce3e5] dark:border-[#2d3b41] hover:border-primary/20"
                                                 title="Quick Inspect"
                                             >
-                                                <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                                <DynamicLucideIcon name="visibility" className="text-[18px]" />
                                             </button>
                                         </div>
                                     </td>
@@ -185,7 +186,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                 {(!initialOrders || initialOrders.length === 0) && (
                     <div className="p-20 text-center">
                         <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mx-auto mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
-                            <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">receipt_long</span>
+                            <DynamicLucideIcon name="receipt_long" className="text-4xl text-[#4b636c]/30" />
                         </div>
                         <h3 className="text-lg font-black tracking-tighter">No transactions recorded</h3>
                         <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-[0.2em] mt-2 max-w-xs mx-auto">
@@ -206,7 +207,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                 <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-[0.2em] mt-1">Registry ID: {inspectOrder.id.slice(0, 8)}</p>
                             </div>
                             <button onClick={() => setInspectOrder(null)} className="size-10 rounded-full hover:bg-gray-100 dark:hover:bg-[#212b30] flex items-center justify-center transition-colors">
-                                <span className="material-symbols-outlined text-[20px]">close</span>
+                                <DynamicLucideIcon name="close" className="text-[20px]" />
                             </button>
                         </div>
 
@@ -217,7 +218,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                         <Image src={inspectOrder.product.image_url} alt="" fill className="object-cover" />
                                     ) : (
                                         <div className="size-full flex items-center justify-center text-[#4b636c]/20">
-                                            <span className="material-symbols-outlined text-4xl">inventory_2</span>
+                                            <DynamicLucideIcon name="inventory_2" className="text-4xl" />
                                         </div>
                                     )}
                                 </div>
@@ -275,7 +276,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                 href={`/dashboard/admin/orders/${inspectOrder.id}`}
                                 className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center gap-3 active:scale-95"
                             >
-                                <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                                <DynamicLucideIcon name="account_balance_wallet" className="text-[18px]" />
                                 Manage Settlement
                             </Link>
                         </div>
@@ -288,10 +289,10 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                 <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">Showing <span className="text-[#111618] dark:text-white">1-{initialOrders.length}</span> of <span className="text-[#111618] dark:text-white">{stats.totalCount}</span></p>
                 <div className="flex gap-2">
                     <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
-                        <span className="material-symbols-outlined">chevron_left</span>
+                        <DynamicLucideIcon name="chevron_left" />
                     </button>
                     <button className="size-10 rounded-xl bg-white/70 dark:bg-[#182125]/70 border border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors disabled:opacity-50" disabled>
-                        <span className="material-symbols-outlined">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" />
                     </button>
                 </div>
             </div>

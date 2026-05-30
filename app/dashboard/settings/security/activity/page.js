@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -40,7 +41,7 @@ export default function LoginActivityPage() {
         <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <header className="px-4 pt-6 flex items-center gap-4">
                 <button onClick={() => router.back()} className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm">
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <DynamicLucideIcon name="arrow_back" />
                 </button>
                 <h1 className="text-xl font-bold">Login Activity</h1>
             </header>
@@ -63,7 +64,7 @@ export default function LoginActivityPage() {
                     ) : session ? (
                         <div className="p-4 flex items-center gap-4">
                             <div className="size-12 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center">
-                                <span className="material-symbols-outlined">{getDeviceIcon(navigator.userAgent)}</span>
+                                <DynamicLucideIcon name={getDeviceIcon(navigator.userAgent)} />
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-2">
@@ -81,7 +82,7 @@ export default function LoginActivityPage() {
                 </div>
 
                 <div className="mt-8 p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/30 flex gap-4">
-                    <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">shield</span>
+                    <DynamicLucideIcon name="shield" className="text-amber-600 dark:text-amber-400" />
                     <p className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">
                         If you don&apos;t recognize a device or location, we recommend changing your password immediately.
                     </p>

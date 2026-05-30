@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -103,7 +104,7 @@ export default function PayoutDetailsPage() {
         <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <header className="px-4 pt-6 pb-2 flex items-center gap-4 sticky top-0 bg-[#f6f7f8]/80 dark:bg-[#131d1f]/80 backdrop-blur-md z-10">
                 <button onClick={() => router.back()} className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm">
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <DynamicLucideIcon name="arrow_back" />
                 </button>
                 <h1 className="text-xl font-bold">Payout Details</h1>
             </header>
@@ -113,7 +114,7 @@ export default function PayoutDetailsPage() {
                     {/* Bank Transfer Section */}
                     <section className="space-y-4">
                         <div className="flex items-center gap-2 px-2">
-                            <span className="material-symbols-outlined text-primary">account_balance</span>
+                            <DynamicLucideIcon name="account_balance" className="text-primary" />
                             <h2 className="text-lg font-bold">Bank Account</h2>
                         </div>
                         <div className="bg-white dark:bg-[#1E292B] rounded-2xl p-6 shadow-sm space-y-4">
@@ -153,7 +154,7 @@ export default function PayoutDetailsPage() {
                     {/* Mobile Money Section */}
                     <section className="space-y-4">
                         <div className="flex items-center gap-2 px-2">
-                            <span className="material-symbols-outlined text-primary">smartphone</span>
+                            <DynamicLucideIcon name="smartphone" className="text-primary" />
                             <h2 className="text-lg font-bold">Mobile Money</h2>
                         </div>
                         <div className="bg-white dark:bg-[#1E292B] rounded-2xl p-6 shadow-sm space-y-4">

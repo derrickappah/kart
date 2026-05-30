@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -105,12 +106,12 @@ export default function ConfirmDeliveryButton({ orderId, orderStatus }) {
             >
                 {isLoading ? (
                     <>
-                        <span className="material-symbols-outlined animate-spin">refresh</span>
+                        <DynamicLucideIcon name="refresh" className="animate-spin" />
                         <span>Sending Code...</span>
                     </>
                 ) : (
                     <>
-                        <span className="material-symbols-outlined group-hover:scale-110 transition-transform">check_circle</span>
+                        <DynamicLucideIcon name="check_circle" className="group-hover:scale-110 transition-transform" />
                         <span>Confirm Delivery</span>
                     </>
                 )}
@@ -118,7 +119,7 @@ export default function ConfirmDeliveryButton({ orderId, orderStatus }) {
 
             {error && !isModalOpen && (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
-                    <span className="material-symbols-outlined text-red-500 text-xl shrink-0">error</span>
+                    <DynamicLucideIcon name="error" className="text-red-500 text-xl shrink-0" />
                     <p className="text-red-500 text-sm font-medium">{error}</p>
                 </div>
             )}

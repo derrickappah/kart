@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -131,7 +132,7 @@ export default function IDReviewPage() {
                     <div className="px-4 pt-4">
                         <div className="bg-white dark:bg-[#23272e] rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                             <div className="p-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary text-sm">badge</span>
+                                <DynamicLucideIcon name="badge" className="text-primary text-sm" />
                                 <span className="text-xs font-semibold uppercase tracking-wider text-[#647e87]">Captured ID Document</span>
                             </div>
                             <div className="flex w-full p-3">
@@ -143,7 +144,7 @@ export default function IDReviewPage() {
                                         ></div>
                                     ) : (
                                         <div className="flex flex-col items-center justify-center text-gray-400 gap-2">
-                                            <span className="material-symbols-outlined text-4xl">image_not_supported</span>
+                                            <DynamicLucideIcon name="image_not_supported" className="text-4xl" />
                                             <p className="text-xs font-medium">No image captured</p>
                                         </div>
                                     )}
@@ -162,7 +163,7 @@ export default function IDReviewPage() {
                                     onClick={handleToggleEdit}
                                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                                 >
-                                    <span className="material-symbols-outlined text-lg">{isEditing ? 'check' : 'edit'}</span>
+                                    <DynamicLucideIcon name={isEditing ? 'check' : 'edit'} className="text-lg" />
                                     <span className="text-xs font-bold uppercase tracking-wider">{isEditing ? 'Done' : 'Edit'}</span>
                                 </button>
                             )}
@@ -189,7 +190,7 @@ export default function IDReviewPage() {
                         {/* Name Item */}
                         <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 ${!isReading && details.fullName ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
                             <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <span className="material-symbols-outlined">person</span>
+                                <DynamicLucideIcon name="person" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
@@ -210,7 +211,7 @@ export default function IDReviewPage() {
                         {/* University Item */}
                         <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-75 ${!isReading && details.university ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
                             <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <span className="material-symbols-outlined">school</span>
+                                <DynamicLucideIcon name="school" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
@@ -231,7 +232,7 @@ export default function IDReviewPage() {
                         {/* ID Number Item */}
                         <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-150 ${!isReading && details.idNumber ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
                             <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <span className="material-symbols-outlined">pin</span>
+                                <DynamicLucideIcon name="pin" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
@@ -252,7 +253,7 @@ export default function IDReviewPage() {
 
                     {/* Reassurance Note */}
                     <div className="px-6 py-4 flex items-start gap-3 bg-primary/5 mx-4 mt-6 rounded-2xl border border-primary/10 shadow-sm">
-                        <span className="material-symbols-outlined text-primary text-xl">verified_user</span>
+                        <DynamicLucideIcon name="verified_user" className="text-primary text-xl" />
                         <p className="text-primary text-xs font-bold leading-tight">Your data is encrypted and used only for marketplace trust verification.</p>
                     </div>
                 </div>
@@ -272,7 +273,7 @@ export default function IDReviewPage() {
                         ) : (
                             <>
                                 <span>{isReading ? "Please Wait..." : "Submit for Verification"}</span>
-                                {!isReading && <span className="material-symbols-outlined">arrow_forward</span>}
+                                {!isReading && <DynamicLucideIcon name="arrow_forward" />}
                             </>
                         )}
                     </button>
@@ -281,7 +282,7 @@ export default function IDReviewPage() {
                         disabled={isSubmitting}
                         className="w-full h-14 bg-gray-100 dark:bg-[#23272e] text-[#111617] dark:text-white rounded-xl font-bold text-base hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                        <span className="material-symbols-outlined text-xl">photo_camera</span>
+                        <DynamicLucideIcon name="photo_camera" className="text-xl" />
                         <span>Retake Photo</span>
                     </button>
                 </div>

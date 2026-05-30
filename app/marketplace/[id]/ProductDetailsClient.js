@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -202,21 +203,21 @@ export default function ProductDetailsClient({ product }) {
                     onClick={() => router.back()}
                     className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform"
                 >
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <DynamicLucideIcon name="arrow_back" />
                 </button>
                 <div className="flex gap-2">
                     <button
                         onClick={handleShare}
                         className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform"
                     >
-                        <span className="material-symbols-outlined">share</span>
+                        <DynamicLucideIcon name="share" />
                     </button>
                     <button
                         onClick={handleWishlistToggle}
                         disabled={loadingWishlist}
                         className={`pointer-events-auto size-11 flex items-center justify-center rounded-full backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform ${isInWishlist ? 'bg-primary text-white' : 'bg-white/20 text-white'}`}
                     >
-                        <span className={`material-symbols-outlined ${isInWishlist ? 'fill-current' : ''}`}>favorite</span>
+                        <DynamicLucideIcon name="favorite" className={`${isInWishlist ? 'fill-current' : ''}`} />
                     </button>
                 </div>
             </div>
@@ -260,7 +261,7 @@ export default function ProductDetailsClient({ product }) {
                                 {product.condition}
                             </span>
                             <span className="text-[#5e7d87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider ml-auto flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                                <DynamicLucideIcon name="schedule" className="text-[14px]" />
                                 {timeAgo(product.created_at)}
                             </span>
                         </div>
@@ -285,7 +286,7 @@ export default function ProductDetailsClient({ product }) {
                             <div className="flex flex-col">
                                 <p className="font-bold text-base">{product.seller?.display_name || 'Anonymous'}</p>
                                 <div className="flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-yellow-400 text-sm fill-current">star</span>
+                                    <DynamicLucideIcon name="star" className="text-yellow-400 text-sm fill-current" />
                                     <span className="text-sm font-medium">
                                         {product.seller?.average_rating ? parseFloat(product.seller.average_rating).toFixed(1) : '0.0'}
                                     </span>
@@ -293,7 +294,7 @@ export default function ProductDetailsClient({ product }) {
                                 </div>
                             </div>
                         </div>
-                        <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-slate-400" />
                     </Link>
 
                     {/* Description Section */}
@@ -310,7 +311,7 @@ export default function ProductDetailsClient({ product }) {
                             <h3 className="text-lg font-bold mb-3">Pickup Location</h3>
                             <div className="flex items-center gap-3 p-4 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/10">
                                 <div className="size-10 flex items-center justify-center bg-primary rounded-lg text-white">
-                                    <span className="material-symbols-outlined">location_on</span>
+                                    <DynamicLucideIcon name="location_on" />
                                 </div>
                                 <div>
                                     <p className="font-bold text-sm">{product.campus}</p>
@@ -373,7 +374,7 @@ export default function ProductDetailsClient({ product }) {
                             disabled={loadingChat}
                             className="flex-1 h-14 rounded-2xl border border-primary/20 text-primary font-bold text-base flex items-center justify-center gap-3 bg-primary/[0.04] dark:bg-primary/10 hover:bg-primary/10 active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.2)]"
                         >
-                            <span className="material-symbols-outlined text-[22px]">chat_bubble</span>
+                            <DynamicLucideIcon name="chat_bubble" className="text-[22px]" />
                             {loadingChat ? '...' : (
                                 <span className="flex items-center gap-1.5">
                                     Chat

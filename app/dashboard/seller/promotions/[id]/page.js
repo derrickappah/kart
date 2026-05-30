@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -56,7 +57,7 @@ export default async function PromotionDetailsPage({ params }) {
                             href="/dashboard/seller/promotions"
                             className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                         >
-                            <span className="material-symbols-outlined text-2xl text-slate-900 dark:text-white">arrow_back_ios_new</span>
+                            <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-slate-900 dark:text-white" />
                         </Link>
                         <h1 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10 text-slate-900 dark:text-white">Promotion Details</h1>
                     </div>
@@ -71,7 +72,7 @@ export default async function PromotionDetailsPage({ params }) {
                                 <Image src={ad.product.image_url} alt={ad.product.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
-                                    <span className="material-symbols-outlined text-4xl">image</span>
+                                    <DynamicLucideIcon name="image" className="text-4xl" />
                                 </div>
                             )}
                         </div>
@@ -89,14 +90,14 @@ export default async function PromotionDetailsPage({ params }) {
                     <section className="grid grid-cols-2 gap-4">
                         <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl shadow-soft border border-transparent dark:border-white/5 flex flex-col items-center">
                             <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-primary">
-                                <span className="material-symbols-outlined fill-1">visibility</span>
+                                <DynamicLucideIcon name="visibility" className="fill-1" />
                             </div>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-center">Total Views</span>
                             <p className="text-2xl font-black text-slate-900 dark:text-white">{ad.views || 0}</p>
                         </div>
                         <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl shadow-soft border border-transparent dark:border-white/5 flex flex-col items-center">
                             <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center mb-3 text-orange-500">
-                                <span className="material-symbols-outlined fill-1">touch_app</span>
+                                <DynamicLucideIcon name="touch_app" className="fill-1" />
                             </div>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-center">Total Clicks</span>
                             <p className="text-2xl font-black text-slate-900 dark:text-white">{ad.clicks || 0}</p>
@@ -106,7 +107,7 @@ export default async function PromotionDetailsPage({ params }) {
                     {/* Campaign Info Card */}
                     <section className="bg-white dark:bg-[#1e292b] rounded-2xl p-6 shadow-soft border border-transparent dark:border-white/5 space-y-4">
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary text-lg">info</span>
+                            <DynamicLucideIcon name="info" className="text-primary text-lg" />
                             Campaign Information
                         </h3>
                         <div className="space-y-3 px-1">
@@ -167,7 +168,7 @@ export default async function PromotionDetailsPage({ params }) {
                             </div>
                         ) : (
                             <div className="h-32 flex flex-col items-center justify-center text-slate-300 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
-                                <span className="material-symbols-outlined text-4xl mb-2 opacity-50">analytics</span>
+                                <DynamicLucideIcon name="analytics" className="text-4xl mb-2 opacity-50" />
                                 <p className="text-[10px] font-bold uppercase tracking-widest">Awaiting more data</p>
                             </div>
                         )}

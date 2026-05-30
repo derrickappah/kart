@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -139,7 +140,7 @@ export default function RefundRequestsClient({ initialRequests }) {
                             className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50"
                             title="Reject Request"
                           >
-                            <span className="material-symbols-outlined text-sm">close</span>
+                            <DynamicLucideIcon name="close" className="text-sm" />
                           </button>
                           <button
                             onClick={() => handleRefund(request.order_id)}
@@ -147,7 +148,7 @@ export default function RefundRequestsClient({ initialRequests }) {
                             className="p-2 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors disabled:opacity-50"
                             title="Approve Refund"
                           >
-                            <span className="material-symbols-outlined text-sm">check</span>
+                            <DynamicLucideIcon name="check" className="text-sm" />
                           </button>
                         </div>
                       ) : (
@@ -166,9 +167,7 @@ export default function RefundRequestsClient({ initialRequests }) {
       {toast.show && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300">
           <div className={`${toast.type === 'success' ? 'bg-primary shadow-primary/20' : 'bg-red-500 shadow-red-500/20'} text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-2xl`}>
-            <span className="material-symbols-outlined text-sm">
-              {toast.type === 'success' ? 'check_circle' : 'error'}
-            </span>
+            <DynamicLucideIcon name={toast.type === 'success' ? 'check_circle' : 'error'} className="text-sm" />
             <span className="text-[10px] font-black uppercase tracking-widest">{toast.message}</span>
           </div>
         </div>

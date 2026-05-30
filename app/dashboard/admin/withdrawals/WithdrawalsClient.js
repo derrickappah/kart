@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -303,7 +304,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                   stat.color === 'amber-500' ? 'bg-amber-500/10 text-amber-500' :
                     'bg-blue-500/10 text-blue-500'
                 }`}>
-                <span className="material-symbols-outlined text-[24px]">{stat.icon}</span>
+                <DynamicLucideIcon name={stat.icon} className="text-[24px]" />
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-[#4b636c]">{stat.label}</p>
@@ -324,14 +325,14 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-500 text-sm font-medium flex items-center gap-3 animate-shake">
-          <span className="material-symbols-outlined">error</span>
+          <DynamicLucideIcon name="error" />
           {error}
         </div>
       )}
 
       {success && (
         <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl text-green-500 text-sm font-medium flex items-center gap-3 animate-fade-in">
-          <span className="material-symbols-outlined">verified_user</span>
+          <DynamicLucideIcon name="verified_user" />
           {success}
         </div>
       )}
@@ -412,7 +413,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                           </div>
                         ) : (
                           <div className="text-xs text-red-500 font-bold bg-red-500/10 p-3 rounded-xl border border-red-500/20 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[16px]">warning</span>
+                            <DynamicLucideIcon name="warning" className="text-[16px]" />
                             Incomplete Payout Information
                           </div>
                         )}
@@ -420,7 +421,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                         {hasPaystackError(request) && (
                           <div className="mt-4 p-3 rounded-xl bg-red-500/5 border border-red-500/10 text-[10px] text-red-500 font-bold flex flex-col gap-1">
                             <div className="flex items-center gap-2">
-                              <span className="material-symbols-outlined text-[14px]">report</span>
+                              <DynamicLucideIcon name="report" className="text-[14px]" />
                               {request.admin_notes}
                             </div>
                             {request.paystack_retry_count > 0 && (
@@ -442,7 +443,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                                 disabled={loading[request.id]}
                                 className="px-4 py-2 rounded-xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-colors flex items-center gap-2 disabled:opacity-50"
                               >
-                                <span className="material-symbols-outlined text-[16px]">refresh</span>
+                                <DynamicLucideIcon name="refresh" className="text-[16px]" />
                                 {loading[request.id] ? 'Retrying...' : 'Retry automated'}
                               </button>
                               <button
@@ -450,7 +451,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                                 disabled={loading[request.id]}
                                 className="px-4 py-2 rounded-xl bg-[#111618] text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-colors flex items-center gap-2 disabled:opacity-50"
                               >
-                                <span className="material-symbols-outlined text-[16px]">account_balance</span>
+                                <DynamicLucideIcon name="account_balance" className="text-[16px]" />
                                 {loading[request.id] ? 'Wait...' : 'Manual Payout'}
                               </button>
                             </>
@@ -461,7 +462,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                                 disabled={loading[request.id]}
                                 className="px-5 py-2.5 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50"
                               >
-                                <span className="material-symbols-outlined text-[16px]">rocket_launch</span>
+                                <DynamicLucideIcon name="rocket_launch" className="text-[16px]" />
                                 {loading[request.id] ? 'Processing...' : 'Authorize Payout'}
                               </button>
                               <button
@@ -470,7 +471,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                                 className="px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors"
                                 title="Reject Request"
                               >
-                                <span className="material-symbols-outlined text-[18px]">close</span>
+                                <DynamicLucideIcon name="close" className="text-[18px]" />
                               </button>
                             </>
                           )}
@@ -549,7 +550,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                 <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-[0.2em] mt-1">Order Protocol Override</p>
               </div>
               <button onClick={closeManualModal} className="size-10 rounded-full hover:bg-gray-100 dark:hover:bg-[#212b30] flex items-center justify-center transition-colors">
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <DynamicLucideIcon name="close" className="text-[20px]" />
               </button>
             </div>
 
@@ -615,7 +616,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                 {loading[manualModalOpen] ? (
                   <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-[18px]">verified</span>
+                  <DynamicLucideIcon name="verified" className="text-[18px]" />
                 )}
                 Finalize Payout
               </button>
@@ -627,7 +628,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
       {requests.length === 0 && !error && (
         <div className="py-20 flex flex-col items-center justify-center text-center">
           <div className="size-20 bg-gray-100 dark:bg-[#182125] rounded-3xl flex items-center justify-center mb-6 border border-[#dce3e5] dark:border-[#2d3b41]">
-            <span className="material-symbols-outlined text-4xl text-[#4b636c]/30">account_balance_wallet</span>
+            <DynamicLucideIcon name="account_balance_wallet" className="text-4xl text-[#4b636c]/30" />
           </div>
           <h3 className="text-xl font-black tracking-tighter">Ledger Operational</h3>
           <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest mt-2 max-w-xs">

@@ -1,5 +1,6 @@
 'use client';
 
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
@@ -46,7 +47,7 @@ function SuccessContent() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-[#f6f7f8] dark:bg-[#111d21]">
                 <div className="size-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mb-6">
-                    <span className="material-symbols-outlined text-3xl">sync_problem</span>
+                    <DynamicLucideIcon name="sync_problem" className="text-3xl" />
                 </div>
                 <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Verification Failed</h1>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-xs">{error}</p>

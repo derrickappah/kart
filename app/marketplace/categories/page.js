@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 
 const categories = [
@@ -41,7 +42,7 @@ export default function CategoriesPage() {
 
         <div className="mt-auto py-8">
             <Link href="/marketplace" className="flex items-center justify-center gap-2 text-primary font-black text-xs uppercase tracking-widest border-2 border-primary/10 rounded-2xl h-14 hover:bg-primary/5 transition-colors">
-                <span className="material-symbols-outlined text-[18px]">shopping_basket</span>
+                <DynamicLucideIcon name="shopping_basket" className="text-[18px]" />
                 Go to Marketplace
             </Link>
         </div>

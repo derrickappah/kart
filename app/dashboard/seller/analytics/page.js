@@ -1,3 +1,4 @@
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -84,7 +85,7 @@ export default async function SellerAnalyticsPage() {
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-2">Analytics</h3>
             <button className="flex items-center gap-1.5 bg-white dark:bg-[#1e292b] border border-transparent dark:border-white/5 rounded-xl px-3 py-1.5 shadow-soft active:scale-95 transition-all text-[11px] font-bold text-slate-600 dark:text-slate-300">
-              <span className="material-symbols-outlined text-primary text-[16px]">calendar_today</span>
+              <DynamicLucideIcon name="calendar_today" className="text-primary text-[16px]" />
               Last 30 Days
             </button>
           </div>
@@ -97,7 +98,7 @@ export default async function SellerAnalyticsPage() {
               <div className="flex justify-between items-start mb-3 relative z-10">
                 <div className="flex items-center gap-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   <div className="p-2 bg-primary/10 rounded-xl">
-                    <span className="material-symbols-outlined text-primary text-[20px] fill-1">payments</span>
+                    <DynamicLucideIcon name="payments" className="text-primary text-[20px] fill-1" />
                   </div>
                   Total Revenue
                 </div>
@@ -126,7 +127,7 @@ export default async function SellerAnalyticsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-1 mt-4 text-[10px] font-bold text-primary">
-                <span className="material-symbols-outlined text-[14px]">visibility</span>
+                <DynamicLucideIcon name="visibility" className="text-[14px]" />
                 Live tracking
               </div>
             </div>
@@ -208,15 +209,15 @@ export default async function SellerAnalyticsPage() {
                     <h4 className="text-[13px] font-bold text-slate-900 dark:text-white truncate mb-1.5">{item.title}</h4>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                        <span className="material-symbols-outlined text-[16px] text-slate-300 dark:text-slate-600">visibility</span>
+                        <DynamicLucideIcon name="visibility" className="text-[16px] text-slate-300 dark:text-slate-600" />
                         {item.views}
                       </div>
                       <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                        <span className="material-symbols-outlined text-[16px] text-primary/70">favorite</span>
+                        <DynamicLucideIcon name="favorite" className="text-[16px] text-primary/70" />
                         {item.favorites}
                       </div>
                       <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                        <span className="material-symbols-outlined text-[16px] text-blue-400">share</span>
+                        <DynamicLucideIcon name="share" className="text-[16px] text-blue-400" />
                         {item.shares || 0}
                       </div>
                     </div>

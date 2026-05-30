@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -93,7 +94,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                         onClick={() => router.back()}
                         className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                        <span className="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+                        <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl" />
                     </button>
                     <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Review Order</h2>
                 </header>
@@ -112,7 +113,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                 <div className="flex flex-col gap-1 overflow-hidden">
                                     <p className="text-[#0e181b] dark:text-white text-base font-bold leading-tight truncate">{product.title}</p>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[16px] text-[#4f8596]">person</span>
+                                        <DynamicLucideIcon name="person" className="text-[16px] text-[#4f8596]" />
                                         <p className="text-[#4f8596] text-sm font-medium leading-normal">{product.seller?.display_name || 'Unknown Seller'}</p>
                                     </div>
                                 </div>
@@ -154,7 +155,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'wallet' ? 'bg-primary text-white' : 'bg-[#1daddd]/10 text-[#1daddd]'}`}>
-                                        <span className="material-symbols-outlined">account_balance_wallet</span>
+                                        <DynamicLucideIcon name="account_balance_wallet" />
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold text-[#7A818C] uppercase tracking-tighter">KART Wallet</p>
@@ -170,13 +171,13 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
 
                             {!canAfford && paymentMethod === 'wallet' && (
                                 <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 p-2 rounded-lg">
-                                    <span className="material-symbols-outlined text-red-500 text-sm">error</span>
+                                    <DynamicLucideIcon name="error" className="text-red-500 text-sm" />
                                     <p className="text-red-500 text-[11px] font-medium leading-tight">Insufficient balance. Please top up or pay with card.</p>
                                 </div>
                             )}
 
                             <div onClick={(e) => { e.stopPropagation(); router.push('/dashboard/wallet'); }} className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors self-end text-[#0e181b] dark:text-white">
-                                <span className="material-symbols-outlined text-sm">add</span>
+                                <DynamicLucideIcon name="add" className="text-sm" />
                                 <span className="text-sm font-bold">Top Up</span>
                             </div>
                         </div>
@@ -191,7 +192,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                         >
                             <div className="flex items-center gap-3">
                                 <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'paystack' ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
-                                    <span className="material-symbols-outlined">credit_card</span>
+                                    <DynamicLucideIcon name="credit_card" />
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold text-[#7A818C] uppercase tracking-tighter">Direct Payment</p>
@@ -206,7 +207,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
 
                     {/* Safety Note */}
                     <div className="bg-[#e9f7fb] dark:bg-[#1daddd]/10 p-4 rounded-xl border border-[#1daddd]/20 flex gap-3">
-                        <span className="material-symbols-outlined text-[#1daddd] shrink-0">verified_user</span>
+                        <DynamicLucideIcon name="verified_user" className="text-[#1daddd] shrink-0" />
                         <p className="text-[#4f8596] dark:text-[#1daddd]/90 text-sm leading-snug font-medium">
                             <span className="font-bold">Safety Note:</span> Your funds are held securely in escrow and only released once you confirm the handover.
                         </p>
@@ -224,7 +225,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'}`}
                     >
                         <span>{loading ? 'Processing...' : (paymentMethod === 'wallet' ? 'Confirm and Pay' : 'Pay with Paystack')}</span>
-                        {!loading && <span className="material-symbols-outlined">chevron_right</span>}
+                        {!loading && <DynamicLucideIcon name="chevron_right" />}
                     </button>
                 </footer>
             </div>

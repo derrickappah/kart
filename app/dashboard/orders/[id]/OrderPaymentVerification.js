@@ -1,4 +1,5 @@
 'use client';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -137,7 +138,7 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
           {verifying ? (
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (
-            <span className="material-symbols-outlined text-xl">{config.icon}</span>
+            <DynamicLucideIcon name={config.icon} className="text-xl" />
           )}
         </div>
         <div className="flex-1 overflow-hidden">
@@ -155,14 +156,14 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
             onClick={handleManualRefresh}
             className="flex-1 px-4 py-2 bg-white/20 dark:bg-black/20 rounded-xl font-bold text-xs hover:bg-white/30 dark:hover:bg-black/30 transition-colors flex items-center justify-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-base">refresh</span>
+            <DynamicLucideIcon name="refresh" className="text-base" />
             <span>Refresh Page</span>
           </button>
           <button
             onClick={handleRetry}
             className="flex-1 px-4 py-2 bg-white/20 dark:bg-black/20 rounded-xl font-bold text-xs hover:bg-white/30 dark:hover:bg-black/30 transition-colors flex items-center justify-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-base">replay</span>
+            <DynamicLucideIcon name="replay" className="text-base" />
             <span>Retry Verification</span>
           </button>
         </div>
