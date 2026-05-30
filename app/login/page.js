@@ -2,9 +2,9 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Image from 'next/image';
 import Link from 'next/link';
-import { login, signInWithGoogle, signInWithGoogleToken } from '../auth/actions';
+import { login } from '../auth/actions';
 import { createClient } from '@/utils/supabase/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Login() {
@@ -13,6 +13,34 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [socialLoading, setSocialLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        // Handle automatic Google login initiation for App Fallback
+        const query = new URLSearchParams(window.location.search);
+        if (query.get('initiate_google') === 'true') {
+            const isApp = query.get('is_app') === 'true';
+            const supabase = createClient();
+            supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: isApp 
+                        ? `${window.location.origin}/api/auth/callback?return_to_app=true`
+                        : `${window.location.origin}/api/auth/callback`,
+                    queryParams: {
+                        prompt: 'select_account',
+                    }
+                }
+            }).then(({ data, error }) => {
+                if (error) {
+                    setError(error.message);
+                } else if (data?.url) {
+                    window.location.href = data.url;
+                }
+            }).catch(err => {
+                console.error('Failed to auto-initiate Google login:', err);
+            });
+        }
+    }, []);
 
     async function handleSubmit(formData) {
         setLoading(true);
@@ -68,29 +96,33 @@ export default function Login() {
                     }
                 } catch (nativeErr) {
                     console.warn('Native Google Auth failed, falling back to browser:', nativeErr);
-                    // Add alert to help developer debug why Native Auth failed
-                    if (typeof window !== 'undefined') {
-                        alert("Native Auth Failed: " + (nativeErr?.message || JSON.stringify(nativeErr)) + ". Falling back to web flow.");
-                    }
                 }
 
-                // Fallback for Native: Browser-based OAuth
-                const result = await signInWithGoogle(true);
-                if (result?.url) {
-                    await Browser.open({ url: result.url }); // Removed presentationStyle: 'popover' to encourage Custom Tabs
-                    // The AppDeepLinkHandler will handle the redirect back
-                } else if (result?.error) {
-                    setError(result.error);
-                    setSocialLoading(false);
-                }
+                // Fallback for Native: Open System Browser pointing to web login with redirect flag
+                // This ensures cookies are set in the System Browser session before Google OAuth redirects
+                const finalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kart.cx';
+                await Browser.open({ 
+                    url: `${finalSiteUrl}/login?initiate_google=true&is_app=true` 
+                });
+                setSocialLoading(false);
             } else {
-                // Web platform
-                const result = await signInWithGoogle(false);
-                if (result?.url) {
-                    window.location.href = result.url;
-                } else if (result?.error) {
-                    setError(result.error);
+                // Web platform: Direct client-side flow
+                const supabase = createClient();
+                const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: `${window.location.origin}/api/auth/callback`,
+                        queryParams: {
+                            prompt: 'select_account',
+                        }
+                    }
+                });
+
+                if (oauthError) {
+                    setError(oauthError.message);
                     setSocialLoading(false);
+                } else if (data?.url) {
+                    window.location.href = data.url;
                 }
             }
         } catch (err) {

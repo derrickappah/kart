@@ -2,7 +2,7 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Image from 'next/image';
 import Link from 'next/link';
-import { signup, signInWithGoogle, signInWithGoogleToken } from '../auth/actions';
+import { signup } from '../auth/actions';
 import { createClient } from '@/utils/supabase/client';
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -49,35 +49,57 @@ function SignupForm() {
 
             if (isNative) {
                 const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+                const { Browser } = await import('@capacitor/browser');
+                
                 // Ensure initialization if not already done
                 try { await GoogleAuth.initialize(); } catch (e) {}
 
-                const user = await GoogleAuth.signIn();
-                if (user?.authentication?.idToken) {
-                    const supabase = createClient();
-                    const { error: signInError } = await supabase.auth.signInWithIdToken({
-                        provider: 'google',
-                        token: user.authentication.idToken,
-                    });
-                    
-                    if (signInError) {
-                        setError(signInError.message);
-                        setSocialLoading(false);
-                    } else {
-                        router.push('/profile');
-                        router.refresh();
+                try {
+                    const user = await GoogleAuth.signIn();
+                    if (user?.authentication?.idToken) {
+                        const supabase = createClient();
+                        const { error: signInError } = await supabase.auth.signInWithIdToken({
+                            provider: 'google',
+                            token: user.authentication.idToken,
+                        });
+                        
+                        if (signInError) {
+                            setError(signInError.message);
+                            setSocialLoading(false);
+                        } else {
+                            router.push('/profile');
+                            router.refresh();
+                        }
+                        return; // Success
                     }
-                } else {
-                    setError('Failed to get Google authentication token');
-                    setSocialLoading(false);
+                } catch (nativeErr) {
+                    console.warn('Native Google Auth failed, falling back to browser:', nativeErr);
                 }
+
+                // Fallback for Native: Open System Browser pointing to web login with redirect flag
+                const finalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kart.cx';
+                await Browser.open({ 
+                    url: `${finalSiteUrl}/login?initiate_google=true&is_app=true` 
+                });
+                setSocialLoading(false);
             } else {
-                const result = await signInWithGoogle(false);
-                if (result?.url) {
-                    window.location.href = result.url;
-                } else if (result?.error) {
-                    setError(result.error);
+                // Web platform: Direct client-side flow
+                const supabase = createClient();
+                const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: `${window.location.origin}/api/auth/callback`,
+                        queryParams: {
+                            prompt: 'select_account',
+                        }
+                    }
+                });
+
+                if (oauthError) {
+                    setError(oauthError.message);
                     setSocialLoading(false);
+                } else if (data?.url) {
+                    window.location.href = data.url;
                 }
             }
         } catch (err) {
