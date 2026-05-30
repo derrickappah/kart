@@ -33,14 +33,14 @@ export default function MobileBottomNav({ user }) {
                 {/* Home */}
                 <Link href="/" prefetch={true} className="group flex flex-col items-center">
                     <div className={`w-[44px] h-[44px] flex justify-center items-center transition-transform group-active:scale-90 ${isActive('/') ? 'text-[#1daddd]' : 'text-gray-400'}`}>
-                        <DynamicLucideIcon name="home" size={26} style={{ fontVariationSettings: isActive('/') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                        <DynamicLucideIcon name="home" size={26} strokeWidth={isActive('/') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                     </div>
                 </Link>
 
                 {/* Marketplace */}
                 <Link href="/marketplace" prefetch={true} className="group flex flex-col items-center -mr-8">
                     <div className={`w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/marketplace') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
-                        <DynamicLucideIcon name="storefront" size={26} style={{ fontVariationSettings: isActive('/marketplace') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                        <DynamicLucideIcon name="storefront" size={26} strokeWidth={isActive('/marketplace') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/marketplace') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                     </div>
                 </Link>
 
@@ -54,14 +54,14 @@ export default function MobileBottomNav({ user }) {
                 {/* Messages */}
                 <Link href="/dashboard/messages" prefetch={true} className="group flex flex-col items-center -ml-8">
                     <div className={`w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
-                        <DynamicLucideIcon name="chat_bubble" size={26} style={{ fontVariationSettings: isActive('/dashboard/messages') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                        <DynamicLucideIcon name="chat_bubble" size={26} strokeWidth={isActive('/dashboard/messages') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/dashboard/messages') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                     </div>
                 </Link>
 
                 {/* Profile */}
                 <Link href={profileLink} prefetch={true} className="group flex flex-col items-center">
                     <div className={`w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/profile') || isActive('/login') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
-                        <DynamicLucideIcon name="account_circle" size={26} style={{ fontVariationSettings: isActive('/profile') || isActive('/login') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                        <DynamicLucideIcon name="account_circle" size={26} strokeWidth={isActive('/profile') || isActive('/login') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/profile') || isActive('/login') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                     </div>
                 </Link>
             </div>

@@ -309,7 +309,10 @@ export default function DynamicLucideIcon({ name, className = '', ...props }) {
   if (cleanStyle.fontVariationSettings) {
     const fvs = cleanStyle.fontVariationSettings;
     if (fvs.includes("'FILL' 1") || fvs.includes('"FILL" 1')) {
-      fillVal = "currentColor";
+      const fillableIcons = ['favorite', 'heart', 'star', 'bookmark'];
+      if (fillableIcons.includes(cleanName)) {
+        fillVal = "currentColor";
+      }
     }
     if (fvs.includes("'wght' 700") || fvs.includes('"wght" 700')) {
       strokeWidthVal = 3; // bolder
