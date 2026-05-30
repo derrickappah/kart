@@ -5,6 +5,13 @@ export async function middleware(request) {
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
 
+  // 1. Canonical Redirect: redirect naked domain to www in production
+  if (process.env.NODE_ENV === 'production' && url.hostname === 'kart.cx') {
+    const canonicalUrl = new URL(request.url)
+    canonicalUrl.hostname = 'www.kart.cx'
+    return NextResponse.redirect(canonicalUrl, 301)
+  }
+
   // Self-healing: if we receive an auth code on a page other than the callback,
   // redirect to the callback route handler to exchange the code for a session.
   if (code && !url.pathname.startsWith('/api/auth/callback')) {
@@ -20,6 +27,10 @@ export async function middleware(request) {
       headers: request.headers,
     },
   })
+
+  const host = request.headers.get('host')
+  const cleanHost = host ? host.split(':')[0] : ''
+  const cookieDomain = cleanHost.endsWith('kart.cx') ? '.kart.cx' : undefined
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -40,6 +51,7 @@ export async function middleware(request) {
             response.cookies.set(name, value, {
               ...options,
               secure: process.env.NODE_ENV === 'production',
+              ...(cookieDomain ? { domain: cookieDomain } : {})
             })
           )
         },

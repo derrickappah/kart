@@ -1,9 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 export async function createClient() {
     const cookieStore = await cookies()
+    const headerList = await headers()
+    const host = headerList.get('host')
 
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -15,10 +17,14 @@ export async function createClient() {
                 },
                 setAll(cookiesToSet) {
                     try {
+                        const cleanHost = host ? host.split(':')[0] : '';
+                        const cookieDomain = cleanHost.endsWith('kart.cx') ? '.kart.cx' : undefined;
+
                         cookiesToSet.forEach(({ name, value, options }) =>
                             cookieStore.set(name, value, {
                                 ...options,
                                 secure: process.env.NODE_ENV === 'production',
+                                ...(cookieDomain ? { domain: cookieDomain } : {})
                             })
                         )
                     } catch {

@@ -15,6 +15,10 @@ export async function GET(request) {
     const response = NextResponse.redirect(`${redirectBase}${next}`)
 
     if (code) {
+        const host = request.headers.get('host')
+        const cleanHost = host ? host.split(':')[0] : ''
+        const cookieDomain = cleanHost.endsWith('kart.cx') ? '.kart.cx' : undefined
+
         // Create custom server client that attaches cookies directly to redirect response
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -32,6 +36,7 @@ export async function GET(request) {
                                 const secureOptions = {
                                     ...options,
                                     secure: process.env.NODE_ENV === 'production',
+                                    ...(cookieDomain ? { domain: cookieDomain } : {})
                                 };
                                 cookieStore.set(name, value, secureOptions)
                                 response.cookies.set(name, value, secureOptions)
