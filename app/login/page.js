@@ -14,9 +14,11 @@ export default function Login() {
     const [creatingAccount, setCreatingAccount] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    async function handleSubmit(formData) {
+    async function handleSubmit(e) {
+        e.preventDefault();
         setLoading(true);
         setError(null);
+        const formData = new FormData(e.currentTarget);
         const result = await login(formData);
         if (result?.error) {
             setError(result.error);
@@ -49,7 +51,7 @@ export default function Login() {
 
                 {/* Form Section */}
                 <div className="flex flex-col space-y-5">
-                    <form action={handleSubmit} className="flex flex-col space-y-5">
+                    <form onSubmit={handleSubmit} className="flex flex-col space-y-5">
                         {error && (
                             <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3 rounded-xl text-sm text-center font-medium">
                                 {error}
