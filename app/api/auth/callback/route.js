@@ -8,8 +8,7 @@ export async function GET(request) {
     const returnToApp = searchParams.get('return_to_app') === 'true'
     const next = searchParams.get('next') ?? '/'
 
-    const isLocalEnv = process.env.NODE_ENV === 'development'
-    const redirectBase = isLocalEnv ? origin : (process.env.NEXT_PUBLIC_SITE_URL || origin)
+    const redirectBase = origin
     
     // Create redirect response for normal web flow
     const response = NextResponse.redirect(`${redirectBase}${next}`)
