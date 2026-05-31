@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { login } from '../auth/actions';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 export default function Login() {
     const router = useRouter();
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [creatingAccount, setCreatingAccount] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     async function handleSubmit(formData) {
@@ -98,17 +100,29 @@ export default function Login() {
                         <div className="pt-4 flex flex-col space-y-4">
                             <button 
                                 type="submit" 
-                                disabled={loading}
-                                className="w-full btn-primary h-14 text-lg"
+                                disabled={loading || creatingAccount}
+                                className="w-full btn-primary h-14 text-lg flex items-center justify-center gap-2"
                             >
-                                {loading ? 'Logging in...' : 'Log In'}
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="animate-spin h-5 w-5" />
+                                        Logging in...
+                                    </>
+                                ) : (
+                                    'Log In'
+                                )}
                             </button>
 
                             <Link 
                                 href="/signup"
-                                className="bg-[#24282D] dark:bg-white/10 hover:bg-[#24282D]/90 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] text-base flex items-center justify-center gap-2"
+                                onClick={() => setCreatingAccount(true)}
+                                className={`bg-[#24282D] dark:bg-white/10 hover:bg-[#24282D]/90 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] text-base flex items-center justify-center gap-2 ${creatingAccount || loading ? 'pointer-events-none opacity-50' : ''}`}
                             >
-                                <DynamicLucideIcon name="person_add" className="text-[20px]" />
+                                {creatingAccount ? (
+                                    <Loader2 className="animate-spin h-5 w-5" />
+                                ) : (
+                                    <DynamicLucideIcon name="person_add" className="text-[20px]" />
+                                )}
                                 Create an Account
                             </Link>
                         </div>

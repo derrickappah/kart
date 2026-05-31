@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { signup } from '../auth/actions';
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 function SignupForm() {
     const router = useRouter();
@@ -12,6 +13,7 @@ function SignupForm() {
     const ref = searchParams.get('ref');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [loggingInInstead, setLoggingInInstead] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     async function handleSubmit(formData) {
@@ -132,17 +134,29 @@ function SignupForm() {
                         <div className="pt-2 flex flex-col space-y-4">
                             <button
                                 type="submit"
-                                disabled={loading}
-                                className="w-full btn-primary h-14 text-lg"
+                                disabled={loading || loggingInInstead}
+                                className="w-full btn-primary h-14 text-lg flex items-center justify-center gap-2"
                             >
-                                {loading ? 'Creating Account...' : 'Create Account'}
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="animate-spin h-5 w-5" />
+                                        Creating Account...
+                                    </>
+                                ) : (
+                                    'Create Account'
+                                )}
                             </button>
 
                             <Link
                                 href="/login"
-                                className="bg-[#24282D] dark:bg-white/10 hover:bg-[#24282D]/90 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] text-base flex items-center justify-center gap-2"
+                                onClick={() => setLoggingInInstead(true)}
+                                className={`bg-[#24282D] dark:bg-white/10 hover:bg-[#24282D]/90 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] text-base flex items-center justify-center gap-2 ${loading || loggingInInstead ? 'pointer-events-none opacity-50' : ''}`}
                             >
-                                <DynamicLucideIcon name="login" className="text-[20px]" />
+                                {loggingInInstead ? (
+                                    <Loader2 className="animate-spin h-5 w-5" />
+                                ) : (
+                                    <DynamicLucideIcon name="login" className="text-[20px]" />
+                                )}
                                 Log In Instead
                             </Link>
                         </div>
@@ -153,7 +167,13 @@ function SignupForm() {
                 <footer className="pt-4">
                     <p className="text-[#4f8596] text-sm text-center px-8">
                         Already have an account?{' '}
-                        <Link className="font-semibold underline ml-1" href="/login">Log In</Link>
+                        <Link 
+                            className={`font-semibold underline ml-1 ${loading || loggingInInstead ? 'pointer-events-none opacity-50' : ''}`} 
+                            href="/login"
+                            onClick={() => setLoggingInInstead(true)}
+                        >
+                            {loggingInInstead ? 'Loading...' : 'Log In'}
+                        </Link>
                     </p>
                 </footer>
             </div>
