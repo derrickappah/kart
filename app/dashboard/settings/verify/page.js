@@ -7,6 +7,7 @@ import Lottie from 'lottie-react';
 import { createClient } from '@/utils/supabase/client';
 import faceVerificationAnimation from '@/public/Face verification.json';
 import successAnimation from '@/public/Success.json';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function VerificationIntroPage() {
     const router = useRouter();
@@ -33,11 +34,7 @@ export default function VerificationIntroPage() {
     const isVerified = profile?.is_verified || profile?.verification_status === 'Approved';
 
     if (loading) {
-        return (
-            <div className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex items-center justify-center">
-                <div className="size-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-            </div>
-        );
+        return <LoadingScreen message="Checking status..." fullScreen={true} />;
     }
 
     if (isVerified) {

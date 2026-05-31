@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../utils/supabase/client';
 import { timeAgo } from '../../utils/dateUtils';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const supabase = createClient();
 
@@ -57,31 +58,7 @@ export default function ProfilePage() {
     });
 
     if (isLoading) {
-        return (
-            <div className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen pb-24 animate-pulse">
-                <div className="max-w-md mx-auto flex flex-col gap-8 px-4 pt-6">
-                    {/* Avatar + name */}
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="size-32 rounded-full bg-gray-200 dark:bg-gray-700" />
-                        <div className="h-6 w-40 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                        <div className="h-4 w-56 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                    </div>
-                    {/* Stats grid */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="h-20 bg-white dark:bg-[#232628] rounded-2xl" />
-                        <div className="h-20 bg-white dark:bg-[#232628] rounded-2xl" />
-                    </div>
-                    {/* Menu rows */}
-                    <div className="flex flex-col gap-2">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="h-16 bg-white dark:bg-[#232628] rounded-xl" />
-                        ))}
-                    </div>
-                    {/* CTA button */}
-                    <div className="h-14 bg-gray-200 dark:bg-gray-700 rounded-xl" />
-                </div>
-            </div>
-        );
+        return <LoadingScreen message="Checking account..." fullScreen={true} />;
     }
 
     if (data === null) {
