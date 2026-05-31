@@ -2,10 +2,10 @@
 import Lottie from 'lottie-react';
 import loadingAnimation from '@/public/kartloading.json';
 
-export default function LoadingScreen({ message = "Loading KART...", fullScreen = true }) {
+export default function LoadingScreen({ message = "Loading KART...", fullScreen = false }) {
   const containerClasses = fullScreen
-    ? "fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f6f7f8] dark:bg-[#111d21] transition-colors duration-300"
-    : "w-full min-h-[300px] flex flex-col items-center justify-center bg-transparent";
+    ? "fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-[#242428] max-w-md mx-auto left-0 right-0 transition-colors duration-300"
+    : "w-full min-h-[calc(100vh-160px)] flex flex-col items-center justify-center bg-white dark:bg-[#242428] transition-colors duration-300";
 
   return (
     <div className={containerClasses}>

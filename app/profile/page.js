@@ -58,7 +58,7 @@ export default function ProfilePage() {
     });
 
     if (isLoading) {
-        return <LoadingScreen message="Checking account..." fullScreen={true} />;
+        return <LoadingScreen message="Checking account..." fullScreen={false} />;
     }
 
     if (data === null) {

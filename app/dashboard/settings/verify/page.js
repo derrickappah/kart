@@ -34,7 +34,7 @@ export default function VerificationIntroPage() {
     const isVerified = profile?.is_verified || profile?.verification_status === 'Approved';
 
     if (loading) {
-        return <LoadingScreen message="Checking status..." fullScreen={true} />;
+        return <LoadingScreen message="Checking status..." fullScreen={false} />;
     }
 
     if (isVerified) {
