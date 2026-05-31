@@ -18,9 +18,6 @@ export default function LoadingScreen({ message = "Loading KART...", fullScreen 
           className="w-full h-full relative z-10"
         />
       </div>
-      <p className="mt-4 text-[#4f8596] dark:text-[#8fc3d3] text-sm font-semibold tracking-widest uppercase animate-pulse">
-        {message}
-      </p>
     </div>
   );
 }
