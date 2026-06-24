@@ -78,8 +78,8 @@ export default function RefundRequestsClient({ initialRequests }) {
   return (
     <div className="space-y-4">
       <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
             <thead>
               <tr className="border-b border-[#dce3e5] dark:border-[#2d3b41] bg-[#f9fafb]/50 dark:bg-[#131d21]/50">
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#4b636c]">Order / Product</th>

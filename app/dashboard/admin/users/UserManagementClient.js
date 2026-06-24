@@ -43,21 +43,21 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
     return (
         <div className="space-y-6">
             {/* User Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Total Users', value: stats.total, color: 'primary', icon: 'group' },
                     { label: 'Active', value: stats.active, color: 'green-500', icon: 'person_check' },
                     { label: 'Admins', value: stats.admins, color: 'purple-500', icon: 'shield_person' },
                     { label: 'Banned', value: stats.banned, color: 'red-500', icon: 'person_off' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <div className="flex items-center gap-4">
-                            <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
+                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className={`size-8 sm:size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center flex-shrink-0`}>
                                 <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
-                                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-black">{stat.value || 0}</h4>
+                                <p className="text-[#4b636c] dark:text-gray-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h4 className="text-lg sm:text-xl font-black">{stat.value || 0}</h4>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
             </div>
 
             {/* Filter & Search Bar */}
-            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-wrap items-center justify-between gap-4">
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
                     <DynamicLucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors" />
                     <input
@@ -77,16 +77,16 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                     />
                 </form>
 
-                <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <button className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
                         <DynamicLucideIcon name="filter_list" className="text-sm" />
                         Campus
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                    <button className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
                         <DynamicLucideIcon name="sort" className="text-sm" />
                         Role
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
+                    <button className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:bg-primary/5 transition-colors">
                         <DynamicLucideIcon name="history" className="text-sm" />
                         Status
                     </button>
@@ -95,7 +95,8 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
 
             {/* User Directory Table */}
             <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
-                <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto scrollbar-thin">
+                    <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
                     <thead>
                         <tr className="bg-gray-50/50 dark:bg-[#212b30]/50 text-[#4b636c] text-[10px] font-black uppercase tracking-widest border-b border-[#dce3e5] dark:border-[#2d3b41]">
                             <th className="px-6 py-4">Identity</th>
@@ -168,6 +169,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                     </tbody>
                 </table>
             </div>
+        </div>
 
             {/* Pagination Placeholder */}
             <div className="flex items-center justify-between px-2">

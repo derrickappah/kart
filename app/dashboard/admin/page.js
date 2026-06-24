@@ -108,45 +108,45 @@ export default async function AdminDashboard() {
     return (
         <div className="space-y-6 pb-8">
             {/* KPI Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                            <DynamicLucideIcon name="groups" className="text-3xl" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
+                    <div className="flex justify-between items-start mb-2 sm:mb-4">
+                        <div className="size-10 sm:size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                            <DynamicLucideIcon name="groups" className="text-2xl sm:text-3xl" />
                         </div>
                     </div>
-                    <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Total Users</p>
-                    <h3 className="text-3xl font-bold mt-1">{userCount || 0}</h3>
+                    <p className="text-[#4b636c] dark:text-gray-400 text-[10px] sm:text-sm font-semibold uppercase tracking-wider">Total Users</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold mt-1">{userCount || 0}</h3>
                 </div>
 
-                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="size-12 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
-                            <DynamicLucideIcon name="verified" className="text-3xl" />
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] transition-transform cursor-default">
+                    <div className="flex justify-between items-start mb-2 sm:mb-4">
+                        <div className="size-10 sm:size-12 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                            <DynamicLucideIcon name="verified" className="text-2xl sm:text-3xl" />
                         </div>
                     </div>
-                    <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Active Subscriptions</p>
-                    <h3 className="text-3xl font-bold mt-1">{activeSubscriptions || 0}</h3>
+                    <p className="text-[#4b636c] dark:text-gray-400 text-[10px] sm:text-sm font-semibold uppercase tracking-wider">Active Subs</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold mt-1">{activeSubscriptions || 0}</h3>
                 </div>
 
-                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="size-12 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                            <DynamicLucideIcon name="inventory_2" className="text-3xl" />
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
+                    <div className="flex justify-between items-start mb-2 sm:mb-4">
+                        <div className="size-10 sm:size-12 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
+                            <DynamicLucideIcon name="inventory_2" className="text-2xl sm:text-3xl" />
                         </div>
                     </div>
-                    <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Active Listings</p>
-                    <h3 className="text-3xl font-bold mt-1">{productCount || 0}</h3>
+                    <p className="text-[#4b636c] dark:text-gray-400 text-[10px] sm:text-sm font-semibold uppercase tracking-wider">Active Listings</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold mt-1">{productCount || 0}</h3>
                 </div>
 
-                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="size-12 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center">
-                            <DynamicLucideIcon name="payments" className="text-3xl" />
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-6 rounded-xl border border-[#dce3e5] dark:border-[#2d393e] hover:scale-[1.02] transition-transform cursor-default">
+                    <div className="flex justify-between items-start mb-2 sm:mb-4">
+                        <div className="size-10 sm:size-12 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center">
+                            <DynamicLucideIcon name="payments" className="text-2xl sm:text-3xl" />
                         </div>
                     </div>
-                    <p className="text-[#4b636c] dark:text-gray-400 text-sm font-semibold uppercase tracking-wider">Total Revenue</p>
-                    <h3 className="text-3xl font-bold mt-1">₵{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</h3>
+                    <p className="text-[#4b636c] dark:text-gray-400 text-[10px] sm:text-sm font-semibold uppercase tracking-wider">Total Revenue</p>
+                    <h3 className="text-2xl sm:text-3xl font-bold mt-1">₵{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</h3>
                 </div>
             </div>
 

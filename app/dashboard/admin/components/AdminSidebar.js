@@ -1,11 +1,12 @@
 'use client';
+'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ isOpen, onClose }) {
     const pathname = usePathname();
     const router = useRouter();
     const supabase = createClient();
@@ -38,11 +39,11 @@ export default function AdminSidebar() {
     };
 
     return (
-        <aside className="w-72 flex-shrink-0 border-r border-[#dce3e5] dark:border-[#2d3b41] bg-white/50 dark:bg-background-dark/50 backdrop-blur-xl sticky top-0 h-screen flex flex-col overflow-hidden">
+        <aside className={`fixed md:sticky top-0 bottom-0 left-0 z-50 h-screen w-72 flex-shrink-0 border-r border-[#dce3e5] dark:border-[#2d3b41] bg-white dark:bg-[#131d20] md:bg-white/50 md:dark:bg-background-dark/50 backdrop-blur-xl flex flex-col overflow-hidden transition-transform duration-300 ease-in-out transform ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
             {/* Fixed Logo Header */}
-            <div className="p-6 pb-4 bg-white/50 dark:bg-background-dark/50 backdrop-blur-xl z-20 relative border-b border-[#dce3e5]/20 dark:border-[#2d3b41]/20">
+            <div className="p-6 pb-4 bg-white/50 dark:bg-[#131d20]/50 md:dark:bg-background-dark/50 backdrop-blur-xl z-20 relative border-b border-[#dce3e5]/20 dark:border-[#2d3b41]/20 flex items-center justify-between">
                 <div className="px-2">
-                    <Link href="/dashboard/admin" className="block">
+                    <Link href="/dashboard/admin" className="block" onClick={onClose}>
                         <Image
                             src="/ChatGPT Image Jan 18, 2026, 10_53_24 PM.png"
                             alt="KART Admin"
@@ -53,6 +54,14 @@ export default function AdminSidebar() {
                         />
                     </Link>
                 </div>
+                {/* Mobile Close Button */}
+                <button
+                    onClick={onClose}
+                    className="md:hidden size-10 rounded-xl hover:bg-gray-100 dark:hover:bg-[#212b30] flex items-center justify-center text-[#4b636c] dark:text-gray-300 active:scale-95 transition-all"
+                    aria-label="Close Navigation"
+                >
+                    <DynamicLucideIcon name="close" className="text-xl" />
+                </button>
             </div>
 
             {/* Scrollable Navigation Area */}
@@ -63,6 +72,7 @@ export default function AdminSidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                onClick={onClose}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group cursor-pointer ${isActive(item.href)
                                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                                     : 'hover:bg-primary/5 text-[#4b636c] transition-colors'
@@ -88,8 +98,6 @@ export default function AdminSidebar() {
                         <DynamicLucideIcon name="logout" className="text-[24px]" />
                         <p className="text-sm font-black uppercase tracking-widest">Logout</p>
                     </button>
-
-
                 </div>
             </div>
         </aside>

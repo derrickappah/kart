@@ -10,7 +10,7 @@ export default function TransactionTrends({ totalRevenue, totalVolume, monthlyDa
     const maxVal = Math.max(...currentData.map(d => d.val), 1);
 
     return (
-        <div className="lg:col-span-2 bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-8 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] min-h-[400px]">
+        <div className="lg:col-span-2 bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-8 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] min-h-[350px] sm:min-h-[400px]">
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h4 className="text-xl font-bold">Transaction Trends</h4>
@@ -38,7 +38,7 @@ export default function TransactionTrends({ totalRevenue, totalVolume, monthlyDa
                 </div>
             </div>
 
-            <div className="relative w-full h-[280px] flex items-end justify-between gap-4">
+            <div className="relative w-full h-[220px] sm:h-[280px] flex items-end justify-between gap-2 sm:gap-4">
                 {totalVolume > 0 ? currentData.map((data) => (
                     <div
                         key={data.label}

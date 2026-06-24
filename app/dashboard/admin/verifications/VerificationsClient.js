@@ -113,21 +113,21 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
     return (
         <div className="space-y-6">
             {/* Verification Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Total Queue', value: stats.total, color: 'primary', icon: 'list_alt' },
                     { label: 'Pending Review', value: stats.pending, color: 'amber-500', icon: 'pending' },
                     { label: 'Total Verified', value: stats.approved, color: 'green-500', icon: 'verified' },
                     { label: 'Total Rejected', value: stats.rejected, color: 'red-500', icon: 'rule' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <div className="flex items-center gap-4">
-                            <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
+                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className={`size-8 sm:size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center flex-shrink-0`}>
                                 <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
-                                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-black tracking-tighter uppercase">{stat.value || 0}</h4>
+                                <p className="text-[#4b636c] dark:text-gray-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h4 className="text-lg sm:text-xl font-black tracking-tighter uppercase">{stat.value || 0}</h4>
                             </div>
                         </div>
                     </div>
@@ -196,9 +196,18 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                                 <div className="relative size-14 rounded-2xl bg-primary/10 flex items-center justify-center font-black text-primary border-2 border-white dark:border-background-dark shadow-sm shrink-0 overflow-hidden">
                                     {(verification.user?.display_name?.[0] || verification.user?.email?.[0] || 'U').toUpperCase()}
                                 </div>
-                                <div className="min-w-0">
+                                <div className="min-w-0 flex-1">
                                     <h4 className="font-black text-sm uppercase tracking-tighter truncate">{verification.user?.display_name || verification.user?.email?.split('@')[0] || 'Anonymous'}</h4>
                                     <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest truncate">{verification.user?.email || 'No Email Registered'}</p>
+                                    <div className="flex flex-wrap items-center gap-1.5 mt-1 sm:hidden">
+                                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${verification.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' :
+                                            verification.status === 'Approved' ? 'bg-green-500/10 text-green-500' :
+                                                'bg-red-500/10 text-red-600'
+                                            }`}>
+                                            {verification.status}
+                                        </span>
+                                        <span className="text-[8px] text-[#4b636c] font-black uppercase tracking-wider">{new Date(verification.created_at).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -288,7 +297,7 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
             {confirmModal.open && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-[#0a0f11]/90 backdrop-blur-md" onClick={() => !loading && setConfirmModal({ open: false, type: '', data: null })}></div>
-                    <div className="relative bg-white dark:bg-[#182125] w-full max-w-md rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="relative bg-white dark:bg-[#182125] w-full max-w-md rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
                         {confirmModal.type === 'approve' ? (
                             <div className="p-8">
                                 <div className="text-center space-y-4 mb-8">

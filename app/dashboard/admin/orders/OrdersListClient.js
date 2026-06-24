@@ -31,21 +31,21 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
     return (
         <div className="space-y-8">
             {/* Financial Pulse Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Platform Volume', value: `GH₵ ${stats.totalRevenue.toLocaleString()}`, color: 'primary', icon: 'account_balance_wallet' },
                     { label: 'Escrow Lock', value: stats.heldCount, color: 'amber-500', icon: 'lock' },
                     { label: 'Total Orders', value: stats.totalCount, color: 'green-500', icon: 'shopping_cart' },
                     { label: 'Refunded', value: stats.refundedCount, color: 'red-500', icon: 'keyboard_return' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <div className="flex items-center gap-4">
-                            <div className={`size-10 rounded-lg bg-${stat.color === 'primary' ? 'primary' : stat.color === 'amber-500' ? 'amber-500' : stat.color === 'green-500' ? 'green-500' : 'red-500'}/10 text-${stat.color === 'primary' ? 'primary' : stat.color === 'amber-500' ? 'amber-500' : stat.color === 'green-500' ? 'green-500' : 'red-500'} flex items-center justify-center`}>
+                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className={`size-8 sm:size-10 rounded-lg bg-${stat.color === 'primary' ? 'primary' : stat.color === 'amber-500' ? 'amber-500' : stat.color === 'green-500' ? 'green-500' : 'red-500'}/10 text-${stat.color === 'primary' ? 'primary' : stat.color === 'amber-500' ? 'amber-500' : stat.color === 'green-500' ? 'green-500' : 'red-500'} flex items-center justify-center flex-shrink-0`}>
                                 <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
-                                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-black tracking-tighter uppercase">{stat.value || 0}</h4>
+                                <p className="text-[#4b636c] dark:text-gray-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h4 className="text-lg sm:text-xl font-black tracking-tighter uppercase">{stat.value || 0}</h4>
                             </div>
                         </div>
                     </div>
@@ -53,8 +53,8 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
             </div>
 
             {/* Transaction Control Bar */}
-            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-2 overflow-x-auto">
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex items-center gap-2 overflow-x-auto w-full lg:w-auto scrollbar-none pb-2 lg:pb-0">
                     {[
                         { label: 'All Transactions', value: 'all', icon: 'receipt_long' },
                         { label: 'Held', value: 'Held', icon: 'lock_person' },
@@ -75,7 +75,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                     ))}
                 </div>
 
-                <form onSubmit={handleSearch} className="relative w-full md:w-80 group">
+                <form onSubmit={handleSearch} className="relative w-full lg:w-80 group">
                     <DynamicLucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors text-sm" />
                     <input
                         className="w-full bg-background-light dark:bg-[#212b30] border-none rounded-xl pl-9 pr-4 py-2.5 text-[10px] font-black tracking-widest uppercase focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-[#4b636c]/50"
@@ -95,7 +95,8 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
 
             {/* Transaction Ledger */}
             <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
-                <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto scrollbar-thin">
+                    <table className="w-full text-left border-collapse min-w-[900px] md:min-w-0">
                     <thead>
                         <tr className="bg-gray-50/50 dark:bg-[#212b30]/50 text-[#4b636c] text-[10px] font-black uppercase tracking-widest border-b border-[#dce3e5] dark:border-[#2d3b41]">
                             <th className="px-6 py-4">Registry Asset</th>
@@ -182,6 +183,7 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                         })}
                     </tbody>
                 </table>
+            </div>
 
                 {(!initialOrders || initialOrders.length === 0) && (
                     <div className="p-20 text-center">
@@ -200,8 +202,8 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
             {inspectOrder && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-[#0a0f11]/80 backdrop-blur-sm" onClick={() => setInspectOrder(null)}></div>
-                    <div className="relative bg-white dark:bg-[#182125] w-full max-w-2xl rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-                        <div className="p-8 border-b border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between">
+                    <div className="relative bg-white dark:bg-[#182125] w-full max-w-2xl rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[90vh] flex flex-col">
+                        <div className="p-6 sm:p-8 border-b border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between flex-shrink-0">
                             <div>
                                 <h2 className="text-xl font-black tracking-tighter">Transaction Protocol</h2>
                                 <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-[0.2em] mt-1">Registry ID: {inspectOrder.id.slice(0, 8)}</p>
@@ -211,9 +213,9 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-8">
-                            <div className="flex gap-6">
-                                <div className="size-32 rounded-2xl bg-gray-100 dark:bg-[#212b30] overflow-hidden relative border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto flex-1">
+                            <div className="flex flex-col sm:flex-row gap-6">
+                                <div className="size-32 rounded-2xl bg-gray-100 dark:bg-[#212b30] overflow-hidden relative border border-[#dce3e5] dark:border-[#2d3b41] shrink-0 mx-auto sm:mx-0">
                                     {inspectOrder.product?.image_url ? (
                                         <Image src={inspectOrder.product.image_url} alt="" fill className="object-cover" />
                                     ) : (
@@ -222,16 +224,16 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex-1 space-y-4">
-                                    <h3 className="text-lg font-black tracking-tight">{inspectOrder.product?.title}</h3>
-                                    <div className="grid grid-cols-2 gap-4">
+                                <div className="flex-1 space-y-4 text-center sm:text-left">
+                                    <h3 className="text-lg font-black tracking-tight">{inspectOrder.product?.title || 'Unknown Item'}</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Asset Value</p>
                                             <p className="text-xl font-black text-primary">GH₵ {parseFloat(inspectOrder.total_amount || 0).toFixed(2)}</p>
                                         </div>
                                         <div>
                                             <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Escrow Protocol</p>
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${inspectOrder.escrow_status === 'Held' ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary'}`}>
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase inline-block ${inspectOrder.escrow_status === 'Held' ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary'}`}>
                                                 {inspectOrder.escrow_status || 'Pending'}
                                             </span>
                                         </div>
@@ -239,17 +241,17 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-8 pt-8 border-t border-[#dce3e5] dark:border-[#2d3b41]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-[#dce3e5] dark:border-[#2d3b41]">
                                 <div className="space-y-4">
                                     <div>
                                         <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Buyer Identity</p>
-                                        <p className="text-xs font-black uppercase tracking-tight">{inspectOrder.buyer?.display_name}</p>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c]">{inspectOrder.buyer?.email}</p>
+                                        <p className="text-xs font-black uppercase tracking-tight truncate">{inspectOrder.buyer?.display_name}</p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] truncate">{inspectOrder.buyer?.email}</p>
                                     </div>
                                     <div>
                                         <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Seller Identity</p>
-                                        <p className="text-xs font-black uppercase tracking-tight">{inspectOrder.seller?.display_name}</p>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c]">{inspectOrder.seller?.email}</p>
+                                        <p className="text-xs font-black uppercase tracking-tight truncate">{inspectOrder.seller?.display_name}</p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] truncate">{inspectOrder.seller?.email}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
@@ -265,16 +267,16 @@ export default function OrdersListClient({ initialOrders, stats, error }) {
                             </div>
                         </div>
 
-                        <div className="p-8 bg-background-light dark:bg-[#212b30]/50 flex items-center justify-between gap-4">
+                        <div className="p-4 sm:p-8 bg-background-light dark:bg-[#212b30]/50 flex flex-col sm:flex-row items-center justify-between gap-4 flex-shrink-0">
                             <button
                                 onClick={() => setInspectOrder(null)}
-                                className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:text-red-500 transition-colors"
+                                className="w-full sm:w-auto px-6 py-3 text-[10px] font-black uppercase tracking-widest text-[#4b636c] hover:text-red-500 transition-colors text-center"
                             >
                                 Close Inspection
                             </button>
                             <Link
                                 href={`/dashboard/admin/orders/${inspectOrder.id}`}
-                                className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center gap-3 active:scale-95"
+                                className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-3 active:scale-95"
                             >
                                 <DynamicLucideIcon name="account_balance_wallet" className="text-[18px]" />
                                 Manage Settlement

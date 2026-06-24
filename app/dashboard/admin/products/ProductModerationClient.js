@@ -86,21 +86,21 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
     return (
         <div className="space-y-6">
             {/* Moderation Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Total Listings', value: stats.total, color: 'primary', icon: 'inventory_2' },
                     { label: 'Active Items', value: stats.active, color: 'green-500', icon: 'shopping_bag' },
                     { label: 'Under Review', value: stats.pending, color: 'amber-500', icon: 'farsight_digital' },
                     { label: 'Banned Items', value: stats.banned, color: 'red-500', icon: 'block' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
-                        <div className="flex items-center gap-4">
-                            <div className={`size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center`}>
+                    <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className={`size-8 sm:size-10 rounded-lg bg-${stat.color}/10 text-${stat.color} flex items-center justify-center flex-shrink-0`}>
                                 <DynamicLucideIcon name={stat.icon} />
                             </div>
                             <div>
-                                <p className="text-[#4b636c] dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-black">{stat.value || 0}</h4>
+                                <p className="text-[#4b636c] dark:text-gray-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h4 className="text-lg sm:text-xl font-black">{stat.value || 0}</h4>
                             </div>
                         </div>
                     </div>
@@ -108,8 +108,8 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
             </div>
 
             {/* Catalog Filters */}
-            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-wrap items-center justify-between gap-4">
-                <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
+            <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <form onSubmit={handleSearch} className="relative w-full lg:w-96 group">
                     <DynamicLucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b636c] group-focus-within:text-primary transition-colors" />
                     <input
                         className="w-full bg-background-light dark:bg-[#212b30] border-none rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-[#4b636c]"
@@ -120,10 +120,10 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                     />
                 </form>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                     <select
                         onChange={(e) => applyFilter('category', e.target.value)}
-                        className="px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] bg-transparent hover:bg-primary/5 transition-colors outline-none cursor-pointer"
+                        className="flex-1 lg:flex-initial px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] bg-transparent hover:bg-primary/5 transition-colors outline-none cursor-pointer"
                     >
                         <option value="">All Categories</option>
                         <option value="Electronics">Electronics</option>
@@ -133,7 +133,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                         <option value="Services">Services</option>
                     </select>
 
-                    <div className="flex items-center gap-1 px-3 py-2 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
+                    <div className="flex-1 lg:flex-initial flex items-center justify-center gap-1 px-3 py-2 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41]">
                         <input
                             type="number"
                             placeholder="Min"
@@ -151,7 +151,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
 
                     <select
                         onChange={(e) => applyFilter('status', e.target.value)}
-                        className="px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] bg-transparent hover:bg-primary/5 transition-colors outline-none cursor-pointer"
+                        className="flex-1 lg:flex-initial px-4 py-2.5 rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] text-[10px] font-black uppercase tracking-widest text-[#4b636c] bg-transparent hover:bg-primary/5 transition-colors outline-none cursor-pointer"
                     >
                         <option value="">All Status</option>
                         <option value="Active">Active</option>
@@ -163,7 +163,8 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
 
             {/* Product Directory Table */}
             <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden">
-                <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto scrollbar-thin">
+                    <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
                     <thead>
                         <tr className="bg-gray-50/50 dark:bg-[#212b30]/50 text-[#4b636c] text-[10px] font-black uppercase tracking-widest border-b border-[#dce3e5] dark:border-[#2d3b41]">
                             <th className="px-6 py-4">Registry Item</th>
@@ -266,13 +267,14 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                     </tbody>
                 </table>
             </div>
+        </div>
 
             {/* Protocol Inspection Modal */}
             {inspectProduct && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-[#0a0f11]/80 backdrop-blur-sm" onClick={() => setInspectProduct(null)}></div>
-                    <div className="relative bg-white dark:bg-[#182125] w-full max-w-2xl rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-                        <div className="p-8 border-b border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between">
+                    <div className="relative bg-white dark:bg-[#182125] w-full max-w-2xl rounded-3xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[90vh] flex flex-col">
+                        <div className="p-6 sm:p-8 border-b border-[#dce3e5] dark:border-[#2d3b41] flex items-center justify-between flex-shrink-0">
                             <div>
                                 <h2 className="text-xl font-black tracking-tighter">Inventory Inspection</h2>
                                 <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-[0.2em] mt-1">Registry ID: {inspectProduct.id.slice(0, 8)}</p>
@@ -282,9 +284,9 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-6">
-                            <div className="flex gap-6">
-                                <div className="size-40 rounded-2xl bg-gray-100 dark:bg-[#212b30] overflow-hidden relative border border-[#dce3e5] dark:border-[#2d3b41]">
+                        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto flex-1">
+                            <div className="flex flex-col sm:flex-row gap-6">
+                                <div className="size-40 rounded-2xl bg-gray-100 dark:bg-[#212b30] overflow-hidden relative border border-[#dce3e5] dark:border-[#2d3b41] shrink-0 mx-auto sm:mx-0">
                                     {inspectProduct.image_url ? (
                                         <Image src={inspectProduct.image_url} alt="" fill className="object-cover" />
                                     ) : (
@@ -293,9 +295,9 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex-1 space-y-3">
+                                <div className="flex-1 space-y-3 text-center sm:text-left">
                                     <h3 className="text-lg font-black tracking-tight">{inspectProduct.title}</h3>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-center sm:justify-start gap-3">
                                         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${statusStyles[inspectProduct.status]}`}>
                                             {inspectProduct.status}
                                         </span>
@@ -309,10 +311,10 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#dce3e5] dark:border-[#2d3b41]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#dce3e5] dark:border-[#2d3b41]">
                                 <div>
                                     <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Merchant Identity</p>
-                                    <p className="text-xs font-black">{inspectProduct.seller?.email || 'Unknown Protocol'}</p>
+                                    <p className="text-xs font-black truncate">{inspectProduct.seller?.email || 'Unknown Protocol'}</p>
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-black uppercase tracking-widest text-[#4b636c] mb-1">Asset Category</p>
@@ -321,7 +323,7 @@ export default function ProductModerationClient({ initialProducts, stats = {} })
                             </div>
                         </div>
 
-                        <div className="p-8 bg-background-light dark:bg-[#212b30]/50 flex items-center justify-between gap-4">
+                        <div className="p-4 sm:p-8 bg-background-light dark:bg-[#212b30]/50 flex flex-col sm:flex-row items-center justify-between gap-4 flex-shrink-0">
                             <button
                                 onClick={() => {
                                     window.open(`/marketplace/${inspectProduct.id}`, '_blank');

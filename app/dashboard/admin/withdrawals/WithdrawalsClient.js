@@ -292,7 +292,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
   return (
     <div className="space-y-8">
       {/* Financial Stats Pulse */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Pending Payouts', value: stats.pending, color: 'primary', icon: 'pending_actions', sub: `GH₵ ${stats.pendingAmount?.toFixed(2)} volume` },
           { label: 'Completed Transfers', value: stats.completed, color: 'green-500', icon: 'check_circle', sub: 'Successfully processed' },
@@ -301,8 +301,8 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
           // The old formula (total - completed - rejected) excluded approved, causing wrong counts.
           { label: 'In Queue', value: (stats.pending || 0) + (stats.approved || 0), color: 'blue-500', icon: 'account_balance_wallet', sub: 'Awaiting settlement' }
         ].map((stat, i) => (
-          <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm">
-            <div className="flex items-center gap-4 mb-4">
+          <div key={i} className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm">
+            <div className="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-4">
               <div className={`size-12 rounded-xl flex items-center justify-center ${stat.color === 'primary' ? 'bg-primary/10 text-primary' :
                 stat.color === 'green-500' ? 'bg-green-500/10 text-green-500' :
                   stat.color === 'amber-500' ? 'bg-amber-500/10 text-amber-500' :
@@ -498,7 +498,8 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
             </div>
 
             <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden shadow-sm">
-              <table className="w-full text-left border-collapse">
+              <div className="overflow-x-auto scrollbar-thin">
+                <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
                 <thead className="bg-background-light dark:bg-[#212b30]/50 border-b border-[#dce3e5] dark:border-[#2d3b41]">
                   <tr>
                     <th className="px-6 py-4 text-[10px] font-black text-[#4b636c] uppercase tracking-widest">Payee Identity</th>
@@ -539,6 +540,7 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                 </tbody>
               </table>
             </div>
+          </div>
           </section>
         )}
       </div>
