@@ -74,12 +74,12 @@ export default async function OrderDetailPage({ params }) {
     'Paid':      { icon: 'payments',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Order Paid',       step: 1 },
     'Shipped':   { icon: 'local_shipping',  color: '#3B82F6', bg: '#DBEAFE', darkBg: 'rgba(59,130,246,0.12)',  label: 'Item Shipped',     step: 2 },
     'Delivered': { icon: 'package_2',       color: '#8B5CF6', bg: '#EDE9FE', darkBg: 'rgba(139,92,246,0.12)',  label: 'Delivered',        step: 3 },
-    'Completed': { icon: 'verified',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Completed',        step: 4 },
+    'Completed': { icon: 'verified',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Completed',        step: 3 },
     'Cancelled': { icon: 'cancel',          color: '#EF4444', bg: '#FEE2E2', darkBg: 'rgba(239,68,68,0.12)',   label: 'Cancelled',        step: -1 },
     'Refunded':  { icon: 'keyboard_return', color: '#EF4444', bg: '#FEE2E2', darkBg: 'rgba(239,68,68,0.12)',   label: 'Refunded',         step: -1 },
   };
 
-  const STEPS = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Completed'];
+  const STEPS = ['Pending', 'Paid', 'Shipped', 'Delivered'];
 
   const normalizedStatus = order.status
     ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()
