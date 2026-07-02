@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
     if (error) {
         return (
-            <div className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#242428] min-h-screen flex items-center justify-center p-4">
                 <p className="text-red-500 font-medium">Failed to load profile. Please refresh the page.</p>
             </div>
         );
@@ -81,7 +81,7 @@ export default function ProfilePage() {
     const university = profile?.university || profile?.campus || "University Student";
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#111618] dark:text-gray-100 min-h-screen pb-24 overflow-x-hidden profile-page">
+        <div className="bg-white dark:bg-[#242428] font-display text-[#111618] dark:text-gray-100 min-h-screen pb-24 overflow-x-hidden profile-page">
             <main className="max-w-md mx-auto flex flex-col gap-8 px-4 pt-6">
                 {/* Profile Header Section */}
                 <section className="flex flex-col items-center animate-fade-in text-center">
@@ -91,7 +91,7 @@ export default function ProfilePage() {
                                 style={{ backgroundImage: profile?.avatar_url ? `url('${profile.avatar_url}')` : "url('https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y')" }}>
                             </div>
                         </div>
-                        <Link href="/profile/edit" className="absolute bottom-1 right-1 bg-[#1daddd] text-white rounded-full p-2 shadow-lg ring-4 ring-[#f6f7f8] dark:ring-[#111d21] flex items-center justify-center hover:scale-105 transition-transform">
+                        <Link href="/profile/edit" className="absolute bottom-1 right-1 bg-[#1daddd] text-white rounded-full p-2 shadow-lg ring-4 ring-white dark:ring-[#242428] flex items-center justify-center hover:scale-105 transition-transform">
                             <DynamicLucideIcon name="edit" className="text-[18px]" />
                         </Link>
                     </div>
