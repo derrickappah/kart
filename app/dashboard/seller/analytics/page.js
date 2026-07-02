@@ -76,8 +76,8 @@ export default async function SellerAnalyticsPage() {
   }).sort((a, b) => b.views - a.views).slice(0, 5); // Show top 5 by views
 
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display antialiased min-h-screen transition-colors duration-200">
-      <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#131d1f] shadow-2xl overflow-hidden">
+    <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
+      <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl overflow-hidden">
 
         {/* Main Content */}
         <main className="flex-1 px-4 py-8 space-y-6 pb-32 overflow-y-auto no-scrollbar">

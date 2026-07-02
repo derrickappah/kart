@@ -6,6 +6,7 @@ import { createClient } from '../utils/supabase/server';
 import SearchBar from "../components/SearchBar";
 import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
+import AdTracker from "../components/AdTracker";
 import { toSentenceCase, seededShuffle, formatPrice } from '../utils/formatters';
 
 export const revalidate = 60;
@@ -60,46 +61,57 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
         <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">See All</Link>
       </div>
       <div className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-4">
-        {displayFeatured.map(product => (
-          <Link
-            key={product.id}
-            href={`/marketplace/${product.id}`}
-            className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
-          >
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
-              <Image
-                src={product.image_url || product.images?.[0] || '/placeholder.png'}
-                alt={product.title}
-                fill
-                sizes="280px"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              {product.condition && (
-                <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
-                  {product.condition}
-                </div>
-              )}
-              <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
-            </div>
-            <div className="flex flex-col p-4">
-              <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
-              <div className="mt-2 flex items-center justify-between">
-                <p className="text-lg font-bold text-primary">₵ {formatPrice(product.price)}</p>
-                <div className="flex items-center gap-1.5 overflow-hidden">
-                  {product.seller?.avatar_url ? (
-                    <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0" alt={product.seller.display_name} />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold shrink-0">
-                      {product.seller?.display_name?.[0] || 'U'}
-                    </div>
-                  )}
-                  <p className="text-xs font-semibold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
-                  {product.seller?.is_verified && <DynamicLucideIcon name="verified" className="text-primary text-[14px] font-bold" />}
+        {displayFeatured.map(product => {
+          const cardContent = (
+            <Link
+              href={`/marketplace/${product.id}`}
+              className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
+            >
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
+                <Image
+                  src={product.image_url || product.images?.[0] || '/placeholder.png'}
+                  alt={product.title}
+                  fill
+                  sizes="280px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                {product.condition && (
+                  <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
+                    {product.condition}
+                  </div>
+                )}
+                <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
+              </div>
+              <div className="flex flex-col p-4">
+                <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-lg font-bold text-primary">₵ {formatPrice(product.price)}</p>
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    {product.seller?.avatar_url ? (
+                      <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0" alt={product.seller.display_name} />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold shrink-0">
+                        {product.seller?.display_name?.[0] || 'U'}
+                      </div>
+                    )}
+                    <p className="text-xs font-semibold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
+                    {product.seller?.is_verified && <DynamicLucideIcon name="verified" className="text-primary text-[14px] font-bold" />}
+                  </div>
                 </div>
               </div>
+            </Link>
+          );
+
+          return product.advertisement_id ? (
+            <AdTracker key={product.id} advertisementId={product.advertisement_id}>
+              {cardContent}
+            </AdTracker>
+          ) : (
+            <div key={product.id} className="contents">
+              {cardContent}
             </div>
-          </Link>
-        ))}
+          );
+        })}
       </div>
 
       {/* Recommended Section */}
@@ -161,22 +173,26 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [wishlistRes, bannerRes, boostedRes, latestRes] = await Promise.all([
+  // Expire any completed promotions on page load (runs on ISR revalidation once every 60s)
+  await supabase.rpc('expire_completed_promotions').catch(err => console.error('Error running expire_completed_promotions RPC:', err));
+
+  const [wishlistRes, adsRes, latestRes] = await Promise.all([
     user
       ? supabase.from('wishlist').select('product_id').eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
     supabase
-      .from('products')
-      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-      .or('is_featured.eq.true,is_boosted.eq.true')
+      .from('advertisements')
+      .select(`
+        id,
+        ad_type,
+        product:products!inner(
+          *,
+          seller:profiles(display_name, avatar_url, is_verified)
+        )
+      `)
       .eq('status', 'Active')
-      .limit(15),
-    supabase
-      .from('products')
-      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-      .eq('is_boosted', true)
-      .eq('status', 'Active')
-      .limit(20),
+      .eq('product.status', 'Active')
+      .limit(30),
     supabase
       .from('products')
       .select('*, seller:profiles(display_name, avatar_url, is_verified)')
@@ -186,9 +202,17 @@ export default async function Home() {
   ]);
 
   const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
-  const bannerProducts = seededShuffle(bannerRes.data, 42);
-  const boostedProducts = seededShuffle(boostedRes.data, 43);
-  const latestProducts = seededShuffle(latestRes.data, 44);
+  
+  // Format active promotions to match products shape with advertisement_id
+  const activeAds = (adsRes.data || []).map(ad => ({
+    ...ad.product,
+    advertisement_id: ad.id,
+    ad_type: ad.ad_type
+  }));
+
+  const bannerProducts = seededShuffle(activeAds, 42);
+  const boostedProducts = seededShuffle(activeAds.filter(ad => ad.ad_type === 'Boost'), 43);
+  const latestProducts = seededShuffle(latestRes.data || [], 44);
 
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">

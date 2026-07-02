@@ -2,6 +2,11 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import PromotionClient from './PromotionClient';
 
+export const metadata = {
+    title: 'Promote Listing | Kart',
+    description: 'Select a promotion package to boost your listing traffic and reach more campus buyers.',
+};
+
 export default async function PromotionSelectionPage({ params }) {
     const { id } = await params;
     const supabase = await createClient();

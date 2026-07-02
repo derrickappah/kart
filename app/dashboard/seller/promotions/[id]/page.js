@@ -4,6 +4,11 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
+export const metadata = {
+    title: 'Promotion Details | Kart',
+    description: 'Detailed campaign metrics, view counts, and engagement performance for your promoted campus listing.',
+};
+
 export default async function PromotionDetailsPage({ params }) {
     const { id } = await params;
     const supabase = await createClient();
@@ -55,7 +60,8 @@ export default async function PromotionDetailsPage({ params }) {
                     <div className="flex items-center p-4 justify-between w-full">
                         <Link
                             href="/dashboard/seller/promotions"
-                            className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                            aria-label="Back to Promotions List"
+                            className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-slate-900 dark:text-white" />
                         </Link>
@@ -148,14 +154,14 @@ export default async function PromotionDetailsPage({ params }) {
                                 </div>
                                 <svg className="w-full h-full z-10 relative overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 50">
                                     <path
-                                        d={`M ${chartData.map((d, i) => `${(i / (chartData.length - 1)) * 100},${50 - (Math.min(45, d.views * 2))}`).join(' L ')}`}
+                                        d={`M ${chartData.map((d, i) => `${chartData.length <= 1 ? 50 : (i / (chartData.length - 1)) * 100},${50 - (Math.min(45, d.views * 2))}`).join(' L ')}`}
                                         fill="none" stroke="#1daddd" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"
                                     />
                                     {chartData.map((d, i) => (
                                         <circle
                                             key={i}
                                             className="fill-white dark:fill-[#1e292b] stroke-primary stroke-[2px] transition-all group-hover:r-[3px]"
-                                            cx={(i / (chartData.length - 1)) * 100}
+                                            cx={chartData.length <= 1 ? 50 : (i / (chartData.length - 1)) * 100}
                                             cy={50 - (Math.min(45, d.views * 2))}
                                             r="2.5"
                                         />

@@ -14,6 +14,9 @@ export default async function Marketplace({ searchParams }) {
     const params = await searchParams;
     const supabase = await createClient();
 
+    // Expire completed promotions on load to ensure only active promotions affect sorting/ranking
+    await supabase.rpc('expire_completed_promotions').catch(err => console.error('Error running expire_completed_promotions RPC:', err));
+
     // Build the product query first (no await yet)
     let query = supabase
         .from('products')

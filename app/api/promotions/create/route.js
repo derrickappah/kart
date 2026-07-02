@@ -18,6 +18,49 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        // Check if product exists and belongs to the user
+        const { data: product, error: productError } = await supabase
+            .from('products')
+            .select('id, seller_id')
+            .eq('id', productId)
+            .single();
+
+        if (productError || !product) {
+            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        if (product.seller_id !== user.id) {
+            return NextResponse.json({ error: 'Unauthorized: You do not own this product' }, { status: 403 });
+        }
+
+        // Fetch dynamic promotion pricing from platform settings
+        const { data: promoSettings } = await supabase
+            .from('platform_settings')
+            .select('key, value')
+            .eq('category', 'promotion');
+
+        const pricing = {};
+        (promoSettings || []).forEach(s => {
+            pricing[s.key] = typeof s.value === 'number' ? s.value : parseFloat(s.value) || 0;
+        });
+
+        // Calculate expected price based on tier
+        let expectedPrice = 0;
+        if (tierId === 'daily') {
+            expectedPrice = pricing.promo_daily_price || 5;
+        } else if (tierId === 'weekly') {
+            expectedPrice = pricing.promo_weekly_price || 25;
+        } else if (tierId === 'featured') {
+            expectedPrice = pricing.promo_featured_price || 50;
+        } else {
+            return NextResponse.json({ error: 'Invalid tier ID' }, { status: 400 });
+        }
+
+        // Validate amount against expected price
+        if (parseFloat(amount) !== expectedPrice) {
+            return NextResponse.json({ error: `Price mismatch. Expected ${expectedPrice} GHS.` }, { status: 400 });
+        }
+
         // Calculate end date based on tier
         const startDate = new Date();
         const endDate = new Date();

@@ -4,6 +4,11 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
+export const metadata = {
+    title: 'Seller Promotions | Kart',
+    description: 'Track and manage your listing promotions and advertisements on campus.',
+};
+
 export default async function PromotionsPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -42,7 +47,8 @@ export default async function PromotionsPage() {
                     <div className="flex items-center p-4 justify-between w-full">
                         <Link
                             href="/dashboard/seller"
-                            className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                            aria-label="Back to Seller Dashboard"
+                            className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-slate-900 dark:text-white" />
                         </Link>

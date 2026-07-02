@@ -110,7 +110,8 @@ export default function PromotionClient({ product, pricing = {} }) {
                 <div className="flex items-center p-4 justify-between max-w-lg mx-auto w-full">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        aria-label="Go back"
+                        className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl text-[#111617] dark:text-white" />
                     </button>
@@ -123,6 +124,8 @@ export default function PromotionClient({ product, pricing = {} }) {
                 <section className="mt-4">
                     <div className="flex items-center gap-4 bg-white dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
                         <div
+                            role="img"
+                            aria-label={product.title}
                             className="w-20 h-20 rounded-lg bg-center bg-cover flex-shrink-0 bg-slate-100"
                             style={{ backgroundImage: product.image_url ? `url("${product.image_url}")` : 'none' }}
                         >
@@ -156,12 +159,21 @@ export default function PromotionClient({ product, pricing = {} }) {
                 </div>
 
                 {/* Tiers List */}
-                <div className="space-y-4">
+                <div role="radiogroup" aria-label="Promotion Tiers" className="space-y-4">
                     {tiers.map((tier) => (
                         <div
                             key={tier.id}
                             onClick={() => setSelectedTier(tier.id)}
-                            className={`group relative flex flex-col p-5 rounded-2xl border-2 transition-all shadow-sm cursor-pointer ${selectedTier === tier.id
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setSelectedTier(tier.id);
+                                }
+                            }}
+                            role="radio"
+                            aria-checked={selectedTier === tier.id}
+                            tabIndex={0}
+                            className={`group relative flex flex-col p-5 rounded-2xl border-2 transition-all shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff9f0f] ${selectedTier === tier.id
                                 ? 'border-[#ff9f0f] bg-white dark:bg-slate-800 shadow-lg ring-1 ring-[#ff9f0f]/20'
                                 : 'bg-white dark:bg-slate-800/60 border-transparent hover:border-primary/20'
                                 }`}

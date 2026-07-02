@@ -31,6 +31,27 @@ export default function PromotedBanner({ products }) {
         return () => clearInterval(interval);
     }, [nextSlide, products, isHovered]);
 
+    // Track views when active slide changes
+    useEffect(() => {
+        if (products && products[currentIndex] && products[currentIndex].advertisement_id) {
+            const adId = products[currentIndex].advertisement_id;
+            fetch('/api/ads/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ advertisementId: adId, eventType: 'view' })
+            }).catch(err => console.error('Error tracking ad view:', err));
+        }
+    }, [currentIndex, products]);
+
+    const handleAdClick = (adId) => {
+        if (!adId) return;
+        fetch('/api/ads/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ advertisementId: adId, eventType: 'click' })
+        }).catch(err => console.error('Error tracking ad click:', err));
+    };
+
     const onTouchStart = (e) => {
         setTouchEnd(null);
         setTouchStart(e.targetTouches[0].clientX);
@@ -75,7 +96,7 @@ export default function PromotedBanner({ products }) {
                         className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                             }`}
                     >
-                        <Link href={`/marketplace/${p.id}`}>
+                        <Link href={`/marketplace/${p.id}`} onClick={() => handleAdClick(p.advertisement_id)}>
                             <Image
                                 src={p.images?.[0] || p.image_url || '/placeholder.png'}
                                 alt={p.title}
@@ -107,6 +128,8 @@ export default function PromotedBanner({ products }) {
                             <button
                                 key={idx}
                                 onClick={() => setCurrentIndex(idx)}
+                                aria-label={`Go to slide ${idx + 1}`}
+                                aria-current={idx === currentIndex ? 'true' : 'false'}
                                 className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-4 bg-[#FFD700]' : 'w-1 bg-white/40'
                                     }`}
                             />

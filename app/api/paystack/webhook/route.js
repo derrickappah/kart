@@ -295,6 +295,85 @@ export async function POST(request) {
                 return NextResponse.json({ message: 'Wallet deposit processed successfully' }, { status: 200 });
             }
 
+            // 1.5 Check if this is a promotion payment
+            if (type === 'promotion' || (reference && reference.startsWith('ad_'))) {
+                console.log('[Webhook] Processing promotion payment for reference:', reference);
+                
+                // Determine adId
+                let adId = metadata.advertisement_id;
+                if (!adId && reference && reference.startsWith('ad_')) {
+                    const parts = reference.split('_');
+                    if (parts.length >= 2) {
+                        adId = parts[1];
+                    }
+                }
+
+                if (!adId) {
+                    console.error('[Webhook] Missing advertisement_id in metadata and reference');
+                    return NextResponse.json({ error: 'Missing advertisement_id' }, { status: 400 });
+                }
+
+                // Get advertisement details
+                const { data: ad, error: adError } = await adminSupabase
+                    .from('advertisements')
+                    .select('*')
+                    .eq('id', adId)
+                    .single();
+
+                if (adError || !ad) {
+                    console.error('[Webhook] Advertisement not found:', adId, adError);
+                    return NextResponse.json({ error: 'Advertisement not found' }, { status: 404 });
+                }
+
+                if (ad.status === 'Active') {
+                    console.log('[Webhook] Advertisement already active:', adId);
+                    return NextResponse.json({ message: 'Advertisement already active' }, { status: 200 });
+                }
+
+                // Update advertisement status
+                const { error: updateAdError } = await adminSupabase
+                    .from('advertisements')
+                    .update({ status: 'Active', updated_at: new Date().toISOString() })
+                    .eq('id', adId);
+
+                if (updateAdError) {
+                    console.error('[Webhook] Error updating ad status:', updateAdError);
+                    throw updateAdError;
+                }
+
+                // Update product columns
+                const productUpdates = {};
+                if (ad.ad_type === 'Featured') {
+                    productUpdates.is_featured = true;
+                } else if (ad.ad_type === 'Boost') {
+                    productUpdates.is_boosted = true;
+                    productUpdates.boost_expires_at = ad.end_date;
+                }
+
+                if (Object.keys(productUpdates).length > 0) {
+                    const { error: updateProdError } = await adminSupabase
+                        .from('products')
+                        .update(productUpdates)
+                        .eq('id', ad.product_id);
+
+                    if (updateProdError) {
+                        console.error('[Webhook] Error updating product columns:', updateProdError);
+                        throw updateProdError;
+                    }
+                }
+
+                // Create notification
+                await adminSupabase.from('notifications').insert({
+                    user_id: ad.seller_id,
+                    type: 'PromotionActivated',
+                    title: 'Promotion Activated!',
+                    message: `Your listing "${ad.ad_type}" promotion has been activated.`,
+                });
+
+                logWebhook({ event: 'promotion_activation_success', reference, adId, productId: ad.product_id });
+                return NextResponse.json({ message: 'Promotion activated successfully' }, { status: 200 });
+            }
+
             // 2. Check if this is a subscription payment
             console.log('[Webhook] Looking for subscription with payment_reference:', reference);
             let { data: subscription, error: subError } = await adminSupabase
