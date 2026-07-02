@@ -224,7 +224,7 @@ export default async function AdminDashboard() {
             )}
 
             {/* Dashboard Welcome & Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/10 dark:border-primary/5 backdrop-blur-sm">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-[#1daddd]/10 via-[#1daddd]/5 to-transparent border border-[#1daddd]/10 dark:border-[#1daddd]/5 backdrop-blur-sm">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
                         {greeting}, {profile?.display_name || user?.email?.split('@')[0] || 'Admin'}!
@@ -242,10 +242,10 @@ export default async function AdminDashboard() {
 
             {/* KPI Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                <div className="group relative bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 dark:hover:border-primary/30 transition-all duration-300 cursor-default overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500"></div>
+                <div className="group relative bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] hover:scale-[1.02] hover:shadow-xl hover:shadow-[#1daddd]/5 hover:border-[#1daddd]/30 dark:hover:border-[#1daddd]/30 transition-all duration-300 cursor-default overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#1daddd]/5 rounded-bl-full translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500"></div>
                     <div className="flex justify-between items-start mb-4">
-                        <div className="size-10 sm:size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <div className="size-10 sm:size-12 rounded-xl bg-[#1daddd]/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <DynamicLucideIcon name="groups" size={24} className="text-primary" />
                         </div>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
@@ -360,12 +360,12 @@ export default async function AdminDashboard() {
             <div className="p-4 sm:p-6 rounded-3xl border border-[#dce3e5]/60 dark:border-[#2d3b41]/60 bg-white/5 dark:bg-white/[0.02]">
                 <h4 className="text-sm font-black uppercase tracking-widest text-[#4b636c] dark:text-gray-400 mb-6 px-1">Control Operations</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Link href="/dashboard/admin/verifications" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/50 dark:hover:border-primary/50">
+                    <Link href="/dashboard/admin/verifications" className="group relative bg-white/40 dark:bg-[#131d21]/40 backdrop-blur-xl p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[#1daddd]/10 hover:-translate-y-1 hover:border-[#1daddd]/50 dark:hover:border-[#1daddd]/50">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity scale-150 origin-top-right translate-x-4 -translate-y-4">
                             <DynamicLucideIcon name="pending_actions" className="text-8xl text-primary" />
                         </div>
                         <div className="flex flex-col h-full relative z-10">
-                            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 relative">
+                            <div className="size-12 rounded-xl bg-[#1daddd]/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 relative">
                                 <DynamicLucideIcon name="pending_actions" className="text-primary text-2xl" />
                                 {pendingVerifications > 0 && <span className="absolute -top-1 -right-1 size-3 bg-primary rounded-full border-2 border-white dark:border-[#131d21] animate-pulse"></span>}
                             </div>

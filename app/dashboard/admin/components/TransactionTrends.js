@@ -45,10 +45,10 @@ export default function TransactionTrends({ totalRevenue, totalVolume, monthlyDa
                         tabIndex="0"
                         role="img"
                         aria-label={`${data.label}: ₵${data.val.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-                        className="w-full bg-primary/5 dark:bg-primary/10 rounded-t-xl relative group transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-[#182125] cursor-pointer hover:scale-x-[1.03]"
+                        className="w-full bg-[#1daddd]/5 dark:bg-[#1daddd]/10 rounded-t-xl relative group transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-[#182125] cursor-pointer hover:scale-x-[1.03]"
                         style={{ height: `${Math.max((data.val / maxVal) * 100, 6)}%` }}
                     >
-                        <div className="absolute bottom-0 w-full bg-gradient-to-t from-primary/30 to-primary/80 dark:from-primary/20 dark:to-primary/60 rounded-t-xl transition-all duration-300 group-hover:from-primary/50 group-hover:to-primary group-focus:from-primary/50 group-focus:to-primary h-full shadow-inner"></div>
+                        <div className="absolute bottom-0 w-full bg-gradient-to-t from-[#1daddd]/30 to-[#1daddd]/80 dark:from-[#1daddd]/20 dark:to-[#1daddd]/60 rounded-t-xl transition-all duration-300 group-hover:from-[#1daddd]/50 group-hover:to-[#1daddd] group-focus:from-[#1daddd]/50 group-focus:to-[#1daddd] h-full shadow-inner"></div>
                         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-[10px] font-black px-3 py-1.5 rounded-lg hidden group-hover:flex group-focus-within:flex items-center gap-1.5 whitespace-nowrap z-25 shadow-2xl border border-white/10 backdrop-blur-md transition-all">
                             <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
                             {data.label}: ₵{data.val.toLocaleString(undefined, { maximumFractionDigits: 0 })}
