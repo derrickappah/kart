@@ -69,6 +69,9 @@ export default async function OrderDetailPage({ params }) {
 
   const productImage = order.product?.images?.[0] || order.product?.image_url;
 
+  // Format a number as a currency string with thousands separators
+  const fmt = (val) => parseFloat(val).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const statusConfig = {
     'Pending':   { icon: 'schedule',        color: '#F59E0B', bg: '#FEF3C7', darkBg: 'rgba(245,158,11,0.12)',  label: 'Payment Pending',  step: 0 },
     'Paid':      { icon: 'payments',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Order Paid',       step: 1 },
@@ -296,11 +299,11 @@ export default async function OrderDetailPage({ params }) {
             <div className="space-y-3 mb-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Item Price</span>
-                <span className="text-sm font-bold">GHS {parseFloat(order.unit_price).toFixed(2)}</span>
+                <span className="text-sm font-bold">GHS {fmt(order.unit_price)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Platform Fee</span>
-                <span className="text-sm font-bold text-slate-400">+ GHS {parseFloat(order.platform_fee_total).toFixed(2)}</span>
+                <span className="text-sm font-bold text-slate-400">+ GHS {fmt(order.platform_fee_total)}</span>
               </div>
             </div>
 
@@ -310,7 +313,7 @@ export default async function OrderDetailPage({ params }) {
               <div>
                 <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-0.5">Total Paid</p>
                 <p className="text-2xl font-black text-slate-900 dark:text-white">
-                  GHS <span style={{ color: '#1daddd' }}>{parseFloat(order.total_amount).toFixed(2)}</span>
+                  GHS <span style={{ color: '#1daddd' }}>{fmt(order.total_amount)}</span>
                 </p>
               </div>
               <div
@@ -326,7 +329,7 @@ export default async function OrderDetailPage({ params }) {
               <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-500/8 rounded-2xl border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between">
                 <div>
                   <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-widest mb-0.5">Your Payout</p>
-                  <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">GHS {parseFloat(order.seller_payout_amount).toFixed(2)}</p>
+                  <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">GHS {fmt(order.seller_payout_amount)}</p>
                 </div>
                 <div className="size-10 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl flex items-center justify-center">
                   <DynamicLucideIcon name="savings" className="text-emerald-500 text-xl" />
