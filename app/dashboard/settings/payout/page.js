@@ -75,7 +75,7 @@ export default function PayoutDetailsPage() {
 
     if (loading) {
         return (
-            <div className="bg-[#f6f7f8] dark:bg-[#131d1f] min-h-screen animate-pulse">
+            <div className="bg-white dark:bg-[#242428] min-h-screen animate-pulse">
                 <div className="px-4 pt-6 pb-2 flex items-center gap-4">
                     <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
                     <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded-full" />
@@ -101,8 +101,8 @@ export default function PayoutDetailsPage() {
     }
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
-            <header className="px-4 pt-6 pb-2 flex items-center gap-4 sticky top-0 bg-[#f6f7f8]/80 dark:bg-[#131d1f]/80 backdrop-blur-md z-10">
+        <div className="bg-white dark:bg-[#242428] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
+            <header className="px-4 pt-6 pb-2 flex items-center gap-4 sticky top-0 bg-white/80 dark:bg-[#242428]/80 backdrop-blur-md z-10">
                 <button onClick={() => router.back()} className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm">
                     <DynamicLucideIcon name="arrow_back" />
                 </button>

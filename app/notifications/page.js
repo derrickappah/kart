@@ -54,7 +54,7 @@ export default function NotificationsPage() {
 
     if (loading) {
         return (
-            <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased">
+            <div className="bg-white dark:bg-[#242428] font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased">
                 <div className="animate-pulse flex flex-col items-center gap-4">
                     <div className="size-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
                     <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -82,9 +82,9 @@ export default function NotificationsPage() {
     }, {});
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased notifications-page">
+        <div className="bg-white dark:bg-[#242428] font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased notifications-page">
             {/* Sticky Header */}
-            <header className="sticky top-0 z-50 w-full bg-[#f6f7f8]/90 dark:bg-[#111d21]/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50">
+            <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#242428]/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50">
                 <div className="flex items-end justify-between px-5 pb-3 pt-6 max-w-lg mx-auto w-full">
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Notifications

@@ -129,7 +129,7 @@ function SuccessContent() {
 
 export default function SubscriptionSuccess() {
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#0e1b12] dark:text-white transition-colors duration-300">
+    <div className="bg-white dark:bg-[#242428] font-display text-[#0e1b12] dark:text-white transition-colors duration-300">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto">
         {/* Top App Bar */}
         <div className="flex items-center p-4 justify-between">

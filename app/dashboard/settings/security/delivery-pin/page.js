@@ -111,7 +111,7 @@ export default function DeliveryPinPage() {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
+        <div className="bg-white dark:bg-[#242428] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <header className="px-4 pt-6 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <button 

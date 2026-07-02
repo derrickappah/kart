@@ -1,6 +1,6 @@
 export default function AboutPage() {
     return (
-        <main className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen font-display">
+        <main className="bg-white dark:bg-[#242428] min-h-screen font-display">
             {/* Hero Section */}
             <div
                 className="relative h-[60vh] flex items-center justify-center bg-cover bg-center"

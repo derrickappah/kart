@@ -16,7 +16,7 @@ const categories = [
 
 export default function CategoriesPage() {
   return (
-    <div className="bg-white dark:bg-[#131d1f] min-h-screen font-display antialiased">
+    <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
       <div className="max-w-md mx-auto min-h-screen px-6 py-12 flex flex-col gap-10">
         <header className="space-y-2">
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Browse by Category</h1>

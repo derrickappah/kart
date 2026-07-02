@@ -2,7 +2,7 @@ export default function TermsPage() {
   const lastUpdated = new Date().toLocaleDateString();
 
   return (
-    <main className="bg-slate-50 dark:bg-[#111d21] min-h-screen py-16 px-6 font-display text-slate-900 dark:text-white transition-colors duration-300">
+    <main className="bg-white dark:bg-[#242428] min-h-screen py-16 px-6 font-display text-slate-900 dark:text-white transition-colors duration-300">
       <header className="max-w-4xl mx-auto text-center mb-16 px-4">
         <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight uppercase">Terms & Conditions</h1>
         <p className="text-slate-500 font-medium bg-slate-100 dark:bg-white/5 inline-block px-4 py-1 rounded-full text-sm">Last updated: {lastUpdated}</p>

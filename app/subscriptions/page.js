@@ -27,8 +27,8 @@ export default async function SubscriptionPage() {
     .maybeSingle();
 
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#0e171b] dark:text-slate-100 min-h-screen transition-colors duration-200 subscription-page">
-      <div className="relative flex h-auto min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden border-x border-slate-200 dark:border-slate-800 shadow-xl bg-white dark:bg-[#111d21]">
+    <div className="bg-white dark:bg-[#242428] font-display text-[#0e171b] dark:text-slate-100 min-h-screen transition-colors duration-200 subscription-page">
+      <div className="relative flex h-auto min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden border-x border-slate-200 dark:border-slate-800 shadow-xl bg-white dark:bg-[#242428]">
 
         <div className="px-6 pt-6">
           <h1 className="text-2xl font-extrabold tracking-tight mb-2">Scale your campus shop</h1>

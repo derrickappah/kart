@@ -11,7 +11,7 @@ function AuthCodeErrorContent() {
     const statusParam = searchParams.get('status');
 
     return (
-        <main className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
+        <main className="bg-white dark:bg-[#242428] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
             <div className="w-full max-w-[440px] flex flex-col items-stretch space-y-8 font-display">
                 {/* Error Card */}
                 <div className="bg-white dark:bg-[#1a2d33] rounded-3xl p-8 shadow-xl shadow-sky-950/5 border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center space-y-6">
@@ -69,7 +69,7 @@ function AuthCodeErrorContent() {
 export default function AuthCodeError() {
     return (
         <Suspense fallback={
-            <main className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
+            <main className="bg-white dark:bg-[#242428] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
                 <div className="animate-pulse text-[#4f8596]">Loading error details...</div>
             </main>
         }>

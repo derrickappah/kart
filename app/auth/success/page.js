@@ -45,7 +45,7 @@ function SuccessContent() {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-[#f6f7f8] dark:bg-[#111d21]">
+            <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-white dark:bg-[#242428]">
                 <div className="size-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mb-6">
                     <DynamicLucideIcon name="sync_problem" className="text-3xl" />
                 </div>
@@ -62,7 +62,7 @@ function SuccessContent() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-[#f6f7f8] dark:bg-[#111d21]">
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-white dark:bg-[#242428]">
             <div className="size-16 border-4 border-[#1daddd]/20 border-t-[#1daddd] rounded-full animate-spin mb-6"></div>
             <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Connecting Securely</h1>
             <p className="text-gray-500 dark:text-gray-400">Verifying your identity with a secure key...</p>

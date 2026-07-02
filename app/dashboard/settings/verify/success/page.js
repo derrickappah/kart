@@ -8,7 +8,7 @@ export default function VerificationSuccessPage() {
     const router = useRouter();
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display antialiased min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 transition-colors duration-200">
+        <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 transition-colors duration-200">
             <div className="flex flex-col h-screen sm:h-[850px] w-full max-w-md bg-[#f9fafa] dark:bg-[#1c1f22] shadow-2xl relative sm:rounded-[2.5rem] overflow-hidden">
 
                 {/* Main Content Area */}

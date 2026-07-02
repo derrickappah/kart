@@ -44,8 +44,8 @@ export default function DepositClient({ initialWallet, user }) {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#131a1f] font-display text-[#101619] dark:text-gray-100 min-h-screen flex flex-col antialiased">
-            <header className="sticky top-0 z-[100] bg-[#f6f7f8]/80 dark:bg-[#131a1f]/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
+        <div className="bg-white dark:bg-[#242428] font-display text-[#101619] dark:text-gray-100 min-h-screen flex flex-col antialiased">
+            <header className="sticky top-0 z-[100] bg-white/80 dark:bg-[#242428]/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
                 <button
                     onClick={() => router.back()}
                     className="btn-ghost size-10 !p-0 rounded-full"

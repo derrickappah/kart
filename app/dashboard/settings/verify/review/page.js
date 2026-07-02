@@ -124,7 +124,7 @@ export default function IDReviewPage() {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#111617] dark:text-gray-100 antialiased min-h-screen flex flex-col items-center pt-0 sm:pt-4 transition-colors duration-200">
+        <div className="bg-white dark:bg-[#242428] font-display text-[#111617] dark:text-gray-100 antialiased min-h-screen flex flex-col items-center pt-0 sm:pt-4 transition-colors duration-200">
             <div className="flex flex-col min-h-screen sm:min-h-[800px] w-full max-w-md bg-white dark:bg-[#1a1d23] shadow-2xl relative sm:rounded-[2.5rem] overflow-hidden overflow-y-auto no-scrollbar">
 
                 <div className="flex-1 pb-8">

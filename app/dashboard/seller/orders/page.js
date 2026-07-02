@@ -61,10 +61,10 @@ export default function SellerOrdersPage() {
   };
 
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#131d1f] min-h-screen font-display antialiased">
-      <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#f6f7f8] dark:bg-[#131d1f] shadow-2xl overflow-hidden pb-24">
+    <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
+      <div className="max-w-md mx-auto min-h-screen flex flex-col bg-white dark:bg-[#242428] shadow-2xl overflow-hidden pb-24">
         {/* Header */}
-        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#f6f7f8]/90 dark:bg-[#131d1f]/90 backdrop-blur-md z-10 border-b border-gray-100 dark:border-gray-800">
+        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-[#242428]/90 backdrop-blur-md z-10 border-b border-gray-100 dark:border-gray-800">
           <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">My Sales</h1>
             <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Track your orders</p>

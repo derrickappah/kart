@@ -42,8 +42,8 @@ export default function WishlistClient({ initialItems }) {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display antialiased min-h-screen transition-colors duration-200">
-            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#131d1f] shadow-2xl overflow-hidden">
+        <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
+            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl overflow-hidden">
 
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col p-4 pb-32 overflow-y-auto no-scrollbar">

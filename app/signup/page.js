@@ -32,7 +32,7 @@ function SignupForm() {
     }
 
     return (
-        <main className="bg-[#f6f7f8] dark:bg-[#111d21] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
+        <main className="bg-white dark:bg-[#242428] min-h-screen flex flex-col items-center justify-center p-6 antialiased">
             <div className="w-full max-w-[400px] flex flex-col items-stretch space-y-8 font-display">
 
                 {/* Logo Section */}

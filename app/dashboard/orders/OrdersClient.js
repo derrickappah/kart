@@ -36,11 +36,11 @@ export default function OrdersClient({ orders }) {
   ).length;
 
   return (
-    <div className="bg-[#f0f2f5] dark:bg-[#0d1517] font-display antialiased min-h-screen">
+    <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen">
       <div className="max-w-[440px] mx-auto min-h-screen flex flex-col">
 
         {/* ── Header ── */}
-        <header className="sticky top-0 z-50 px-4 pt-4 pb-3 bg-[#f0f2f5]/90 dark:bg-[#0d1517]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5">
+        <header className="sticky top-0 z-50 px-4 pt-4 pb-3 bg-white/90 dark:bg-[#242428]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">My Orders</h1>

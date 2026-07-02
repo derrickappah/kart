@@ -90,7 +90,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] text-[#0e181b] dark:text-white font-display min-h-screen antialiased">
+        <div className="bg-white dark:bg-[#242428] text-[#0e181b] dark:text-white font-display min-h-screen antialiased">
 
 
             <main className="max-w-md mx-auto pb-32">

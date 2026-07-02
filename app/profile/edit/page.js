@@ -234,14 +234,14 @@ export default function EditProfilePage() {
 
     if (loading) {
         return (
-            <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-body text-slate-900 dark:text-white min-h-screen flex items-center justify-center">
+            <div className="bg-white dark:bg-[#242428] font-body text-slate-900 dark:text-white min-h-screen flex items-center justify-center">
                 <div className="animate-pulse text-primary font-bold">Loading...</div>
             </div>
         );
     }
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-body text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
+        <div className="bg-white dark:bg-[#242428] font-body text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <main className="flex-1 overflow-y-auto pb-60">
                 <div className="max-w-md mx-auto w-full px-5">
                     <div className="pt-8 pb-4 text-center space-y-1">

@@ -67,7 +67,7 @@ export default function SettingsClient({ initialProfile, initialUser }) {
   };
 
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased transition-colors duration-200">
+    <div className="bg-white dark:bg-[#242428] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased transition-colors duration-200">
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-8 no-scrollbar">

@@ -39,7 +39,7 @@ export default function VerificationIntroPage() {
 
     if (isVerified) {
         return (
-            <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen antialiased transition-colors duration-200">
+            <div className="bg-white dark:bg-[#242428] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen antialiased transition-colors duration-200">
                 <main className="flex-1 flex flex-col items-center justify-center px-6 pb-24">
                     <div className="w-full max-w-[320px] aspect-square flex items-center justify-center mb-8">
                         <Lottie
@@ -75,7 +75,7 @@ export default function VerificationIntroPage() {
     }
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen overflow-hidden selection:bg-primary/30 antialiased transition-colors duration-200">
+        <div className="bg-white dark:bg-[#242428] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen overflow-hidden selection:bg-primary/30 antialiased transition-colors duration-200">
             {/* Main Scrollable Content */}
             <main className="flex-1 overflow-y-auto w-full flex flex-col items-center px-6 pt-12 pb-32 no-scrollbar">
                 {/* Hero Illustration - Lottie Animation */}

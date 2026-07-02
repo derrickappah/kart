@@ -54,7 +54,7 @@ export default function ListingDetailsManagementClient({ product }) {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display antialiased min-h-screen transition-colors duration-200">
+        <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
             <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#1e292b] shadow-2xl overflow-hidden">
 
                 {/* Hero Image Section */}

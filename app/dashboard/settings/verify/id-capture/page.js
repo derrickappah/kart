@@ -96,7 +96,7 @@ export default function StudentIDCapturePage() {
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] font-display antialiased min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 transition-colors duration-200">
+        <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 transition-colors duration-200">
             {/* Mobile Frame Simulation */}
             <div className="relative w-full sm:max-w-[400px] h-screen sm:h-[850px] bg-black sm:rounded-[2.5rem] overflow-hidden shadow-2xl sm:border-8 sm:border-neutral-900 flex flex-col group/design-root">
 

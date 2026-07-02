@@ -53,8 +53,8 @@ export default function EditListingClient({ product }) {
     };
 
     return (
-        <div className="bg-[#f6f7f9] dark:bg-[#1a1d21] font-display antialiased transition-colors duration-200 min-h-screen">
-            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f9] dark:bg-[#1a1d21] overflow-x-hidden shadow-2xl">
+        <div className="bg-white dark:bg-[#242428] font-display antialiased transition-colors duration-200 min-h-screen">
+            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] overflow-x-hidden shadow-2xl">
                 {/* Header */}
                 <header className="sticky top-0 z-[100] bg-[#f6f7f9]/95 dark:bg-[#1a1d21]/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors">
                     <div className="flex items-center px-4 pt-4 pb-4 justify-between">

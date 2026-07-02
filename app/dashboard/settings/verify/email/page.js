@@ -132,7 +132,7 @@ export default function EmailVerificationPage() {
     };
 
     return (
-        <div className="bg-[#f8f9fa] dark:bg-[#0d1517] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen antialiased transition-colors duration-200">
+        <div className="bg-white dark:bg-[#242428] font-display text-[#101819] dark:text-gray-100 flex flex-col min-h-screen antialiased transition-colors duration-200">
             <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 md:py-24">
                 <div className="w-full max-w-sm text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {/* Icon Container */}
