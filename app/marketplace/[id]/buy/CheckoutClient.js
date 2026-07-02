@@ -86,10 +86,10 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
     };
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] text-[#0e181b] dark:text-white antialiased min-h-screen font-display">
+        <div className="bg-white dark:bg-[#242428] text-[#0e181b] dark:text-white antialiased min-h-screen font-display">
             <div className="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden pb-32">
                 {/* Header */}
-                <header className="sticky top-0 z-50 flex items-center bg-[#f6f7f8]/80 dark:bg-[#111d21]/80 backdrop-blur-md p-4 justify-between border-b border-gray-100 dark:border-gray-800">
+                <header className="sticky top-0 z-50 flex items-center bg-white/80 dark:bg-[#242428]/80 backdrop-blur-md p-4 justify-between border-b border-gray-100 dark:border-gray-800">
                     <button
                         onClick={() => router.back()}
                         className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -215,7 +215,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                 </main>
 
                 {/* Fixed Footer CTA */}
-                <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto p-4 pb-8 bg-[#f6f7f8]/95 dark:bg-[#111d21]/95 backdrop-blur-md z-40">
+                <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto p-4 pb-8 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md z-40">
                     <button
                         onClick={handleConfirmPay}
                         disabled={loading || (paymentMethod === 'wallet' && !canAfford)}
