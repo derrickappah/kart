@@ -5,8 +5,10 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '../../../../../utils/supabase/client';
 import Link from 'next/link';
 import Image from 'next/image';
-import Lottie from 'lottie-react';
+import dynamic from 'next/dynamic';
 import successAnimation from '@/public/Success.json';
+
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 function SuccessContent() {
     const searchParams = useSearchParams();
@@ -144,8 +146,9 @@ function SuccessContent() {
                 <div className="w-full flex flex-col gap-3">
                     {/* Primary Action: Promote */}
                     <button
-                        onClick={() => router.push(`/dashboard/seller/listings/promote/${product.id}`)}
-                        className="group relative w-full h-14 bg-[#1daddd] hover:bg-[#159cc9] active:scale-[0.98] transition-all duration-200 rounded-xl flex items-center justify-between px-6 shadow-[0_0_20px_rgba(29,173,221,0.3)] overflow-hidden"
+                        onClick={() => product?.id && router.push(`/dashboard/seller/listings/promote/${product.id}`)}
+                        disabled={!product}
+                        className="group relative w-full h-14 bg-[#1daddd] hover:bg-[#159cc9] active:scale-[0.98] transition-all duration-200 rounded-xl flex items-center justify-between px-6 shadow-[0_0_20px_rgba(29,173,221,0.3)] overflow-hidden disabled:opacity-50"
                     >
                         <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                         <span className="relative z-10 flex items-center gap-2 text-white font-bold text-lg">
