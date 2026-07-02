@@ -40,7 +40,7 @@ export default function WithdrawFundsClient({ initialWallet }) {
     }, [supabase]);
 
     if (checkingPayout) {
-        return <LoadingScreen message="Checking payout details..." fullScreen={true} />;
+        return <LoadingScreen message="Checking payout details..." fullScreen={false} />;
     }
 
     const handleSubmit = async (e) => {

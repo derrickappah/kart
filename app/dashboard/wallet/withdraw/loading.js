@@ -2,5 +2,5 @@
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Loading() {
-  return <LoadingScreen message="Loading..." fullScreen={true} />;
+  return <LoadingScreen message="Loading..." fullScreen={false} />;
 }
