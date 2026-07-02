@@ -136,7 +136,8 @@ export async function POST(request) {
                 seller_payout_amount: sellerPayoutAmount,
                 status: 'Paid',
                 escrow_status: 'Held',
-                currency: 'GHS'
+                currency: 'GHS',
+                payment_method: 'Wallet'
             })
             .select()
             .single();

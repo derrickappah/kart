@@ -39,7 +39,6 @@ export default async function CheckoutPage({ params }) {
 
     // 2. Fetch Product & Seller
     let product = null;
-    let error = null;
 
     try {
         // Try to fetch with relationship (trying both potential constraint names if needed)
@@ -128,14 +127,46 @@ export default async function CheckoutPage({ params }) {
                     is_verified: true
                 }
             };
-            return <CheckoutClient product={product} user={user} walletBalance={walletBalance} />;
+            return <CheckoutClient product={product} user={user} walletBalance={walletBalance} serviceFee={1.50} feePercent={3} feeFixed={1} />;
         }
 
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-[#242428] p-6 text-center">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] p-6 text-center">
                 <DynamicLucideIcon name="inventory_2" className="text-6xl text-gray-300 mb-4" />
                 <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Item Not Found</h1>
                 <p className="text-gray-500 mb-6 max-w-xs">We couldn&apos;t find the item you&apos;re looking for. It might have been sold or removed.</p>
+                <Link href="/marketplace" className="btn-primary w-full max-w-xs justify-center">
+                    Back to Marketplace
+                </Link>
+            </div>
+        );
+    }
+
+    // Check if user is the seller
+    if (product.seller_id === user.id) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] p-6 text-center">
+                <div className="size-16 flex items-center justify-center bg-amber-50 dark:bg-amber-500/10 rounded-full mb-4">
+                    <DynamicLucideIcon name="warning" className="text-3xl text-amber-500" />
+                </div>
+                <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Invalid Action</h1>
+                <p className="text-gray-500 mb-6 max-w-xs">You cannot purchase your own listed item.</p>
+                <Link href={`/marketplace/${id}`} className="btn-primary w-full max-w-xs justify-center">
+                    Back to Listing Details
+                </Link>
+            </div>
+        );
+    }
+
+    // Check if product is available
+    if (product.status && product.status.toLowerCase() !== 'active') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] p-6 text-center">
+                <div className="size-16 flex items-center justify-center bg-red-50 dark:bg-red-500/10 rounded-full mb-4">
+                    <DynamicLucideIcon name="block" className="text-3xl text-red-500" />
+                </div>
+                <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Item Unavailable</h1>
+                <p className="text-gray-500 mb-6 max-w-xs">This item has already been sold or is no longer active.</p>
                 <Link href="/marketplace" className="btn-primary w-full max-w-xs justify-center">
                     Back to Marketplace
                 </Link>

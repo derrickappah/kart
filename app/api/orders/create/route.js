@@ -128,6 +128,7 @@ export async function POST(request) {
         seller_payout_amount: sellerPayoutAmount,
         status: 'Pending',
         currency: product.currency || 'GHS',
+        payment_method: 'Paystack',
       })
       .select()
       .single();

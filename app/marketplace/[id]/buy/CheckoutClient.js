@@ -86,13 +86,14 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
     };
 
     return (
-        <div className="bg-white dark:bg-[#242428] text-[#0e181b] dark:text-white antialiased min-h-screen font-display">
+        <div className="bg-[#f6f7f8] dark:bg-[#111d21] text-[#0e181b] dark:text-white antialiased min-h-screen font-display">
             <div className="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden pb-32">
                 {/* Header */}
-                <header className="sticky top-0 z-50 flex items-center bg-white/80 dark:bg-[#242428]/80 backdrop-blur-md p-4 justify-between border-b border-gray-100 dark:border-gray-800">
+                <header className="sticky top-0 z-50 flex items-center bg-[#f6f7f8]/80 dark:bg-[#111d21]/80 backdrop-blur-md p-4 justify-between border-b border-gray-100 dark:border-gray-800">
                     <button
                         onClick={() => router.back()}
-                        className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        aria-label="Go back to previous page"
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]"
                     >
                         <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl" />
                     </button>
@@ -105,10 +106,16 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                         <h3 className="text-[#333940] dark:text-gray-300 text-sm font-bold uppercase tracking-wider px-1">Order Summary</h3>
                         <div className="bg-white dark:bg-[#1f2229] p-4 rounded-xl card-shadow border border-gray-50 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
                             <div className="flex items-center gap-4">
-                                <div
-                                    className="size-20 bg-center bg-no-repeat bg-cover rounded-lg shrink-0 border border-gray-100 dark:border-gray-700"
-                                    style={{ backgroundImage: `url("${productImage}")` }}
-                                >
+                                <div className="size-20 relative rounded-lg shrink-0 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 overflow-hidden flex items-center justify-center">
+                                    <img
+                                        src={productImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000'}
+                                        alt={product.title}
+                                        className="size-full object-cover"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000';
+                                        }}
+                                    />
                                 </div>
                                 <div className="flex flex-col gap-1 overflow-hidden">
                                     <p className="text-[#0e181b] dark:text-white text-base font-bold leading-tight truncate">{product.title}</p>
@@ -141,20 +148,29 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                     </div>
 
                     {/* Section: Payment Method Selection */}
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3" role="radiogroup" aria-label="Payment method selection">
                         <h3 className="text-[#333940] dark:text-gray-300 text-sm font-bold uppercase tracking-wider px-1">Choose Payment Method</h3>
 
                         {/* KART Wallet Option */}
                         <div
                             onClick={() => setPaymentMethod('wallet')}
-                            className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setPaymentMethod('wallet');
+                                }
+                            }}
+                            role="radio"
+                            aria-checked={paymentMethod === 'wallet'}
+                            tabIndex={0}
+                            className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]
                             ${paymentMethod === 'wallet'
-                                    ? 'bg-primary/5 border-primary shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
+                                    ? 'bg-[#1daddd]/5 border-[#1daddd] shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
                                     : 'bg-white dark:bg-[#1f2229] border-gray-100 dark:border-gray-800'}`}
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'wallet' ? 'bg-primary text-white' : 'bg-[#1daddd]/10 text-[#1daddd]'}`}>
+                                    <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'wallet' ? 'bg-[#1daddd] text-white' : 'bg-[#1daddd]/10 text-[#1daddd]'}`}>
                                         <DynamicLucideIcon name="account_balance_wallet" />
                                     </div>
                                     <div>
@@ -164,8 +180,8 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                         </p>
                                     </div>
                                 </div>
-                                <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-primary' : 'border-gray-200'}`}>
-                                    {paymentMethod === 'wallet' && <div className="size-3 rounded-full bg-primary"></div>}
+                                <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#1daddd]' : 'border-gray-200'}`}>
+                                    {paymentMethod === 'wallet' && <div className="size-3 rounded-full bg-[#1daddd]"></div>}
                                 </div>
                             </div>
 
@@ -176,7 +192,19 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                 </div>
                             )}
 
-                            <div onClick={(e) => { e.stopPropagation(); router.push('/dashboard/wallet'); }} className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors self-end text-[#0e181b] dark:text-white">
+                            <div 
+                                onClick={(e) => { e.stopPropagation(); router.push('/dashboard/wallet'); }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        router.push('/dashboard/wallet');
+                                    }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                                className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors self-end text-[#0e181b] dark:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]"
+                            >
                                 <DynamicLucideIcon name="add" className="text-sm" />
                                 <span className="text-sm font-bold">Top Up</span>
                             </div>
@@ -185,13 +213,22 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                         {/* Direct Paystack Payment Option */}
                         <div
                             onClick={() => setPaymentMethod('paystack')}
-                            className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setPaymentMethod('paystack');
+                                }
+                            }}
+                            role="radio"
+                            aria-checked={paymentMethod === 'paystack'}
+                            tabIndex={0}
+                            className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]
                             ${paymentMethod === 'paystack'
-                                    ? 'bg-primary/5 border-primary shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
+                                    ? 'bg-[#1daddd]/5 border-[#1daddd] shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
                                     : 'bg-white dark:bg-[#1f2229] border-gray-100 dark:border-gray-800'}`}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'paystack' ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
+                                <div className={`size-10 flex items-center justify-center rounded-full ${paymentMethod === 'paystack' ? 'bg-[#1daddd] text-white' : 'bg-[#1daddd]/10 text-[#1daddd]'}`}>
                                     <DynamicLucideIcon name="credit_card" />
                                 </div>
                                 <div>
@@ -199,8 +236,8 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                     <p className="text-[#0e181b] dark:text-white text-base font-bold">Paystack (Momo/Card)</p>
                                 </div>
                             </div>
-                            <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'paystack' ? 'border-primary' : 'border-gray-200'}`}>
-                                {paymentMethod === 'paystack' && <div className="size-3 rounded-full bg-primary"></div>}
+                            <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'paystack' ? 'border-[#1daddd]' : 'border-gray-200'}`}>
+                                {paymentMethod === 'paystack' && <div className="size-3 rounded-full bg-[#1daddd]"></div>}
                             </div>
                         </div>
                     </div>
@@ -215,11 +252,11 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                 </main>
 
                 {/* Fixed Footer CTA */}
-                <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto p-4 pb-8 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md z-40">
+                <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto p-4 pb-8 bg-[#f6f7f8]/95 dark:bg-[#111d21]/95 backdrop-blur-md z-40">
                     <button
                         onClick={handleConfirmPay}
                         disabled={loading || (paymentMethod === 'wallet' && !canAfford)}
-                        className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] 
+                        className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1daddd]
                         ${(paymentMethod === 'paystack' || canAfford)
                                 ? 'bg-[#1daddd] hover:bg-[#1daddd]/90 text-white shadow-[#1daddd]/20'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'}`}
