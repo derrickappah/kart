@@ -23,7 +23,7 @@ export default function Navbar({ user }) {
             <div className="flex items-center justify-between w-full max-w-md px-5">
                 <Link href="/" className="flex items-center">
                     <Image
-                        src="/ChatGPT Image Jan 18, 2026, 10_53_24 PM.png"
+                        src="/logo.png"
                         alt="KART Logo"
                         width={80}
                         height={32}

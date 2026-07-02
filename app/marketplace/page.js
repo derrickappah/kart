@@ -6,7 +6,7 @@ import SearchBar from '../../components/SearchBar';
 import MarketplaceControls from '../../components/MarketplaceControls';
 import WishlistButton from '../../components/WishlistButton';
 import { createClient } from '../../utils/supabase/server';
-import { toSentenceCase, seededShuffle } from '../../utils/formatters';
+import { toSentenceCase, seededShuffle, formatPrice } from '../../utils/formatters';
 
 export const revalidate = 60;
 
@@ -104,7 +104,7 @@ export default async function Marketplace({ searchParams }) {
                                     </div>
                                     <div className="flex flex-col gap-0.5 px-1">
                                         <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(p.title)}</h3>
-                                        <p className="text-primary text-base font-extrabold">₵ {p.price}</p>
+                                        <p className="text-primary text-base font-extrabold">₵ {formatPrice(p.price)}</p>
                                         <div className="flex items-center gap-1 text-gray-400">
                                             <DynamicLucideIcon name="location_on" className="text-[14px]" />
                                             <p className="text-[10px] font-bold truncate uppercase">{p.campus || 'On Campus'}</p>

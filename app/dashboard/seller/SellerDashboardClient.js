@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ManualActivationButton from './ManualActivationButton';
+import { formatPrice } from '../../../utils/formatters';
 
 export default function SellerDashboardClient({
     user,
@@ -22,7 +23,6 @@ export default function SellerDashboardClient({
     dayLabels = []
 }) {
     const router = useRouter();
-    console.log('[SellerDashboardClient] Rendered');
 
     const [hiddenSubs, setHiddenSubs] = useState([]);
     const [isDismissing, setIsDismissing] = useState(false);
@@ -97,7 +97,7 @@ export default function SellerDashboardClient({
                             <div className="bg-white dark:bg-[#1e292b] p-4 rounded-2xl shadow-soft flex flex-col items-center justify-center gap-1.5 text-center border border-transparent dark:border-white/5 relative overflow-hidden group hover:shadow-md transition-all">
                                 <div className="absolute top-0 right-0 size-8 bg-primary/10 rounded-bl-2xl -mr-2 -mt-2 transition-transform group-hover:scale-110"></div>
                                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Revenue</span>
-                                <span className="text-xl font-black text-primary tracking-tight">₵{totalEarnings.toFixed(0)}</span>
+                                <span className="text-xl font-black text-primary tracking-tight">₵{formatPrice(totalEarnings)}</span>
                             </div>
                         </div>
                     </section>
@@ -283,7 +283,7 @@ export default function SellerDashboardClient({
 
                         <div className="space-y-3">
                             {listings?.slice(0, 4).map(item => (
-                                <div key={item.id} className="bg-white dark:bg-[#1e292b] rounded-2xl p-3 shadow-soft border border-transparent dark:border-white/5 flex items-center gap-4 group active:scale-[0.98] transition-all cursor-pointer">
+                                <Link href={`/dashboard/seller/listings/${item.id}`} key={item.id} className="bg-white dark:bg-[#1e292b] rounded-2xl p-3 shadow-soft border border-transparent dark:border-white/5 flex items-center gap-4 group active:scale-[0.98] transition-all cursor-pointer">
                                     <div className="size-16 rounded-xl bg-slate-50 dark:bg-slate-800 shrink-0 overflow-hidden relative border border-transparent dark:border-white/5">
                                         {item.image_url ? (
                                             <Image src={item.image_url} alt={item.title} fill className="object-cover transition-transform group-hover:scale-110" />
@@ -295,7 +295,7 @@ export default function SellerDashboardClient({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-bold text-slate-900 dark:text-white truncate text-sm mb-1">{item.title}</h4>
-                                        <p className="text-[13px] font-black text-primary">₵{parseFloat(item.price || 0).toFixed(0)}</p>
+                                        <p className="text-[13px] font-black text-primary">₵{formatPrice(item.price)}</p>
                                         <div className="flex items-center gap-1.5 mt-1.5">
                                             <div className={`size-1.5 rounded-full ${item.status === 'Active' ? 'bg-emerald-500' : item.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'}`}></div>
                                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{item.status || 'Active'}</span>
@@ -304,7 +304,7 @@ export default function SellerDashboardClient({
                                     <div className="size-10 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
                                         <DynamicLucideIcon name="arrow_forward" className="text-lg" />
                                     </div>
-                                </div>
+                                </Link>
                             ))}
 
                             {(!listings || listings.length === 0) && (

@@ -105,14 +105,15 @@ a {
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-highlight);
+  background: rgba(156, 163, 175, 0.3);
   border-radius: 4px;
 }
 

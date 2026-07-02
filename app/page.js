@@ -6,45 +6,10 @@ import { createClient } from '../utils/supabase/server';
 import SearchBar from "../components/SearchBar";
 import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
-import { toSentenceCase, seededShuffle } from '../utils/formatters';
+import { toSentenceCase, seededShuffle, formatPrice } from '../utils/formatters';
 
 export const revalidate = 60;
 
-async function getHomeData() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const [wishlistRes, bannerRes, boostedRes, latestRes] = await Promise.all([
-    user
-      ? supabase.from('wishlist').select('product_id').eq('user_id', user.id)
-      : Promise.resolve({ data: [] }),
-    supabase
-      .from('products')
-      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-      .or('is_featured.eq.true,is_boosted.eq.true')
-      .eq('status', 'Active')
-      .limit(15),
-    supabase
-      .from('products')
-      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-      .eq('is_boosted', true)
-      .eq('status', 'Active')
-      .limit(20),
-    supabase
-      .from('products')
-      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-      .eq('status', 'Active')
-      .order('created_at', { ascending: false })
-      .limit(20),
-  ]);
-
-  return {
-    wishlistIds: wishlistRes.data?.map(item => item.product_id) || [],
-    bannerProducts: seededShuffle(bannerRes.data, 42),
-    boostedProducts: seededShuffle(boostedRes.data, 43),
-    latestProducts: seededShuffle(latestRes.data, 44),
-  };
-}
 
 const categories = [
   { name: 'All' },
@@ -119,7 +84,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
             <div className="flex flex-col p-4">
               <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
               <div className="mt-2 flex items-center justify-between">
-                <p className="text-lg font-bold text-primary">₵ {product.price}</p>
+                <p className="text-lg font-bold text-primary">₵ {formatPrice(product.price)}</p>
                 <div className="flex items-center gap-1.5 overflow-hidden">
                   {product.seller?.avatar_url ? (
                     <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0" alt={product.seller.display_name} />
@@ -182,7 +147,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
                     {product.seller?.is_verified && <DynamicLucideIcon name="verified" className="text-primary text-[14px] font-bold" />}
                   </div>
                 </div>
-                <p className="shrink-0 text-xl font-black text-primary tracking-tighter">₵ {product.price}</p>
+                <p className="shrink-0 text-xl font-black text-primary tracking-tighter">₵ {formatPrice(product.price)}</p>
               </div>
             </div>
           </Link>

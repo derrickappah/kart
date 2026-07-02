@@ -103,6 +103,36 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Failed to credit buyer wallet' }, { status: 500 });
         }
 
+        // 1b. Deduct payout amount from seller's pending balance
+        try {
+            const { data: sellerWallet } = await adminSupabase
+                .from('wallets')
+                .select('*')
+                .eq('user_id', order.seller_id)
+                .single();
+
+            if (sellerWallet) {
+                const currentSellerPending = parseFloat(sellerWallet.pending_balance || 0);
+                const newSellerPending = Math.max(0, currentSellerPending - parseFloat(order.seller_payout_amount));
+                
+                const { error: sellerWalletUpdateError } = await adminSupabase
+                    .from('wallets')
+                    .update({
+                        pending_balance: newSellerPending,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', sellerWallet.id);
+
+                if (sellerWalletUpdateError) {
+                    console.error('Error updating seller wallet pending balance:', sellerWalletUpdateError);
+                } else {
+                    console.log('[Refund] Deducted pending balance for seller:', order.seller_id, 'Amount:', order.seller_payout_amount);
+                }
+            }
+        } catch (sellerWalletErr) {
+            console.error('Failed to adjust seller pending balance:', sellerWalletErr);
+        }
+
         // 2. Record wallet transaction
         const { error: transactionError } = await adminSupabase
             .from('wallet_transactions')

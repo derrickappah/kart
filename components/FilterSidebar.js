@@ -133,7 +133,7 @@ export default function FilterSidebar() {
 
     return (
         <div className={`fixed inset-0 z-[100] flex flex-col justify-end bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${animatingOut ? 'opacity-0' : 'animate-fade-in'}`}>
-            <div className="absolute inset-0" onClick={closeSidebar} />
+            <button className="absolute inset-0 w-full h-full bg-transparent cursor-default border-none outline-none" onClick={closeSidebar} aria-label="Close filters overlay" />
 
             <div className={`relative w-full bg-white dark:bg-[#242428] rounded-t-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] ${animatingOut ? 'translate-y-full transition-transform duration-300' : 'animate-slide-up'}`}>
                 {/* Handle */}
@@ -143,7 +143,12 @@ export default function FilterSidebar() {
 
                 {/* Header */}
                 <div className="px-6 pb-4 pt-2 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Filter & Sort</h2>
+                    <div className="flex items-center gap-2">
+                        <button onClick={closeSidebar} aria-label="Close filters" className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#2d2d32] text-gray-500 transition-colors">
+                            <DynamicLucideIcon name="close" size={24} />
+                        </button>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Filter & Sort</h2>
+                    </div>
                     <button onClick={handleReset} className="text-sm font-bold text-primary hover:bg-primary/10 px-4 py-2 rounded-xl transition-colors">
                         Reset
                     </button>

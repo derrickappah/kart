@@ -58,11 +58,13 @@ export async function POST(request) {
         // Use service role client for updates to bypass RLS
         const adminSupabase = createServiceRoleClient();
 
-        // Update order status to Delivered
+        // Update order status to Delivered and escrow to Released
         const { error: orderUpdateError } = await adminSupabase
             .from('orders')
             .update({
                 status: 'Delivered',
+                escrow_status: 'Released',
+                escrow_released_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
                 delivery_verification_otp: null,
                 delivery_verification_expires_at: null,
@@ -75,6 +77,84 @@ export async function POST(request) {
                 { error: 'Failed to update order status: ' + orderUpdateError.message },
                 { status: 500 }
             );
+        }
+
+        // Release escrow funds to seller wallet automatically
+        try {
+            let { data: wallet, error: walletFetchError } = await adminSupabase
+                .from('wallets')
+                .select('*')
+                .eq('user_id', order.seller_id)
+                .single();
+
+            if (walletFetchError && walletFetchError.code !== 'PGRST116') {
+                console.error('Error fetching seller wallet:', walletFetchError);
+            } else {
+                if (!wallet) {
+                    const { data: newWallet, error: walletCreateError } = await adminSupabase
+                        .from('wallets')
+                        .insert({
+                            user_id: order.seller_id,
+                            balance: 0,
+                            pending_balance: 0,
+                            currency: 'GHS',
+                        })
+                        .select()
+                        .single();
+
+                    if (walletCreateError) {
+                        console.error('Error creating seller wallet:', walletCreateError);
+                    } else {
+                        wallet = newWallet;
+                    }
+                }
+
+                if (wallet) {
+                    const payoutAmount = parseFloat(order.seller_payout_amount);
+                    const currentBalance = parseFloat(wallet.balance || 0);
+                    const currentPending = parseFloat(wallet.pending_balance || 0);
+                    const newBalance = currentBalance + payoutAmount;
+                    const newPending = Math.max(0, currentPending - payoutAmount);
+
+                    const { error: walletUpdateError } = await adminSupabase
+                        .from('wallets')
+                        .update({
+                            balance: newBalance,
+                            pending_balance: newPending,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', wallet.id);
+
+                    if (walletUpdateError) {
+                        console.error('Error updating seller wallet balance:', walletUpdateError);
+                    } else {
+                        // Create wallet transaction using admin client
+                        await adminSupabase.from('wallet_transactions').insert({
+                            wallet_id: wallet.id,
+                            order_id: order.id,
+                            transaction_type: 'Credit',
+                            amount: payoutAmount,
+                            balance_before: currentBalance,
+                            balance_after: newBalance,
+                            status: 'Completed',
+                            reference: order.id,
+                            description: 'Escrow Released',
+                            admin_notes: 'Escrow released automatically upon delivery confirmation',
+                        });
+
+                        // Create notification for seller
+                        await adminSupabase.from('notifications').insert({
+                            user_id: order.seller_id,
+                            type: 'EscrowReleased',
+                            title: 'Escrow Released',
+                            message: `GHS ${payoutAmount.toFixed(2)} has been released to your wallet for order #${order.id.slice(0, 8)}.`,
+                            related_order_id: order.id,
+                        });
+                    }
+                }
+            }
+        } catch (escrowError) {
+            console.error('Escrow release process error:', escrowError);
         }
 
         // Record status change in history

@@ -45,7 +45,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
                 <div className="px-2">
                     <Link href="/dashboard/admin" className="block" onClick={onClose}>
                         <Image
-                            src="/ChatGPT Image Jan 18, 2026, 10_53_24 PM.png"
+                            src="/logo.png"
                             alt="KART Admin"
                             width={120}
                             height={40}

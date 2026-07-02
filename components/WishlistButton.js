@@ -40,7 +40,6 @@ export default function WishlistButton({ productId, initialIsSaved }) {
             if (!response.ok) {
                 throw new Error('Failed to update wishlist');
             }
-            // Removed router.refresh() — optimistic state is already correct
         } catch (error) {
             console.error('Wishlist error:', error);
             // Revert on error
@@ -54,10 +53,11 @@ export default function WishlistButton({ productId, initialIsSaved }) {
         <button
             onClick={handleToggle}
             type="button"
+            aria-label={isSaved ? 'Remove from wishlist' : 'Save to wishlist'}
+            aria-pressed={isSaved}
             className="absolute top-2 right-2 h-9 w-9 bg-white/80 dark:bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-600 dark:text-white hover:text-red-500 hover:bg-white transition-all active:scale-90 z-20"
         >
             <DynamicLucideIcon name="favorite" style={{ fontVariationSettings: isSaved ? "'FILL' 1" : "'FILL' 0" }} className={`text-[20px] ${isSaved ? 'fill-1 text-red-500' : ''}`} />
         </button>
     );
 }
-

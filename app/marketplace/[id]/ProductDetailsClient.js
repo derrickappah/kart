@@ -1,11 +1,12 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
 import BuyButton from './BuyButton';
-import { toSentenceCase } from '../../../utils/formatters';
+import { toSentenceCase, formatPrice } from '../../../utils/formatters';
 import { timeAgo } from '../../../utils/dateUtils';
 
 const supabase = createClient();
@@ -18,6 +19,8 @@ export default function ProductDetailsClient({ product }) {
     const [loadingBoost, setLoadingBoost] = useState(false);
     const [similarProducts, setSimilarProducts] = useState([]);
     const [loadingSimilar, setLoadingSimilar] = useState(true);
+    const [inlineError, setInlineError] = useState(null);
+    const [shareFeedback, setShareFeedback] = useState(null);
 
     // Initialize with first image from array if available, otherwise fallback to image_url
     const images = (product?.images && product.images.length > 0) ? product.images : [product?.image_url];
@@ -131,13 +134,14 @@ export default function ProductDetailsClient({ product }) {
 
     const handleContactSeller = async () => {
         setLoadingChat(true);
+        setInlineError(null);
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             router.push('/login');
             return;
         }
         if (user.id === product.seller_id) {
-            alert("You cannot message yourself!");
+            setInlineError("You cannot message yourself!");
             setLoadingChat(false);
             return;
         }
@@ -160,7 +164,7 @@ export default function ProductDetailsClient({ product }) {
             }
         } catch (error) {
             console.error("Error starting chat:", error);
-            alert("Could not start chat. Please try again.");
+            setInlineError("Could not start chat. Please try again.");
             setLoadingChat(false);
         }
     };
@@ -177,13 +181,16 @@ export default function ProductDetailsClient({ product }) {
                 await navigator.share(shareData);
             } else {
                 await navigator.clipboard.writeText(window.location.href);
-                alert('Link copied to clipboard!');
+                setShareFeedback('Link copied!');
+                setTimeout(() => setShareFeedback(null), 2000);
             }
 
             // Increment share count
             await fetch(`/api/products/${product.id}/increment-shares`, { method: 'POST' });
         } catch (error) {
-            console.error('Error sharing:', error);
+            if (error.name !== 'AbortError') {
+                console.error('Error sharing:', error);
+            }
         }
     };
 
@@ -201,13 +208,20 @@ export default function ProductDetailsClient({ product }) {
             <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 pointer-events-none">
                 <button
                     onClick={() => router.back()}
+                    aria-label="Go back"
                     className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform"
                 >
                     <DynamicLucideIcon name="arrow_back" />
                 </button>
                 <div className="flex gap-2">
+                    {shareFeedback && (
+                        <span className="pointer-events-auto flex items-center bg-black/70 text-white text-xs font-bold px-3 py-2 rounded-full backdrop-blur-md">
+                            {shareFeedback}
+                        </span>
+                    )}
                     <button
                         onClick={handleShare}
+                        aria-label="Share this listing"
                         className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform"
                     >
                         <DynamicLucideIcon name="share" />
@@ -215,6 +229,8 @@ export default function ProductDetailsClient({ product }) {
                     <button
                         onClick={handleWishlistToggle}
                         disabled={loadingWishlist}
+                        aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
+                        aria-pressed={isInWishlist}
                         className={`pointer-events-auto size-11 flex items-center justify-center rounded-full backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform ${isInWishlist ? 'bg-primary text-white' : 'bg-white/20 text-white'}`}
                     >
                         <DynamicLucideIcon name="favorite" className={`${isInWishlist ? 'fill-current' : ''}`} />
@@ -230,10 +246,13 @@ export default function ProductDetailsClient({ product }) {
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
                 >
-                    <img
-                        src={images[currentImageIndex]}
+                    <Image
+                        src={images[currentImageIndex] || '/placeholder.png'}
                         alt={product.title}
-                        className="absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-in-out"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 448px"
+                        className="object-cover transition-all duration-500 ease-in-out"
+                        priority
                     />
 
                     {/* Pagination Dots */}
@@ -268,7 +287,7 @@ export default function ProductDetailsClient({ product }) {
                         <h1 className="text-[#0e181b] dark:text-white text-3xl font-extrabold leading-tight mt-2">
                             {toSentenceCase(product.title)}
                         </h1>
-                        <p className="text-primary text-3xl font-bold mt-2">₵ {product.price}</p>
+                        <p className="text-primary text-3xl font-bold mt-2">₵ {formatPrice(product.price)}</p>
                     </div>
 
                     {/* Seller Info */}
@@ -355,7 +374,7 @@ export default function ProductDetailsClient({ product }) {
                                         </div>
                                         <div className="flex flex-col gap-0.5 px-1">
                                             <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">{toSentenceCase(p.title)}</h3>
-                                            <p className="text-primary text-base font-extrabold">₵ {p.price}</p>
+                                            <p className="text-primary text-base font-extrabold">₵ {formatPrice(p.price)}</p>
                                         </div>
                                     </Link>
                                 ))}
@@ -368,6 +387,11 @@ export default function ProductDetailsClient({ product }) {
             {/* Persistent Bottom Action Bar */}
             {!isOwner && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#22262a]/90 backdrop-blur-2xl border-t border-black/5 dark:border-white/5 p-4 pb-8 z-50">
+                    {inlineError && (
+                        <div className="mb-3 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium text-center">
+                            {inlineError}
+                        </div>
+                    )}
                     <div className="max-w-screen-md mx-auto flex items-center gap-3">
                         <button
                             onClick={handleContactSeller}

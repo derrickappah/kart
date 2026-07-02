@@ -31,7 +31,7 @@ export default function ForgotPassword() {
                 <div className="flex flex-col items-center space-y-2">
                     <div className="w-[120px] h-[120px] mb-2 relative">
                         <Image 
-                            src="/ChatGPT Image Jan 18, 2026, 10_53_24 PM.png" 
+                            src="/logo.png" 
                             alt="KART Logo" 
                             fill
                             className="object-contain"
@@ -71,6 +71,7 @@ export default function ForgotPassword() {
                                     placeholder="e.g. student@campus.edu" 
                                     type="email"
                                     name="email"
+                                    autoComplete="email"
                                     required
                                 />
                             </div>

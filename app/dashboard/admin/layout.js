@@ -37,7 +37,7 @@ export default function AdminLayout({ children }) {
                         
                         <Link href="/dashboard/admin" className="block">
                             <Image
-                                src="/ChatGPT Image Jan 18, 2026, 10_53_24 PM.png"
+                                src="/logo.png"
                                 alt="KART Admin"
                                 width={100}
                                 height={32}

@@ -357,6 +357,7 @@ export default function CreateListingPage() {
                                     <option value="Musical Instruments">Musical Instruments</option>
                                     <option value="Games & Consoles">Games & Consoles</option>
                                     <option value="Health & Wellness">Health & Wellness</option>
+                                    <option value="Arts & Crafts">Arts & Crafts</option>
                                     <option value="Home Appliances">Home Appliances</option>
                                 </select>
                                 <DynamicLucideIcon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xl" />

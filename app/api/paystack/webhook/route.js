@@ -118,6 +118,18 @@ export async function POST(request) {
             console.log('[Webhook] Resolved metadata type:', type);
 
             if (type === 'wallet_deposit') {
+                // Check if transaction already processed
+                const { data: existingTrans } = await adminSupabase
+                    .from('wallet_transactions')
+                    .select('id')
+                    .eq('reference', reference)
+                    .maybeSingle();
+
+                if (existingTrans) {
+                    console.log('[Webhook] Wallet deposit already processed for reference:', reference);
+                    return NextResponse.json({ message: 'Wallet deposit already processed' }, { status: 200 });
+                }
+
                 // Determine user_id from metadata or reference
                 let userId = metadata.user_id || verification.data.metadata?.user_id;
 

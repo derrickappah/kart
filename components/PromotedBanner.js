@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { toSentenceCase } from '../utils/formatters';
+import { toSentenceCase, formatPrice } from '../utils/formatters';
 
 export default function PromotedBanner({ products }) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -85,13 +85,13 @@ export default function PromotedBanner({ products }) {
                                 priority={idx === 0}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-                            <div className="absolute bottom-5 left-4 right-4 flex items-end justify-between gap-4">
+                            <div className="absolute bottom-8 left-4 right-4 flex items-end justify-between gap-4">
                                 <h2 className="text-white text-lg font-extrabold leading-tight line-clamp-2 drop-shadow-md max-w-[75%]">
                                     {toSentenceCase(p.title)}
                                 </h2>
                                 <div className="shrink-0 flex items-center">
                                     <p className="text-[#FFD700] text-base font-black drop-shadow-md bg-black/40 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/10">
-                                        GHS {p.price}
+                                        ₵ {formatPrice(p.price)}
                                     </p>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@ export default function PromotedBanner({ products }) {
 
                 {/* Indicators */}
                 {products.length > 1 && (
-                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-20">
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
                         {products.map((_, idx) => (
                             <button
                                 key={idx}

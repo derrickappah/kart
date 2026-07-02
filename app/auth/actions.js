@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import { createClient } from '../../utils/supabase/server'
 
 export async function login(formData) {
@@ -47,24 +46,26 @@ export async function signup(formData) {
 
     // If there's a referrer, record it in the profiles and tracking table
     if (referredBy && signUpData.user) {
-        // We use service role to bypass RLS for initial profile setup if needed, 
-        // but here we just try to update the profile which should be created by trigger
-        // If profile creation trigger exists, we update it.
-        const { createServiceRoleClient } = require('../../utils/supabase/server');
-        const adminSupabase = createServiceRoleClient();
+        try {
+            const { createServiceRoleClient } = await import('../../utils/supabase/server');
+            const adminSupabase = createServiceRoleClient();
 
-        await adminSupabase
-            .from('profiles')
-            .update({ referred_by: referredBy })
-            .eq('id', signUpData.user.id);
+            await adminSupabase
+                .from('profiles')
+                .update({ referred_by: referredBy })
+                .eq('id', signUpData.user.id);
 
-        await adminSupabase
-            .from('referrals_tracking')
-            .insert({
-                referrer_id: referredBy,
-                referee_id: signUpData.user.id,
-                status: 'Pending'
-            });
+            await adminSupabase
+                .from('referrals_tracking')
+                .insert({
+                    referrer_id: referredBy,
+                    referee_id: signUpData.user.id,
+                    status: 'Pending'
+                });
+        } catch (referralError) {
+            // Non-fatal: referral tracking failure should not block signup
+            console.error('[signup] Referral tracking failed:', referralError.message);
+        }
     }
 
     revalidatePath('/', 'layout')

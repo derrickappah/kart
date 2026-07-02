@@ -7,7 +7,21 @@ export const toSentenceCase = (str) => {
     if (!str) return '';
     const clean = str.trim();
     if (clean.length === 0) return '';
-    return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+};
+
+/**
+ * Formats a number with thousands separators and optional decimals.
+ * @param {number|string} price - The price to format.
+ * @returns {string} The formatted price.
+ */
+export const formatPrice = (price) => {
+    const num = parseFloat(price);
+    if (isNaN(num)) return '0';
+    return num.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
 };
 
 /**

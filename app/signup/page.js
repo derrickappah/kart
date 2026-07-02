@@ -39,7 +39,7 @@ function SignupForm() {
                 <div className="flex flex-col items-center space-y-2">
                     <div className="w-[120px] h-[120px] mb-2 relative">
                         <Image
-                            src="/ChatGPT Image Jan 18, 2026, 10_53_24 PM.png"
+                            src="/logo.png"
                             alt="KART Logo"
                             fill
                             className="object-contain"
@@ -70,6 +70,7 @@ function SignupForm() {
                                 <DynamicLucideIcon name="person" className="ml-4 text-[#4f8596] text-[20px]" />
                                 <input
                                     name="full_name"
+                                    autoComplete="name"
                                     className="w-full bg-transparent border-none focus:ring-0 h-14 text-[#24282D] dark:text-white placeholder:text-[#4f8596]/60 text-base px-3"
                                     placeholder="Alex Johnson"
                                     required
@@ -85,6 +86,7 @@ function SignupForm() {
                                 <input
                                     name="email"
                                     type="email"
+                                    autoComplete="email"
                                     className="w-full bg-transparent border-none focus:ring-0 h-14 text-[#24282D] dark:text-white placeholder:text-[#4f8596]/60 text-base px-3"
                                     placeholder="your@email.com"
                                     required
@@ -99,6 +101,7 @@ function SignupForm() {
                                 <DynamicLucideIcon name="lock" className="ml-4 text-[#4f8596] text-[20px]" />
                                 <input
                                     name="password"
+                                    autoComplete="new-password"
                                     className="w-full bg-transparent border-none focus:ring-0 h-14 text-[#24282D] dark:text-white placeholder:text-[#4f8596]/60 text-base px-3"
                                     placeholder="••••••••"
                                     type={showPassword ? "text" : "password"}

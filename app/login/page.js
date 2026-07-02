@@ -34,7 +34,7 @@ export default function Login() {
                 <div className="flex flex-col items-center space-y-2">
                     <div className="w-[120px] h-[120px] mb-2 relative">
                         <Image 
-                            src="/ChatGPT Image Jan 18, 2026, 10_53_24 PM.png" 
+                            src="/logo.png" 
                             alt="KART Logo" 
                             fill
                             className="object-contain"
@@ -60,7 +60,7 @@ export default function Login() {
 
                         {/* Email Field */}
                         <div className="flex flex-col space-y-2">
-                            <label className="text-[#24282D] dark:text-gray-300 text-sm font-semibold px-1">Email or Username</label>
+                            <label className="text-[#24282D] dark:text-gray-300 text-sm font-semibold px-1">Email Address</label>
                             <div className="relative flex items-center bg-white dark:bg-[#111d21] border border-[#d0e1e6] dark:border-gray-700 rounded-xl transition-all duration-200 shadow-sm focus-within:border-[#1daddd] focus-within:ring-4 focus-within:ring-[#1daddd]/10">
                                 <DynamicLucideIcon name="alternate_email" className="ml-4 text-[#4f8596] text-[20px]" />
                                 <input 
@@ -68,6 +68,7 @@ export default function Login() {
                                     placeholder="e.g. student@campus.edu" 
                                     type="email"
                                     name="email"
+                                    autoComplete="email"
                                     required
                                 />
                             </div>
@@ -83,6 +84,7 @@ export default function Login() {
                                     placeholder="••••••••" 
                                     type={showPassword ? "text" : "password"}
                                     name="password"
+                                    autoComplete="current-password"
                                     required
                                 />
                                 <button 
