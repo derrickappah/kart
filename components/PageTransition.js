@@ -9,6 +9,12 @@ export default function PageTransition({ children }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
 
+  const isAdminPage = pathname?.startsWith("/dashboard/admin");
+
+  if (isAdminPage) {
+    return <>{children}</>;
+  }
+
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setIsAnimating(true);
@@ -34,3 +40,4 @@ export default function PageTransition({ children }) {
     </div>
   );
 }
+
