@@ -72,19 +72,20 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className="fixed inset-0 z-[10000] overflow-y-auto bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+      className="fixed inset-0 z-[10000] overflow-y-auto"
     >
-      {/* Backdrop */}
+      {/* Backdrop (Dark overlay + blur) */}
       <div
-        className="fixed inset-0 cursor-default"
+        className="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity cursor-default"
         onClick={() => !loading && onClose()}
         aria-hidden="true"
       />
 
-      {/* Center Layout Container for Scrollability */}
-      <div className="flex min-h-screen items-center justify-center p-4">
-        {/* Dialog Body */}
-        <div className="relative bg-white dark:bg-[#1a2325] w-full max-w-md rounded-[32px] border border-black/5 dark:border-white/5 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-8">
+      {/* Center Layout Container (Guaranteed in front via z-10, pointer-events-none lets clicks pass to backdrop) */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center p-4 pointer-events-none">
+        
+        {/* Dialog Body (pointer-events-auto restores clicks inside the dialog) */}
+        <div className="relative w-full max-w-md bg-white dark:bg-[#1a2325] rounded-[32px] border border-black/5 dark:border-white/5 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-8 pointer-events-auto">
           <div className="p-6 sm:p-8">
             
             {/* Header */}
