@@ -26,7 +26,7 @@ function AuthCodeErrorContent() {
                             Authentication Failed
                         </h1>
                         <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                            We couldn't verify your login. This can happen if the authentication link has expired, has already been used, or if the login session was started on a different domain or device.
+                            We couldn&apos;t verify your login. This can happen if the authentication link has expired, has already been used, or if the login session was started on a different domain or device.
                         </p>
                     </div>
 

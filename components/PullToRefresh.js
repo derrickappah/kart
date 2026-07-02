@@ -13,11 +13,11 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     const threshold = 80;
     const maxPull = 120;
 
-    const handleTouchStart = (e) => {
+    const handleTouchStart = useCallback((e) => {
         if (disabled || isRefreshing || window.scrollY > 0) return;
         startY.current = e.touches[0].pageY;
         setIsDragging(true);
-    };
+    }, [disabled, isRefreshing]);
 
     const handleTouchMove = useCallback((e) => {
         if (!isDragging || disabled || isRefreshing || window.scrollY > 0) return;
@@ -39,7 +39,7 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
         }
     }, [isDragging, disabled, isRefreshing]);
 
-    const handleTouchEnd = async () => {
+    const handleTouchEnd = useCallback(async () => {
         if (!isDragging) return;
         setIsDragging(false);
 
@@ -59,7 +59,7 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
         } else {
             setPullDelta(0);
         }
-    };
+    }, [isDragging, pullDelta, threshold, onRefresh]);
 
     useEffect(() => {
         const el = containerRef.current;
@@ -75,7 +75,7 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
             el.removeEventListener('touchmove', handleTouchMove);
             el.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [handleTouchMove, handleTouchEnd]);
+    }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 
     return (
         <div ref={containerRef} className="relative w-full h-full min-h-[50vh]">

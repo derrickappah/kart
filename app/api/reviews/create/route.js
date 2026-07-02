@@ -17,20 +17,32 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
+    if (typeof rating !== 'number' || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return NextResponse.json({ error: 'Rating must be an integer between 1 and 5' }, { status: 400 });
     }
 
-    // Verify order belongs to user
+    // Server-side comment length cap (mirrors client 500-char limit)
+    if (comment && typeof comment === 'string' && comment.length > 600) {
+      return NextResponse.json({ error: 'Review comment exceeds maximum length' }, { status: 400 });
+    }
+
+    // Verify order belongs to user and is in a reviewable state
     const { data: order } = await supabase
       .from('orders')
-      .select('*')
+      .select('id, status, buyer_id')
       .eq('id', orderId)
       .eq('buyer_id', user.id)
       .single();
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    if (order.status !== 'Delivered' && order.status !== 'Completed') {
+      return NextResponse.json(
+        { error: 'Reviews can only be submitted for delivered or completed orders' },
+        { status: 400 }
+      );
     }
 
     // Check if review already exists

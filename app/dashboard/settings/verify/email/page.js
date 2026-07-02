@@ -14,16 +14,36 @@ export default function EmailVerificationPage() {
     const [resendCooldown, setResendCooldown] = useState(0);
 
     useEffect(() => {
-        const getEmail = async () => {
+        let mounted = true;
+        const getEmailAndSendOtp = async () => {
+            const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
+            if (user && mounted) {
                 setEmail(user.email);
-                // Automatically send OTP on load
-                sendOtp();
+                // Automatically send OTP on mount
+                if (resendCooldown === 0) {
+                    setLoading(true);
+                    setError(null);
+                    try {
+                        const response = await fetch('/api/auth/send-verification-otp', { method: 'POST' });
+                        const data = await response.json();
+                        if (!response.ok) {
+                            if (mounted) setError(data.error || 'Failed to send verification code');
+                        } else {
+                            if (mounted) setResendCooldown(60);
+                        }
+                    } catch {
+                        if (mounted) setError('Failed to send verification code');
+                    } finally {
+                        if (mounted) setLoading(false);
+                    }
+                }
             }
         };
-        getEmail();
-    }, [supabase]);
+        getEmailAndSendOtp();
+        return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Intentionally empty — runs only on mount to auto-send OTP
 
     useEffect(() => {
         if (resendCooldown > 0) {

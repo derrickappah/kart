@@ -1,6 +1,7 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import successAnim from '@/public/Success.json';
@@ -43,10 +44,11 @@ export default function SuccessClient({ seller, product }) {
                     <div className="mt-8 w-full bg-white/60 dark:bg-[#2c3336]/60 backdrop-blur-sm border border-white/50 dark:border-white/5 rounded-xl p-4 flex items-center gap-4 shadow-sm">
                         <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0 relative">
                             {seller?.avatar_url ? (
-                                <img
+                                <Image
                                     src={seller.avatar_url}
-                                    alt={seller.display_name}
-                                    className="w-full h-full object-cover"
+                                    alt={seller.display_name || 'Seller'}
+                                    fill
+                                    className="object-cover"
                                 />
                             ) : (
                                 <div className="w-full h-full bg-center bg-no-repeat bg-cover" style={{ backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuC6HxWquOpKMmX5A4op6K5xE77ctvKPpihSCk6H2EtPWIrqe1TQXbzHBLtJni2ybqRVPU-z9G-P3tYbzOqJeqz1HiM88U-vBAzwUTXfn_XJuW9Im3Lx49WUSFWSSLlGRxvyNnps_ZpuRU0RDdsDp4NsyYlh_amlQaStHy9iMz__21jKqgVPXx-HNrXyPoFYelRxW7sUgWYqFPHNreZutZ02WIMdLMpCTgrPsznOLq6MF_oplYbwCl7u5vN6zwuEg2cS7r4RG-dc1Oii")` }}></div>

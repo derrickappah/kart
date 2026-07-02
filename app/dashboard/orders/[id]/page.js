@@ -2,10 +2,12 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Suspense } from 'react';
 import OrderPaymentVerification from './OrderPaymentVerification';
 import ConfirmDeliveryButton from './ConfirmDeliveryButton';
 import RefundButton from './RefundButton';
+import MarkAsShippedButton from './MarkAsShippedButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,13 +35,13 @@ export default async function OrderDetailPage({ params }) {
 
   if (orderError || !order) {
     return (
-      <div className="min-h-screen bg-[#0A0A0B] text-white flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#f6f7f8] dark:bg-[#131d1f] text-[#0e181b] dark:text-white flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
           <DynamicLucideIcon name="error" className="text-red-500 text-3xl" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
-        <p className="text-gray-400 mb-8 max-w-xs">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
-        <Link href="/dashboard/orders" className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors font-medium">
+        <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-xs">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
+        <Link href="/dashboard/orders" className="px-6 py-3 bg-slate-200/50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-2xl hover:bg-slate-300/50 dark:hover:bg-white/10 transition-colors font-medium text-slate-800 dark:text-white">
           Back to Orders
         </Link>
       </div>
@@ -76,10 +78,17 @@ export default async function OrderDetailPage({ params }) {
     'Shipped': { icon: 'local_shipping', color: '#3B82F6', label: 'Item Shipped' },
     'Delivered': { icon: 'package_2', color: '#8B5CF6', label: 'Delivered' },
     'Completed': { icon: 'verified', color: '#10B981', label: 'Completed' },
-    'Cancelled': { icon: 'cancel', color: '#EF4444', label: 'Cancelled' }
+    'Cancelled': { icon: 'cancel', color: '#EF4444', label: 'Cancelled' },
+    'Refunded': { icon: 'keyboard_return', color: '#EF4444', label: 'Refunded' }
   };
 
-  const currentStatus = statusConfig[order.status] || { icon: 'help', color: '#6B7280', label: order.status };
+  // Casing normalization for database compatibility
+  const normalizedStatus = order.status
+    ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()
+    : 'Pending';
+
+  const orderStatus = normalizedStatus;
+  const currentStatus = statusConfig[orderStatus] || { icon: 'help', color: '#6B7280', label: order.status };
 
   return (
     <div className="bg-[#f6f7f8] dark:bg-[#131d1f] text-[#0e181b] dark:text-white font-['Plus_Jakarta_Sans',sans-serif] min-h-screen antialiased">
@@ -99,16 +108,55 @@ export default async function OrderDetailPage({ params }) {
             <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold font-mono">#{order.id.slice(0, 8).toUpperCase()}</p>
           </div>
           <div className="flex items-center gap-2">
-            {isBuyer && <RefundButton orderId={order.id} orderStatus={order.status} refundStatus={order.refund_status} />}
+            {isBuyer && <RefundButton orderId={order.id} orderStatus={orderStatus} refundStatus={order.refund_status} />}
           </div>
         </header>
 
         <main className="flex flex-col gap-6 p-4">
           {/* Payment Verification Banner */}
-          {isBuyer && order.status === 'Pending' && (
+          {isBuyer && orderStatus === 'Pending' && (
             <Suspense fallback={null}>
               <OrderPaymentVerification orderId={order.id} currentStatus={order.status} />
             </Suspense>
+          )}
+
+          {/* Refund Status Notice Banners */}
+          {order.refund_status === 'Requested' && (
+            <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+              <DynamicLucideIcon name="history" className="text-amber-500 shrink-0" />
+              <div>
+                <h4 className="font-bold text-sm text-amber-600 dark:text-amber-500">Refund Requested</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-normal">
+                  {isBuyer 
+                    ? "You have requested a refund. An administrator will review your request shortly." 
+                    : "The buyer has requested a refund. This order\'s funds are on hold until resolved by an administrator."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {order.refund_status === 'Refunded' && (
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+              <DynamicLucideIcon name="keyboard_return" className="text-red-500 shrink-0" />
+              <div>
+                <h4 className="font-bold text-sm text-red-600 dark:text-red-500">Order Refunded</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-normal">
+                  This transaction has been refunded. The purchase amount has been returned to the buyer&apos;s wallet.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {order.refund_status === 'Rejected' && (
+            <div className="bg-slate-500/10 border border-slate-500/20 p-4 rounded-2xl flex gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+              <DynamicLucideIcon name="error" className="text-slate-500 dark:text-slate-400 shrink-0" />
+              <div>
+                <h4 className="font-bold text-sm text-slate-600 dark:text-slate-400">Refund Request Rejected</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-normal">
+                  The refund request for this order was reviewed and rejected by an administrator.
+                </p>
+              </div>
+            </div>
           )}
 
           {/* Status Timeline Card */}
@@ -154,9 +202,9 @@ export default async function OrderDetailPage({ params }) {
           <section className="flex flex-col gap-3">
             <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Order Summary</h2>
             <div className="bg-white dark:bg-[#1e292b] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] flex gap-4">
-              <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex-shrink-0 border border-gray-100 dark:border-gray-700">
+              <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex-shrink-0 border border-gray-100 dark:border-gray-700 relative">
                 {productImage ? (
-                  <img src={productImage} alt={order.product?.title} className="w-full h-full object-cover" />
+                  <Image src={productImage} alt={order.product?.title || 'Product'} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <DynamicLucideIcon name="image" className="text-gray-400" />
@@ -200,7 +248,7 @@ export default async function OrderDetailPage({ params }) {
                     Paid via {
                       (order.paystack_transaction_id ||
                         order.payment_reference?.startsWith('order_') ||
-                        order.status === 'Pending' ||
+                        orderStatus === 'Pending' ||
                         parseFloat(order.seller_payout_amount) !== parseFloat(order.unit_price) * (order.quantity || 1))
                         ? 'Paystack'
                         : 'Wallet'
@@ -226,9 +274,9 @@ export default async function OrderDetailPage({ params }) {
               {isBuyer ? 'Seller Details' : 'Buyer Details'}
             </h2>
             <div className="bg-white dark:bg-[#1e292b] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 border border-gray-200 dark:border-gray-700">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 border border-gray-200 dark:border-gray-700 relative">
                 {(isBuyer ? order.seller : order.buyer)?.avatar_url ? (
-                  <img src={(isBuyer ? order.seller : order.buyer).avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  <Image src={(isBuyer ? order.seller : order.buyer).avatar_url} alt={`${(isBuyer ? order.seller : order.buyer)?.display_name || (isBuyer ? 'Seller' : 'Buyer')}'s profile photo`} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-[#1daddd]/10">
                     <DynamicLucideIcon name="person" className="text-[#1daddd]" />
@@ -237,15 +285,16 @@ export default async function OrderDetailPage({ params }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 overflow-hidden">
-                  <h3 className="font-bold truncate text-sm">{(isBuyer ? order.seller : order.buyer).display_name || 'User'}</h3>
-                  {(isBuyer ? order.seller : order.buyer).is_verified && (
+                  <h3 className="font-bold truncate text-sm">{(isBuyer ? order.seller : order.buyer)?.display_name || 'User'}</h3>
+                  {(isBuyer ? order.seller : order.buyer)?.is_verified && (
                     <DynamicLucideIcon name="verified" className="text-primary text-[16px] fill-current" />
                   )}
                 </div>
-                <p className="text-xs text-gray-400 truncate font-medium font-mono">{(isBuyer ? order.seller : order.buyer).email}</p>
+                <p className="text-xs text-gray-400 truncate font-medium font-mono">{(isBuyer ? order.seller : order.buyer)?.email || 'No email'}</p>
               </div>
               <Link
-                href={`/profile/${(isBuyer ? order.seller : order.buyer).id}`}
+                href={`/profile/${(isBuyer ? order.seller : order.buyer)?.id || ''}`}
+                aria-label={`View ${(isBuyer ? order.seller : order.buyer)?.display_name || (isBuyer ? 'seller' : 'buyer')}'s profile`}
                 className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center hover:bg-gray-100 transition-all"
               >
                 <DynamicLucideIcon name="chevron_right" className="text-xl text-[#1daddd]" />
@@ -262,8 +311,8 @@ export default async function OrderDetailPage({ params }) {
           </div>
 
           {/* Confirm Delivery Button - Only for buyers with paid/shipped orders */}
-          {isBuyer && (order.status === 'Paid' || order.status === 'Shipped') && (
-            <section className="flex flex-col gap-3">
+          {isBuyer && (orderStatus === 'Paid' || orderStatus === 'Shipped') && (
+            <section className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
               <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Confirm Receipt</h2>
               <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
                 <div className="mb-4 flex items-start gap-3">
@@ -275,7 +324,26 @@ export default async function OrderDetailPage({ params }) {
                     </p>
                   </div>
                 </div>
-                <ConfirmDeliveryButton orderId={order.id} orderStatus={order.status} />
+                <ConfirmDeliveryButton orderId={order.id} orderStatus={orderStatus} />
+              </div>
+            </section>
+          )}
+
+          {/* Mark as Shipped Button - Only for sellers with Paid orders */}
+          {isSeller && orderStatus === 'Paid' && (
+            <section className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Ship Item</h2>
+              <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
+                <div className="mb-4 flex items-start gap-3">
+                  <DynamicLucideIcon name="local_shipping" className="text-[#1daddd] text-2xl shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-base mb-1">Ready to ship?</h3>
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      Once you have handed over or shipped the item, mark it as shipped. This will notify the buyer so they can confirm receipt and release your payout.
+                    </p>
+                  </div>
+                </div>
+                <MarkAsShippedButton orderId={order.id} />
               </div>
             </section>
           )}

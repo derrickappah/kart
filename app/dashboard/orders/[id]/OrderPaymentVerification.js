@@ -2,7 +2,6 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
 
 export default function OrderPaymentVerification({ orderId, currentStatus }) {
   const searchParams = useSearchParams();
@@ -10,7 +9,6 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
   const [verifying, setVerifying] = useState(false);
   const [message, setMessage] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
-  const supabase = createClient();
 
   const verifyPayment = useCallback(async (reference, isRetry = false) => {
     setVerifying(true);
@@ -39,10 +37,9 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
           type: 'success',
           text: 'Payment verified successfully! Refreshing page...',
         });
-        // Refresh the page after a short delay to show updated status
+        // Refresh server component state after a short delay
         setTimeout(() => {
           router.refresh();
-          window.location.reload();
         }, 1500);
       } else {
         // Payment verification returned false - could be pending or failed
@@ -75,7 +72,7 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
     } finally {
       setVerifying(false);
     }
-  }, [orderId, retryCount]);
+  }, [orderId, retryCount, router]);
 
   useEffect(() => {
     const reference = searchParams.get('reference') || searchParams.get('trxref');
@@ -132,7 +129,12 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
   const config = messageConfig[message?.type || 'info'];
 
   return (
-    <div className={`p-4 rounded-2xl border ${config.bg} ${config.text} ${config.border} flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500`}>
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className={`p-4 rounded-2xl border ${config.bg} ${config.text} ${config.border} flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500`}
+    >
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 dark:bg-black/20 flex items-center justify-center">
           {verifying ? (
@@ -154,14 +156,16 @@ export default function OrderPaymentVerification({ orderId, currentStatus }) {
         <div className="flex gap-2">
           <button
             onClick={handleManualRefresh}
-            className="flex-1 px-4 py-2 bg-white/20 dark:bg-black/20 rounded-xl font-bold text-xs hover:bg-white/30 dark:hover:bg-black/30 transition-colors flex items-center justify-center gap-1.5"
+            aria-label="Refresh page to check payment status"
+            className="flex-1 px-4 py-2 bg-white/20 dark:bg-black/20 rounded-xl font-bold text-xs hover:bg-white/30 dark:hover:bg-black/30 transition-colors flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-current"
           >
             <DynamicLucideIcon name="refresh" className="text-base" />
             <span>Refresh Page</span>
           </button>
           <button
             onClick={handleRetry}
-            className="flex-1 px-4 py-2 bg-white/20 dark:bg-black/20 rounded-xl font-bold text-xs hover:bg-white/30 dark:hover:bg-black/30 transition-colors flex items-center justify-center gap-1.5"
+            aria-label="Retry payment verification"
+            className="flex-1 px-4 py-2 bg-white/20 dark:bg-black/20 rounded-xl font-bold text-xs hover:bg-white/30 dark:hover:bg-black/30 transition-colors flex items-center justify-center gap-1.5 focus-visible:ring-2 focus-visible:ring-current"
           >
             <DynamicLucideIcon name="replay" className="text-base" />
             <span>Retry Verification</span>

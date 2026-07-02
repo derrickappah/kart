@@ -121,7 +121,9 @@ import {
   TrendingDown,
   MessageCircle,
   Store,
-  Bookmark
+  Bookmark,
+  ThumbsUp,
+  XCircle
 } from 'lucide-react';
 
 const iconMap = {
@@ -138,6 +140,9 @@ const iconMap = {
   'bar_chart': BarChart3,
   'warning': AlertTriangle,
   'keyboard_return': CornerUpLeft,
+  'thumb_up': ThumbsUp,
+  'bolt': Zap,
+  'cancel': XCircle,
   'verified_user': ShieldCheck,
   'security': Shield,
   'search': Search,

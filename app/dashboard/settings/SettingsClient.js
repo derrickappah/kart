@@ -25,7 +25,10 @@ export default function SettingsClient({ initialProfile, initialUser }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loadingDeletion, setLoadingDeletion] = useState(true);
 
-  // Fetch deletion request status on mount
+  // Delivery PIN configuration state
+  const [hasPin, setHasPin] = useState(!!initialProfile?.delivery_pin_hash);
+
+  // Fetch deletion request status and PIN status on mount
   useEffect(() => {
     const fetchDeletionStatus = async () => {
       try {
@@ -40,7 +43,21 @@ export default function SettingsClient({ initialProfile, initialUser }) {
         setLoadingDeletion(false);
       }
     };
+
+    const fetchPinStatus = async () => {
+      try {
+        const response = await fetch('/api/settings/delivery-pin/status');
+        const data = await response.json();
+        if (response.ok) {
+          setHasPin(data.hasPin);
+        }
+      } catch (err) {
+        console.error('Error fetching PIN status:', err);
+      }
+    };
+
     fetchDeletionStatus();
+    fetchPinStatus();
   }, []);
 
   const handleDeletionSuccess = (request) => {
@@ -51,7 +68,6 @@ export default function SettingsClient({ initialProfile, initialUser }) {
 
   return (
     <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased transition-colors duration-200">
-
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-8 no-scrollbar">
@@ -133,6 +149,25 @@ export default function SettingsClient({ initialProfile, initialUser }) {
                 <span className="text-base font-semibold text-slate-900 dark:text-white">Change Password</span>
               </div>
               <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
+            </Link>
+            <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
+
+            {/* Delivery PIN Item */}
+            <Link href="/dashboard/settings/security/delivery-pin" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 shrink-0">
+                  <DynamicLucideIcon name="dialpad" />
+                </div>
+                <span className="text-base font-semibold text-slate-900 dark:text-white">Delivery PIN</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {hasPin ? (
+                  <span className="text-[10px] font-bold text-green-700 dark:text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Configured</span>
+                ) : (
+                  <span className="text-[10px] font-bold text-amber-700 dark:text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Not Set</span>
+                )}
+                <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
+              </div>
             </Link>
             <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
 

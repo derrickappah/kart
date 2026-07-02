@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request) {
     try {
@@ -12,13 +13,14 @@ export async function POST(request) {
 
         const body = await request.json();
         const { orderId, verificationCode } = body;
+        const pin = verificationCode; // Support the variable name coming from front-end
 
         if (!orderId) {
             return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
         }
 
-        if (!verificationCode) {
-            return NextResponse.json({ error: 'Verification code is required' }, { status: 400 });
+        if (!pin) {
+            return NextResponse.json({ error: 'Delivery PIN is required' }, { status: 400 });
         }
 
         // Get order
@@ -37,17 +39,7 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Only the buyer can confirm delivery' }, { status: 403 });
         }
 
-        // Verify OTP
-        if (!order.delivery_verification_otp || order.delivery_verification_otp !== verificationCode) {
-            return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
-        }
-
-        // Check if OTP is expired
-        if (new Date(order.delivery_verification_expires_at) < new Date()) {
-            return NextResponse.json({ error: 'Verification code has expired. Please request a new one.' }, { status: 400 });
-        }
-
-        // Check if order is paid
+        // Check if order is paid or shipped
         if (order.status !== 'Paid' && order.status !== 'Shipped') {
             return NextResponse.json(
                 { error: `Order must be Paid or Shipped to confirm delivery. Current status: ${order.status}` },
@@ -55,8 +47,46 @@ export async function POST(request) {
             );
         }
 
-        // Use service role client for updates to bypass RLS
         const adminSupabase = createServiceRoleClient();
+
+        // Fetch buyer's delivery PIN hash from profiles
+        const { data: buyerProfile, error: profileError } = await adminSupabase
+            .from('profiles')
+            .select('delivery_pin_hash')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError || !buyerProfile?.delivery_pin_hash) {
+            return NextResponse.json(
+                { error: 'Delivery PIN is not set. Please set a delivery PIN in settings first.' },
+                { status: 400 }
+            );
+        }
+
+        // Brute-force protection: lock out after 5 failed attempts per order
+        const MAX_PIN_ATTEMPTS = 5;
+        const currentAttempts = order.delivery_otp_attempts || 0;
+        if (currentAttempts >= MAX_PIN_ATTEMPTS) {
+            return NextResponse.json({
+                error: 'Too many incorrect attempts. Please contact support or request assistance.'
+            }, { status: 429 });
+        }
+
+        // Verify PIN using bcrypt
+        const pinMatch = await bcrypt.compare(pin, buyerProfile.delivery_pin_hash);
+
+        if (!pinMatch) {
+            // Increment attempt counter (best-effort, non-blocking)
+            await adminSupabase
+                .from('orders')
+                .update({ delivery_otp_attempts: currentAttempts + 1 })
+                .eq('id', orderId);
+
+            const remaining = MAX_PIN_ATTEMPTS - currentAttempts - 1;
+            return NextResponse.json({
+                error: `Incorrect delivery PIN. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+            }, { status: 400 });
+        }
 
         // Update order status to Delivered and escrow to Released
         const { error: orderUpdateError } = await adminSupabase
@@ -68,6 +98,7 @@ export async function POST(request) {
                 updated_at: new Date().toISOString(),
                 delivery_verification_otp: null,
                 delivery_verification_expires_at: null,
+                delivery_otp_attempts: 0, // Reset attempt counter on success
             })
             .eq('id', order.id);
 

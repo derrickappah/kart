@@ -50,7 +50,8 @@ export async function POST(request) {
             .from('orders')
             .update({
                 delivery_verification_otp: otp,
-                delivery_verification_expires_at: expiresAt
+                delivery_verification_expires_at: expiresAt,
+                delivery_otp_attempts: 0, // Reset attempt counter on new OTP issuance
             })
             .eq('id', orderId);
 

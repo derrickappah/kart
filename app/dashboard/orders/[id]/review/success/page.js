@@ -11,19 +11,21 @@ export default async function ReviewSuccessPage({ params }) {
         redirect('/login');
     }
 
-    // Fetch order details for the success screen
+    // Fetch only what the success screen needs
     let seller = null;
     let product = null;
 
     try {
-        const { data: order, error } = await supabase
+        const { data: order } = await supabase
             .from('orders')
             .select(`
-                *,
-                product:products(*),
-                seller:profiles!orders_seller_id_profiles_fkey(*)
+                id,
+                buyer_id,
+                product:products(id, title, images, image_url),
+                seller:profiles!orders_seller_id_profiles_fkey(id, display_name, avatar_url)
             `)
             .eq('id', id)
+            .eq('buyer_id', user.id) // Ensure only the buyer can see their success screen
             .single();
 
         if (order) {
@@ -31,9 +33,9 @@ export default async function ReviewSuccessPage({ params }) {
             product = order.product;
         }
     } catch (err) {
-        console.log("Error fetching order for success screen:", err);
+        console.log('Error fetching order for success screen:', err);
     }
 
-    // Minimal fallback if everything fails, but we should have data if we reached here from the review page
+    // Render with whatever data we have (page is non-critical, gracefully degrades)
     return <SuccessClient seller={seller} product={product} />;
 }

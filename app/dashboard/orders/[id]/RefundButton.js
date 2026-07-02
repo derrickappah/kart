@@ -44,6 +44,7 @@ export default function RefundButton({ orderId, orderStatus, refundStatus }) {
     <>
       <button
         onClick={() => setModalOpen(true)}
+        aria-label="Report a problem or request a refund for this order"
         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all active:scale-95"
       >
         <DynamicLucideIcon name="keyboard_return" className="text-[18px]" />
@@ -57,9 +58,13 @@ export default function RefundButton({ orderId, orderStatus, refundStatus }) {
         onSuccess={(msg) => showToast(msg, 'success')}
       />
 
-      {/* Notification Toast */}
+      {/* Notification Toast — role="status" ensures screen readers announce it */}
       {toast.show && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-300"
+        >
           <div className={`${toast.type === 'success' ? 'bg-primary shadow-primary/20' : 'bg-red-500 shadow-red-500/20'} text-white px-8 py-4 rounded-2xl flex items-center gap-3 shadow-2xl`}>
             <DynamicLucideIcon name={toast.type === 'success' ? 'check_circle' : 'error'} className="text-sm" />
             <span className="text-[10px] font-black uppercase tracking-widest">{toast.message}</span>
