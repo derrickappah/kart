@@ -27,14 +27,11 @@ export default async function CheckoutPage({ params }) {
         if (wallet) {
             walletBalance = wallet.balance;
         } else {
-            // Mock balance for now if user has no wallet record yet
-            // or if the table doesn't exist in this environment yet
-            walletBalance = 150.00;
+            walletBalance = 0.00;
         }
     } catch (err) {
-        // Table might not exist, ignore
-        console.log("Wallet fetch error (expected if table missing):", err.message);
-        walletBalance = 52.00; // Mock default from design
+        console.log("Wallet fetch error:", err.message);
+        walletBalance = 0.00;
     }
 
     // 2. Fetch Product & Seller
