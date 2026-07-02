@@ -116,9 +116,6 @@ export default async function OrderDetailPage({ params }) {
               #{order.id.slice(0, 8)}
             </p>
           </div>
-          {isBuyer && (
-            <RefundButton orderId={order.id} orderStatus={orderStatus} refundStatus={order.refund_status} />
-          )}
         </header>
 
         <main className="flex-1 flex flex-col gap-4 px-4 pt-4 pb-32">
@@ -464,6 +461,24 @@ export default async function OrderDetailPage({ params }) {
                 </div>
               </div>
               <MarkAsShippedButton orderId={order.id} />
+            </section>
+          )}
+
+          {/* ── Help & Refund Card (Buyer) ── */}
+          {isBuyer && ['Paid', 'Shipped', 'Delivered'].includes(orderStatus) && (
+            <section className="bg-white dark:bg-[#1a2325] rounded-3xl p-5 border border-black/5 dark:border-white/5 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="size-10 rounded-2xl bg-red-500/10 flex items-center justify-center shrink-0">
+                  <DynamicLucideIcon name="help_outline" className="text-red-500 text-xl" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[15px] leading-tight mb-0.5">Need Help with this Order?</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    If your item is missing, damaged, or not as described, you can open a dispute case and request a refund.
+                  </p>
+                </div>
+              </div>
+              <RefundButton orderId={order.id} orderStatus={orderStatus} refundStatus={order.refund_status} />
             </section>
           )}
 

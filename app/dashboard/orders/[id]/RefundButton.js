@@ -21,10 +21,10 @@ export default function RefundButton({ orderId, orderStatus, refundStatus }) {
     return (
       <div 
         role="status"
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 text-[10px] font-bold uppercase tracking-wider"
+        className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 text-sm font-bold uppercase tracking-wider"
       >
-        <DynamicLucideIcon name="history" className="text-sm" />
-        <span>Refund Requested</span>
+        <DynamicLucideIcon name="history" className="text-lg animate-pulse" />
+        <span>Refund Requested & Escrow Held</span>
       </div>
     );
   }
@@ -33,10 +33,10 @@ export default function RefundButton({ orderId, orderStatus, refundStatus }) {
     return (
       <div 
         role="status"
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 text-[10px] font-bold uppercase tracking-wider"
+        className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 text-sm font-bold uppercase tracking-wider"
       >
-        <DynamicLucideIcon name="check_circle" className="text-sm" />
-        <span>Refunded</span>
+        <DynamicLucideIcon name="check_circle" className="text-lg" />
+        <span>Order Refunded Successfully</span>
       </div>
     );
   }
@@ -51,10 +51,10 @@ export default function RefundButton({ orderId, orderStatus, refundStatus }) {
       <button
         onClick={() => setModalOpen(true)}
         aria-label="Report a problem or request a refund for this order"
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-500 text-[10px] font-bold uppercase tracking-wider hover:bg-red-500/20 transition-all duration-200 active:scale-95 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+        className="w-full bg-slate-50 dark:bg-white/5 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 text-slate-700 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400 font-bold py-4 px-6 rounded-2xl transition-all duration-250 flex items-center justify-center gap-2 group focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 active:scale-[0.98]"
       >
-        <DynamicLucideIcon name="error_outline" className="text-sm" />
-        <span>Report / Refund</span>
+        <DynamicLucideIcon name="error_outline" className="text-lg group-hover:scale-110 transition-transform" />
+        <span>Report Issue / Request Refund</span>
       </button>
 
       <RefundRequestModal
