@@ -174,7 +174,10 @@ export default async function Home() {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Expire any completed promotions on page load (runs on ISR revalidation once every 60s)
-  await supabase.rpc('expire_completed_promotions').catch(err => console.error('Error running expire_completed_promotions RPC:', err));
+  const { error: expireError } = await supabase.rpc('expire_completed_promotions');
+  if (expireError) {
+    console.error('Error running expire_completed_promotions RPC:', expireError);
+  }
 
   const [wishlistRes, adsRes, latestRes] = await Promise.all([
     user
