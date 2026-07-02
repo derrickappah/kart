@@ -108,9 +108,9 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
   };
 
   return (
-    <div className="bg-[#f4f5f6] dark:bg-[#22262a] font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased">
+    <div className="bg-white dark:bg-[#242428] font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased">
       {/* Notifications Header */}
-      <header className="w-full bg-[#f4f5f6] dark:bg-[#22262a]">
+      <header className="w-full bg-white dark:bg-[#242428]">
         <div className="flex items-end justify-between px-5 pb-3 pt-6 max-w-lg mx-auto w-full">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             Notifications
