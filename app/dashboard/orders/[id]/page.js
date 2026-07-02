@@ -241,10 +241,10 @@ export default async function OrderDetailPage({ params }) {
                           </div>
                         </div>
                         <span
-                          className="text-[8px] font-bold text-center leading-tight uppercase tracking-wider"
+                          className="text-[8px] font-bold text-center leading-tight uppercase tracking-wider text-slate-400 dark:text-slate-500"
                           style={{ color: isActive ? currentStatus.color : undefined }}
                         >
-                          {cfg.label.split(' ')[0]}
+                          {step}
                         </span>
                       </div>
                     );
