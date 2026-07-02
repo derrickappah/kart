@@ -104,8 +104,8 @@ export default function ConversationList() {
 
 
     return (
-        <div className="flex flex-col h-full bg-[#f6f7f8] dark:bg-[#111d21] font-display overflow-hidden">
-            <header className="flex-none sticky top-0 bg-[#f6f7f8]/80 dark:bg-[#111d21]/80 backdrop-blur-md px-6 pt-6 pb-4 z-30">
+        <div className="flex flex-col h-full bg-white dark:bg-[#242428] font-display overflow-hidden">
+            <header className="flex-none sticky top-0 bg-white/80 dark:bg-[#242428]/80 backdrop-blur-md px-6 pt-6 pb-4 z-30">
 
                 {conversations.length > 0 && (
                     <div className="group flex w-full items-center rounded-2xl bg-white dark:bg-[#232628] px-4 py-3.5 transition-all focus-within:ring-2 focus-within:ring-[#1daddd]/50 border border-gray-100 dark:border-gray-800 shadow-sm">
@@ -150,14 +150,14 @@ export default function ConversationList() {
                             <Link key={conv.id} href={`/dashboard/messages/${conv.id}`} className="block no-underline">
                                 <div className={`group relative flex items-center gap-4 p-4 mb-2 rounded-xl transition-all active:scale-[0.98] border border-gray-100 dark:border-gray-800 cursor-pointer ${isActive ? 'bg-gray-50 dark:bg-[#232628] shadow-sm' : 'bg-white dark:bg-[#232628] shadow-sm hover:border-gray-200 dark:hover:border-gray-700'}`}>
                                     <div className="relative shrink-0">
-                                        <div className="size-14 rounded-full bg-center bg-cover border-2 border-white dark:border-[#232628] shadow-sm overflow-hidden flex items-center justify-center bg-slate-200 dark:bg-slate-700">
+                                        <div className="size-14 rounded-full bg-center bg-cover border-2 border-white dark:border-[#242428] shadow-sm overflow-hidden flex items-center justify-center bg-slate-200 dark:bg-slate-700">
                                             {conv.otherUser.avatar_url ? (
                                                 <img src={conv.otherUser.avatar_url} alt={conv.otherUser.display_name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <span className="text-lg font-bold text-slate-500 uppercase">{conv.otherUser.display_name?.[0]}</span>
                                             )}
                                         </div>
-                                        <div className="absolute bottom-0 right-0 size-3.5 bg-green-500 border-2 border-white dark:border-[#232628] rounded-full"></div>
+                                        <div className="absolute bottom-0 right-0 size-3.5 bg-green-500 border-2 border-white dark:border-[#242428] rounded-full"></div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-0.5">
