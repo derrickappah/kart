@@ -42,11 +42,14 @@ export default function TransactionTrends({ totalRevenue, totalVolume, monthlyDa
                 {totalVolume > 0 ? currentData.map((data) => (
                     <div
                         key={data.label}
-                        className="w-full bg-[#1daddd]/10 rounded-t-lg relative group transition-all duration-700 ease-in-out"
+                        tabIndex="0"
+                        role="img"
+                        aria-label={`${data.label}: ₵${data.val.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                        className="w-full bg-[#1daddd]/10 rounded-t-lg relative group transition-all duration-700 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-[#182125] cursor-pointer"
                         style={{ height: `${(data.val / maxVal) * 100}%` }}
                     >
-                        <div className="absolute bottom-0 w-full bg-[#1daddd]/40 rounded-t-lg transition-all group-hover:bg-[#1daddd]/60 h-full"></div>
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#111618] text-white text-[10px] px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-10 shadow-xl border border-white/10 backdrop-blur-md">
+                        <div className="absolute bottom-0 w-full bg-[#1daddd]/40 rounded-t-lg transition-all group-hover:bg-[#1daddd]/60 group-focus:bg-[#1daddd]/60 h-full"></div>
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#111618] text-white text-[10px] px-2 py-1 rounded hidden group-hover:block group-focus-within:block whitespace-nowrap z-10 shadow-xl border border-white/10 backdrop-blur-md">
                             {data.label}: ₵{data.val.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </div>
                     </div>
