@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '../../../../utils/supabase/client';
 import Link from 'next/link';
 import { validateImage } from '@/utils/imageUtils';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function CreateListingPage() {
     const router = useRouter();
@@ -290,11 +291,7 @@ export default function CreateListingPage() {
     };
 
     if (checkingSubscription) {
-        return (
-            <main className="bg-white dark:bg-[#242428] min-h-screen flex items-center justify-center">
-                <div className="animate-pulse text-primary font-bold">Checking subscription...</div>
-            </main>
-        );
+        return <LoadingScreen message="Checking subscription..." fullScreen={false} />;
     }
 
     if (subscriptionStatus !== 'active') {
