@@ -11,17 +11,13 @@ import MarkAsShippedButton from './MarkAsShippedButton';
 
 export const dynamic = 'force-dynamic';
 
-// Refined Order Detail Page Component
 export default async function OrderDetailPage({ params }) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/login');
-  }
+  if (!user) redirect('/login');
 
-  // Fetch order with related data
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .select(`
@@ -35,20 +31,24 @@ export default async function OrderDetailPage({ params }) {
 
   if (orderError || !order) {
     return (
-      <div className="min-h-screen bg-[#f6f7f8] dark:bg-[#131d1f] text-[#0e181b] dark:text-white flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-          <DynamicLucideIcon name="error" className="text-red-500 text-3xl" />
+      <div className="min-h-screen bg-[#f6f7f8] dark:bg-[#0d1517] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mb-5 border border-red-500/20">
+          <DynamicLucideIcon name="search_off" className="text-red-400 text-4xl" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">Order Not Found</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-xs">The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
-        <Link href="/dashboard/orders" className="px-6 py-3 bg-slate-200/50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-2xl hover:bg-slate-300/50 dark:hover:bg-white/10 transition-colors font-medium text-slate-800 dark:text-white">
-          Back to Orders
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Order Not Found</h1>
+        <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-xs text-sm leading-relaxed">
+          The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.
+        </p>
+        <Link
+          href="/dashboard/orders"
+          className="px-6 py-3 bg-white dark:bg-[#1e292b] border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors shadow-sm"
+        >
+          ← Back to Orders
         </Link>
       </div>
     );
   }
 
-  // Check if user has access to this order
   const isBuyer = order.buyer_id === user.id;
   const isSeller = order.seller_id === user.id;
 
@@ -59,292 +59,411 @@ export default async function OrderDetailPage({ params }) {
     .single();
   const isAdmin = profile?.is_admin;
 
-  if (!isBuyer && !isSeller && !isAdmin) {
-    redirect('/dashboard/orders');
-  }
+  if (!isBuyer && !isSeller && !isAdmin) redirect('/dashboard/orders');
 
-  // Fetch status history
   const { data: statusHistory } = await supabase
     .from('order_status_history')
     .select('*, changed_by_user:profiles!order_status_history_changed_by_fkey(display_name)')
     .eq('order_id', id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: true });
 
   const productImage = order.product?.images?.[0] || order.product?.image_url;
 
   const statusConfig = {
-    'Pending': { icon: 'schedule', color: '#F59E0B', label: 'Payment Pending' },
-    'Paid': { icon: 'check_circle', color: '#10B981', label: 'Order Paid' },
-    'Shipped': { icon: 'local_shipping', color: '#3B82F6', label: 'Item Shipped' },
-    'Delivered': { icon: 'package_2', color: '#8B5CF6', label: 'Delivered' },
-    'Completed': { icon: 'verified', color: '#10B981', label: 'Completed' },
-    'Cancelled': { icon: 'cancel', color: '#EF4444', label: 'Cancelled' },
-    'Refunded': { icon: 'keyboard_return', color: '#EF4444', label: 'Refunded' }
+    'Pending':   { icon: 'schedule',        color: '#F59E0B', bg: '#FEF3C7', darkBg: 'rgba(245,158,11,0.12)',  label: 'Payment Pending',  step: 0 },
+    'Paid':      { icon: 'payments',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Order Paid',       step: 1 },
+    'Shipped':   { icon: 'local_shipping',  color: '#3B82F6', bg: '#DBEAFE', darkBg: 'rgba(59,130,246,0.12)',  label: 'Item Shipped',     step: 2 },
+    'Delivered': { icon: 'package_2',       color: '#8B5CF6', bg: '#EDE9FE', darkBg: 'rgba(139,92,246,0.12)',  label: 'Delivered',        step: 3 },
+    'Completed': { icon: 'verified',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Completed',        step: 4 },
+    'Cancelled': { icon: 'cancel',          color: '#EF4444', bg: '#FEE2E2', darkBg: 'rgba(239,68,68,0.12)',   label: 'Cancelled',        step: -1 },
+    'Refunded':  { icon: 'keyboard_return', color: '#EF4444', bg: '#FEE2E2', darkBg: 'rgba(239,68,68,0.12)',   label: 'Refunded',         step: -1 },
   };
 
-  // Casing normalization for database compatibility
+  const STEPS = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Completed'];
+
   const normalizedStatus = order.status
     ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()
     : 'Pending';
-
   const orderStatus = normalizedStatus;
-  const currentStatus = statusConfig[orderStatus] || { icon: 'help', color: '#6B7280', label: order.status };
+  const currentStatus = statusConfig[orderStatus] || { icon: 'help', color: '#6B7280', bg: '#F3F4F6', darkBg: 'rgba(107,114,128,0.12)', label: order.status, step: 0 };
+
+  const counterparty = isBuyer ? order.seller : order.buyer;
+  const counterpartyRole = isBuyer ? 'Seller' : 'Buyer';
+
+  const paymentMethod = order.paystack_transaction_id || order.payment_reference?.startsWith('wallet_')
+    ? (order.paystack_transaction_id ? 'Paystack' : 'Wallet')
+    : 'Paystack';
+
+  const isCancelled = orderStatus === 'Cancelled' || orderStatus === 'Refunded';
+  const currentStep = currentStatus.step ?? 0;
 
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#131d1f] text-[#0e181b] dark:text-white font-['Plus_Jakarta_Sans',sans-serif] min-h-screen antialiased">
-      {/* Mobile-optimized centered container */}
-      <div className="max-w-[430px] mx-auto min-h-screen flex flex-col relative pb-32 bg-[#f6f7f8] dark:bg-[#131d1f]">
+    <div className="bg-[#f0f2f5] dark:bg-[#0d1517] text-[#0e181b] dark:text-white font-display min-h-screen antialiased">
+      <div className="max-w-[440px] mx-auto min-h-screen flex flex-col relative">
 
-        {/* Header */}
-        <header className="sticky top-0 z-50 flex items-center bg-[#f6f7f8]/80 dark:bg-[#131d1f]/80 backdrop-blur-md p-4 justify-between border-b border-gray-100 dark:border-gray-800">
+        {/* ── Sticky Header ── */}
+        <header className="sticky top-0 z-50 flex items-center gap-3 px-4 py-3 bg-[#f0f2f5]/90 dark:bg-[#0d1517]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5">
           <Link
             href={isBuyer ? '/dashboard/orders' : '/dashboard/seller/orders'}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Go back to orders"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-white/8 border border-black/8 dark:border-white/10 shadow-sm hover:bg-slate-100 dark:hover:bg-white/12 transition-colors"
           >
-            <DynamicLucideIcon name="arrow_back_ios_new" className="text-2xl" />
+            <DynamicLucideIcon name="arrow_back_ios_new" className="text-base" />
           </Link>
-          <div className="flex-1 text-center">
-            <h1 className="text-lg font-bold">Order Details</h1>
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold font-mono">#{order.id.slice(0, 8).toUpperCase()}</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold leading-none">Order Details</h1>
+            <p className="text-[10px] text-slate-400 font-mono font-bold tracking-widest mt-0.5 uppercase">
+              #{order.id.slice(0, 8)}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            {isBuyer && <RefundButton orderId={order.id} orderStatus={orderStatus} refundStatus={order.refund_status} />}
-          </div>
+          {isBuyer && (
+            <RefundButton orderId={order.id} orderStatus={orderStatus} refundStatus={order.refund_status} />
+          )}
         </header>
 
-        <main className="flex flex-col gap-6 p-4">
-          {/* Payment Verification Banner */}
+        <main className="flex-1 flex flex-col gap-4 px-4 pt-4 pb-32">
+
+          {/* ── Payment Verification Banner ── */}
           {isBuyer && orderStatus === 'Pending' && (
             <Suspense fallback={null}>
               <OrderPaymentVerification orderId={order.id} currentStatus={order.status} />
             </Suspense>
           )}
 
-          {/* Refund Status Notice Banners */}
+          {/* ── Refund Status Banners ── */}
           {order.refund_status === 'Requested' && (
-            <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-              <DynamicLucideIcon name="history" className="text-amber-500 shrink-0" />
+            <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-4 rounded-2xl flex gap-3">
+              <div className="size-8 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center shrink-0">
+                <DynamicLucideIcon name="history" className="text-amber-600 dark:text-amber-400 text-base" />
+              </div>
               <div>
-                <h4 className="font-bold text-sm text-amber-600 dark:text-amber-500">Refund Requested</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-normal">
-                  {isBuyer 
-                    ? "You have requested a refund. An administrator will review your request shortly." 
-                    : "The buyer has requested a refund. This order\'s funds are on hold until resolved by an administrator."}
+                <h4 className="font-bold text-sm text-amber-700 dark:text-amber-400 mb-0.5">Refund Requested</h4>
+                <p className="text-xs text-amber-700/70 dark:text-amber-400/70 leading-relaxed">
+                  {isBuyer
+                    ? 'Your refund request is under review. An admin will respond shortly.'
+                    : "The buyer has requested a refund. Funds are on hold pending admin review."}
                 </p>
               </div>
             </div>
           )}
 
           {order.refund_status === 'Refunded' && (
-            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-              <DynamicLucideIcon name="keyboard_return" className="text-red-500 shrink-0" />
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-4 rounded-2xl flex gap-3">
+              <div className="size-8 rounded-xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center shrink-0">
+                <DynamicLucideIcon name="keyboard_return" className="text-red-500 text-base" />
+              </div>
               <div>
-                <h4 className="font-bold text-sm text-red-600 dark:text-red-500">Order Refunded</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-normal">
-                  This transaction has been refunded. The purchase amount has been returned to the buyer&apos;s wallet.
+                <h4 className="font-bold text-sm text-red-600 dark:text-red-400 mb-0.5">Order Refunded</h4>
+                <p className="text-xs text-red-600/70 dark:text-red-400/70 leading-relaxed">
+                  This transaction was refunded. The amount has been returned to the buyer&apos;s wallet.
                 </p>
               </div>
             </div>
           )}
 
           {order.refund_status === 'Rejected' && (
-            <div className="bg-slate-500/10 border border-slate-500/20 p-4 rounded-2xl flex gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-              <DynamicLucideIcon name="error" className="text-slate-500 dark:text-slate-400 shrink-0" />
+            <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-2xl flex gap-3">
+              <div className="size-8 rounded-xl bg-slate-200 dark:bg-white/10 flex items-center justify-center shrink-0">
+                <DynamicLucideIcon name="cancel" className="text-slate-500 text-base" />
+              </div>
               <div>
-                <h4 className="font-bold text-sm text-slate-600 dark:text-slate-400">Refund Request Rejected</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-normal">
+                <h4 className="font-bold text-sm text-slate-600 dark:text-slate-300 mb-0.5">Refund Rejected</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   The refund request for this order was reviewed and rejected by an administrator.
                 </p>
               </div>
             </div>
           )}
 
-          {/* Status Timeline Card */}
-          <section className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <DynamicLucideIcon name={currentStatus.icon} style={{ color: currentStatus.color }} className="text-6xl" />
-            </div>
+          {/* ── Hero Status Card ── */}
+          <section
+            className="relative rounded-3xl overflow-hidden p-6 shadow-lg"
+            style={{ background: `linear-gradient(135deg, ${currentStatus.color}18 0%, ${currentStatus.color}08 100%)`, border: `1px solid ${currentStatus.color}25` }}
+          >
+            {/* Watermark icon */}
+            <DynamicLucideIcon
+              name={currentStatus.icon}
+              className="absolute -right-4 -top-4 text-[120px] opacity-[0.06]"
+              style={{ color: currentStatus.color }}
+            />
 
-            <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-6">Current Status</h2>
-
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-start justify-between mb-5">
               <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: `${currentStatus.color}15`, border: `1px solid ${currentStatus.color}30` }}
+                className="size-12 rounded-2xl flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: `${currentStatus.color}20`, border: `1px solid ${currentStatus.color}30` }}
               >
-                <DynamicLucideIcon name={currentStatus.icon} style={{ color: currentStatus.color }} className="text-3xl" />
+                <DynamicLucideIcon name={currentStatus.icon} style={{ color: currentStatus.color }} className="text-2xl" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold" style={{ color: currentStatus.color }}>{currentStatus.label}</h3>
-                <p className="text-xs text-gray-400">Updated {new Date(order.updated_at).toLocaleDateString()}</p>
-              </div>
+              <span
+                className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full"
+                style={{ backgroundColor: `${currentStatus.color}18`, color: currentStatus.color, border: `1px solid ${currentStatus.color}30` }}
+              >
+                {currentStatus.label}
+              </span>
             </div>
 
-            {/* Simple Timeline Preview */}
-            <div className="space-y-4">
-              {statusHistory?.slice(0, 3).map((history, i) => (
-                <div key={history.id} className="flex gap-4 relative">
-                  {i < Math.min(statusHistory.length - 1, 2) && (
-                    <div className="absolute left-[7px] top-4 w-[1px] h-full bg-gray-100 dark:bg-gray-800" />
-                  )}
-                  <div className="w-4 h-4 rounded-full border-2 border-white dark:border-[#1e292b] mt-1 relative z-10" style={{ backgroundColor: statusConfig[history.new_status]?.color || '#6B7280' }} />
-                  <div className="flex-1 pb-4">
-                    <p className="text-sm font-bold">{history.new_status}</p>
-                    <p className="text-[10px] text-gray-400">{new Date(history.created_at).toLocaleString()}</p>
-                    {history.notes && <p className="text-xs text-gray-400 mt-1 italic opacity-80">&quot;{history.notes}&quot;</p>}
-                  </div>
-                </div>
-              ))}
+            <div className="mb-2">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Last Updated</p>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {new Date(order.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </p>
             </div>
+
+            {/* ── Progress Steps ── */}
+            {!isCancelled && (
+              <div className="mt-5 pt-4 border-t border-black/5 dark:border-white/5">
+                <div className="flex items-center justify-between">
+                  {STEPS.map((step, i) => {
+                    const cfg = statusConfig[step];
+                    const isDone = currentStep >= cfg.step;
+                    const isActive = currentStep === cfg.step;
+                    return (
+                      <div key={step} className="flex-1 flex flex-col items-center gap-1.5">
+                        <div className="relative w-full flex items-center">
+                          {i > 0 && (
+                            <div
+                              className="absolute right-1/2 w-full h-[2px] -translate-y-0"
+                              style={{ backgroundColor: currentStep >= cfg.step ? currentStatus.color : undefined }}
+                              // fallback grey via tailwind
+                            >
+                              <div className={`h-full ${currentStep >= cfg.step ? '' : 'bg-slate-200 dark:bg-slate-700'}`}
+                                   style={currentStep >= cfg.step ? { backgroundColor: currentStatus.color } : {}} />
+                            </div>
+                          )}
+                          <div
+                            className={`relative z-10 mx-auto size-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isDone ? 'shadow-md' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e292b]'}`}
+                            style={isDone ? { backgroundColor: currentStatus.color, borderColor: currentStatus.color } : {}}
+                          >
+                            {isDone
+                              ? <DynamicLucideIcon name="check" className="text-white text-xs font-black" />
+                              : <span className="text-[8px] font-black text-slate-300 dark:text-slate-600">{i + 1}</span>
+                            }
+                          </div>
+                        </div>
+                        <span
+                          className="text-[8px] font-bold text-center leading-tight uppercase tracking-wider"
+                          style={{ color: isActive ? currentStatus.color : undefined }}
+                        >
+                          {cfg.label.split(' ')[0]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
 
-          {/* Product Information */}
-          <section className="flex flex-col gap-3">
-            <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Order Summary</h2>
-            <div className="bg-white dark:bg-[#1e292b] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] flex gap-4">
-              <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex-shrink-0 border border-gray-100 dark:border-gray-700 relative">
+          {/* ── Product Card ── */}
+          <section className="bg-white dark:bg-[#1a2325] rounded-3xl overflow-hidden border border-black/5 dark:border-white/5 shadow-sm">
+            <div className="flex gap-4 p-4">
+              <div className="w-[88px] h-[88px] rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-black/5 dark:border-white/5 relative">
                 {productImage ? (
-                  <Image src={productImage} alt={order.product?.title || 'Product'} fill className="object-cover" />
+                  <Image src={productImage} alt={order.product?.title || 'Product image'} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <DynamicLucideIcon name="image" className="text-gray-400" />
+                    <DynamicLucideIcon name="image" className="text-slate-300 text-3xl" />
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-center flex-1 overflow-hidden">
-                <span className="text-[10px] text-[#1daddd] uppercase font-bold tracking-widest mb-1">{order.product?.category}</span>
-                <h3 className="font-bold text-base leading-tight mb-1 truncate">{order.product?.title}</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400 font-medium">Qty: {order.quantity}</span>
-                  <span className="w-1 h-1 bg-gray-300 dark:bg-gray-700 rounded-full" />
-                  <span className="text-xs text-gray-400 font-medium">{order.product?.condition}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Price Breakdown */}
-          <section className="flex flex-col gap-3">
-            <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Price Details</h2>
-            <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] space-y-4 divide-y divide-gray-50 dark:divide-gray-800/50">
-              <div className="space-y-3 pb-4">
-                <div className="flex justify-between text-sm font-medium">
-                  <span className="text-gray-400">Price</span>
-                  <span>GHS {parseFloat(order.unit_price).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm font-medium">
-                  <span className="text-gray-400">Platform Fee</span>
-                  <span>GHS {parseFloat(order.platform_fee_total).toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-between items-end">
-                <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Total Amount</p>
-                  <p className="text-2xl font-black text-[#1daddd]">GHS {parseFloat(order.total_amount).toFixed(2)}</p>
-                </div>
-                <div className="bg-[#1daddd]/10 px-3 py-1.5 rounded-full border border-[#1daddd]/20">
-                  <span className="text-[10px] text-[#1daddd] font-bold uppercase tracking-tight">
-                    Paid via {
-                      (order.paystack_transaction_id ||
-                        order.payment_reference?.startsWith('order_') ||
-                        orderStatus === 'Pending' ||
-                        parseFloat(order.seller_payout_amount) !== parseFloat(order.unit_price) * (order.quantity || 1))
-                        ? 'Paystack'
-                        : 'Wallet'
-                    }
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <span className="text-[9px] font-black text-[#1daddd] uppercase tracking-widest mb-1">{order.product?.category || 'Product'}</span>
+                <h2 className="font-bold text-[15px] leading-snug mb-2 line-clamp-2">{order.product?.title || 'Item'}</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                    Qty: {order.quantity}
                   </span>
+                  {order.product?.condition && (
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full capitalize">
+                      {order.product.condition}
+                    </span>
+                  )}
                 </div>
               </div>
-
-              {isSeller && (
-                <div className="mt-4 pt-4">
-                  <div className="p-4 bg-green-500/5 rounded-xl border border-green-500/10 flex justify-between items-center">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Your Payout</span>
-                    <span className="text-lg font-black text-[#42B883]">GHS {parseFloat(order.seller_payout_amount).toFixed(2)}</span>
-                  </div>
-                </div>
-              )}
             </div>
+            {order.product?.id && (
+              <Link
+                href={`/marketplace/${order.product.id}`}
+                className="flex items-center justify-between px-4 py-3 border-t border-black/5 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/3 transition-colors"
+              >
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">View listing</span>
+                <DynamicLucideIcon name="open_in_new" className="text-slate-400 text-sm" />
+              </Link>
+            )}
           </section>
 
-          {/* User Info (Buyer/Seller) */}
-          <section className="flex flex-col gap-3">
-            <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">
-              {isBuyer ? 'Seller Details' : 'Buyer Details'}
-            </h2>
-            <div className="bg-white dark:bg-[#1e292b] p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 border border-gray-200 dark:border-gray-700 relative">
-                {(isBuyer ? order.seller : order.buyer)?.avatar_url ? (
-                  <Image src={(isBuyer ? order.seller : order.buyer).avatar_url} alt={`${(isBuyer ? order.seller : order.buyer)?.display_name || (isBuyer ? 'Seller' : 'Buyer')}'s profile photo`} fill className="object-cover" />
+          {/* ── Price Breakdown ── */}
+          <section className="bg-white dark:bg-[#1a2325] rounded-3xl p-5 border border-black/5 dark:border-white/5 shadow-sm">
+            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Payment Breakdown</h2>
+
+            <div className="space-y-3 mb-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Item Price</span>
+                <span className="text-sm font-bold">GHS {parseFloat(order.unit_price).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Platform Fee</span>
+                <span className="text-sm font-bold text-slate-400">+ GHS {parseFloat(order.platform_fee_total).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="h-px bg-slate-100 dark:bg-white/5 my-4" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-0.5">Total Paid</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">
+                  GHS <span style={{ color: '#1daddd' }}>{parseFloat(order.total_amount).toFixed(2)}</span>
+                </p>
+              </div>
+              <div
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
+                style={{ backgroundColor: '#1daddd12', borderColor: '#1daddd30' }}
+              >
+                <DynamicLucideIcon name={paymentMethod === 'Wallet' ? 'account_balance_wallet' : 'credit_card'} className="text-sm" style={{ color: '#1daddd' }} />
+                <span className="text-[10px] font-black uppercase tracking-tight" style={{ color: '#1daddd' }}>{paymentMethod}</span>
+              </div>
+            </div>
+
+            {isSeller && order.seller_payout_amount && (
+              <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-500/8 rounded-2xl border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-widest mb-0.5">Your Payout</p>
+                  <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">GHS {parseFloat(order.seller_payout_amount).toFixed(2)}</p>
+                </div>
+                <div className="size-10 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl flex items-center justify-center">
+                  <DynamicLucideIcon name="savings" className="text-emerald-500 text-xl" />
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* ── Counterparty Card ── */}
+          <section className="bg-white dark:bg-[#1a2325] rounded-3xl p-4 border border-black/5 dark:border-white/5 shadow-sm">
+            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{counterpartyRole} Details</h2>
+            <div className="flex items-center gap-3">
+              <div className="size-12 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-black/5 dark:border-white/5 relative">
+                {counterparty?.avatar_url ? (
+                  <Image
+                    src={counterparty.avatar_url}
+                    alt={`${counterparty?.display_name || counterpartyRole}'s profile photo`}
+                    fill
+                    className="object-cover"
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#1daddd]/10">
-                    <DynamicLucideIcon name="person" className="text-[#1daddd]" />
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: '#1daddd18' }}>
+                    <DynamicLucideIcon name="person" style={{ color: '#1daddd' }} />
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 overflow-hidden">
-                  <h3 className="font-bold truncate text-sm">{(isBuyer ? order.seller : order.buyer)?.display_name || 'User'}</h3>
-                  {(isBuyer ? order.seller : order.buyer)?.is_verified && (
-                    <DynamicLucideIcon name="verified" className="text-primary text-[16px] fill-current" />
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-sm truncate">{counterparty?.display_name || counterpartyRole}</h3>
+                  {counterparty?.is_verified && (
+                    <DynamicLucideIcon name="verified" className="text-[#1daddd] text-base shrink-0" />
                   )}
                 </div>
-                <p className="text-xs text-gray-400 truncate font-medium font-mono">{(isBuyer ? order.seller : order.buyer)?.email || 'No email'}</p>
+                <p className="text-xs text-slate-400 truncate font-medium">{counterparty?.email || '—'}</p>
               </div>
               <Link
-                href={`/profile/${(isBuyer ? order.seller : order.buyer)?.id || ''}`}
-                aria-label={`View ${(isBuyer ? order.seller : order.buyer)?.display_name || (isBuyer ? 'seller' : 'buyer')}'s profile`}
-                className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center hover:bg-gray-100 transition-all"
+                href={`/profile/${counterparty?.id || ''}`}
+                aria-label={`View ${counterparty?.display_name || counterpartyRole}'s profile`}
+                className="size-9 rounded-xl bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shrink-0"
               >
-                <DynamicLucideIcon name="chevron_right" className="text-xl text-[#1daddd]" />
+                <DynamicLucideIcon name="chevron_right" className="text-slate-400 text-lg" />
               </Link>
             </div>
           </section>
 
-          {/* Safety Banner */}
-          <div className="bg-[#e9f7fb] dark:bg-[#1daddd]/10 p-4 rounded-2xl border border-[#1daddd]/20 flex gap-3">
-            <DynamicLucideIcon name="verified_user" className="text-[#1daddd] shrink-0" />
-            <p className="text-[#4f8596] dark:text-[#1daddd]/90 text-sm leading-snug font-medium">
-              <span className="font-bold">Safety Note:</span> Your funds are held securely in escrow and only released once you confirm the handover.
-            </p>
-          </div>
-
-          {/* Confirm Delivery Button - Only for buyers with paid/shipped orders */}
-          {isBuyer && (orderStatus === 'Paid' || orderStatus === 'Shipped') && (
-            <section className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Confirm Receipt</h2>
-              <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
-                <div className="mb-4 flex items-start gap-3">
-                  <DynamicLucideIcon name="local_shipping" className="text-[#1daddd] text-2xl shrink-0" />
-                  <div>
-                    <h3 className="font-bold text-base mb-1">Received Your Item?</h3>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                      Once you&apos;ve received and inspected your item, confirm delivery to release payment to the seller.
-                    </p>
-                  </div>
-                </div>
-                <ConfirmDeliveryButton orderId={order.id} orderStatus={orderStatus} />
+          {/* ── Status History Timeline ── */}
+          {statusHistory && statusHistory.length > 0 && (
+            <section className="bg-white dark:bg-[#1a2325] rounded-3xl p-5 border border-black/5 dark:border-white/5 shadow-sm">
+              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Order Timeline</h2>
+              <div className="space-y-1">
+                {statusHistory.map((entry, i) => {
+                  const cfg = statusConfig[entry.new_status] || { color: '#6B7280' };
+                  const isLast = i === statusHistory.length - 1;
+                  return (
+                    <div key={entry.id} className="flex gap-3 relative">
+                      {!isLast && (
+                        <div className="absolute left-[11px] top-6 bottom-0 w-[2px] bg-slate-100 dark:bg-white/5" />
+                      )}
+                      <div
+                        className="size-6 rounded-full border-2 border-white dark:border-[#1a2325] shrink-0 mt-1 relative z-10 flex items-center justify-center"
+                        style={{ backgroundColor: cfg.color }}
+                      >
+                        <DynamicLucideIcon name={cfg.icon || 'circle'} className="text-white text-[8px]" />
+                      </div>
+                      <div className={`flex-1 ${!isLast ? 'pb-5' : ''}`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-bold leading-tight" style={{ color: cfg.color }}>{entry.new_status}</p>
+                          <p className="text-[10px] text-slate-400 font-mono shrink-0 mt-px">
+                            {new Date(entry.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          {new Date(entry.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {entry.changed_by_user?.display_name ? ` · by ${entry.changed_by_user.display_name}` : ''}
+                        </p>
+                        {entry.notes && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 bg-slate-50 dark:bg-white/3 rounded-xl px-3 py-2 italic leading-relaxed">
+                            &ldquo;{entry.notes}&rdquo;
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           )}
 
-          {/* Mark as Shipped Button - Only for sellers with Paid orders */}
-          {isSeller && orderStatus === 'Paid' && (
-            <section className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-1">Ship Item</h2>
-              <div className="bg-white dark:bg-[#1e292b] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
-                <div className="mb-4 flex items-start gap-3">
-                  <DynamicLucideIcon name="local_shipping" className="text-[#1daddd] text-2xl shrink-0" />
-                  <div>
-                    <h3 className="font-bold text-base mb-1">Ready to ship?</h3>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                      Once you have handed over or shipped the item, mark it as shipped. This will notify the buyer so they can confirm receipt and release your payout.
-                    </p>
-                  </div>
+          {/* ── Safety Note ── */}
+          {(orderStatus === 'Paid' || orderStatus === 'Shipped') && (
+            <div
+              className="flex gap-3 p-4 rounded-2xl border"
+              style={{ backgroundColor: '#1daddd0c', borderColor: '#1daddd25' }}
+            >
+              <DynamicLucideIcon name="shield" style={{ color: '#1daddd' }} className="shrink-0 text-xl" />
+              <p className="text-xs leading-relaxed font-medium" style={{ color: '#3d8fa3' }}>
+                <span className="font-black">Escrow Protected:</span> Your payment is held securely and released only after you confirm receipt. Never confirm delivery until you have physically received the item.
+              </p>
+            </div>
+          )}
+
+          {/* ── Confirm Delivery (Buyer) ── */}
+          {isBuyer && (orderStatus === 'Paid' || orderStatus === 'Shipped') && (
+            <section className="bg-white dark:bg-[#1a2325] rounded-3xl p-5 border border-black/5 dark:border-white/5 shadow-sm">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="size-10 rounded-2xl bg-[#1daddd]/10 flex items-center justify-center shrink-0">
+                  <DynamicLucideIcon name="inventory_2" className="text-[#1daddd] text-xl" />
                 </div>
-                <MarkAsShippedButton orderId={order.id} />
+                <div>
+                  <h3 className="font-bold text-[15px] leading-tight mb-0.5">Received Your Item?</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Confirm delivery to release escrow funds to the seller. Only do this after inspecting the item.
+                  </p>
+                </div>
               </div>
+              <ConfirmDeliveryButton orderId={order.id} orderStatus={orderStatus} />
+            </section>
+          )}
+
+          {/* ── Mark as Shipped (Seller) ── */}
+          {isSeller && orderStatus === 'Paid' && (
+            <section className="bg-white dark:bg-[#1a2325] rounded-3xl p-5 border border-black/5 dark:border-white/5 shadow-sm">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="size-10 rounded-2xl bg-[#1daddd]/10 flex items-center justify-center shrink-0">
+                  <DynamicLucideIcon name="local_shipping" className="text-[#1daddd] text-xl" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[15px] leading-tight mb-0.5">Ready to Ship?</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Once handed over, mark the item as shipped to notify the buyer and start the delivery confirmation process.
+                  </p>
+                </div>
+              </div>
+              <MarkAsShippedButton orderId={order.id} />
             </section>
           )}
 
