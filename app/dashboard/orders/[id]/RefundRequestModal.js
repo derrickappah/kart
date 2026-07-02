@@ -138,6 +138,7 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
                     appearance: 'none',
                     WebkitAppearance: 'none',
                     MozAppearance: 'none',
+                    backgroundImage: 'none',
                   }}
                   className="w-full bg-slate-50 dark:bg-white/5 border border-transparent focus:border-primary focus:bg-white dark:focus:bg-transparent rounded-2xl pl-4 pr-10 py-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 dark:text-white cursor-pointer"
                   required
