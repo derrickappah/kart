@@ -195,7 +195,7 @@ export default async function Home() {
       <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24 max-w-md mx-auto bg-white dark:bg-[#242428]">
         <PromotedBanner products={bannerProducts} />
 
-        <div className="px-5 py-2">
+        <div className="px-5 pt-4 pb-2">
           <SearchBar placeholder="Search campus finds..." />
         </div>
 
