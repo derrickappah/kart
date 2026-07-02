@@ -1,5 +1,6 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
+import LoadingScreen from '@/components/LoadingScreen';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -37,6 +38,10 @@ export default function WithdrawFundsClient({ initialWallet }) {
         };
         fetchUserData();
     }, [supabase]);
+
+    if (checkingPayout) {
+        return <LoadingScreen message="Checking payout details..." fullScreen={true} />;
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
