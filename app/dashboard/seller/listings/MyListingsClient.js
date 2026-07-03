@@ -96,7 +96,7 @@ export default function MyListingsClient({ initialProducts }) {
                                     onClick={() => handleCardClick(product.id)}
                                     className="group relative flex flex-col bg-white dark:bg-[#1e292b] rounded-2xl shadow-soft border border-transparent dark:border-white/5 transition-all duration-300 overflow-hidden cursor-pointer active:scale-[0.99]"
                                 >
-                                    <div className="flex gap-4 p-4">
+                                    <div className="flex gap-3 p-3">
                                         {/* Thumbnail */}
                                         <div className="relative shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
                                             {product.image_url ? (
@@ -123,7 +123,7 @@ export default function MyListingsClient({ initialProducts }) {
                                          <div className="flex flex-col flex-1 justify-start py-0.5 min-w-0">
                                             <div className="space-y-1">
                                                 <div className="flex justify-between items-start gap-2">
-                                                    <h3 className="text-[15px] font-bold leading-tight text-slate-900 dark:text-white line-clamp-2">
+                                                    <h3 className="text-[13px] font-bold leading-tight text-slate-900 dark:text-white line-clamp-1">
                                                         {product.title}
                                                     </h3>
                                                     <div className="relative">
@@ -163,8 +163,8 @@ export default function MyListingsClient({ initialProducts }) {
                                                 </div>
                                             </div>
 
-                                             <div className="flex flex-wrap items-center justify-between gap-y-1.5 gap-x-2 mt-1">
-                                                <p className="text-[17px] font-extrabold text-primary">
+                                             <div className="flex flex-wrap items-center justify-between gap-y-1 gap-x-2">
+                                                <p className="text-[13px] font-extrabold text-primary">
                                                     ₵{parseFloat(product.price || 0).toFixed(2)}
                                                 </p>
                                                 <div className="flex items-center gap-1.5 shrink-0">
