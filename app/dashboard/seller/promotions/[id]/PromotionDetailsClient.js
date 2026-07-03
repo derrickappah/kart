@@ -56,7 +56,52 @@ function PromotionTooltip({ active, payload, label }) {
     );
 }
 
-export default function PromotionDetailsClient({ ad, chartData }) {
+export default function PromotionDetailsClient({ ad, chartData: initialChartData }) {
+    // Fill in any gap days in the campaign timeline with 0 views and 0 clicks
+    const chartData = (() => {
+        if (!ad || !ad.start_date) return initialChartData;
+        
+        const start = new Date(ad.start_date);
+        let end = new Date(ad.end_date);
+        const now = new Date();
+        if (ad.status === 'Active' && end > now) {
+            end = now;
+        }
+
+        const dateMap = new Map();
+        (initialChartData || []).forEach(row => {
+            dateMap.set(row.day, {
+                views: Number(row.views || 0),
+                clicks: Number(row.clicks || 0)
+            });
+        });
+
+        const filledData = [];
+        const currentDate = new Date(start);
+        currentDate.setUTCHours(0, 0, 0, 0);
+        
+        const normalizedEnd = new Date(end);
+        normalizedEnd.setUTCHours(0, 0, 0, 0);
+
+        let iterations = 0;
+        while (currentDate <= normalizedEnd && iterations < 90) {
+            const month = currentDate.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+            const dayNum = currentDate.getUTCDate();
+            const formattedDay = `${month} ${dayNum}`;
+
+            const existing = dateMap.get(formattedDay);
+            filledData.push({
+                day: formattedDay,
+                views: existing ? existing.views : 0,
+                clicks: existing ? existing.clicks : 0
+            });
+
+            currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+            iterations++;
+        }
+        return filledData.length > 0 ? filledData : initialChartData;
+    })();
+
     return (
         <div className="bg-[#f6f7f8] dark:bg-[#131d1f] font-display antialiased min-h-screen transition-colors duration-200">
             <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#131d1f] shadow-2xl overflow-hidden">

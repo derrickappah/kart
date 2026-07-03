@@ -21,7 +21,7 @@ export async function POST(request) {
         // Check if product exists and belongs to the user
         const { data: product, error: productError } = await supabase
             .from('products')
-            .select('id, seller_id')
+            .select('id, seller_id, status')
             .eq('id', productId)
             .single();
 
@@ -31,6 +31,10 @@ export async function POST(request) {
 
         if (product.seller_id !== user.id) {
             return NextResponse.json({ error: 'Unauthorized: You do not own this product' }, { status: 403 });
+        }
+
+        if (product.status?.toLowerCase() !== 'active') {
+            return NextResponse.json({ error: 'Only active listings can be promoted' }, { status: 400 });
         }
 
         // Fetch dynamic promotion pricing from platform settings
@@ -44,21 +48,21 @@ export async function POST(request) {
             pricing[s.key] = typeof s.value === 'number' ? s.value : parseFloat(s.value) || 0;
         });
 
-        // Calculate expected price based on tier
+        // Calculate expected price based on tier (with safety check for 0 values)
         let expectedPrice = 0;
         if (tierId === 'daily') {
-            expectedPrice = pricing.promo_daily_price || 5;
+            expectedPrice = pricing.promo_daily_price !== undefined && pricing.promo_daily_price !== null ? pricing.promo_daily_price : 5;
         } else if (tierId === 'weekly') {
-            expectedPrice = pricing.promo_weekly_price || 25;
+            expectedPrice = pricing.promo_weekly_price !== undefined && pricing.promo_weekly_price !== null ? pricing.promo_weekly_price : 25;
         } else if (tierId === 'featured') {
-            expectedPrice = pricing.promo_featured_price || 50;
+            expectedPrice = pricing.promo_featured_price !== undefined && pricing.promo_featured_price !== null ? pricing.promo_featured_price : 50;
         } else {
             return NextResponse.json({ error: 'Invalid tier ID' }, { status: 400 });
         }
 
         // Validate amount against expected price
         if (parseFloat(amount) !== expectedPrice) {
-            return NextResponse.json({ error: `Price mismatch. Expected ${expectedPrice} GHS.` }, { status: 400 });
+            return NextResponse.json({ error: `Price mismatch. Expected ₵${expectedPrice.toFixed(2)}.` }, { status: 400 });
         }
 
         // Check for any active promotion of the same type to support extension
@@ -81,6 +85,63 @@ export async function POST(request) {
             endDate.setDate(endDate.getDate() + 7);
         } else if (tierId === 'featured') {
             endDate.setDate(endDate.getDate() + 30);
+        }
+
+        // Handle Free Promotions (0.00 GHS) - bypass Paystack payment gateway entirely
+        if (expectedPrice === 0) {
+            const { data: advertisement, error: adError } = await supabase
+                .from('advertisements')
+                .insert({
+                    product_id: productId,
+                    seller_id: user.id,
+                    ad_type: adType,
+                    status: 'Active', // Instantly active
+                    start_date: startDate.toISOString(),
+                    end_date: endDate.toISOString(),
+                    cost: 0
+                })
+                .select()
+                .single();
+
+            if (adError) {
+                console.error('Error creating free advertisement:', adError);
+                return NextResponse.json({ error: 'Failed to create advertisement' }, { status: 500 });
+            }
+
+            // Update product promotion columns based on ad type
+            const productUpdates = {};
+            if (adType === 'Featured') {
+                productUpdates.is_featured = true;
+            } else if (adType === 'Boost') {
+                productUpdates.is_boosted = true;
+                productUpdates.boost_expires_at = endDate.toISOString();
+            }
+
+            if (Object.keys(productUpdates).length > 0) {
+                const { error: updateProdError } = await supabase
+                    .from('products')
+                    .update(productUpdates)
+                    .eq('id', productId);
+
+                if (updateProdError) {
+                    console.error('Error updating product for free promotion:', updateProdError);
+                }
+            }
+
+            // Create in-app notification
+            await supabase.from('notifications').insert({
+                user_id: user.id,
+                type: 'PromotionActivated',
+                title: 'Promotion Activated!',
+                message: `Your "${adType}" promotion has been activated successfully (Free Promotion).`,
+            });
+
+            return NextResponse.json({
+                success: true,
+                redirect_to_success: true,
+                adId: advertisement.id,
+                productId: productId
+            });
         }
 
         // Create advertisement record (pending payment)

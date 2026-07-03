@@ -34,23 +34,17 @@ export default async function PromotionDetailsPage({ params }) {
         notFound();
     }
 
-    // Fetch daily stats from ad_campaigns
-    const { data: dailyStatsRaw } = await supabase
-        .from('ad_campaigns')
-        .select('event_type, created_at')
-        .eq('advertisement_id', id)
-        .order('created_at', { ascending: true });
+    // Fetch daily stats aggregated in-database using RPC (scales beyond 1,000-row limit)
+    const { data: chartDataRaw, error: rpcError } = await supabase.rpc('get_ad_daily_stats', { ad_id: id });
+    if (rpcError) {
+        console.error('Error fetching aggregated daily stats:', rpcError);
+    }
 
-    // Process daily stats
-    const statsByDay = (dailyStatsRaw || []).reduce((acc, event) => {
-        const day = new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        if (!acc[day]) acc[day] = { day, views: 0, clicks: 0 };
-        if (event.event_type === 'view') acc[day].views++;
-        else if (event.event_type === 'click') acc[day].clicks++;
-        return acc;
-    }, {});
-
-    const chartData = Object.values(statsByDay);
+    const chartData = (chartDataRaw || []).map(row => ({
+        day: row.day,
+        views: Number(row.views || 0),
+        clicks: Number(row.clicks || 0)
+    }));
 
     return (
         <PromotionDetailsClient ad={ad} chartData={chartData} />

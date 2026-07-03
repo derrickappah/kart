@@ -14,11 +14,15 @@ export default function AdTracker({ advertisementId, children }) {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !trackedRef.current) {
                     trackedRef.current = true;
-                    fetch('/api/ads/track', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ advertisementId, eventType: 'view' })
-                    }).catch(err => console.error('Error tracking ad view:', err));
+                    const viewKey = `ad_view_${advertisementId}`;
+                    if (typeof window !== 'undefined' && !window.sessionStorage.getItem(viewKey)) {
+                        window.sessionStorage.setItem(viewKey, 'true');
+                        fetch('/api/ads/track', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ advertisementId, eventType: 'view' })
+                        }).catch(err => console.error('Error tracking ad view:', err));
+                    }
                     observer.disconnect();
                 }
             });
@@ -34,11 +38,15 @@ export default function AdTracker({ advertisementId, children }) {
 
     const handleClick = () => {
         if (!advertisementId) return;
-        fetch('/api/ads/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ advertisementId, eventType: 'click' })
-        }).catch(err => console.error('Error tracking ad click:', err));
+        const clickKey = `ad_click_${advertisementId}`;
+        if (typeof window !== 'undefined' && !window.sessionStorage.getItem(clickKey)) {
+            window.sessionStorage.setItem(clickKey, 'true');
+            fetch('/api/ads/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ advertisementId, eventType: 'click' })
+            }).catch(err => console.error('Error tracking ad click:', err));
+        }
     };
 
     return (

@@ -31,25 +31,37 @@ export default function PromotedBanner({ products }) {
         return () => clearInterval(interval);
     }, [nextSlide, products, isHovered]);
 
-    // Track views when active slide changes
+    // Track views when active slide changes (with session cache to prevent rapid API inflation)
     useEffect(() => {
         if (products && products[currentIndex] && products[currentIndex].advertisement_id) {
             const adId = products[currentIndex].advertisement_id;
-            fetch('/api/ads/track', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ advertisementId: adId, eventType: 'view' })
-            }).catch(err => console.error('Error tracking ad view:', err));
+            const viewKey = `ad_view_${adId}`;
+            
+            // Check session cache first
+            if (typeof window !== 'undefined' && !window.sessionStorage.getItem(viewKey)) {
+                window.sessionStorage.setItem(viewKey, 'true');
+                fetch('/api/ads/track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ advertisementId: adId, eventType: 'view' })
+                }).catch(err => console.error('Error tracking ad view:', err));
+            }
         }
     }, [currentIndex, products]);
 
     const handleAdClick = (adId) => {
         if (!adId) return;
-        fetch('/api/ads/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ advertisementId: adId, eventType: 'click' })
-        }).catch(err => console.error('Error tracking ad click:', err));
+        const clickKey = `ad_click_${adId}`;
+        
+        // Check session cache first
+        if (typeof window !== 'undefined' && !window.sessionStorage.getItem(clickKey)) {
+            window.sessionStorage.setItem(clickKey, 'true');
+            fetch('/api/ads/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ advertisementId: adId, eventType: 'click' })
+            }).catch(err => console.error('Error tracking ad click:', err));
+        }
     };
 
     const onTouchStart = (e) => {
@@ -82,6 +94,8 @@ export default function PromotedBanner({ products }) {
             <div
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
+                onFocus={() => setIsHovered(true)} // Pauses autoplay on keyboard focus
+                onBlur={() => setIsHovered(false)}  // Resumes autoplay on blur
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -103,7 +117,7 @@ export default function PromotedBanner({ products }) {
                         <Link href={`/marketplace/${p.id}`} onClick={() => handleAdClick(p.advertisement_id)}>
                             <Image
                                 src={p.images?.[0] || p.image_url || '/placeholder.png'}
-                                alt={p.title}
+                                alt="" // Empty alt to hide redundant image from screen readers since title is text below
                                 fill
                                 sizes="(max-width: 768px) 100vw, 448px"
                                 className="object-cover transition-transform duration-700 group-hover:scale-105"

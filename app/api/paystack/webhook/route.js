@@ -299,6 +299,13 @@ export async function POST(request) {
             if (type === 'promotion' || (reference && reference.startsWith('ad_'))) {
                 console.log('[Webhook] Processing promotion payment for reference:', reference);
                 
+                // --- SECURITY: Validate that the payment currency is GHS ---
+                const paidCurrency = verification.data.currency;
+                if (!paidCurrency || paidCurrency.toUpperCase() !== 'GHS') {
+                    console.error('[Webhook] Promotion currency mismatch. Expected GHS, got:', paidCurrency);
+                    return NextResponse.json({ error: 'Payment currency must be GHS' }, { status: 400 });
+                }
+
                 // Determine adId
                 let adId = metadata.advertisement_id;
                 if (!adId && reference && reference.startsWith('ad_')) {
@@ -323,6 +330,14 @@ export async function POST(request) {
                 if (adError || !ad) {
                     console.error('[Webhook] Advertisement not found:', adId, adError);
                     return NextResponse.json({ error: 'Advertisement not found' }, { status: 404 });
+                }
+
+                // --- SECURITY: Validate that the paid amount matches the expected ad cost ---
+                const paidAmountGHS = verification.data.amount / 100;
+                const expectedCost = parseFloat(ad.cost);
+                if (Math.abs(paidAmountGHS - expectedCost) > 0.01) {
+                    console.error('[Webhook] Amount mismatch for ad:', adId, 'Paid:', paidAmountGHS, 'Expected:', expectedCost);
+                    return NextResponse.json({ error: 'Payment amount does not match promotion cost' }, { status: 400 });
                 }
 
                 if (ad.status === 'Active') {

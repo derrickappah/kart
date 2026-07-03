@@ -258,23 +258,27 @@ export default function ListingDetailsManagementClient({ product }) {
                 <div className="fixed bottom-0 left-0 right-0 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-white/80 dark:bg-[#1e292b]/80 backdrop-blur-xl border-t border-slate-100 dark:border-white/5 flex items-center gap-4 z-[100] w-full max-w-md mx-auto">
                     <Link
                         href={`/dashboard/seller/listings/edit/${product.id}`}
-                        className="flex-1 h-14 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-black text-[13px] uppercase tracking-widest rounded-2xl border border-slate-200 dark:border-white/10 shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
+                        className={`h-14 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-black text-[13px] uppercase tracking-widest rounded-2xl border border-slate-200 dark:border-white/10 shadow-soft transition-all active:scale-[0.98] flex items-center justify-center gap-2 group ${
+                            product?.status?.toLowerCase() === 'active' ? 'flex-1' : 'w-full'
+                        }`}
                     >
                         <DynamicLucideIcon name="edit_note" className="text-[20px] text-slate-400 group-hover:text-primary transition-all" />
                         Edit
                     </Link>
-                    <Link
-                        href={`/dashboard/seller/listings/promote/${product.id}`}
-                        className={`flex-[1.5] h-14 font-black text-[13px] uppercase tracking-widest rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 overflow-hidden relative shadow-xl ${
-                            (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date()))
-                                ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
-                                : 'bg-primary hover:bg-primary-dark text-white shadow-primary/20'
-                        }`}
-                    >
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                        <DynamicLucideIcon name="rocket_launch" className="text-[20px] fill-1" />
-                        {(product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? 'Boost Active (Extend)' : 'Promote'}
-                    </Link>
+                    {product?.status?.toLowerCase() === 'active' && (
+                        <Link
+                            href={`/dashboard/seller/listings/promote/${product.id}`}
+                            className={`flex-[1.5] h-14 font-black text-[13px] uppercase tracking-widest rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 overflow-hidden relative shadow-xl ${
+                                (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date()))
+                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
+                                    : 'bg-primary hover:bg-primary-dark text-white shadow-primary/20'
+                            }`}
+                        >
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            <DynamicLucideIcon name="rocket_launch" className="text-[20px] fill-1" />
+                            {(product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? 'Boost Active (Extend)' : 'Promote'}
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>

@@ -42,6 +42,13 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: 'Payment not successful' });
         }
 
+        // --- SECURITY: Validate that the payment currency is GHS ---
+        const paidCurrency = verification.data.currency;
+        if (!paidCurrency || paidCurrency.toUpperCase() !== 'GHS') {
+            console.error('[PromoVerify] Currency mismatch. Expected GHS, got:', paidCurrency);
+            return NextResponse.json({ error: 'Payment currency must be GHS' }, { status: 400 });
+        }
+
         // --- SECURITY: Validate that the paid amount matches the expected ad cost ---
         // Paystack returns amounts in pesewas (GHS * 100)
         const paidAmountGHS = verification.data.amount / 100;

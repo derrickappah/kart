@@ -19,7 +19,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
         {
             id: 'daily',
             name: 'Daily Blast',
-            price: pricing.promo_daily_price || 5,
+            price: pricing.promo_daily_price !== undefined && pricing.promo_daily_price !== null ? pricing.promo_daily_price : 5,
             duration: '24 hours',
             tag: 'Most Popular',
             tagColor: 'bg-primary/10 text-primary',
@@ -33,7 +33,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
         {
             id: 'weekly',
             name: 'Weekly Saver',
-            price: pricing.promo_weekly_price || 25,
+            price: pricing.promo_weekly_price !== undefined && pricing.promo_weekly_price !== null ? pricing.promo_weekly_price : 25,
             duration: '7 days',
             tag: 'Best Value',
             tagColor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
@@ -47,7 +47,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
         {
             id: 'featured',
             name: 'Featured Spotlight',
-            price: pricing.promo_featured_price || 50,
+            price: pricing.promo_featured_price !== undefined && pricing.promo_featured_price !== null ? pricing.promo_featured_price : 50,
             duration: '30 days',
             tag: 'Premium',
             tagColor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
@@ -88,6 +88,12 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
 
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to initialize promotion');
+            }
+
+            if (data.redirect_to_success) {
+                // Free promotion bypasses payment gateway and activates immediately
+                router.push(`/dashboard/seller/listings/promote/success?adId=${data.adId}&productId=${data.productId}&reference=free_promo`);
+                return;
             }
 
             if (data.authorization_url) {
@@ -152,7 +158,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                                 {product.title}
                             </p>
                             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                                GHS {parseFloat(product.price || 0).toFixed(2)}
+                                ₵{parseFloat(product.price || 0).toFixed(2)}
                             </p>
                         </div>
                         <div className="pr-2 flex-shrink-0">
@@ -175,14 +181,39 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                 {/* Section Title */}
                 <div>
                     <h2 className="text-xl font-extrabold tracking-tight">Select a Promotion Tier</h2>
-                    <p className="text-sm text-[#a17c45]">Choose how you want to reach more buyers on campus.</p>
+                    <p className="text-sm text-[#6b4f24] dark:text-[#dfac5a] font-medium">Choose how you want to reach more buyers on campus.</p>
                 </div>
 
-                {/* Tier Selection — radiogroup */}
-                <div role="radiogroup" aria-label="Promotion tiers" className="space-y-4">
+                {/* Tier Selection — radiogroup compliant with WCAG keyboard & contrast standards */}
+                <div 
+                    role="radiogroup" 
+                    aria-label="Promotion tiers" 
+                    className="space-y-4"
+                    onKeyDown={(e) => {
+                        const currentIndex = tiers.findIndex(t => t.id === selectedTier);
+                        let nextIndex = currentIndex;
+                        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                            e.preventDefault();
+                            nextIndex = (currentIndex + 1) % tiers.length;
+                        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                            e.preventDefault();
+                            nextIndex = (currentIndex - 1 + tiers.length) % tiers.length;
+                        }
+                        if (nextIndex !== currentIndex) {
+                            const nextTierId = tiers[nextIndex].id;
+                            setSelectedTier(nextTierId);
+                            // Set focus to the selected card
+                            const card = document.getElementById(`tier-card-${nextTierId}`);
+                            if (card) {
+                                card.focus();
+                            }
+                        }
+                    }}
+                >
                     {tiers.map((tier) => (
                         <div
                             key={tier.id}
+                            id={`tier-card-${tier.id}`}
                             onClick={() => setSelectedTier(tier.id)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
@@ -192,11 +223,11 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                             }}
                             role="radio"
                             aria-checked={selectedTier === tier.id}
-                            tabIndex={0}
+                            tabIndex={selectedTier === tier.id ? 0 : -1}
                             className={`group relative flex flex-col p-5 rounded-2xl border-2 transition-all shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9f0f] ${
                                 selectedTier === tier.id
                                     ? 'border-[#ff9f0f] bg-white dark:bg-slate-800 shadow-lg ring-1 ring-[#ff9f0f]/20'
-                                    : 'bg-white dark:bg-slate-800/60 border-transparent hover:border-primary/20'
+                                    : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-white/5 hover:border-primary/20'
                             }`}
                         >
                             <div className="flex justify-between items-start mb-4">
@@ -204,7 +235,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                                     <h3 className="text-lg font-black text-[#111617] dark:text-white">{tier.name}</h3>
                                     <div className="flex items-baseline gap-1">
                                         <span className="text-2xl font-black text-[#111617] dark:text-white">{tier.price}</span>
-                                        <span className="text-sm font-bold uppercase text-[#111617] dark:text-white">GHS</span>
+                                        <span className="text-sm font-bold uppercase text-[#111617] dark:text-white">₵</span>
                                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium ml-1">/ {tier.duration}</span>
                                     </div>
                                 </div>
@@ -240,7 +271,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                             <div
                                 className={`mt-2 flex items-center justify-center py-3 rounded-xl font-bold text-sm transition-all border ${
                                     selectedTier === tier.id
-                                        ? 'bg-[#ff9f0f] text-white border-[#ff9f0f] shadow-md shadow-orange-500/20'
+                                        ? 'bg-[#ff9f0f] text-[#111617] border-[#ff9f0f] shadow-md shadow-orange-500/20'
                                         : 'bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-white/5'
                                 }`}
                                 aria-hidden="true"
@@ -258,13 +289,14 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                     <div className="flex justify-between items-center px-1">
                         <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Total to pay</span>
                         <span className="text-2xl font-black text-primary drop-shadow-sm">
-                            GHS {currentTier.price}
+                            ₵{currentTier.price}
                         </span>
                     </div>
                     <button
                         onClick={handlePayment}
                         disabled={loading}
-                        aria-label={loading ? 'Initializing payment, please wait' : `Continue to payment — GHS ${currentTier.price} for ${currentTier.name}`}
+                        aria-busy={loading}
+                        aria-label={loading ? 'Initializing payment, please wait' : `Continue to payment — ₵${currentTier.price} for ${currentTier.name}`}
                         className="w-full h-14 bg-primary text-white text-lg font-black rounded-2xl shadow-xl shadow-primary/30 hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? (

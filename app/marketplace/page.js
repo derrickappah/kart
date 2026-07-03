@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import SearchBar from '../../components/SearchBar';
 import MarketplaceControls from '../../components/MarketplaceControls';
 import WishlistButton from '../../components/WishlistButton';
+import AdTracker from '../../components/AdTracker';
 import { createClient } from '../../utils/supabase/server';
 import { toSentenceCase, seededShuffle, formatPrice } from '../../utils/formatters';
 
@@ -23,7 +24,7 @@ export default async function Marketplace({ searchParams }) {
     // Build the product query first (no await yet)
     let query = supabase
         .from('products')
-        .select('*')
+        .select('*, advertisements(id, status, start_date, end_date)')
         .eq('status', 'Active');
 
     if (params?.category) {
@@ -66,11 +67,34 @@ export default async function Marketplace({ searchParams }) {
     const productsRes = wishlistProduct;
 
     const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
-    const rawProducts = productsRes.data;
+    const rawProducts = productsRes.data || [];
+    
+    // Map products to extract active advertisement_id
+    const rawProductsWithAdId = rawProducts.map(p => {
+        const activeAd = p.advertisements?.find(ad => 
+            ad.status === 'Active' && 
+            new Date(ad.start_date) <= new Date() && 
+            new Date(ad.end_date) >= new Date()
+        );
+        const { advertisements, ...productData } = p;
+        return {
+            ...productData,
+            advertisement_id: activeAd?.id || null
+        };
+    });
+    
+    let products = rawProductsWithAdId;
+    if (sortOption === 'newest' && !params?.search && !params?.category) {
+        const boosted = rawProductsWithAdId.filter(p => p.is_boosted);
+        const featured = rawProductsWithAdId.filter(p => !p.is_boosted && p.is_featured);
+        const regular = rawProductsWithAdId.filter(p => !p.is_boosted && !p.is_featured);
 
-    const products = (sortOption === 'newest' && !params?.search && !params?.category)
-        ? seededShuffle(rawProducts, 42)
-        : rawProducts;
+        products = [
+            ...seededShuffle(boosted, 42),
+            ...seededShuffle(featured, 43),
+            ...seededShuffle(regular, 44)
+        ];
+    }
 
     return (
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
@@ -88,36 +112,48 @@ export default async function Marketplace({ searchParams }) {
 
                     <div className="grid grid-cols-2 gap-4 pb-8">
                         {products && products.length > 0 ? (
-                            products.map((p) => (
-                                <Link href={`/marketplace/${p.id}`} key={p.id} className="group flex flex-col gap-2 relative">
-                                    <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35]">
-                                        <Image
-                                            src={p.images?.[0] || p.image_url || '/placeholder.png'}
-                                            alt={p.title}
-                                            fill
-                                            sizes="(max-width: 768px) 50vw, 200px"
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                        <WishlistButton
-                                            productId={p.id}
-                                            initialIsSaved={wishlistIds.includes(p.id)}
-                                        />
-                                        {p.condition && (
-                                            <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-[10px] font-bold text-white uppercase tracking-wider">
-                                                {p.condition}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-0.5 px-1">
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(p.title)}</h3>
-                                        <p className="text-primary text-base font-extrabold">₵ {formatPrice(p.price)}</p>
-                                        <div className="flex items-center gap-1 text-gray-400">
-                                            <DynamicLucideIcon name="location_on" className="text-[14px]" />
-                                            <p className="text-[10px] font-bold truncate uppercase">{p.campus || 'On Campus'}</p>
+                            products.map((p) => {
+                                const cardContent = (
+                                    <Link href={`/marketplace/${p.id}`} className="group flex flex-col gap-2 relative h-full w-full">
+                                        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35]">
+                                            <Image
+                                                src={p.images?.[0] || p.image_url || '/placeholder.png'}
+                                                alt={p.title}
+                                                fill
+                                                sizes="(max-width: 768px) 50vw, 200px"
+                                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                            <WishlistButton
+                                                productId={p.id}
+                                                initialIsSaved={wishlistIds.includes(p.id)}
+                                            />
+                                            {p.condition && (
+                                                <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-[10px] font-bold text-white uppercase tracking-wider">
+                                                    {p.condition}
+                                                </div>
+                                            )}
                                         </div>
+                                        <div className="flex flex-col gap-0.5 px-1">
+                                            <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(p.title)}</h3>
+                                            <p className="text-primary text-base font-extrabold">₵ {formatPrice(p.price)}</p>
+                                            <div className="flex items-center gap-1 text-gray-400">
+                                                <DynamicLucideIcon name="location_on" className="text-[14px]" />
+                                                <p className="text-[10px] font-bold truncate uppercase">{p.campus || 'On Campus'}</p>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+
+                                return p.advertisement_id ? (
+                                    <AdTracker key={p.id} advertisementId={p.advertisement_id}>
+                                        {cardContent}
+                                    </AdTracker>
+                                ) : (
+                                    <div key={p.id} className="contents">
+                                        {cardContent}
                                     </div>
-                                </Link>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="col-span-2 py-20 text-center flex flex-col items-center justify-center text-gray-500">
                                 <DynamicLucideIcon name="search_off" className="text-6xl mb-4 opacity-20" />

@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import PromotionClient from './PromotionClient';
 
 export const metadata = {
@@ -11,6 +11,11 @@ export default async function PromotionSelectionPage({ params }) {
     const { id } = await params;
     const supabase = await createClient();
 
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        redirect('/login');
+    }
+
     const { data: product, error } = await supabase
         .from('products')
         .select('*')
@@ -19,6 +24,14 @@ export default async function PromotionSelectionPage({ params }) {
 
     if (error || !product) {
         notFound();
+    }
+
+    if (product.seller_id !== user.id) {
+        notFound();
+    }
+
+    if (product.status?.toLowerCase() !== 'active') {
+        redirect('/dashboard/seller/listings');
     }
 
     // Fetch dynamic promotion pricing from platform settings
