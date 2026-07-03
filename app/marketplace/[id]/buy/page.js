@@ -107,29 +107,9 @@ export default async function CheckoutPage({ params }) {
     }
 
     if (!product) {
-        // Handle the user's specific test ID as a sample if fetch failed
-        const isSampleId = id === '021ec46d-43e5-4891-9439-2e59d53bbf28' || id.includes('sample');
-
-        if (isSampleId) {
-            product = {
-                id: id,
-                title: "Statistics 101 Textbook",
-                price: 45.00,
-                category: "Textbooks",
-                image_url: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000",
-                buyer_id: null,
-                seller_id: "sample-seller",
-                seller: {
-                    display_name: 'Alex Johnson',
-                    is_verified: true
-                }
-            };
-            return <CheckoutClient product={product} user={user} walletBalance={walletBalance} serviceFee={1.50} feePercent={3} feeFixed={1} />;
-        }
-
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] p-6 text-center">
-                <DynamicLucideIcon name="inventory_2" className="text-6xl text-gray-300 mb-4" />
+                <DynamicLucideIcon name="inventory_2" className="text-6xl text-gray-300 mb-4" aria-hidden="true" />
                 <h1 className="text-xl font-bold mb-2 text-[#0e181b] dark:text-white">Item Not Found</h1>
                 <p className="text-gray-500 mb-6 max-w-xs">We couldn&apos;t find the item you&apos;re looking for. It might have been sold or removed.</p>
                 <Link href="/marketplace" className="btn-primary w-full max-w-xs justify-center">

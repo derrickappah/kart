@@ -1,6 +1,6 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const categories = [
@@ -24,6 +24,10 @@ export default function FilterSidebar() {
     const [isPending, startTransition] = useTransition();
     const [isOpen, setIsOpen] = useState(false);
     const [animatingOut, setAnimatingOut] = useState(false);
+
+    // Ref for focus trap: first focusable element in the panel
+    const closeButtonRef = useRef(null);
+    const lastFocusableRef = useRef(null);
 
     // Initialize state from URL params
     const getInitialCategories = () => searchParams?.get('category') ? searchParams.get('category').split(',') : [];
@@ -55,16 +59,53 @@ export default function FilterSidebar() {
         setSort(searchParams?.get('sort') || 'newest');
     }
 
-    // Handle Open Event
+    // Handle Open Event & focus management
     useEffect(() => {
         const handleOpenFilters = () => {
             setIsOpen(true);
             setAnimatingOut(false);
             document.body.style.overflow = 'hidden';
+            // Move focus to the close button after the drawer animates in
+            setTimeout(() => closeButtonRef.current?.focus(), 50);
         };
         window.addEventListener('open-filters', handleOpenFilters);
         return () => window.removeEventListener('open-filters', handleOpenFilters);
     }, []);
+
+    // Focus trap: keep Tab/Shift+Tab inside the panel while it's open
+    const handleKeyDown = (e) => {
+        if (!isOpen) return;
+
+        if (e.key === 'Escape') {
+            closeSidebar();
+            return;
+        }
+
+        if (e.key === 'Tab') {
+            const focusableSelectors = [
+                'button:not([disabled])',
+                'input:not([disabled])',
+                '[role="button"]:not([disabled])',
+            ].join(', ');
+            const panel = e.currentTarget;
+            const focusableElements = Array.from(panel.querySelectorAll(focusableSelectors));
+            if (focusableElements.length === 0) return;
+            const first = focusableElements[0];
+            const last = focusableElements[focusableElements.length - 1];
+
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        }
+    };
 
     const closeSidebar = () => {
         setAnimatingOut(true);
@@ -75,15 +116,16 @@ export default function FilterSidebar() {
         }, 300);
     };
 
-    const updateFilters = (categories, conditions, min, max, campusValue, sortValue) => {
+    const updateFilters = (cats, conds, min, max, campusValue, sortValue) => {
         const params = new URLSearchParams();
         if (searchParams?.get('search')) params.set('search', searchParams.get('search'));
-        
-        const filteredCategories = categories.filter(c => c !== 'All');
+
+        const filteredCategories = cats.filter(c => c !== 'All');
         if (filteredCategories.length > 0) params.set('category', filteredCategories.join(','));
-        if (conditions.length > 0) params.set('condition', conditions.join(','));
-        if (min) params.set('minPrice', min);
-        if (max) params.set('maxPrice', max);
+        if (conds.length > 0) params.set('condition', conds.join(','));
+        // Only set price params if they are valid non-negative numbers
+        if (min !== '' && !isNaN(Number(min)) && Number(min) >= 0) params.set('minPrice', min);
+        if (max !== '' && !isNaN(Number(max)) && Number(max) >= 0) params.set('maxPrice', max);
         if (campusValue) params.set('campus', campusValue);
         if (sortValue && sortValue !== 'newest') params.set('sort', sortValue);
 
@@ -127,56 +169,86 @@ export default function FilterSidebar() {
         setCampus('');
         setSort('newest');
         updateFilters([], [], '', '', '', 'newest');
+        // Close the sidebar after reset for a cleaner UX
+        closeSidebar();
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className={`fixed inset-0 z-[100] flex flex-col justify-end bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${animatingOut ? 'opacity-0' : 'animate-fade-in'}`}>
-            <button className="absolute inset-0 w-full h-full bg-transparent cursor-default border-none outline-none" onClick={closeSidebar} aria-label="Close filters overlay" />
+        /* Overlay */
+        <div
+            className={`fixed inset-0 z-[100] flex flex-col justify-end bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${animatingOut ? 'opacity-0' : 'animate-fade-in'}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filter and sort listings"
+        >
+            {/* Backdrop click to close */}
+            <button
+                className="absolute inset-0 w-full h-full bg-transparent cursor-default border-none outline-none"
+                onClick={closeSidebar}
+                aria-label="Close filters overlay"
+                tabIndex={-1}
+            />
 
-            <div className={`relative w-full bg-white dark:bg-[#242428] rounded-t-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] ${animatingOut ? 'translate-y-full transition-transform duration-300' : 'animate-slide-up'}`}>
-                {/* Handle */}
-                <div className="w-full flex justify-center pt-4 pb-1">
+            {/* Drawer panel */}
+            <div
+                className={`relative w-full bg-white dark:bg-[#242428] rounded-t-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] ${animatingOut ? 'translate-y-full transition-transform duration-300' : 'animate-slide-up'}`}
+                onKeyDown={handleKeyDown}
+            >
+                {/* Drag handle */}
+                <div className="w-full flex justify-center pt-4 pb-1" aria-hidden="true">
                     <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                 </div>
 
                 {/* Header */}
                 <div className="px-6 pb-4 pt-2 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
                     <div className="flex items-center gap-2">
-                        <button onClick={closeSidebar} aria-label="Close filters" className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#2d2d32] text-gray-500 transition-colors">
-                            <DynamicLucideIcon name="close" size={24} />
+                        <button
+                            ref={closeButtonRef}
+                            onClick={closeSidebar}
+                            aria-label="Close filters"
+                            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#2d2d32] text-gray-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                            <DynamicLucideIcon name="close" size={24} aria-hidden="true" />
                         </button>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Filter & Sort</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Filter &amp; Sort</h2>
                     </div>
-                    <button onClick={handleReset} className="text-sm font-bold text-primary hover:bg-primary/10 px-4 py-2 rounded-xl transition-colors">
+                    <button
+                        onClick={handleReset}
+                        className="text-sm font-bold text-primary hover:bg-primary/10 px-4 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
                         Reset
                     </button>
                 </div>
 
-                {/* Content */}
+                {/* Scrollable Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-32">
                     {/* Sort Options */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <DynamicLucideIcon name="sort" className="text-primary" />
-                            <h3 className="font-bold text-lg">Sort By</h3>
+                            <DynamicLucideIcon name="sort" className="text-primary" aria-hidden="true" />
+                            <h3 className="font-bold text-lg" id="sort-heading">Sort By</h3>
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2" role="radiogroup" aria-labelledby="sort-heading">
                             {sortOptions.map((opt) => (
                                 <button
                                     key={opt.value}
+                                    role="radio"
+                                    aria-checked={sort === opt.value}
                                     onClick={() => setSort(opt.value)}
-                                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all border-2 text-left ${sort === opt.value
+                                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all border-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${sort === opt.value
                                         ? 'border-primary bg-primary/5 text-primary shadow-sm'
                                         : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300'
                                     }`}
                                 >
                                     <div className={`flex items-center justify-center size-10 rounded-xl ${sort === opt.value ? 'bg-primary text-white' : 'bg-white dark:bg-[#242428] text-gray-400'}`}>
-                                        <DynamicLucideIcon name={opt.icon} className="text-[20px]" />
+                                        <DynamicLucideIcon name={opt.icon} className="text-[20px]" aria-hidden="true" />
                                     </div>
                                     <span className="font-bold text-sm flex-1">{opt.label}</span>
-                                    {sort === opt.value && <DynamicLucideIcon name="check_circle" className="text-primary" />}
+                                    {sort === opt.value && (
+                                        <DynamicLucideIcon name="check_circle" className="text-primary" aria-hidden="true" />
+                                    )}
                                 </button>
                             ))}
                         </div>
@@ -185,24 +257,37 @@ export default function FilterSidebar() {
                     {/* Price Range */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <DynamicLucideIcon name="payments" className="text-primary" />
+                            <DynamicLucideIcon name="payments" className="text-primary" aria-hidden="true" />
                             <h3 className="font-bold text-lg">Price Range</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             {[
-                                { label: 'Min Price', val: minPrice, set: setMinPrice },
-                                { label: 'Max Price', val: maxPrice, set: setMaxPrice }
-                            ].map((field, i) => (
-                                <div key={i} className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">{field.label}</label>
+                                { label: 'Min Price', id: 'filter-min-price', val: minPrice, set: setMinPrice, placeholder: '0' },
+                                { label: 'Max Price', id: 'filter-max-price', val: maxPrice, set: setMaxPrice, placeholder: 'Any' }
+                            ].map((field) => (
+                                <div key={field.id} className="space-y-2">
+                                    <label
+                                        htmlFor={field.id}
+                                        className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1"
+                                    >
+                                        {field.label}
+                                    </label>
                                     <div className="relative group">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xs transition-colors group-focus-within:text-primary">₵</span>
+                                        <span
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xs transition-colors group-focus-within:text-primary"
+                                            aria-hidden="true"
+                                        >
+                                            ₵
+                                        </span>
                                         <input
+                                            id={field.id}
                                             type="number"
                                             className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-2xl py-4 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all placeholder:text-gray-300"
-                                            placeholder={i === 0 ? "0" : "Any"}
+                                            placeholder={field.placeholder}
                                             value={field.val}
                                             onChange={(e) => field.set(e.target.value)}
+                                            min="0"
+                                            step="any"
                                         />
                                     </div>
                                 </div>
@@ -213,20 +298,25 @@ export default function FilterSidebar() {
                     {/* Condition */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <DynamicLucideIcon name="verified" className="text-primary" />
-                            <h3 className="font-bold text-lg">Condition</h3>
+                            <DynamicLucideIcon name="verified" className="text-primary" aria-hidden="true" />
+                            <h3 className="font-bold text-lg" id="condition-heading">Condition</h3>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-3" role="group" aria-labelledby="condition-heading">
                             {conditions.map((con) => (
                                 <button
                                     key={con}
                                     onClick={() => toggleCondition(con)}
-                                    className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 font-bold text-sm ${selectedConditions.includes(con)
+                                    aria-pressed={selectedConditions.includes(con)}
+                                    className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 font-bold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selectedConditions.includes(con)
                                         ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]'
                                         : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                     }`}
                                 >
-                                    <DynamicLucideIcon name={con === 'New' ? 'new_releases' : con === 'Like New' ? 'thumb_up' : con === 'Good' ? 'handshake' : 'build'} className="text-[20px]" />
+                                    <DynamicLucideIcon
+                                        name={con === 'New' ? 'new_releases' : con === 'Like New' ? 'thumb_up' : con === 'Good' ? 'handshake' : 'build'}
+                                        className="text-[20px]"
+                                        aria-hidden="true"
+                                    />
                                     {con}
                                 </button>
                             ))}
@@ -236,15 +326,16 @@ export default function FilterSidebar() {
                     {/* Categories */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <DynamicLucideIcon name="category" className="text-primary" />
-                            <h3 className="font-bold text-lg">Categories</h3>
+                            <DynamicLucideIcon name="category" className="text-primary" aria-hidden="true" />
+                            <h3 className="font-bold text-lg" id="categories-heading">Categories</h3>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="categories-heading">
                             {categories.map((cat) => (
                                 <button
                                     key={cat}
                                     onClick={() => toggleCategory(cat)}
-                                    className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all border-2 ${selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)
+                                    aria-pressed={selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)}
+                                    className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)
                                         ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
                                         : 'bg-white dark:bg-[#2d2d32] text-gray-500 border-gray-100 dark:border-gray-800 hover:border-gray-200'
                                     }`}
@@ -255,33 +346,45 @@ export default function FilterSidebar() {
                         </div>
                     </div>
 
-                    {/* Campus */}
+                    {/* Campus / Location */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <DynamicLucideIcon name="near_me" className="text-primary" />
-                            <h3 className="font-bold text-lg">Location</h3>
+                            <DynamicLucideIcon name="near_me" className="text-primary" aria-hidden="true" />
+                            <h3 className="font-bold text-lg">
+                                <label htmlFor="filter-campus">Location</label>
+                            </h3>
                         </div>
                         <div className="relative group">
-                            <DynamicLucideIcon name="location_searching" className="absolute left-4 top-1/2 -translate-y-1/2  text-gray-400 text-xl group-focus-within:text-primary transition-colors" />
+                            <DynamicLucideIcon
+                                name="location_searching"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl group-focus-within:text-primary transition-colors"
+                                aria-hidden="true"
+                            />
                             <input
+                                id="filter-campus"
                                 type="text"
                                 className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all"
                                 placeholder="Enter campus name..."
                                 value={campus}
                                 onChange={(e) => setCampus(e.target.value)}
+                                maxLength={100}
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Footer */}
+                {/* Sticky Footer CTA */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-[#242428]/80 backdrop-blur-lg z-10">
                     <button
+                        ref={lastFocusableRef}
                         onClick={handleApply}
                         disabled={isPending}
-                        className="btn-primary w-full h-14 rounded-2xl shadow-xl shadow-primary/25 flex items-center justify-center"
+                        className="btn-primary w-full h-14 rounded-2xl shadow-xl shadow-primary/25 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     >
-                        {isPending ? <div className="size-6 border-2 border-white border-t-transparent animate-spin rounded-full" /> : 'Apply Filters & Sort'}
+                        {isPending
+                            ? <div className="size-6 border-2 border-white border-t-transparent animate-spin rounded-full" aria-label="Applying filters…" />
+                            : 'Apply Filters & Sort'
+                        }
                     </button>
                 </div>
             </div>

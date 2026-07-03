@@ -8,6 +8,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet' or 'paystack'
+    const [paymentError, setPaymentError] = useState(null);
 
     // Calculate totals: Buyer only pays the Marketplace Service Fee
     const price = parseFloat(product.price);
@@ -21,16 +22,13 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
 
     const handleConfirmPay = async () => {
         setLoading(true);
+        setPaymentError(null);
         try {
             if (paymentMethod === 'wallet') {
                 const response = await fetch('/api/orders/pay-with-wallet', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        productId: product.id,
-                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: product.id }),
                 });
 
                 const data = await response.json();
@@ -39,7 +37,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                     throw new Error(data.error || 'Payment failed');
                 }
 
-                // Success! Redirect to order details
+                // Success — redirect to order confirmation
                 router.push(`/dashboard/orders/${data.orderId}?success=true`);
                 router.refresh();
             } else {
@@ -49,9 +47,7 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
 
                 const response = await fetch('/api/orders/create', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         productId: product.id,
                         quantity: 1,
@@ -66,7 +62,6 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                 }
 
                 if (data.payment?.authorization_url) {
-                    // Redirect to Paystack
                     if (isNative) {
                         const { Browser } = await import('@capacitor/browser');
                         await Browser.open({ url: data.payment.authorization_url, presentationStyle: 'popover' });
@@ -79,7 +74,8 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
             }
         } catch (error) {
             console.error('Payment error:', error);
-            alert(error.message || 'Failed to process payment. Please try again.');
+            // Use inline error instead of blocking alert() for better UX and a11y
+            setPaymentError(error.message || 'Failed to process payment. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -252,7 +248,16 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                 </main>
 
                 {/* Fixed Footer CTA */}
-                <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto p-4 pb-8 bg-[#f6f7f8]/95 dark:bg-[#111d21]/95 backdrop-blur-md z-40">
+                <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto p-4 bg-[#f6f7f8]/95 dark:bg-[#111d21]/95 backdrop-blur-md z-40" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+                    {/* Inline payment error — replaces disruptive alert() */}
+                    {paymentError && (
+                        <div
+                            role="alert"
+                            className="mb-3 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium text-center"
+                        >
+                            {paymentError}
+                        </div>
+                    )}
                     <button
                         onClick={handleConfirmPay}
                         disabled={loading || (paymentMethod === 'wallet' && !canAfford)}
@@ -261,8 +266,15 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                 ? 'bg-[#1daddd] hover:bg-[#1daddd]/90 text-white shadow-[#1daddd]/20'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'}`}
                     >
-                        <span>{loading ? 'Processing...' : (paymentMethod === 'wallet' ? 'Confirm and Pay' : 'Pay with Paystack')}</span>
-                        {!loading && <DynamicLucideIcon name="chevron_right" />}
+                        {loading
+                            ? <div className="size-5 border-2 border-white border-t-transparent animate-spin rounded-full" aria-label="Processing payment…" />
+                            : (
+                                <>
+                                    <span>{paymentMethod === 'wallet' ? 'Confirm and Pay' : 'Pay with Paystack'}</span>
+                                    <DynamicLucideIcon name="chevron_right" aria-hidden="true" />
+                                </>
+                            )
+                        }
                     </button>
                 </footer>
             </div>

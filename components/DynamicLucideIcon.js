@@ -123,11 +123,34 @@ import {
   Store,
   Bookmark,
   ThumbsUp,
-  XCircle
+  XCircle,
+  BookOpen,
+  Laptop,
+  Armchair,
+  Shirt,
+  Ticket,
+  Trophy,
+  ChefHat,
+  Music,
+  Gamepad2,
+  Palette,
+  Cpu
 } from 'lucide-react';
 
 const iconMap = {
   // Google Icon Name : Lucide Icon Component
+  'menu_book': BookOpen,
+  'devices': Laptop,
+  'chair': Armchair,
+  'checkroom': Shirt,
+  'confirmation_number': Ticket,
+  'face_retouching_natural': Sparkles,
+  'sports_soccer': Trophy,
+  'kitchen': ChefHat,
+  'piano': Music,
+  'sports_esports': Gamepad2,
+  'palette': Palette,
+  'home_iot_device': Cpu,
   'sync_problem': AlertTriangle,
   'campaign': Megaphone,
   'image': Image,

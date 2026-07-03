@@ -11,6 +11,40 @@ import { toSentenceCase, seededShuffle, formatPrice } from '../../utils/formatte
 
 export const revalidate = 60;
 
+export const metadata = {
+    title: 'Marketplace | KART – Campus Finds',
+    description: 'Buy and sell textbooks, electronics, clothing, and more on your campus with KART — the trusted student marketplace.',
+    openGraph: {
+        title: 'KART Marketplace – Campus Finds',
+        description: 'Browse thousands of student listings. Buy and sell safely on campus.',
+        url: 'https://www.kart.cx/marketplace',
+        type: 'website',
+    },
+    alternates: {
+        canonical: 'https://www.kart.cx/marketplace',
+    },
+};
+
+/**
+ * Sanitize a free-text search parameter: trim, cap at 200 chars,
+ * and strip characters that have no business being in an ilike query.
+ */
+function sanitizeTextParam(val) {
+    if (!val || typeof val !== 'string') return '';
+    return val.trim().slice(0, 200);
+}
+
+/**
+ * Return a deterministic daily seed so the shuffle changes once per day
+ * rather than being locked to a fixed constant forever.
+ */
+function getDailySeed(offset = 0) {
+    const now = new Date();
+    // Format: YYYYMMDD as an integer, plus optional offset to vary groups
+    const dateInt = now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate();
+    return dateInt + offset;
+}
+
 export default async function Marketplace({ searchParams }) {
     const params = await searchParams;
     const supabase = await createClient();
@@ -21,6 +55,14 @@ export default async function Marketplace({ searchParams }) {
         console.error('Error running expire_completed_promotions RPC:', expireError);
     }
 
+    // Sanitize inputs before using in queries
+    const searchQuery = sanitizeTextParam(params?.search);
+    const campusQuery = sanitizeTextParam(params?.campus);
+    const minPriceRaw = parseFloat(params?.minPrice);
+    const maxPriceRaw = parseFloat(params?.maxPrice);
+    const minPrice = isNaN(minPriceRaw) || minPriceRaw < 0 ? null : minPriceRaw;
+    const maxPrice = isNaN(maxPriceRaw) || maxPriceRaw < 0 ? null : maxPriceRaw;
+
     // Build the product query first (no await yet)
     let query = supabase
         .from('products')
@@ -28,28 +70,28 @@ export default async function Marketplace({ searchParams }) {
         .eq('status', 'Active');
 
     if (params?.category) {
-        const categories = params.category.split(',');
+        const categories = params.category.split(',').slice(0, 20); // limit array length
         query = categories.length === 1
             ? query.eq('category', categories[0])
             : query.in('category', categories);
     }
     if (params?.condition) {
-        const conditions = params.condition.split(',');
+        const conditions = params.condition.split(',').slice(0, 10);
         query = conditions.length === 1
             ? query.eq('condition', conditions[0])
             : query.in('condition', conditions);
     }
-    if (params?.minPrice) query = query.gte('price', parseFloat(params.minPrice));
-    if (params?.maxPrice) query = query.lte('price', parseFloat(params.maxPrice));
-    if (params?.campus) query = query.ilike('campus', `%${params.campus}%`);
-    if (params?.search) query = query.or(`title.ilike.%${params.search}%,description.ilike.%${params.search}%`);
+    if (minPrice !== null) query = query.gte('price', minPrice);
+    if (maxPrice !== null) query = query.lte('price', maxPrice);
+    if (campusQuery) query = query.ilike('campus', `%${campusQuery}%`);
+    if (searchQuery) query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
 
     const sortOption = params?.sort || 'newest';
     switch (sortOption) {
-        case 'oldest':   query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('created_at', { ascending: true }); break;
+        case 'oldest':    query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('created_at', { ascending: true }); break;
         case 'price-low': query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('price', { ascending: true }); break;
         case 'price-high': query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('price', { ascending: false }); break;
-        default:          query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }); break;
+        default:           query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }); break;
     }
 
     // Run auth and product query in parallel
@@ -68,13 +110,14 @@ export default async function Marketplace({ searchParams }) {
 
     const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
     const rawProducts = productsRes.data || [];
-    
+
     // Map products to extract active advertisement_id
     const rawProductsWithAdId = rawProducts.map(p => {
-        const activeAd = p.advertisements?.find(ad => 
-            ad.status === 'Active' && 
-            new Date(ad.start_date) <= new Date() && 
-            new Date(ad.end_date) >= new Date()
+        const now = new Date();
+        const activeAd = p.advertisements?.find(ad =>
+            ad.status === 'Active' &&
+            new Date(ad.start_date) <= now &&
+            new Date(ad.end_date) >= now
         );
         const { advertisements, ...productData } = p;
         return {
@@ -82,19 +125,26 @@ export default async function Marketplace({ searchParams }) {
             advertisement_id: activeAd?.id || null
         };
     });
-    
+
+    // Apply daily-rotating seeded shuffle for the default "newest" view
+    // so boosted/featured items feel organic rather than algorithmically obvious
     let products = rawProductsWithAdId;
-    if (sortOption === 'newest' && !params?.search && !params?.category) {
+    const isDefaultView = sortOption === 'newest' && !searchQuery && !params?.category;
+    if (isDefaultView) {
         const boosted = rawProductsWithAdId.filter(p => p.is_boosted);
         const featured = rawProductsWithAdId.filter(p => !p.is_boosted && p.is_featured);
         const regular = rawProductsWithAdId.filter(p => !p.is_boosted && !p.is_featured);
 
         products = [
-            ...seededShuffle(boosted, 42),
-            ...seededShuffle(featured, 43),
-            ...seededShuffle(regular, 44)
+            ...seededShuffle(boosted, getDailySeed(0)),
+            ...seededShuffle(featured, getDailySeed(1)),
+            ...seededShuffle(regular, getDailySeed(2))
         ];
     }
+
+    // Determine if any filters are active for better empty state messaging
+    const hasActiveFilters = !!(params?.category || params?.condition || params?.minPrice || params?.maxPrice || params?.campus);
+    const hasActiveSearch = !!searchQuery;
 
     return (
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
@@ -114,11 +164,15 @@ export default async function Marketplace({ searchParams }) {
                         {products && products.length > 0 ? (
                             products.map((p) => {
                                 const cardContent = (
-                                    <Link href={`/marketplace/${p.id}`} className="group flex flex-col gap-2 relative h-full w-full">
+                                    <Link
+                                        href={`/marketplace/${p.id}`}
+                                        className="group flex flex-col gap-2 relative h-full w-full"
+                                        aria-label={`${toSentenceCase(p.title)} — ₵ ${formatPrice(p.price)}`}
+                                    >
                                         <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35]">
                                             <Image
                                                 src={p.images?.[0] || p.image_url || '/placeholder.png'}
-                                                alt={p.title}
+                                                alt={toSentenceCase(p.title)}
                                                 fill
                                                 sizes="(max-width: 768px) 50vw, 200px"
                                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -137,7 +191,7 @@ export default async function Marketplace({ searchParams }) {
                                             <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(p.title)}</h3>
                                             <p className="text-primary text-base font-extrabold">₵ {formatPrice(p.price)}</p>
                                             <div className="flex items-center gap-1 text-gray-400">
-                                                <DynamicLucideIcon name="location_on" className="text-[14px]" />
+                                                <DynamicLucideIcon name="location_on" className="text-[14px]" aria-hidden="true" />
                                                 <p className="text-[10px] font-bold truncate uppercase">{p.campus || 'On Campus'}</p>
                                             </div>
                                         </div>
@@ -156,8 +210,27 @@ export default async function Marketplace({ searchParams }) {
                             })
                         ) : (
                             <div className="col-span-2 py-20 text-center flex flex-col items-center justify-center text-gray-500">
-                                <DynamicLucideIcon name="search_off" className="text-6xl mb-4 opacity-20" />
-                                <p className="font-medium">No items found matching your search.</p>
+                                <DynamicLucideIcon name="search_off" className="text-6xl mb-4 opacity-20" aria-hidden="true" />
+                                <p className="font-semibold text-gray-700 dark:text-gray-300">
+                                    {hasActiveSearch
+                                        ? `No results for "${searchQuery}"`
+                                        : hasActiveFilters
+                                            ? 'No items match your filters'
+                                            : 'No items available right now'}
+                                </p>
+                                <p className="text-sm text-gray-400 mt-1">
+                                    {(hasActiveSearch || hasActiveFilters)
+                                        ? 'Try adjusting your search or filters'
+                                        : 'Check back soon — listings are added daily'}
+                                </p>
+                                {(hasActiveSearch || hasActiveFilters) && (
+                                    <Link
+                                        href="/marketplace"
+                                        className="mt-4 text-primary font-bold text-sm hover:underline"
+                                    >
+                                        Clear all filters
+                                    </Link>
+                                )}
                             </div>
                         )}
                     </div>

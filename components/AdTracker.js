@@ -1,19 +1,31 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
+/**
+ * AdTracker — wraps an advertisement card and fires impression/click events
+ * to the server-side tracking API.
+ *
+ * Uses a React ref (not getElementById) so the observer attaches reliably
+ * even when the component mounts after the DOM is fully built, and avoids
+ * ID collisions when the same ad appears more than once on a page.
+ */
 export default function AdTracker({ advertisementId, children }) {
-    const trackedRef = useRef(false);
+    const containerRef = useRef(null);
+    const trackedViewRef = useRef(false);
 
     useEffect(() => {
         if (!advertisementId) return;
 
-        // Reset tracking ref if advertisementId changes
-        trackedRef.current = false;
+        // Reset tracking flag whenever the ad ID changes
+        trackedViewRef.current = false;
+
+        const element = containerRef.current;
+        if (!element) return;
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting && !trackedRef.current) {
-                    trackedRef.current = true;
+                if (entry.isIntersecting && !trackedViewRef.current) {
+                    trackedViewRef.current = true;
                     const viewKey = `ad_view_${advertisementId}`;
                     if (typeof window !== 'undefined' && !window.sessionStorage.getItem(viewKey)) {
                         window.sessionStorage.setItem(viewKey, 'true');
@@ -26,12 +38,9 @@ export default function AdTracker({ advertisementId, children }) {
                     observer.disconnect();
                 }
             });
-        }, { threshold: 0.1 }); // Trigger when 10% of the element is visible
+        }, { threshold: 0.1 }); // Fire when ≥10% of the element is visible
 
-        const element = document.getElementById(`ad-${advertisementId}`);
-        if (element) {
-            observer.observe(element);
-        }
+        observer.observe(element);
 
         return () => observer.disconnect();
     }, [advertisementId]);
@@ -50,7 +59,7 @@ export default function AdTracker({ advertisementId, children }) {
     };
 
     return (
-        <div id={`ad-${advertisementId}`} onClick={handleClick} className="contents">
+        <div ref={containerRef} onClick={handleClick} className="contents">
             {children}
         </div>
     );
