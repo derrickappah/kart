@@ -64,16 +64,7 @@ function SearchInput({ placeholder, showFilter }) {
 
     if (showFilter) {
         return (
-            <div className="relative flex items-center justify-between w-full h-12 overflow-hidden">
-                {/* Title (fades/slides left when search expands) */}
-                <h1
-                    className={`text-2xl font-black text-gray-900 dark:text-white transition-all duration-300 transform origin-left ${
-                        isExpanded ? 'opacity-0 -translate-x-4 w-0 overflow-hidden' : 'opacity-100 translate-x-0 w-auto'
-                    }`}
-                >
-                    Marketplace
-                </h1>
-
+            <div className={`relative flex items-center w-full h-12 overflow-hidden ${isExpanded ? 'justify-between' : 'justify-end'}`}>
                 {/* Expanded Search Form */}
                 <form
                     onSubmit={handleSearch}
