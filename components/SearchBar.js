@@ -3,7 +3,7 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useTransition, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function SearchInput({ placeholder }) {
+function SearchInput({ placeholder, showFilter }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const searchVal = searchParams.get('search') || '';
@@ -11,17 +11,20 @@ function SearchInput({ placeholder }) {
     const [prevSearch, setPrevSearch] = useState(searchVal);
     const [isPending, startTransition] = useTransition();
 
+    // If there is an active search query in URL, start expanded
+    const [isExpanded, setIsExpanded] = useState(!!searchVal);
+
     // Sync local state when the URL search param changes externally
     if (searchVal !== prevSearch) {
         setPrevSearch(searchVal);
         setQuery(searchVal);
+        if (searchVal) {
+            setIsExpanded(true);
+        }
     }
 
     const handleSearch = (e) => {
         e.preventDefault();
-
-        // Preserve existing filter params (category, condition, price, campus, sort)
-        // so searching doesn't destroy the user's active filter context.
         const next = new URLSearchParams(searchParams.toString());
         const trimmed = query.trim();
         if (trimmed) {
@@ -46,6 +49,132 @@ function SearchInput({ placeholder }) {
         });
     };
 
+    // Calculate active filters to display in the badge
+    const activeFilterCount = [
+        searchParams.get('category'),
+        searchParams.get('condition'),
+        searchParams.get('minPrice') || searchParams.get('maxPrice'),
+        searchParams.get('campus'),
+        searchParams.get('sort') && searchParams.get('sort') !== 'newest' ? 'sort' : null,
+    ].filter(Boolean).length;
+
+    const handleOpenFilters = () => {
+        window.dispatchEvent(new CustomEvent('open-filters'));
+    };
+
+    if (showFilter) {
+        return (
+            <div className="relative flex items-center justify-between w-full h-12 overflow-hidden">
+                {/* Title (fades/slides left when search expands) */}
+                <h1
+                    className={`text-2xl font-black text-gray-900 dark:text-white transition-all duration-300 transform origin-left ${
+                        isExpanded ? 'opacity-0 -translate-x-4 w-0 overflow-hidden' : 'opacity-100 translate-x-0 w-auto'
+                    }`}
+                >
+                    Marketplace
+                </h1>
+
+                {/* Expanded Search Form */}
+                <form
+                    onSubmit={handleSearch}
+                    role="search"
+                    aria-label="Search marketplace listings"
+                    className={`flex items-center transition-all duration-300 ease-out ${
+                        isExpanded 
+                            ? 'flex-1 h-12 bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-2' 
+                            : 'w-0 opacity-0 pointer-events-none'
+                    }`}
+                >
+                    <DynamicLucideIcon
+                        name="search"
+                        size={20}
+                        className={`text-gray-400 font-bold transition-colors ${isPending ? 'text-gray-300' : 'text-primary'}`}
+                        aria-hidden="true"
+                    />
+                    <input
+                        type="search"
+                        className="ml-2 flex-1 bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0"
+                        placeholder={placeholder}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        aria-label="Search listings"
+                        autoComplete="off"
+                        maxLength={200}
+                        disabled={!isExpanded}
+                        ref={(input) => {
+                            if (input && isExpanded && document.activeElement !== input && !query) {
+                                input.focus();
+                            }
+                        }}
+                    />
+                    {query && (
+                        <button
+                            type="button"
+                            onClick={handleClear}
+                            aria-label="Clear search"
+                            className="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
+                        >
+                            <DynamicLucideIcon name="close" size={16} aria-hidden="true" />
+                        </button>
+                    )}
+                </form>
+
+                {/* Cancel Button (only shown when expanded) */}
+                {isExpanded && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setIsExpanded(false);
+                            if (searchVal) {
+                                handleClear();
+                            }
+                        }}
+                        className="ml-3 text-sm font-bold text-primary hover:text-primary/80 transition-all duration-200"
+                    >
+                        Cancel
+                    </button>
+                )}
+
+                {/* Collapsed Control Icons (only shown when collapsed) */}
+                {!isExpanded && (
+                    <div className="flex items-center gap-2 transition-all duration-300">
+                        {/* Search Icon Button */}
+                        <button
+                            type="button"
+                            onClick={() => setIsExpanded(true)}
+                            aria-label="Search marketplace"
+                            className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                            <DynamicLucideIcon name="search" size={20} aria-hidden="true" />
+                        </button>
+
+                        {/* Filter Icon Button */}
+                        <button
+                            type="button"
+                            onClick={handleOpenFilters}
+                            aria-label={
+                                activeFilterCount > 0
+                                    ? `Filter & Sort — ${activeFilterCount} filters active`
+                                    : 'Filter & Sort'
+                            }
+                            className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative"
+                        >
+                            <DynamicLucideIcon name="tune" size={20} aria-hidden="true" />
+                            {activeFilterCount > 0 && (
+                                <span
+                                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border border-white dark:border-[#242428] shadow-sm leading-none"
+                                    aria-hidden="true"
+                                >
+                                    {activeFilterCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     return (
         <form
             className="group flex w-full items-center rounded-2xl bg-white dark:bg-surface-dark px-4 py-3.5 transition-all focus-within:ring-2 focus-within:ring-primary border border-gray-200 dark:border-gray-700 shadow-soft"
@@ -69,7 +198,6 @@ function SearchInput({ placeholder }) {
                 autoComplete="off"
                 maxLength={200}
             />
-            {/* Clear button — only visible when there is a query */}
             {query && (
                 <button
                     type="button"
@@ -84,14 +212,15 @@ function SearchInput({ placeholder }) {
     );
 }
 
-export default function SearchBar({ placeholder = 'Search...' }) {
+export default function SearchBar({ placeholder = 'Search...', showFilter = false }) {
     return (
         <Suspense fallback={
-            <div className="flex w-full items-center rounded-2xl bg-gray-100 dark:bg-[#2d2d32] px-4 py-3.5">
-                <div className="h-5 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+            <div className="flex w-full items-center justify-between h-12 bg-gray-100 dark:bg-[#2d2d32] px-4 rounded-2xl">
+                <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-full" />
             </div>
         }>
-            <SearchInput placeholder={placeholder} />
+            <SearchInput placeholder={placeholder} showFilter={showFilter} />
         </Suspense>
     );
 }

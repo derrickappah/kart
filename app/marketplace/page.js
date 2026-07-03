@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
 import SearchBar from '../../components/SearchBar';
-import MarketplaceControls from '../../components/MarketplaceControls';
 import WishlistButton from '../../components/WishlistButton';
 import AdTracker from '../../components/AdTracker';
 import { createClient } from '../../utils/supabase/server';
@@ -150,16 +149,10 @@ export default async function Marketplace({ searchParams }) {
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
                 <header className="bg-white/95 dark:bg-[#242428]/95 border-b border-gray-100 dark:border-gray-800 px-4 py-4">
-                    <SearchBar placeholder="Search campus finds..." />
+                    <SearchBar placeholder="Search campus finds..." showFilter={true} />
                 </header>
 
                 <main className="px-4 pt-4 flex-1">
-                    <div className="mb-4">
-                        <Suspense fallback={<div className="h-10 w-32 bg-gray-100 animate-pulse rounded-full" />}>
-                            <MarketplaceControls />
-                        </Suspense>
-                    </div>
-
                     <div className="grid grid-cols-2 gap-4 pb-8">
                         {products && products.length > 0 ? (
                             products.map((p) => {
