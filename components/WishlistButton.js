@@ -66,6 +66,7 @@ export default function WishlistButton({ productId, initialIsSaved }) {
         >
             <DynamicLucideIcon
                 name="favorite"
+                size={20}
                 style={{ fontVariationSettings: isSaved ? "'FILL' 1" : "'FILL' 0" }}
                 className={`text-[20px] ${isSaved ? 'text-red-500' : ''}`}
                 aria-hidden="true"

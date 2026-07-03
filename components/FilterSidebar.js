@@ -243,7 +243,7 @@ export default function FilterSidebar() {
                                     }`}
                                 >
                                     <div className={`flex items-center justify-center size-10 rounded-xl ${sort === opt.value ? 'bg-primary text-white' : 'bg-white dark:bg-[#242428] text-gray-400'}`}>
-                                        <DynamicLucideIcon name={opt.icon} className="text-[20px]" aria-hidden="true" />
+                                        <DynamicLucideIcon name={opt.icon} size={20} className="text-[20px]" aria-hidden="true" />
                                     </div>
                                     <span className="font-bold text-sm flex-1">{opt.label}</span>
                                     {sort === opt.value && (
@@ -314,6 +314,7 @@ export default function FilterSidebar() {
                                 >
                                     <DynamicLucideIcon
                                         name={con === 'New' ? 'new_releases' : con === 'Like New' ? 'thumb_up' : con === 'Good' ? 'handshake' : 'build'}
+                                        size={20}
                                         className="text-[20px]"
                                         aria-hidden="true"
                                     />
@@ -357,6 +358,7 @@ export default function FilterSidebar() {
                         <div className="relative group">
                             <DynamicLucideIcon
                                 name="location_searching"
+                                size={20}
                                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl group-focus-within:text-primary transition-colors"
                                 aria-hidden="true"
                             />

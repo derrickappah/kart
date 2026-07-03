@@ -191,7 +191,7 @@ export default async function Marketplace({ searchParams }) {
                                             <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(p.title)}</h3>
                                             <p className="text-primary text-base font-extrabold">₵ {formatPrice(p.price)}</p>
                                             <div className="flex items-center gap-1 text-gray-400">
-                                                <DynamicLucideIcon name="location_on" className="text-[14px]" aria-hidden="true" />
+                                                <DynamicLucideIcon name="location_on" size={14} className="text-[14px]" aria-hidden="true" />
                                                 <p className="text-[10px] font-bold truncate uppercase">{p.campus || 'On Campus'}</p>
                                             </div>
                                         </div>

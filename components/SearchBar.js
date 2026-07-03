@@ -55,6 +55,7 @@ function SearchInput({ placeholder }) {
         >
             <DynamicLucideIcon
                 name="search"
+                size={24}
                 className={`text-[24px] font-bold transition-colors ${isPending ? 'text-gray-400' : 'text-primary'}`}
                 aria-hidden="true"
             />
@@ -76,7 +77,7 @@ function SearchInput({ placeholder }) {
                     aria-label="Clear search"
                     className="ml-2 flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
                 >
-                    <DynamicLucideIcon name="close" className="text-[18px]" aria-hidden="true" />
+                    <DynamicLucideIcon name="close" size={18} className="text-[18px]" aria-hidden="true" />
                 </button>
             )}
         </form>

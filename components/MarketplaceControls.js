@@ -36,7 +36,7 @@ export default function MarketplaceControls() {
                                 : 'Filter & Sort'
                         }
                     >
-                        <DynamicLucideIcon name="tune" className="text-[20px]" aria-hidden="true" />
+                        <DynamicLucideIcon name="tune" size={20} className="text-[20px]" aria-hidden="true" />
                         Filter &amp; Sort
                         {activeFilterCount > 0 && (
                             <span

@@ -11,6 +11,13 @@ export default function PageTransition({ children }) {
 
   const isAdminPage = pathname?.startsWith("/dashboard/admin");
 
+  useEffect(() => {
+    if (isAnimating) {
+      const timer = setTimeout(() => setIsAnimating(false), 320);
+      return () => clearTimeout(timer);
+    }
+  }, [isAnimating]);
+
   if (isAdminPage) {
     return <>{children}</>;
   }
@@ -22,13 +29,6 @@ export default function PageTransition({ children }) {
   } else if (children !== displayChildren && !isAnimating) {
     setDisplayChildren(children);
   }
-
-  useEffect(() => {
-    if (isAnimating) {
-      const timer = setTimeout(() => setIsAnimating(false), 320);
-      return () => clearTimeout(timer);
-    }
-  }, [isAnimating]);
 
   return (
     <div

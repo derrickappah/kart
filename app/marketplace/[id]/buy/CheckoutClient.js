@@ -3,6 +3,7 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CheckoutClient({ product, user, walletBalance, serviceFee, feePercent, feeFixed }) {
     const router = useRouter();
@@ -16,6 +17,12 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
 
     // Determine image to show
     const productImage = product.images?.[0] || product.image_url;
+    const fallbackImage = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000';
+    const [imgSrc, setImgSrc] = useState(productImage || fallbackImage);
+
+    useEffect(() => {
+        setImgSrc(productImage || fallbackImage);
+    }, [productImage]);
 
     // Determine balance color
     const canAfford = walletBalance >= total;
@@ -103,14 +110,13 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                         <div className="bg-white dark:bg-[#1f2229] p-4 rounded-xl card-shadow border border-gray-50 dark:border-gray-800 shadow-[0px_4px_12px_rgba(0,0,0,0.03)]">
                             <div className="flex items-center gap-4">
                                 <div className="size-20 relative rounded-lg shrink-0 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 overflow-hidden flex items-center justify-center">
-                                    <img
-                                        src={productImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000'}
+                                    <Image
+                                        src={imgSrc}
                                         alt={product.title}
-                                        className="size-full object-cover"
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000';
-                                        }}
+                                        fill
+                                        sizes="80px"
+                                        className="object-cover"
+                                        onError={() => setImgSrc(fallbackImage)}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1 overflow-hidden">

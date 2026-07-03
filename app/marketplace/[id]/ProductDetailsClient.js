@@ -334,7 +334,7 @@ export default function ProductDetailsClient({ product }) {
                                 {product.condition}
                             </span>
                             <span className="text-[#5e7d87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider ml-auto flex items-center gap-1">
-                                <DynamicLucideIcon name="schedule" className="text-[14px]" aria-hidden="true" />
+                                <DynamicLucideIcon name="schedule" size={14} className="text-[14px]" aria-hidden="true" />
                                 <time dateTime={product.created_at}>{timeAgo(product.created_at)}</time>
                             </span>
                         </div>
@@ -371,7 +371,7 @@ export default function ProductDetailsClient({ product }) {
                             <div className="flex flex-col">
                                 <p className="font-bold text-base">{product.seller?.display_name || 'Anonymous'}</p>
                                 <div className="flex items-center gap-1">
-                                    <DynamicLucideIcon name="star" className="text-yellow-400 text-sm fill-current" aria-hidden="true" />
+                                    <DynamicLucideIcon name="star" size={14} className="text-yellow-400 text-sm fill-current" aria-hidden="true" />
                                     <span className="text-sm font-medium">
                                         {product.seller?.average_rating ? parseFloat(product.seller.average_rating).toFixed(1) : '0.0'}
                                     </span>
@@ -482,7 +482,7 @@ export default function ProductDetailsClient({ product }) {
                                 ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
                                 : (
                                     <>
-                                        <DynamicLucideIcon name="chat_bubble" className="text-[22px]" aria-hidden="true" />
+                                        <DynamicLucideIcon name="chat_bubble" size={22} className="text-[22px]" aria-hidden="true" />
                                         <span>Chat</span>
                                     </>
                                 )

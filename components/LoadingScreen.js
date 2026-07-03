@@ -10,6 +10,7 @@ export default function LoadingScreen({ message = "Loading KART...", fullScreen 
   const pathname = usePathname();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     return () => setMounted(false);
   }, []);

@@ -262,7 +262,7 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
               size={56}
               className="mb-4 opacity-30"
             />
-            <p className="font-semibold text-base">You're all caught up!</p>
+            <p className="font-semibold text-base">{"You're all caught up!"}</p>
             <p className="text-sm mt-1 text-gray-400">No notifications yet.</p>
           </div>
         ) : (

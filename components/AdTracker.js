@@ -19,7 +19,7 @@ export default function AdTracker({ advertisementId, children }) {
         // Reset tracking flag whenever the ad ID changes
         trackedViewRef.current = false;
 
-        const element = containerRef.current;
+        const element = containerRef.current?.firstElementChild || containerRef.current;
         if (!element) return;
 
         const observer = new IntersectionObserver((entries) => {

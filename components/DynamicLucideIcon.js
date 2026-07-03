@@ -134,7 +134,9 @@ import {
   Music,
   Gamepad2,
   Palette,
-  Cpu
+  Cpu,
+  Handshake,
+  TrendingUp
 } from 'lucide-react';
 
 const iconMap = {
@@ -312,6 +314,10 @@ const iconMap = {
   'chevron_right': ChevronRight,
   'flash_on': Zap,
   'flash_off': ZapOff,
+  'trending_up': TrendingUp,
+  'handshake': Handshake,
+  'new_releases': Sparkles,
+  'build': Wrench,
 };
 
 export default function DynamicLucideIcon({ name, className = '', ...props }) {

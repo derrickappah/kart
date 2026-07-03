@@ -10,11 +10,7 @@ export default function NotificationBell() {
   const router = useRouter();
 
   // Stable Supabase client: created once per component instance, never re-created.
-  const supabaseRef = useRef(null);
-  if (!supabaseRef.current) {
-    supabaseRef.current = createClient();
-  }
-  const supabase = supabaseRef.current;
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
     let insertChannel;
@@ -88,7 +84,7 @@ export default function NotificationBell() {
       if (insertChannel) supabase.removeChannel(insertChannel);
       if (updateChannel) supabase.removeChannel(updateChannel);
     };
-  }, []); // supabase is stable via ref — no deps needed
+  }, [supabase]);
 
   // Badge label: cap display at 99 for readability, show the full count to screen readers
   const displayCount = unreadCount > 99 ? '99+' : String(unreadCount);
