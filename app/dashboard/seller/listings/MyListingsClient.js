@@ -161,16 +161,6 @@ export default function MyListingsClient({ initialProducts }) {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                                        <DynamicLucideIcon name="monitoring" className="text-[14px] mr-1" />
-                                                        {product.views_count || 0} views
-                                                    </span>
-                                                    <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                                        <DynamicLucideIcon name="favorite" className="text-[14px] mr-1 text-primary" />
-                                                        {product.likes_count || 0} likes
-                                                    </span>
-                                                </div>
                                             </div>
 
                                             <div className="flex flex-wrap items-center justify-between gap-y-1.5 gap-x-2 mt-3">
