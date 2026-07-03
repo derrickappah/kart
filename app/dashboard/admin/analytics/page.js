@@ -33,6 +33,7 @@ export default async function AdminAnalyticsPage() {
     let fetchedAdvertisements = [];
     let fetchedVerifications = [];
     let fetchedReports = [];
+    let fetchedWithdrawals = [];
     let dbError = null;
 
     try {
@@ -43,7 +44,8 @@ export default async function AdminAnalyticsPage() {
             { data: subscriptionsResult, error: errS },
             { data: advertisementsResult, error: errA },
             { data: verificationsResult, error: errV },
-            { data: reportsResult, error: errR }
+            { data: reportsResult, error: errR },
+            { data: withdrawalsResult, error: errW }
         ] = await Promise.all([
             adminSupabase.from('profiles').select('id, created_at, campus, banned, is_admin'),
             adminSupabase.from('products').select('id, created_at, category, status, views_count, likes_count, shares_count, campus'),
@@ -51,12 +53,13 @@ export default async function AdminAnalyticsPage() {
             adminSupabase.from('subscriptions').select('id, created_at, status, plan:subscription_plans(price, name)'),
             adminSupabase.from('advertisements').select('id, created_at, status, cost, views, clicks'),
             adminSupabase.from('verification_requests').select('id, created_at, status'),
-            adminSupabase.from('reports').select('id, created_at, status')
+            adminSupabase.from('reports').select('id, created_at, status'),
+            adminSupabase.from('withdrawal_requests').select('id, created_at, status, amount')
         ]);
 
-        if (errU || errP || errO || errS || errA || errV || errR) {
+        if (errU || errP || errO || errS || errA || errV || errR || errW) {
             throw new Error(
-                [errU, errP, errO, errS, errA, errV, errR]
+                [errU, errP, errO, errS, errA, errV, errR, errW]
                     .filter(Boolean)
                     .map(e => e.message)
                     .join(' | ')
@@ -70,6 +73,7 @@ export default async function AdminAnalyticsPage() {
         fetchedAdvertisements = advertisementsResult || [];
         fetchedVerifications = verificationsResult || [];
         fetchedReports = reportsResult || [];
+        fetchedWithdrawals = withdrawalsResult || [];
     } catch (err) {
         console.error('Error fetching admin analytics database details:', err);
         dbError = err.message || 'Failed to fetch analytics datasets from the database.';
@@ -273,6 +277,47 @@ export default async function AdminAnalyticsPage() {
     const reportsPending = fetchedReports.filter(r => r.status === 'Pending').length;
     const reportsResolved = fetchedReports.filter(r => r.status === 'Resolved').length;
 
+    // --- Rich Analytics Additions ---
+    // 1. Subscription Plans Tier Distribution
+    const planDistributionMap = {};
+    fetchedSubscriptions.forEach(s => {
+        if (s.status !== 'Active') return;
+        const name = s.plan?.name || 'Standard Plan';
+        planDistributionMap[name] = (planDistributionMap[name] || 0) + 1;
+    });
+    const planDistribution = Object.entries(planDistributionMap).map(([name, value]) => ({ name, value }));
+
+    // 2. Order Lifecycle Statuses Breakdown
+    const orderStatusMap = {
+        'Pending': 0,
+        'Paid': 0,
+        'Shipped': 0,
+        'Delivered': 0,
+        'Completed': 0,
+        'Cancelled': 0,
+        'Refunded': 0
+    };
+    fetchedOrders.forEach(o => {
+        const status = o.status || 'Pending';
+        if (orderStatusMap[status] !== undefined) {
+            orderStatusMap[status]++;
+        } else {
+            orderStatusMap[status] = 1;
+        }
+    });
+    const orderStatusDistribution = Object.entries(orderStatusMap).map(([status, count]) => ({ status, count }));
+
+    // 3. Cashflow (Withdrawals) Analytics
+    const totalWithdrawalsCount = fetchedWithdrawals.length;
+    const approvedWithdrawalsCount = fetchedWithdrawals.filter(w => w.status === 'Approved').length;
+    const pendingWithdrawalsCount = fetchedWithdrawals.filter(w => w.status === 'Pending').length;
+    const approvedWithdrawalVolume = fetchedWithdrawals.filter(w => w.status === 'Approved').reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
+    const pendingWithdrawalVolume = fetchedWithdrawals.filter(w => w.status === 'Pending').reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
+
+    // 4. Compliance Audits
+    const bannedUsersCount = fetchedUsers.filter(u => u.banned).length;
+    const bannedProductsCount = fetchedProducts.filter(p => p.status === 'Banned').length;
+
     return (
         <div className="space-y-6">
             {dbError && (
@@ -325,6 +370,19 @@ export default async function AdminAnalyticsPage() {
                         pending: reportsPending,
                         resolved: reportsResolved
                     }
+                }}
+                planDistribution={planDistribution}
+                orderStatusDistribution={orderStatusDistribution}
+                cashflows={{
+                    totalCount: totalWithdrawalsCount,
+                    approvedCount: approvedWithdrawalsCount,
+                    pendingCount: pendingWithdrawalsCount,
+                    approvedVolume: approvedWithdrawalVolume,
+                    pendingVolume: pendingWithdrawalVolume
+                }}
+                compliance={{
+                    bannedUsers: bannedUsersCount,
+                    bannedProducts: bannedProductsCount
                 }}
             />
         </div>

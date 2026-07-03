@@ -12,6 +12,8 @@ import {
     Bar,
     RadialBarChart,
     RadialBar,
+    PieChart,
+    Pie,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -108,6 +110,19 @@ function CatTooltip({ active, payload }) {
     );
 }
 
+function RevenueMixTooltip({ active, payload }) {
+    if (!active || !payload?.length) return null;
+    const d = payload[0];
+    return (
+        <div style={TOOLTIP_STYLE.contentStyle}>
+            <p style={TOOLTIP_STYLE.labelStyle}>{d.name}</p>
+            <p style={{ color: d.payload.fill }}>
+                ₵{Number(d.value).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </p>
+        </div>
+    );
+}
+
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
@@ -119,6 +134,10 @@ export default function AnalyticsClient({
     engagement = {},
     ads = {},
     moderation = {},
+    planDistribution = [],
+    orderStatusDistribution = [],
+    cashflows = {},
+    compliance = {}
 }) {
     const [trendPeriod, setTrendPeriod] = useState('monthly');
 
@@ -401,6 +420,177 @@ export default function AnalyticsClient({
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            {/* ---------------------------------------------------------------- */}
+            {/* Order Lifecycle + Revenue Mix                                    */}
+            {/* ---------------------------------------------------------------- */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* 1. Order Lifecycle Breakdown */}
+                <div className="lg:col-span-2 bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h4 className="text-base font-black tracking-tight text-gray-900 dark:text-white">Order Lifecycle Breakdown</h4>
+                        <p className="text-xs text-[#4b636c] dark:text-gray-400 mt-0.5">Distribution of marketplace order states</p>
+                    </div>
+                    <div className="mt-6 flex-1 min-h-[220px]">
+                        {orderStatusDistribution.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={orderStatusDistribution} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
+                                    <XAxis dataKey="status" tick={{ fill: '#4b636c', fontSize: 9, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={40} />
+                                    <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)', radius: 4 }} contentStyle={TOOLTIP_STYLE.contentStyle} />
+                                    <Bar dataKey="count" name="Orders" fill="#1daddd" radius={[4, 4, 0, 0]} maxBarSize={24}>
+                                        {orderStatusDistribution.map((entry, index) => {
+                                            const colors = ['#1daddd', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444', '#ec4899'];
+                                            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                                        })}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-[#4b636c] opacity-40 gap-1.5">
+                                <DynamicLucideIcon name="receipt_long" size={28} />
+                                <p className="text-[10px] font-black uppercase tracking-widest">No orders recorded</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* 2. Revenue Mix Donut Chart */}
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h4 className="text-base font-black tracking-tight text-gray-900 dark:text-white">Platform Revenue Mix</h4>
+                        <p className="text-xs text-[#4b636c] dark:text-gray-400 mt-0.5">MRR Subscriptions vs. Active Ad Campaigns</p>
+                    </div>
+                    <div className="my-4 flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height={180}>
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: 'Active Subscriptions', value: kpis.subRevenue || 0, fill: '#8b5cf6' },
+                                        { name: 'Ad Campaigns', value: kpis.adRevenue || 0, fill: '#10b981' }
+                                    ]}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={50}
+                                    outerRadius={70}
+                                    paddingAngle={6}
+                                    dataKey="value"
+                                >
+                                    <Cell key="cell-0" fill="#8b5cf6" />
+                                    <Cell key="cell-1" fill="#10b981" />
+                                </Pie>
+                                <Tooltip content={<RevenueMixTooltip />} />
+                                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="border-t border-gray-100 dark:border-gray-800/20 pt-3 text-center">
+                        <span className="text-[10px] font-black text-[#4b636c] uppercase tracking-wider block">Total Platform Direct Earnings</span>
+                        <span className="text-lg font-black text-gray-900 dark:text-white">₵{(kpis.totalRevenue || 0).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ---------------------------------------------------------------- */}
+            {/* Subscription share + Payout cashflow + Compliance                */}
+            {/* ---------------------------------------------------------------- */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* 1. Subscription Tiers */}
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h4 className="text-base font-black tracking-tight text-gray-900 dark:text-white">Subscription Tier Share</h4>
+                        <p className="text-xs text-[#4b636c] dark:text-gray-400 mt-0.5">Active subscribers per membership tier</p>
+                    </div>
+                    <div className="mt-6 flex-1 min-h-[160px]">
+                        {planDistribution.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={planDistribution} layout="vertical" margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" horizontal={false} />
+                                    <XAxis type="number" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                    <YAxis type="category" dataKey="name" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={80} />
+                                    <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)' }} contentStyle={TOOLTIP_STYLE.contentStyle} />
+                                    <Bar dataKey="value" name="Subscribers" fill="#8b5cf6" radius={[0, 4, 4, 0]} maxBarSize={12} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-[#4b636c] opacity-40 gap-1.5">
+                                <DynamicLucideIcon name="card_membership" size={28} />
+                                <p className="text-[10px] font-black uppercase tracking-widest">No active plans</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* 2. Payout Cashflows Auditing */}
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 className="text-base font-black tracking-tight text-gray-900 dark:text-white">Payout Cashflow Audit</h4>
+                            <p className="text-xs text-[#4b636c] dark:text-gray-400 mt-0.5">Operational withdrawals & seller liquidations</p>
+                        </div>
+                        <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                            <DynamicLucideIcon name="payments" />
+                        </div>
+                    </div>
+                    <div className="space-y-3 flex-1 flex flex-col justify-center">
+                        <div className="flex justify-between items-center p-2.5 rounded-xl bg-gray-50/50 dark:bg-black/10 border border-gray-100 dark:border-gray-800/10">
+                            <div>
+                                <span className="text-[9px] font-black text-[#4b636c] uppercase tracking-widest block">Approved Volume</span>
+                                <span className="text-sm font-black text-emerald-500 block">₵{(cashflows.approvedVolume || 0).toLocaleString()}</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-400">({cashflows.approvedCount || 0} paid requests)</span>
+                        </div>
+                        <div className="flex justify-between items-center p-2.5 rounded-xl bg-gray-50/50 dark:bg-black/10 border border-gray-100 dark:border-gray-800/10">
+                            <div>
+                                <span className="text-[9px] font-black text-[#4b636c] uppercase tracking-widest block">Pending Obligations</span>
+                                <span className="text-sm font-black text-amber-500 block">₵{(cashflows.pendingVolume || 0).toLocaleString()}</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-amber-500">({cashflows.pendingCount || 0} in queue)</span>
+                        </div>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-[#dce3e5] dark:border-[#2d3b41] pt-3 text-[10px] font-black uppercase tracking-wider text-[#4b636c]">
+                        <span>Total Requests: {cashflows.totalCount || 0}</span>
+                        <span className="text-primary">Fulfillment Rate: {cashflows.totalCount > 0 ? ((cashflows.approvedCount / cashflows.totalCount) * 100).toFixed(0) : 0}%</span>
+                    </div>
+                </div>
+
+                {/* 3. Compliance Ratios */}
+                <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 className="text-base font-black tracking-tight text-gray-900 dark:text-white">Compliance & Bans</h4>
+                            <p className="text-xs text-[#4b636c] dark:text-gray-400 mt-0.5">Platform moderation ratio audits</p>
+                        </div>
+                        <div className="size-9 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center">
+                            <DynamicLucideIcon name="block" />
+                        </div>
+                    </div>
+                    <div className="space-y-4 flex-1 flex flex-col justify-center">
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-xs font-bold text-gray-700 dark:text-gray-200">
+                                <span>Banned Users Rate</span>
+                                <span className="text-red-500">{compliance.bannedUsers || 0} / {kpis.totalUsers || 0} ({kpis.totalUsers > 0 ? ((compliance.bannedUsers / kpis.totalUsers) * 100).toFixed(1) : 0}%)</span>
+                            </div>
+                            <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                                <div className="bg-red-500 h-full" style={{ width: `${kpis.totalUsers > 0 ? (compliance.bannedUsers / kpis.totalUsers) * 100 : 0}%` }} />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-xs font-bold text-gray-700 dark:text-gray-200">
+                                <span>Banned Listings Rate</span>
+                                <span className="text-red-400">{compliance.bannedProducts || 0} / {kpis.totalListings || 0} ({kpis.totalListings > 0 ? ((compliance.bannedProducts / kpis.totalListings) * 100).toFixed(1) : 0}%)</span>
+                            </div>
+                            <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+                                <div className="bg-red-400 h-full" style={{ width: `${kpis.totalListings > 0 ? (compliance.bannedProducts / kpis.totalListings) * 100 : 0}%` }} />
+                            </div>
+                        </div>
+                    </div>
+                    <Link href="/dashboard/admin/users" className="w-full py-1 text-center text-[9px] font-black uppercase tracking-widest text-[#4b636c] hover:text-red-500 transition-colors border-t border-[#dce3e5] dark:border-[#2d3b41] pt-3">
+                        Investigate Banned Protocols →
+                    </Link>
                 </div>
             </div>
 
