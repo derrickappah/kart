@@ -122,45 +122,9 @@ export default function MyListingsClient({ initialProducts }) {
                                         {/* Details */}
                                          <div className="flex flex-col flex-1 justify-start py-0.5 min-w-0">
                                             <div className="space-y-1">
-                                                <div className="flex justify-between items-start gap-2">
-                                                    <h3 className="text-[13px] font-bold leading-tight text-slate-900 dark:text-white line-clamp-1">
-                                                        {product.title}
-                                                    </h3>
-                                                    <div className="relative">
-                                                        <button
-                                                            onClick={(e) => toggleMenu(product.id, e)}
-                                                            className="text-slate-400 hover:text-primary transition-colors p-1"
-                                                        >
-                                                            <DynamicLucideIcon name="more_horiz" className="text-lg" />
-                                                        </button>
-
-                                                        {activeMenuId === product.id && (
-                                                            <>
-                                                                <div
-                                                                    className="fixed inset-0 z-[60]"
-                                                                    onClick={() => setActiveMenuId(null)}
-                                                                ></div>
-                                                                <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-[#22262a] rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 z-[70] overflow-hidden py-1.5 animate-in fade-in zoom-in-95 duration-200">
-                                                                    <button
-                                                                        onClick={(e) => handleEditClick(product.id, e)}
-                                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                                                    >
-                                                                        <DynamicLucideIcon name="edit" className="text-[20px]" />
-                                                                        Edit Listing
-                                                                    </button>
-                                                                    <div className="h-px bg-slate-50 dark:bg-white/5 mx-2 my-1"></div>
-                                                                    <button
-                                                                        onClick={(e) => handleDeleteClick(product, e)}
-                                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                                                                    >
-                                                                        <DynamicLucideIcon name="delete" className="text-[20px]" />
-                                                                        Delete Listing
-                                                                    </button>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                                <h3 className="text-[13px] font-bold leading-tight text-slate-900 dark:text-white line-clamp-1">
+                                                    {product.title}
+                                                </h3>
                                             </div>
 
                                              <div className="flex flex-wrap items-center justify-between gap-y-1 gap-x-2">
