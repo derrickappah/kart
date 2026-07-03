@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ManualActivationButton from './ManualActivationButton';
 import { formatPrice } from '../../../utils/formatters';
+import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 export default function SellerDashboardClient({
     user,
@@ -23,6 +24,7 @@ export default function SellerDashboardClient({
     dayLabels = []
 }) {
     const router = useRouter();
+    const rechartsData = chartData.map((val, idx) => ({ label: dayLabels[idx] || '', val }));
 
     const [hiddenSubs, setHiddenSubs] = useState([]);
     const [isDismissing, setIsDismissing] = useState(false);
@@ -137,55 +139,41 @@ export default function SellerDashboardClient({
                                 </Link>
                             </div>
 
-                            <div className="h-28 w-full relative">
+                            <div className="h-32 w-full relative">
                                 {chartData.length > 0 ? (
-                                    <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 350 100">
-                                        <defs>
-                                            <linearGradient id="chartLineGradient" x1="0" x2="0" y1="0" y2="1">
-                                                <stop offset="0%" stopColor="#1daddd" stopOpacity="0.2"></stop>
-                                                <stop offset="100%" stopColor="#1daddd" stopOpacity="0"></stop>
-                                            </linearGradient>
-                                        </defs>
-
-                                        {(() => {
-                                            const max = Math.max(...chartData, 10); // Minimum max for scaling
-                                            const points = chartData.map((val, i) => ({
-                                                x: (i * (350 / 6)),
-                                                y: 100 - ((val / max) * 80 + 10) // Scale to 10-90 range
-                                            }));
-
-                                            const d = points.reduce((acc, p, i) =>
-                                                i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`, "");
-
-                                            const areaD = `${d} V 100 H 0 Z`;
-
-                                            return (
-                                                <>
-                                                    <path d={d} fill="none" stroke="#1daddd" strokeLinecap="round" strokeWidth="3.5" vectorEffect="non-scaling-stroke"></path>
-                                                    <path d={areaD} fill="url(#chartLineGradient)" stroke="none"></path>
-                                                    {points.map((p, i) => (
-                                                        <circle
-                                                            key={i}
-                                                            className="fill-white dark:fill-[#1e292b] stroke-primary stroke-[3px]"
-                                                            cx={p.x}
-                                                            cy={p.y}
-                                                            r="3.5"
-                                                        />
-                                                    ))}
-                                                </>
-                                            );
-                                        })()}
-                                    </svg>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={rechartsData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="sellerGtvGrad" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#1daddd" stopOpacity={0.25} />
+                                                    <stop offset="95%" stopColor="#1daddd" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis dataKey="label" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                            <YAxis tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={40} />
+                                            <RechartsTooltip
+                                                contentStyle={{
+                                                    backgroundColor: '#0f1c1f',
+                                                    border: '1px solid rgba(255,255,255,0.08)',
+                                                    borderRadius: '10px',
+                                                    fontSize: '10px',
+                                                    fontWeight: 700,
+                                                    color: '#e2e8f0',
+                                                    padding: '6px 10px',
+                                                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                                                }}
+                                                labelStyle={{ display: 'none' }}
+                                                itemStyle={{ color: '#e2e8f0', fontWeight: 700 }}
+                                                formatter={(v) => [`₵${Number(v).toLocaleString()}`, 'Earnings']}
+                                            />
+                                            <Area type="monotone" dataKey="val" stroke="#1daddd" strokeWidth={2.5} fill="url(#sellerGtvGrad)" dot={false} activeDot={{ r: 4 }} />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
                                         <span className="text-xs font-bold uppercase tracking-widest">No data available</span>
                                     </div>
                                 )}
-                            </div>
-                            <div className="flex justify-between mt-5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                                {dayLabels.map((day, idx) => (
-                                    <span key={idx}>{day}</span>
-                                ))}
                             </div>
                         </div>
                     </section>
