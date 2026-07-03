@@ -120,7 +120,7 @@ export default function MyListingsClient({ initialProducts }) {
                                         </div>
 
                                         {/* Details */}
-                                        <div className="flex flex-col flex-1 justify-between py-0.5 min-w-0">
+                                         <div className="flex flex-col flex-1 justify-start py-0.5 min-w-0">
                                             <div className="space-y-1">
                                                 <div className="flex justify-between items-start gap-2">
                                                     <h3 className="text-[15px] font-bold leading-tight text-slate-900 dark:text-white line-clamp-2">
@@ -163,7 +163,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-wrap items-center justify-between gap-y-1.5 gap-x-2 mt-3">
+                                             <div className="flex flex-wrap items-center justify-between gap-y-1.5 gap-x-2 mt-1">
                                                 <p className="text-[17px] font-extrabold text-primary">
                                                     ₵{parseFloat(product.price || 0).toFixed(2)}
                                                 </p>
