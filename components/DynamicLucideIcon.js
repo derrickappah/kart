@@ -302,7 +302,9 @@ export default function DynamicLucideIcon({ name, className = '', ...props }) {
   if (!IconComponent) {
     // If it's a dynamic expression or we don't have it mapped, check if it matches a Lucide name directly, 
     // or fallback gracefully to HelpCircle
-    console.warn(`DynamicLucideIcon: Icon "${name}" (cleaned: "${cleanName}") not found in mapping. Using fallback.`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`DynamicLucideIcon: Icon "${name}" (cleaned: "${cleanName}") not found in mapping. Using fallback.`);
+    }
     return <HelpCircle className={`inline-block shrink-0 ${className}`} size={24} {...props} />;
   }
 

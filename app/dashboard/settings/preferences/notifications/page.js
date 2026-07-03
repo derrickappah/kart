@@ -1,32 +1,40 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+
+// Module-scoped stable client — avoids re-creation on every render
+const supabase = createClient();
 
 const Toggle = ({ active, onToggle, label, description, icon }) => (
     <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1E292B] rounded-2xl shadow-sm border border-transparent dark:border-slate-800">
         <div className="flex items-center gap-4">
-            <div className={`size-10 rounded-full flex items-center justify-center ${active ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+            <div
+              aria-hidden="true"
+              className={`size-10 rounded-full flex items-center justify-center ${active ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}
+            >
                 <DynamicLucideIcon name={icon} />
             </div>
             <div>
-                <p className="font-bold text-slate-900 dark:text-white">{label}</p>
+                <p id={`toggle-label-${label.replace(/\s+/g,'-').toLowerCase()}`} className="font-bold text-slate-900 dark:text-white">{label}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
             </div>
         </div>
         <button
+            role="switch"
+            aria-checked={active}
+            aria-labelledby={`toggle-label-${label.replace(/\s+/g,'-').toLowerCase()}`}
             onClick={onToggle}
-            className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${active ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
+            className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${active ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
         >
-            <div className={`absolute top-1 left-1 size-4 bg-white rounded-full transition-transform duration-200 ${active ? 'translate-x-6' : 'translate-x-0'}`} />
+            <div className={`absolute top-1 left-1 size-4 bg-white rounded-full transition-transform duration-200 shadow-sm ${active ? 'translate-x-6' : 'translate-x-0'}`} />
         </button>
     </div>
 );
 
 export default function NotificationSettingsPage() {
     const router = useRouter();
-    const supabase = createClient();
     const [loading, setLoading] = useState(false);
     const [profile, setProfile] = useState(null);
     const [settings, setSettings] = useState({
@@ -53,31 +61,36 @@ export default function NotificationSettingsPage() {
             }
         };
         getProfile();
-    }, [supabase]);
+    }, []); // supabase is module-scoped and stable — no deps needed
 
     const toggleSetting = async (key) => {
-        const newSettings = { ...settings, [key]: !settings[key] };
+        // Capture previous state before optimistic update for rollback
+        const prevSettings = settings;
+        const newSettings  = { ...settings, [key]: !settings[key] };
         setSettings(newSettings);
 
-        // Optimistic update
         const { error } = await supabase
             .from('profiles')
             .update({ notification_prefs: newSettings })
             .eq('id', profile.id);
 
         if (error) {
-            // Rollback on error
-            setSettings(settings);
+            // Rollback to the captured previous state (avoids stale-closure bug)
+            setSettings(prevSettings);
         }
     };
 
     return (
         <div className="bg-white dark:bg-[#242428] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
             <header className="px-4 pt-6 flex items-center gap-4">
-                <button onClick={() => router.back()} className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm">
+                <button
+                  onClick={() => router.back()}
+                  aria-label="Go back"
+                  className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#1E292B] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
                     <DynamicLucideIcon name="arrow_back" />
                 </button>
-                <h1 className="text-xl font-bold">Notifications</h1>
+                <h1 className="text-xl font-bold">Notification Preferences</h1>
             </header>
 
             <main className="flex-1 px-4 pt-8 space-y-4">
