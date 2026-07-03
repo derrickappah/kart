@@ -21,6 +21,7 @@ import {
     ResponsiveContainer,
     Legend,
     Cell,
+    LabelList,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
@@ -352,6 +353,7 @@ export default function AnalyticsClient({
                                     {catData.map((_, idx) => (
                                         <Cell key={idx} fill={CAT_COLORS[idx % CAT_COLORS.length]} />
                                     ))}
+                                    <LabelList dataKey="count" position="right" fill="#4b636c" fontSize={9} fontWeight={700} offset={6} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
@@ -446,6 +448,7 @@ export default function AnalyticsClient({
                                             const colors = ['#1daddd', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444', '#ec4899'];
                                             return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
                                         })}
+                                        <LabelList dataKey="count" position="top" fill="#4b636c" fontSize={9} fontWeight={700} offset={4} />
                                     </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
@@ -512,7 +515,9 @@ export default function AnalyticsClient({
                                     <XAxis type="number" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
                                     <YAxis type="category" dataKey="name" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={80} />
                                     <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)' }} contentStyle={TOOLTIP_STYLE.contentStyle} />
-                                    <Bar dataKey="value" name="Subscribers" fill="#8b5cf6" radius={[0, 4, 4, 0]} maxBarSize={12} />
+                                    <Bar dataKey="value" name="Subscribers" fill="#8b5cf6" radius={[0, 4, 4, 0]} maxBarSize={12}>
+                                        <LabelList dataKey="value" position="right" fill="#4b636c" fontSize={9} fontWeight={700} offset={4} />
+                                    </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : (
@@ -706,6 +711,7 @@ export default function AnalyticsClient({
                                     <Cell fill="#1daddd" />
                                     <Cell fill="#ec4899" />
                                     <Cell fill="#3b82f6" />
+                                    <LabelList dataKey="count" position="top" fill="#4b636c" fontSize={10} fontWeight={700} formatter={(val) => Number(val).toLocaleString()} offset={4} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
