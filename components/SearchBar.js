@@ -64,7 +64,7 @@ function SearchInput({ placeholder, showFilter }) {
 
     if (showFilter) {
         return (
-            <div className="relative flex items-center justify-between w-full h-12 overflow-hidden">
+            <div className={`relative flex items-center w-full h-14 overflow-hidden ${isExpanded ? 'justify-between' : 'justify-end'}`}>
                 {/* Expanded Search Form */}
                 <form
                     onSubmit={handleSearch}
@@ -72,7 +72,7 @@ function SearchInput({ placeholder, showFilter }) {
                     aria-label="Search marketplace listings"
                     className={`flex items-center border border-gray-200 dark:border-gray-700 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
                         isExpanded 
-                            ? 'flex-1 h-12 bg-gray-50 dark:bg-[#2d2d32] rounded-2xl px-4 py-2 opacity-100 scale-100 translate-x-0' 
+                            ? 'flex-1 h-11 bg-gray-50 dark:bg-[#2d2d32] rounded-2xl px-4 py-2 opacity-100 scale-100 translate-x-0' 
                             : 'max-w-0 opacity-0 scale-95 -translate-x-4 pointer-events-none overflow-hidden'
                     }`}
                 >
