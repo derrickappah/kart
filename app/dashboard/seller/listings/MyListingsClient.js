@@ -173,11 +173,11 @@ export default function MyListingsClient({ initialProducts }) {
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-between mt-3">
+                                            <div className="flex flex-wrap items-center justify-between gap-y-1.5 gap-x-2 mt-3">
                                                 <p className="text-[17px] font-extrabold text-primary">
                                                     ₵{parseFloat(product.price || 0).toFixed(2)}
                                                 </p>
-                                                <div className="flex items-center gap-1.5">
+                                                <div className="flex items-center gap-1.5 shrink-0">
                                                     {activeTab === 'Active' && (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) && (
                                                         <span className="flex items-center gap-0.5 text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest text-orange-500 bg-orange-500/10">
                                                             <DynamicLucideIcon name="rocket_launch" className="text-[10px] mr-0.5" />
