@@ -164,11 +164,11 @@ export default function MyListingsClient({ initialProducts }) {
                                                 <div className="flex items-center gap-3">
                                                     <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                                                         <DynamicLucideIcon name="monitoring" className="text-[14px] mr-1" />
-                                                        {product.views || 0} views
+                                                        {product.views_count || 0} views
                                                     </span>
                                                     <span className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                                                         <DynamicLucideIcon name="favorite" className="text-[14px] mr-1 text-primary" />
-                                                        {product.likes || 0} likes
+                                                        {product.likes_count || 0} likes
                                                     </span>
                                                 </div>
                                             </div>
@@ -178,19 +178,17 @@ export default function MyListingsClient({ initialProducts }) {
                                                     ₵{parseFloat(product.price || 0).toFixed(2)}
                                                 </p>
                                                 <div className="flex items-center gap-1.5 shrink-0">
-                                                    {activeTab === 'Active' && (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? (
-                                                        <span className="flex items-center gap-0.5 text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest text-orange-500 bg-orange-500/10">
-                                                            <DynamicLucideIcon name="rocket_launch" className="text-[10px] mr-0.5" />
-                                                            Boosted
+                                                    {activeTab === 'Active' && (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) && (
+                                                        <span className="flex items-center justify-center size-6 rounded-full text-orange-500 bg-orange-500/10" title="Boosted">
+                                                            <DynamicLucideIcon name="rocket_launch" className="text-[11px]" />
                                                         </span>
-                                                    ) : (
-                                                        <div className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${activeTab === 'Active' ? 'text-emerald-500 bg-emerald-500/10' :
-                                                            activeTab === 'Sold' ? 'text-blue-500 bg-blue-500/10' :
-                                                                'text-slate-500 bg-slate-500/10'
-                                                            }`}>
-                                                            {activeTab === 'Sold' ? 'Completed' : activeTab}
-                                                        </div>
                                                     )}
+                                                    <div className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${activeTab === 'Active' ? 'text-emerald-500 bg-emerald-500/10' :
+                                                        activeTab === 'Sold' ? 'text-blue-500 bg-blue-500/10' :
+                                                            'text-slate-500 bg-slate-500/10'
+                                                        }`}>
+                                                        {activeTab === 'Sold' ? 'Completed' : activeTab}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
