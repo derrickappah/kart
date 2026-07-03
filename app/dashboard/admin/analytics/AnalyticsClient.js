@@ -76,7 +76,7 @@ function GtvTooltip({ active, payload, label }) {
         <div style={TOOLTIP_STYLE.contentStyle}>
             <p style={TOOLTIP_STYLE.labelStyle}>{label}</p>
             {payload.map((p) => (
-                <p key={p.name} className="flex items-center gap-2">
+                <p key={p.name} style={TOOLTIP_STYLE.itemStyle} className="flex items-center gap-2">
                     <span style={{ color: p.color }}>●</span>
                     {p.name}: ₵{Number(p.value).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </p>
@@ -91,7 +91,7 @@ function UserTooltip({ active, payload, label }) {
         <div style={TOOLTIP_STYLE.contentStyle}>
             <p style={TOOLTIP_STYLE.labelStyle}>{label}</p>
             {payload.map((p) => (
-                <p key={p.name} className="flex items-center gap-2">
+                <p key={p.name} style={TOOLTIP_STYLE.itemStyle} className="flex items-center gap-2">
                     <span style={{ color: p.color }}>●</span>
                     {p.name}: {Number(p.value).toLocaleString()}
                 </p>
@@ -106,7 +106,7 @@ function CatTooltip({ active, payload }) {
     return (
         <div style={TOOLTIP_STYLE.contentStyle}>
             <p style={TOOLTIP_STYLE.labelStyle}>{d.payload.category}</p>
-            <p style={{ color: d.fill }}>{d.value} listings</p>
+            <p style={{ color: d.fill || '#1daddd', fontWeight: 700 }}>{d.value} listings</p>
         </div>
     );
 }
@@ -117,7 +117,7 @@ function RevenueMixTooltip({ active, payload }) {
     return (
         <div style={TOOLTIP_STYLE.contentStyle}>
             <p style={TOOLTIP_STYLE.labelStyle}>{d.name}</p>
-            <p style={{ color: d.payload.fill }}>
+            <p style={{ color: d.payload?.fill || '#8b5cf6', fontWeight: 700 }}>
                 ₵{Number(d.value).toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
         </div>
@@ -442,7 +442,7 @@ export default function AnalyticsClient({
                                     <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
                                     <XAxis dataKey="status" tick={{ fill: '#4b636c', fontSize: 9, fontWeight: 700 }} axisLine={false} tickLine={false} />
                                     <YAxis tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={40} />
-                                    <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)', radius: 4 }} contentStyle={TOOLTIP_STYLE.contentStyle} />
+                                    <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)', radius: 4 }} contentStyle={TOOLTIP_STYLE.contentStyle} itemStyle={TOOLTIP_STYLE.itemStyle} labelStyle={TOOLTIP_STYLE.labelStyle} />
                                     <Bar dataKey="count" name="Orders" fill="#1daddd" radius={[4, 4, 0, 0]} maxBarSize={24}>
                                         {orderStatusDistribution.map((entry, index) => {
                                             const colors = ['#1daddd', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444', '#ec4899'];
@@ -514,7 +514,7 @@ export default function AnalyticsClient({
                                     <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" horizontal={false} />
                                     <XAxis type="number" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
                                     <YAxis type="category" dataKey="name" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={80} />
-                                    <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)' }} contentStyle={TOOLTIP_STYLE.contentStyle} />
+                                    <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)' }} contentStyle={TOOLTIP_STYLE.contentStyle} itemStyle={TOOLTIP_STYLE.itemStyle} labelStyle={TOOLTIP_STYLE.labelStyle} />
                                     <Bar dataKey="value" name="Subscribers" fill="#8b5cf6" radius={[0, 4, 4, 0]} maxBarSize={12}>
                                         <LabelList dataKey="value" position="right" fill="#4b636c" fontSize={9} fontWeight={700} offset={4} />
                                     </Bar>
@@ -706,7 +706,7 @@ export default function AnalyticsClient({
                                 <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
                                 <XAxis dataKey="name" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={40} />
-                                <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)', radius: 4 }} contentStyle={TOOLTIP_STYLE.contentStyle} />
+                                <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)', radius: 4 }} contentStyle={TOOLTIP_STYLE.contentStyle} itemStyle={TOOLTIP_STYLE.itemStyle} labelStyle={TOOLTIP_STYLE.labelStyle} />
                                 <Bar dataKey="count" name="Count" radius={[4, 4, 0, 0]} maxBarSize={36}>
                                     <Cell fill="#1daddd" />
                                     <Cell fill="#ec4899" />
