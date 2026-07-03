@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { verifyTransaction } from '@/lib/paystack';
 import crypto from 'crypto';
-import { logWebhook } from '@/app/api/webhook-logs/route';
+import { logWebhook } from '@/lib/webhookLogger';
 
 // Disable body parsing, we need raw body for signature verification
 export const runtime = 'nodejs';
@@ -330,15 +330,24 @@ export async function POST(request) {
                     return NextResponse.json({ message: 'Advertisement already active' }, { status: 200 });
                 }
 
-                // Update advertisement status
-                const { error: updateAdError } = await adminSupabase
+                // Update advertisement status atomically
+                const { data: updatedAd, error: updateAdError } = await adminSupabase
                     .from('advertisements')
                     .update({ status: 'Active', updated_at: new Date().toISOString() })
-                    .eq('id', adId);
+                    .eq('id', adId)
+                    .eq('status', 'Paused')
+                    .select('id')
+                    .maybeSingle();
 
                 if (updateAdError) {
                     console.error('[Webhook] Error updating ad status:', updateAdError);
                     throw updateAdError;
+                }
+
+                // If no row was updated, it means another thread/process completed this already
+                if (!updatedAd) {
+                    console.log('[Webhook] Advertisement already activated concurrently:', adId);
+                    return NextResponse.json({ message: 'Advertisement already active' }, { status: 200 });
                 }
 
                 // Update product columns

@@ -1,19 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { getWebhookLogs, logWebhook } from '@/lib/webhookLogger';
 
-// Simple in-memory log (will reset on deployment, but useful for debugging)
-let webhookLogs = [];
-const MAX_LOGS = 50;
-
-export function logWebhook(data) {
-    webhookLogs.unshift({
-        timestamp: new Date().toISOString(),
-        ...data
-    });
-    if (webhookLogs.length > MAX_LOGS) {
-        webhookLogs = webhookLogs.slice(0, MAX_LOGS);
-    }
-}
+// Re-export the logger for any legacy imports (safeguard)
+export { logWebhook };
 
 export async function GET(request) {
     try {
@@ -24,9 +14,11 @@ export async function GET(request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const logs = getWebhookLogs();
+
         return NextResponse.json({
-            logs: webhookLogs,
-            count: webhookLogs.length,
+            logs,
+            count: logs.length,
             webhook_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kart-murex.vercel.app'}/api/paystack/webhook`,
             instructions: [
                 "1. Check if Paystack is sending webhooks to the URL above",

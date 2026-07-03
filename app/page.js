@@ -195,6 +195,8 @@ export default async function Home() {
       `)
       .eq('status', 'Active')
       .eq('product.status', 'Active')
+      .lte('start_date', new Date().toISOString())
+      .gte('end_date', new Date().toISOString())
       .limit(30),
     supabase
       .from('products')

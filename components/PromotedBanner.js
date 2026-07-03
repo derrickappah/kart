@@ -78,7 +78,7 @@ export default function PromotedBanner({ products }) {
     if (!products || products.length === 0) return null;
 
     return (
-        <div className="px-5 pt-4 pb-2">
+        <div className="px-5 pt-4 pb-2" role="region" aria-roledescription="carousel" aria-label="Promoted Listings">
             <div
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
@@ -86,6 +86,7 @@ export default function PromotedBanner({ products }) {
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
                 className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-lg group"
+                aria-live={isHovered ? 'off' : 'polite'}
             >
                 {products.map((p, idx) => {
                     // Only render the visible slide and immediate neighbors to avoid loading all images
@@ -93,6 +94,9 @@ export default function PromotedBanner({ products }) {
                     return (
                     <div
                         key={p.id}
+                        role="group"
+                        aria-roledescription="slide"
+                        aria-label={`${idx + 1} of ${products.length}`}
                         className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                             }`}
                     >
@@ -112,7 +116,7 @@ export default function PromotedBanner({ products }) {
                                 </h2>
                                 <div className="shrink-0 flex items-center">
                                     <p className="text-[#FFD700] text-base font-black drop-shadow-md bg-black/40 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/10">
-                                        ₵ {formatPrice(p.price)}
+                                        ₵{formatPrice(p.price)}
                                     </p>
                                 </div>
                             </div>
@@ -123,7 +127,7 @@ export default function PromotedBanner({ products }) {
 
                 {/* Indicators */}
                 {products.length > 1 && (
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20" role="group" aria-label="Slide indicators">
                         {products.map((_, idx) => (
                             <button
                                 key={idx}

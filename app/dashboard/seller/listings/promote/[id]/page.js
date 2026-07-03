@@ -32,5 +32,13 @@ export default async function PromotionSelectionPage({ params }) {
         pricing[s.key] = typeof s.value === 'number' ? s.value : parseFloat(s.value) || 0;
     });
 
-    return <PromotionClient product={product} pricing={pricing} />;
+    // Fetch active promotions for this listing to show exact extension end dates
+    const { data: activeAds } = await supabase
+        .from('advertisements')
+        .select('ad_type, end_date')
+        .eq('product_id', id)
+        .eq('status', 'Active')
+        .order('end_date', { ascending: false });
+
+    return <PromotionClient product={product} pricing={pricing} activeAds={activeAds || []} />;
 }

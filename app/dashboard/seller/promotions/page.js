@@ -18,7 +18,6 @@ export default async function PromotionsPage() {
     }
 
     // Fetch advertisements for this seller
-    console.log('[PromotionsPage] Fetching advertisements for user:', user.id);
     const { data: advertisements, error } = await supabase
         .from('advertisements')
         .select(`
@@ -66,7 +65,7 @@ export default async function PromotionsPage() {
                         </div>
                         <div className="bg-white dark:bg-[#1e292b] p-5 rounded-2xl shadow-soft border border-transparent dark:border-white/5">
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 block">Total Spent</span>
-                            <p className="text-2xl font-black text-primary">₵{totalSpent.toFixed(0)}</p>
+                            <p className="text-2xl font-black text-primary">GHS {totalSpent.toFixed(2)}</p>
                         </div>
                         <div className="bg-white dark:bg-[#1e292b] p-5 rounded-2xl shadow-soft border border-transparent dark:border-white/5">
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 block">Total Views</span>
@@ -132,7 +131,7 @@ export default async function PromotionsPage() {
                                         </div>
                                         <div className="py-2.5 flex flex-col items-center justify-center gap-0.5">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Cost</span>
-                                            <span className="text-sm font-black text-primary">₵{parseFloat(ad.cost || 0).toFixed(0)}</span>
+                                            <span className="text-xs font-black text-primary uppercase leading-none">GHS {parseFloat(ad.cost || 0).toFixed(2)}</span>
                                         </div>
                                     </div>
 

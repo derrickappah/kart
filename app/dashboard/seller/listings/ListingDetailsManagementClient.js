@@ -224,7 +224,7 @@ export default function ListingDetailsManagementClient({ product }) {
                                         <DynamicLucideIcon name="progress_activity" className="animate-spin  text-[18px]" />
                                     ) : (
                                         <>
-                                            <DynamicLucideIcon name={isSold ? 'check_circle' : 'sell'} className="text-[18px] fill-1" />
+                                            <DynamicLucideIcon name={isSold ? 'check_circle' : 'shopping_bag'} className="text-[18px] fill-1" aria-hidden="true" />
                                             <span>{isSold ? 'Mark Active' : 'Mark Sold'}</span>
                                         </>
                                     )}
@@ -237,7 +237,6 @@ export default function ListingDetailsManagementClient({ product }) {
                     <section className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h2 className="text-slate-900 dark:text-white text-sm font-black uppercase tracking-widest">Activity Log</h2>
-                            <button className="text-primary text-[10px] font-bold uppercase tracking-widest hover:underline">View All</button>
                         </div>
                         <div className="space-y-3">
                             <div className="bg-[#f6f7f8] dark:bg-white/5 rounded-2xl p-4 flex items-center gap-4 border border-transparent dark:border-white/5 active:scale-[0.99] transition-all">
@@ -266,11 +265,15 @@ export default function ListingDetailsManagementClient({ product }) {
                     </Link>
                     <Link
                         href={`/dashboard/seller/listings/promote/${product.id}`}
-                        className="flex-[1.5] h-14 bg-primary hover:bg-primary-dark text-white font-black text-[13px] uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 overflow-hidden relative"
+                        className={`flex-[1.5] h-14 font-black text-[13px] uppercase tracking-widest rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 overflow-hidden relative shadow-xl ${
+                            (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date()))
+                                ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20'
+                                : 'bg-primary hover:bg-primary-dark text-white shadow-primary/20'
+                        }`}
                     >
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                         <DynamicLucideIcon name="rocket_launch" className="text-[20px] fill-1" />
-                        Promote
+                        {(product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? 'Boost Active (Extend)' : 'Promote'}
                     </Link>
                 </div>
             </div>

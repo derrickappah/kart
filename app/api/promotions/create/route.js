@@ -61,16 +61,26 @@ export async function POST(request) {
             return NextResponse.json({ error: `Price mismatch. Expected ${expectedPrice} GHS.` }, { status: 400 });
         }
 
-        // Calculate end date based on tier
-        const startDate = new Date();
-        const endDate = new Date();
+        // Check for any active promotion of the same type to support extension
+        const { data: activeAd } = await supabase
+            .from('advertisements')
+            .select('end_date')
+            .eq('product_id', productId)
+            .eq('ad_type', adType)
+            .eq('status', 'Active')
+            .order('end_date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        const baseDate = activeAd ? new Date(Math.max(new Date().getTime(), new Date(activeAd.end_date).getTime())) : new Date();
+        const startDate = baseDate;
+        const endDate = new Date(startDate.getTime());
         if (tierId === 'daily') {
             endDate.setHours(endDate.getHours() + 24);
         } else if (tierId === 'weekly') {
             endDate.setDate(endDate.getDate() + 7);
         } else if (tierId === 'featured') {
-            // Lifetime: set to far future or handle specifically
-            endDate.setFullYear(endDate.getFullYear() + 10);
+            endDate.setDate(endDate.getDate() + 30);
         }
 
         // Create advertisement record (pending payment)

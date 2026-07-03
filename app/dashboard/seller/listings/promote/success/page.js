@@ -2,7 +2,6 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { createClient } from '../../../../../../utils/supabase/client';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
 import successAnimation from '@/public/Success.json';
@@ -10,15 +9,19 @@ import successAnimation from '@/public/Success.json';
 function PromotionSuccessContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const supabase = createClient();
-    const [status, setStatus] = useState('verifying'); // verifying, success, error
+    const [status, setStatus] = useState('verifying'); // verifying | success | error
+    const [errorMessage, setErrorMessage] = useState('');
+
     const adId = searchParams.get('adId');
-    const reference = searchParams.get('reference') || searchParams.get('trp_ref'); // Handle both if possible
+    // Support both the standard Paystack callback param and any platform-specific alias
+    const reference = searchParams.get('reference') || searchParams.get('trp_ref');
     const productId = searchParams.get('productId');
 
     useEffect(() => {
         const verifyPayment = async () => {
-            if (!adId || (!reference && !searchParams.get('reference'))) {
+            // Both adId and reference are required to verify
+            if (!adId || !reference) {
+                setErrorMessage('Missing payment information. Please contact support if you were charged.');
                 setStatus('error');
                 return;
             }
@@ -27,10 +30,7 @@ function PromotionSuccessContent() {
                 const response = await fetch('/api/promotions/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        adId,
-                        reference: reference || searchParams.get('reference')
-                    }),
+                    body: JSON.stringify({ adId, reference }),
                 });
 
                 const data = await response.json();
@@ -38,23 +38,32 @@ function PromotionSuccessContent() {
                 if (response.ok && data.success) {
                     setStatus('success');
                 } else {
+                    setErrorMessage(data.error || 'Verification failed. Please contact support if you were charged.');
                     setStatus('error');
                 }
             } catch (err) {
-                console.error('Verification error:', err);
+                console.error('[PromoSuccess] Verification fetch error:', err);
+                setErrorMessage('A network error occurred. Please check your connection and try again.');
                 setStatus('error');
             }
         };
 
         verifyPayment();
-    }, [adId, reference, searchParams]);
+        // adId and reference are stable URL params — intentionally omitting router/searchParams from deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [adId, reference]);
 
     if (status === 'verifying') {
         return (
             <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
+                <div
+                    className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"
+                    aria-hidden="true"
+                />
                 <h1 className="text-2xl font-bold mb-2">Verifying Payment</h1>
-                <p className="text-slate-500">Please wait while we activate your promotion...</p>
+                <p className="text-slate-500" aria-live="polite" aria-atomic="true">
+                    Please wait while we activate your promotion…
+                </p>
             </div>
         );
     }
@@ -62,9 +71,15 @@ function PromotionSuccessContent() {
     if (status === 'error') {
         return (
             <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center">
-                <DynamicLucideIcon name="error" className="text-red-500 text-7xl mb-6" />
+                <DynamicLucideIcon name="error" className="text-red-500 text-7xl mb-6" aria-hidden="true" />
                 <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
-                <p className="text-slate-500 mb-8 text-sm max-w-xs">We couldn&apos;t verify your payment. If you&apos;ve been charged, please contact support.</p>
+                <p
+                    className="text-slate-500 mb-8 text-sm max-w-xs"
+                    role="alert"
+                    aria-live="assertive"
+                >
+                    {errorMessage || "We couldn't verify your payment. If you've been charged, please contact support."}
+                </p>
                 <div className="flex flex-col gap-3 w-full max-w-xs">
                     <button
                         onClick={() => window.location.reload()}
@@ -80,25 +95,30 @@ function PromotionSuccessContent() {
         );
     }
 
+    // Success state
+    // Safely resolve the listing destination — fall back to the listings index if productId is missing
+    const listingHref = productId ? `/dashboard/seller/listings/${productId}` : '/dashboard/seller/listings';
+
     return (
         <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
-            {/* Confetti Animation Placeholder */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
-                <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-primary rounded-full animate-bounce"></div>
-                <div className="absolute bottom-1/4 left-1/2 w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+            {/* Confetti particles */}
+            <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+                <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping" />
+                <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-primary rounded-full animate-bounce" />
+                <div className="absolute bottom-1/4 left-1/2 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
             </div>
 
             <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
                 <div className="relative mb-8 w-full max-w-[280px] aspect-square flex items-center justify-center">
                     {/* Soft glow behind the animation */}
-                    <div className="absolute inset-4 bg-primary/10 rounded-full blur-3xl transform scale-110"></div>
+                    <div className="absolute inset-4 bg-primary/10 rounded-full blur-3xl transform scale-110" aria-hidden="true" />
 
                     <div className="relative z-10 w-full h-full flex items-center justify-center">
                         <Lottie
                             animationData={successAnimation}
                             loop={false}
                             className="w-full h-full scale-125"
+                            aria-label="Success animation"
                         />
                     </div>
                 </div>
@@ -110,11 +130,11 @@ function PromotionSuccessContent() {
 
                 <div className="w-full space-y-3">
                     <button
-                        onClick={() => router.push(`/dashboard/seller/listings/${productId}`)}
+                        onClick={() => router.push(listingHref)}
                         className="w-full h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
-                        View Listing Stats
-                        <DynamicLucideIcon name="bar_chart" className="text-xl" />
+                        {productId ? 'View Listing Stats' : 'View My Listings'}
+                        <DynamicLucideIcon name="bar_chart" className="text-xl" aria-hidden="true" />
                     </button>
                     <button
                         onClick={() => router.push('/dashboard/seller')}
@@ -132,7 +152,7 @@ export default function PromotionSuccessPage() {
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex items-center justify-center">
-                <div className="animate-pulse text-primary font-bold">Loading...</div>
+                <div className="animate-pulse text-primary font-bold">Loading…</div>
             </div>
         }>
             <PromotionSuccessContent />
