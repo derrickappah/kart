@@ -14,9 +14,10 @@ export default function Navbar({ user }) {
 
     // Check if we are on a product details page
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
+    const isMarketplacePage = pathname === '/marketplace';
 
-    // Don't render navbar on product details pages to avoid overlap with fixed bottom bar
-    if (isProductPage) return null;
+    // Don't render navbar on product details pages or main marketplace page to avoid overlap with fixed bottom bar
+    if (isProductPage || isMarketplacePage) return null;
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center bg-white/90 dark:bg-[#242428]/90 py-4 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">

@@ -51,6 +51,7 @@ export default function LayoutWrapper({ children }) {
 
     // Check if we are on a product details page
     const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
+    const isMarketplacePage = pathname === '/marketplace';
 
     // List of paths that should hide global navigation components
     const isEditingPage = (pathname === '/login' ||
@@ -69,11 +70,16 @@ export default function LayoutWrapper({ children }) {
         (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
         !pathname?.includes('/profile/edit');
 
+    const noTopPadding = isProductPage || isMarketplacePage;
+    const paddingClass = noTopPadding 
+        ? "pb-[66px]" 
+        : (isEditingPage ? "" : "pt-16 pb-[66px]");
+
     return (
         <>
             <AppDeepLinkHandler />
-            {!isEditingPage && <Navbar user={user} />}
-            <main className={`overflow-hidden bg-white dark:bg-[#242428] ${isProductPage ? "" : (isEditingPage ? "" : "pt-16 pb-[66px]")}`}>
+            {!isEditingPage && !isMarketplacePage && <Navbar user={user} />}
+            <main className={`overflow-hidden bg-white dark:bg-[#242428] ${paddingClass}`}>
                 <PullToRefresh onRefresh={handleRefresh} disabled={isEditingPage}>
                     <PageTransition>
                         {children}
