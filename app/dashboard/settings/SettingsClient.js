@@ -238,6 +238,33 @@ export default function SettingsClient({ initialProfile, initialUser }) {
           </div>
         </section>
 
+        {/* Legal & Support Section */}
+        <section>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Legal & Support</h3>
+          <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+            <Link href="/terms" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
+                  <DynamicLucideIcon name="policy" />
+                </div>
+                <span className="text-base font-semibold text-slate-900 dark:text-white">Terms & Conditions</span>
+              </div>
+              <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
+            </Link>
+            <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50 ml-16"></div>
+
+            <Link href="/privacy" className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
+                  <DynamicLucideIcon name="security" />
+                </div>
+                <span className="text-base font-semibold text-slate-900 dark:text-white">Privacy Policy</span>
+              </div>
+              <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
+            </Link>
+          </div>
+        </section>
+
         {/* Danger Zone Section */}
         <section>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Danger Zone</h3>
