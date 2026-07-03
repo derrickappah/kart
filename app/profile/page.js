@@ -20,29 +20,16 @@ const profileFetcher = async () => {
 
     if (!authUser) return null;
 
-    const [profileRes, listingsRes, walletRes, settingsRes] = await Promise.all([
+    const [profileRes, listingsRes, walletRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(),
         supabase.from('products').select('*', { count: 'exact', head: true }).eq('seller_id', authUser.id),
         supabase.from('wallets').select('balance').eq('user_id', authUser.id).maybeSingle(),
-        supabase.from('platform_settings').select('value').eq('key', 'whatsapp_support_number').maybeSingle(),
     ]);
-
-    let whatsappSupportNumber = '0500502158';
-    try {
-        if (settingsRes.data?.value) {
-            // Ensure it's a string even if the database stores it as a JSON number
-            const parsed = JSON.parse(settingsRes.data.value);
-            whatsappSupportNumber = String(parsed);
-        }
-    } catch (e) {
-        console.error('Failed to parse whatsapp support number', e);
-    }
 
     return {
         user: authUser,
         profile: profileRes.data,
         wallet: walletRes.data,
-        whatsappSupportNumber,
         stats: {
             listings: listingsRes.count || 0,
             reviews: profileRes.data?.average_rating || 0,
@@ -156,20 +143,6 @@ export default function ProfilePage() {
                             <DynamicLucideIcon name="settings" />
                         </div>
                         <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Account Settings</span>
-                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
-                    </Link>
-                    <Link href={`https://wa.me/${String(data.whatsappSupportNumber || '').replace(/[^0-9]/g, '')}`} target="_blank" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
-                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <DynamicLucideIcon name="chat" />
-                        </div>
-                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Contact Support (WhatsApp)</span>
-                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
-                    </Link>
-                    <Link href="mailto:kartzendo@gmail.com" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
-                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
-                            <DynamicLucideIcon name="mail" />
-                        </div>
-                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Email Support</span>
                         <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
                     </Link>
                 </section>

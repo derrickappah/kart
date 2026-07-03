@@ -10,14 +10,23 @@ export default async function SettingsPage() {
     redirect('/login');
   }
 
-  // Fetch profile data
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .maybeSingle();
+  // Fetch profile data and support settings in parallel
+  const [{ data: profile }, { data: supportSetting }] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+    supabase.from('platform_settings').select('value').eq('key', 'whatsapp_support_number').maybeSingle(),
+  ]);
+
+  let whatsappSupportNumber = '0500502158';
+  try {
+    if (supportSetting?.value) {
+      const parsed = JSON.parse(supportSetting.value);
+      whatsappSupportNumber = String(parsed);
+    }
+  } catch (e) {
+    // use default
+  }
 
   return (
-    <SettingsClient initialProfile={profile} initialUser={user} />
+    <SettingsClient initialProfile={profile} initialUser={user} whatsappSupportNumber={whatsappSupportNumber} />
   );
 }
