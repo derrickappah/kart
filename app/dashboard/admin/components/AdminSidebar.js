@@ -20,6 +20,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
 
     const navItems = [
         { href: '/dashboard/admin', label: 'Dashboard', icon: 'dashboard' },
+        { href: '/dashboard/admin/analytics', label: 'Analytics', icon: 'bar_chart' },
         { href: '/dashboard/admin/products', label: 'Marketplace', icon: 'storefront' },
         { href: '/dashboard/admin/orders', label: 'Orders', icon: 'receipt_long' },
         { href: '/dashboard/admin/verifications', label: 'Verifications', icon: 'verified_user' },
