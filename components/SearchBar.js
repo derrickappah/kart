@@ -64,7 +64,7 @@ function SearchInput({ placeholder, showFilter }) {
 
     if (showFilter) {
         return (
-            <div className={`relative flex items-center w-full h-14 overflow-hidden ${isExpanded ? 'justify-between' : 'justify-end'}`}>
+            <div className={`relative flex items-center w-full h-14 px-1 overflow-hidden ${isExpanded ? 'justify-between' : 'justify-end'}`}>
                 {/* Expanded Search Form */}
                 <form
                     onSubmit={handleSearch}
