@@ -276,7 +276,7 @@ export default function ListingDetailsManagementClient({ product }) {
                         >
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                             <DynamicLucideIcon name="rocket_launch" className="text-[20px] fill-1" />
-                            {(product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? 'Boost Active (Extend)' : 'Promote'}
+                            {(product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? 'Extend Boost' : 'Promote'}
                         </Link>
                     )}
                 </div>

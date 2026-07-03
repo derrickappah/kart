@@ -178,18 +178,19 @@ export default function MyListingsClient({ initialProducts }) {
                                                     ₵{parseFloat(product.price || 0).toFixed(2)}
                                                 </p>
                                                 <div className="flex items-center gap-1.5 shrink-0">
-                                                    {activeTab === 'Active' && (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) && (
+                                                    {activeTab === 'Active' && (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? (
                                                         <span className="flex items-center gap-0.5 text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest text-orange-500 bg-orange-500/10">
                                                             <DynamicLucideIcon name="rocket_launch" className="text-[10px] mr-0.5" />
                                                             Boosted
                                                         </span>
+                                                    ) : (
+                                                        <div className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${activeTab === 'Active' ? 'text-emerald-500 bg-emerald-500/10' :
+                                                            activeTab === 'Sold' ? 'text-blue-500 bg-blue-500/10' :
+                                                                'text-slate-500 bg-slate-500/10'
+                                                            }`}>
+                                                            {activeTab === 'Sold' ? 'Completed' : activeTab}
+                                                        </div>
                                                     )}
-                                                    <div className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${activeTab === 'Active' ? 'text-emerald-500 bg-emerald-500/10' :
-                                                        activeTab === 'Sold' ? 'text-blue-500 bg-blue-500/10' :
-                                                            'text-slate-500 bg-slate-500/10'
-                                                        }`}>
-                                                        {activeTab === 'Sold' ? 'Completed' : activeTab}
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -218,7 +219,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                 }`}
                                             >
                                                 <DynamicLucideIcon name="rocket_launch" className="text-[16px] mr-1.5" />
-                                                {(product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? 'Boost Active' : 'Promote'}
+                                                {(product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) ? 'Extend Boost' : 'Promote'}
                                             </button>
                                         </div>
                                     )}
