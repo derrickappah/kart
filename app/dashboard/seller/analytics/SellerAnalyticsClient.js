@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import {
@@ -13,14 +14,58 @@ import {
 } from 'recharts';
 
 export default function SellerAnalyticsClient({
-    totalSales,
-    totalRevenue,
+    orders = [],
     totalViews,
     totalShares,
     totalLikes,
-    chartData = [],
     productStats = []
 }) {
+    const [period, setPeriod] = useState(30);
+
+    // Calculate dates & filter orders by period
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - (period - 1));
+    cutoffDate.setHours(0, 0, 0, 0);
+
+    const filteredOrders = orders.filter(order => {
+        const orderDate = new Date(order.created_at);
+        return orderDate >= cutoffDate;
+    });
+
+    const totalSales = filteredOrders.length;
+    const totalRevenue = filteredOrders.reduce((sum, order) => 
+        sum + parseFloat(order.seller_payout_amount || order.total_amount || 0)
+    , 0);
+
+    // Compute chart data dynamically
+    const chartData = [];
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    for (let i = period - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+
+        let label = '';
+        if (period === 7) {
+            label = weekdays[d.getDay()];
+        } else {
+            label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        const dayTotal = filteredOrders.filter(order => {
+            const orderDate = new Date(order.created_at);
+            return orderDate.toDateString() === d.toDateString();
+        }).reduce((sum, order) => 
+            sum + parseFloat(order.seller_payout_amount || order.total_amount || 0)
+        , 0);
+
+        chartData.push({
+            label,
+            val: dayTotal
+        });
+    }
+
     return (
         <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
             <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl overflow-hidden">
@@ -30,9 +75,12 @@ export default function SellerAnalyticsClient({
                     {/* Header Section */}
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-2">Analytics</h3>
-                        <button className="flex items-center gap-1.5 bg-white dark:bg-[#1e292b] border border-transparent dark:border-white/5 rounded-xl px-3 py-1.5 shadow-soft active:scale-95 transition-all text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                        <button 
+                            onClick={() => setPeriod(period === 30 ? 7 : 30)}
+                            className="flex items-center gap-1.5 bg-white dark:bg-[#1e292b] border border-[#dce3e5] dark:border-white/5 rounded-xl px-3 py-1.5 shadow-soft active:scale-95 transition-all text-[11px] font-bold text-slate-600 dark:text-slate-300"
+                        >
                             <DynamicLucideIcon name="calendar_today" className="text-primary text-[16px]" />
-                            Last 30 Days
+                            Last {period} Days
                         </button>
                     </div>
 

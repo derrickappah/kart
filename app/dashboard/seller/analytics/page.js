@@ -25,33 +25,6 @@ export default async function SellerAnalyticsPage() {
     .eq('seller_id', user.id)
     .in('status', ['Paid', 'Completed', 'Delivered']);
 
-  // Calculate stats
-  const totalSales = orders?.length || 0;
-  const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.seller_payout_amount || order.total_amount || 0), 0) || 0;
-
-  // 7-Day Chart Data Calculation
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-  sevenDaysAgo.setHours(0, 0, 0, 0);
-
-  const chartData = Array(7).fill(0);
-  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  // Align day labels with actual days
-  const actualDayLabels = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(sevenDaysAgo);
-    d.setDate(d.getDate() + i);
-    actualDayLabels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
-
-    const dayTotal = orders?.filter(order => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.toDateString() === d.toDateString();
-    }).reduce((sum, order) => sum + parseFloat(order.seller_payout_amount || order.total_amount || 0), 0) || 0;
-
-    chartData[i] = dayTotal;
-  }
-
   // Real data from products
   const totalViews = products?.reduce((sum, p) => sum + (p.views_count || 0), 0) || 0;
   const totalShares = products?.reduce((sum, p) => sum + (p.shares_count || 0), 0) || 0;
@@ -76,16 +49,12 @@ export default async function SellerAnalyticsPage() {
     };
   }).sort((a, b) => b.views - a.views).slice(0, 5); // Show top 5 by views
 
-  const rechartsChartData = dayLabels.map((label, i) => ({ label, val: chartData[i] }));
-
   return (
     <SellerAnalyticsClient
-      totalSales={totalSales}
-      totalRevenue={totalRevenue}
+      orders={orders || []}
       totalViews={totalViews}
       totalShares={totalShares}
       totalLikes={totalLikes}
-      chartData={rechartsChartData}
       productStats={productStats}
     />
   );
