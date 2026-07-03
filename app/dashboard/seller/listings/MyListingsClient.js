@@ -98,7 +98,7 @@ export default function MyListingsClient({ initialProducts }) {
                                 >
                                     <div className="flex gap-4 p-4">
                                         {/* Thumbnail */}
-                                        <div className="relative shrink-0 w-24 h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                        <div className="relative shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
                                             {product.image_url ? (
                                                 <Image
                                                     src={product.image_url}
@@ -108,7 +108,7 @@ export default function MyListingsClient({ initialProducts }) {
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
-                                                    <DynamicLucideIcon name="image" className="text-3xl" />
+                                                    <DynamicLucideIcon name="image" className="text-xl" />
                                                 </div>
                                             )}
 
@@ -168,17 +168,13 @@ export default function MyListingsClient({ initialProducts }) {
                                                     ₵{parseFloat(product.price || 0).toFixed(2)}
                                                 </p>
                                                 <div className="flex items-center gap-1.5 shrink-0">
-                                                    {activeTab === 'Active' && (product.is_featured || (product.is_boosted && product.boost_expires_at && new Date(product.boost_expires_at) > new Date())) && (
-                                                        <span className="flex items-center justify-center size-6 rounded-full text-orange-500 bg-orange-500/10" title="Boosted">
-                                                            <DynamicLucideIcon name="rocket_launch" className="text-[11px]" />
-                                                        </span>
-                                                    )}
-                                                    <div className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${activeTab === 'Active' ? 'text-emerald-500 bg-emerald-500/10' :
-                                                        activeTab === 'Sold' ? 'text-blue-500 bg-blue-500/10' :
+                                                    {activeTab !== 'Active' && (
+                                                        <div className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${activeTab === 'Sold' ? 'text-blue-500 bg-blue-500/10' :
                                                             'text-slate-500 bg-slate-500/10'
-                                                        }`}>
-                                                        {activeTab === 'Sold' ? 'Completed' : activeTab}
-                                                    </div>
+                                                            }`}>
+                                                            {activeTab === 'Sold' ? 'Completed' : activeTab}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
