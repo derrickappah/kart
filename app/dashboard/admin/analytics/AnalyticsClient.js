@@ -679,24 +679,78 @@ export default function AnalyticsClient({
             </div>
 
             {/* ---------------------------------------------------------------- */}
-            {/* Organic Engagement Footer                                        */}
+            {/* Organic Engagement & Funnel                                      */}
             {/* ---------------------------------------------------------------- */}
             <div className="bg-white/70 dark:bg-[#182125]/70 backdrop-blur-md p-6 rounded-2xl border border-[#dce3e5] dark:border-[#2d3b41] shadow-sm">
-                <h4 className="text-sm font-black uppercase tracking-widest text-[#4b636c] dark:text-gray-400 mb-6">Organic Listing Engagement</h4>
-                <div className="grid grid-cols-3 gap-6 text-center">
-                    {[
-                        { label: 'Total Product Views', value: engagement.views || 0, icon: 'visibility', color: 'bg-primary/10 text-primary' },
-                        { label: 'Total Likes / Saves', value: engagement.likes || 0, icon: 'favorite', color: 'bg-rose-500/10 text-rose-500' },
-                        { label: 'Social Shares', value: engagement.shares || 0, icon: 'share', color: 'bg-blue-500/10 text-blue-500' },
-                    ].map((s, i) => (
-                        <div key={i}>
-                            <div className={`size-10 rounded-xl ${s.color} flex items-center justify-center mx-auto mb-2`}>
-                                <DynamicLucideIcon name={s.icon} />
+                <h4 className="text-sm font-black uppercase tracking-widest text-[#4b636c] dark:text-gray-400 mb-6">
+                    Organic Engagement &amp; Funnel Analysis
+                </h4>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Funnel Bar Chart */}
+                    <div className="lg:col-span-2">
+                        <ResponsiveContainer width="100%" height={220}>
+                            <BarChart
+                                data={[
+                                    { name: 'Product Views', count: engagement.views || 0 },
+                                    { name: 'Likes & Saves', count: engagement.likes || 0 },
+                                    { name: 'Shares', count: engagement.shares || 0 }
+                                ]}
+                                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            >
+                                <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
+                                <XAxis dataKey="name" tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fill: '#4b636c', fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} width={40} />
+                                <Tooltip cursor={{ fill: 'rgba(29,173,221,0.05)', radius: 4 }} contentStyle={TOOLTIP_STYLE.contentStyle} />
+                                <Bar dataKey="count" name="Count" radius={[4, 4, 0, 0]} maxBarSize={36}>
+                                    <Cell fill="#1daddd" />
+                                    <Cell fill="#ec4899" />
+                                    <Cell fill="#3b82f6" />
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Conversion Metrics */}
+                    <div className="flex flex-col justify-between gap-4">
+                        {[
+                            {
+                                label: 'Views-to-Likes Rate',
+                                value: `${engagement.views > 0 ? ((engagement.likes / engagement.views) * 100).toFixed(1) : 0}%`,
+                                desc: 'Percentage of views leading to listing likes/saves',
+                                icon: 'favorite',
+                                color: 'text-rose-500',
+                                bg: 'bg-rose-500/10'
+                            },
+                            {
+                                label: 'Likes-to-Shares Rate',
+                                value: `${engagement.likes > 0 ? ((engagement.shares / engagement.likes) * 100).toFixed(1) : 0}%`,
+                                desc: 'Rate at which liked listings are shared socially',
+                                icon: 'share',
+                                color: 'text-blue-500',
+                                bg: 'bg-blue-500/10'
+                            },
+                            {
+                                label: 'Overall Virality Index',
+                                value: `${engagement.views > 0 ? ((engagement.shares / engagement.views) * 100).toFixed(2) : 0}%`,
+                                desc: 'Ratio of product shares to total organic views',
+                                icon: 'bolt',
+                                color: 'text-amber-500',
+                                bg: 'bg-amber-500/10'
+                            }
+                        ].map((m, idx) => (
+                            <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50/50 dark:bg-black/10 border border-gray-100 dark:border-gray-800/10">
+                                <div className={`size-10 rounded-xl ${m.bg} ${m.color} flex items-center justify-center shrink-0`}>
+                                    <DynamicLucideIcon name={m.icon} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <span className="text-[9px] font-black text-[#4b636c] uppercase tracking-widest block">{m.label}</span>
+                                    <span className="text-base font-black text-gray-900 dark:text-white leading-none mt-0.5 block">{m.value}</span>
+                                    <span className="text-[9px] text-gray-400 dark:text-gray-500 block truncate mt-0.5">{m.desc}</span>
+                                </div>
                             </div>
-                            <p className="text-[#4b636c] text-[10px] font-black uppercase tracking-widest">{s.label}</p>
-                            <h4 className="text-xl font-black mt-1">{Number(s.value).toLocaleString()}</h4>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
