@@ -2,6 +2,8 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useTransition, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 
 function SearchInput({ placeholder, showFilter }) {
     const searchParams = useSearchParams();
@@ -64,7 +66,25 @@ function SearchInput({ placeholder, showFilter }) {
 
     if (showFilter) {
         return (
-            <div className={`relative flex items-center w-full h-14 px-1 overflow-hidden ${isExpanded ? 'justify-between' : 'justify-end'}`}>
+            <div className="relative flex items-center justify-between w-full h-14 px-1 overflow-hidden">
+                {/* App Logo (fades/slides left when search expands) */}
+                <Link
+                    href="/"
+                    className={`flex items-center transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] transform origin-left ${
+                        isExpanded 
+                            ? 'opacity-0 -translate-x-4 max-w-0 overflow-hidden pointer-events-none' 
+                            : 'opacity-100 translate-x-0 max-w-[80px]'
+                    }`}
+                >
+                    <Image
+                        src="/logo.png"
+                        alt="KART Logo"
+                        width={80}
+                        height={32}
+                        priority
+                    />
+                </Link>
+
                 {/* Expanded Search Form */}
                 <form
                     onSubmit={handleSearch}
