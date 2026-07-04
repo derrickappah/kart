@@ -65,43 +65,61 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
           const cardContent = (
             <Link
               href={`/marketplace/${product.id}`}
-              className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
+              className="min-w-[250px] w-[250px] aspect-[3/4] group relative flex flex-col overflow-hidden rounded-[2rem] bg-gray-200 shadow-md hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100/10 dark:border-gray-800/30"
             >
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-200">
+              {/* Full-bleed Image with hover scale */}
+              <div className="absolute inset-0 w-full h-full">
                 <Image
                   src={product.image_url || product.images?.[0] || '/placeholder.png'}
                   alt={product.title}
                   fill
-                  sizes="280px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="250px"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                
-                {/* Premium Featured Badge */}
-                <div className="absolute top-3 left-3 px-2.5 py-1 bg-gradient-to-r from-blue-600 to-primary text-white rounded-lg text-[9px] font-black uppercase tracking-wider shadow-md">
-                  ⚡ Featured
-                </div>
+              </div>
 
-                {product.condition && (
-                  <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-black text-white uppercase tracking-widest border border-white/10">
-                    {product.condition}
-                  </div>
-                )}
+              {/* Gradient overlay mask for high text contrast */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/10 z-10 transition-opacity duration-300 group-hover:opacity-90" />
+              
+              {/* Premium Featured Badge */}
+              <div className="absolute top-4 left-4 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md z-20">
+                ⚡ Featured
+              </div>
+
+              <div className="absolute top-4 right-4 z-20">
                 <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
               </div>
-              <div className="flex flex-col p-4">
-                <h3 className="text-base font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
-                <div className="mt-2 flex items-center justify-between">
-                  <p className="text-lg font-bold text-primary">₵ {formatPrice(product.price)}</p>
-                  <div className="flex items-center gap-1.5 overflow-hidden">
+
+              {/* Bottom Info Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 z-20 flex flex-col gap-2">
+                {product.condition && (
+                  <span className="self-start px-2 py-0.5 bg-white/20 backdrop-blur-md rounded-md text-[9px] font-black text-white uppercase tracking-widest border border-white/10">
+                    {product.condition}
+                  </span>
+                )}
+                
+                <h3 className="text-base font-extrabold text-white line-clamp-1 leading-tight tracking-tight">
+                  {toSentenceCase(product.title)}
+                </h3>
+                
+                <div className="flex items-center justify-between mt-1 pt-2 border-t border-white/10">
+                  <p className="text-lg font-black text-sky-400">₵ {formatPrice(product.price)}</p>
+                  <div className="flex items-center gap-1.5 overflow-hidden max-w-[120px]">
                     {product.seller?.avatar_url ? (
-                      <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover shrink-0" alt={product.seller.display_name} />
+                      <img 
+                        src={product.seller.avatar_url} 
+                        className="h-5 w-5 rounded-full object-cover shrink-0 border border-white/20 shadow-sm" 
+                        alt={product.seller.display_name} 
+                      />
                     ) : (
-                      <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold shrink-0">
+                      <div className="h-5 w-5 rounded-full bg-white/25 flex items-center justify-center text-[9px] text-white font-bold shrink-0 shadow-sm">
                         {product.seller?.display_name?.[0] || 'U'}
                       </div>
                     )}
-                    <p className="text-xs font-semibold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</p>
-                    {product.seller?.is_verified && <DynamicLucideIcon name="verified" className="text-primary text-[14px] font-bold" />}
+                    <span className="text-[11px] font-bold text-gray-200 truncate">{product.seller?.display_name || 'Seller'}</span>
+                    {product.seller?.is_verified && (
+                      <DynamicLucideIcon name="verified" className="text-sky-400 text-[12px] font-bold shrink-0" />
+                    )}
                   </div>
                 </div>
               </div>
