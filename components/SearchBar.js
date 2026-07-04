@@ -70,7 +70,7 @@ function SearchInput({ placeholder, showFilter }) {
                 {/* App Logo (fades/slides left when search expands) */}
                 <Link
                     href="/"
-                    className={`flex items-center transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] transform origin-left ${
+                    className={`flex items-center transition-all duration-[750ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] transform origin-left ${
                         isExpanded 
                             ? 'opacity-0 -translate-x-4 max-w-0 overflow-hidden pointer-events-none' 
                             : 'opacity-100 translate-x-0 max-w-[80px]'
@@ -86,7 +86,7 @@ function SearchInput({ placeholder, showFilter }) {
                 </Link>
 
                 {/* Right controls wrapper */}
-                <div className={`flex items-center justify-end flex-1 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${isExpanded ? 'w-full' : 'max-w-[96px]'}`}>
+                <div className={`flex items-center justify-end flex-1 transition-all duration-[750ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${isExpanded ? 'w-full' : 'max-w-[96px]'}`}>
                     {/* Combined Search Button / Form */}
                     <form
                         onSubmit={handleSearch}
@@ -97,7 +97,7 @@ function SearchInput({ placeholder, showFilter }) {
                         }}
                         role="search"
                         aria-label="Search marketplace listings"
-                        className={`flex items-center border transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+                        className={`flex items-center border transition-all duration-[750ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
                             isExpanded 
                                 ? 'flex-1 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-200 dark:border-gray-700 rounded-2xl px-4 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent cursor-text max-w-full' 
                                 : 'w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl px-3 hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer max-w-[44px]'
@@ -111,8 +111,8 @@ function SearchInput({ placeholder, showFilter }) {
                         />
                         <input
                             type="search"
-                            className={`ml-2 flex-1 bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 transition-all duration-300 ${
-                                isExpanded ? 'opacity-100 translate-x-0 delay-150' : 'opacity-0 translate-x-2 pointer-events-none w-0 overflow-hidden'
+                            className={`ml-2 flex-1 bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 transition-all duration-400 ${
+                                isExpanded ? 'opacity-100 translate-x-0 delay-300' : 'opacity-0 translate-x-2 pointer-events-none w-0 overflow-hidden'
                             }`}
                             placeholder={placeholder}
                             value={query}
@@ -144,7 +144,7 @@ function SearchInput({ placeholder, showFilter }) {
 
                     {/* Cancel Button (only shown when expanded) */}
                     <div
-                        className={`transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
+                        className={`transition-all duration-[750ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] overflow-hidden ${
                             isExpanded ? 'max-w-[70px] opacity-100 translate-x-0 ml-3' : 'max-w-0 opacity-0 translate-x-4'
                         }`}
                     >
@@ -165,7 +165,7 @@ function SearchInput({ placeholder, showFilter }) {
 
                     {/* Filter Icon Button (only shown when collapsed) */}
                     <div
-                        className={`transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
+                        className={`transition-all duration-[750ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] overflow-hidden ${
                             isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4 ml-0' : 'max-w-[52px] opacity-100 scale-100 translate-x-0 ml-2'
                         }`}
                     >
