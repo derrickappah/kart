@@ -236,6 +236,9 @@ export default function FilterSidebar() {
     };
 
     const isPriceRangeInvalid = minPrice !== '' && maxPrice !== '' && Number(minPrice) > Number(maxPrice);
+    
+    // Check if any filter parameter is modified from the default state
+    const hasAnyFilterActive = selectedCategories.length > 0 || selectedConditions.length > 0 || minPrice !== '' || maxPrice !== '' || campus !== '' || sort !== 'newest';
 
     if (!isOpen) return null;
 
@@ -279,7 +282,12 @@ export default function FilterSidebar() {
                     </div>
                     <button
                         onClick={handleReset}
-                        className="text-sm font-black text-primary hover:bg-primary/10 px-4 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        disabled={!hasAnyFilterActive}
+                        className={`text-sm font-black px-4 py-2 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                            hasAnyFilterActive
+                                ? 'text-primary hover:bg-primary/10 cursor-pointer'
+                                : 'text-gray-300 dark:text-gray-650 cursor-not-allowed opacity-50'
+                        }`}
                     >
                         Reset
                     </button>
@@ -303,7 +311,7 @@ export default function FilterSidebar() {
                                     onClick={() => setSort(opt.value)}
                                     className={`flex items-center gap-3 p-3.5 rounded-2xl transition-all border-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${sort === opt.value
                                         ? 'border-primary bg-primary/5 text-primary shadow-sm scale-[1.02]'
-                                        : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                        : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#34343a]'
                                     }`}
                                 >
                                     <div className={`flex items-center justify-center size-9 rounded-xl ${sort === opt.value ? 'bg-primary text-white' : 'bg-white dark:bg-[#242428] text-gray-400'}`}>
@@ -369,7 +377,7 @@ export default function FilterSidebar() {
                                             id={field.id}
                                             type="text"
                                             inputMode="decimal"
-                                            className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-2xl py-4 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all placeholder:text-gray-300 outline-none focus:outline-none"
+                                            className="w-full bg-gray-50 dark:bg-[#2d2d32] border border-transparent dark:border-transparent rounded-2xl py-4 pl-10 pr-4 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all placeholder:text-gray-300 outline-none focus:outline-none"
                                             placeholder={field.placeholder}
                                             value={field.val}
                                             onChange={(e) => field.set(sanitizePrice(e.target.value))}
@@ -433,7 +441,7 @@ export default function FilterSidebar() {
                                     aria-pressed={selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)}
                                     className={`px-4 py-2.5 rounded-full text-xs font-bold transition-all border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selectedCategories.includes(cat) || (cat === 'All' && selectedCategories.length === 0)
                                         ? 'bg-primary text-white border-primary shadow-md shadow-primary/25 scale-[1.02]'
-                                        : 'bg-white dark:bg-[#2d2d32] text-gray-500 border-gray-100 dark:border-gray-800 hover:border-gray-250 dark:hover:border-gray-700'
+                                        : 'bg-white dark:bg-[#2d2d32] text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300'
                                     }`}
                                 >
                                     <span className="mr-1.5" aria-hidden="true">{categoryIcons[cat]}</span>
@@ -461,7 +469,7 @@ export default function FilterSidebar() {
                             <input
                                 id="filter-campus"
                                 type="text"
-                                className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-2xl py-4 pl-12 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary transition-all outline-none focus:outline-none"
+                                className="w-full bg-gray-50 dark:bg-[#2d2d32] border border-transparent dark:border-transparent rounded-2xl py-4 pl-12 pr-10 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all outline-none focus:outline-none"
                                 placeholder="Enter campus name..."
                                 value={campus}
                                 onChange={(e) => setCampus(e.target.value)}
@@ -487,7 +495,7 @@ export default function FilterSidebar() {
                         ref={lastFocusableRef}
                         onClick={handleApply}
                         disabled={isPending || isPriceRangeInvalid}
-                        className={`w-full h-14 rounded-2xl flex items-center justify-center font-bold text-white transition-all shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                        className={`w-full h-14 rounded-2xl flex items-center justify-center font-bold text-white transition-all shadow-xl hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                             isPriceRangeInvalid 
                                 ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none' 
                                 : 'btn-primary shadow-primary/25 active:scale-[0.98]'
