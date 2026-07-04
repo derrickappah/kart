@@ -70,12 +70,12 @@ function SearchInput({ placeholder, showFilter }) {
         return (
             <div className="relative flex items-center justify-between w-full h-14 px-1 overflow-hidden">
                 
-                {/* 1. App Logo: Vanishes instantly on expand, restores smoothly on collapse */}
+                {/* 1. App Logo: Vanishes smoothly on expand, restores smoothly on collapse */}
                 <Link
                     href="/"
                     className={`absolute left-1 flex items-center transition-all [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] transform origin-left ${
                         isExpanded 
-                            ? 'opacity-0 -translate-x-4 max-w-0 overflow-hidden pointer-events-none duration-0' 
+                            ? 'opacity-0 -translate-x-4 max-w-0 overflow-hidden pointer-events-none duration-[600ms]' 
                             : 'opacity-100 translate-x-0 max-w-[80px] duration-[200ms]'
                     }`}
                 >
