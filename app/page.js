@@ -234,7 +234,7 @@ export default async function Home() {
                   <Link
                     key={cat.name}
                     href={cat.name === 'All' ? '/marketplace' : `/marketplace?category=${cat.name}`}
-                    className="chip chip-inactive whitespace-nowrap h-9 px-4 text-xs"
+                    className="flex h-9 items-center justify-center rounded-full px-4 text-xs font-black transition-all active:scale-95 whitespace-nowrap bg-primary/10 text-primary hover:bg-primary/20 border border-primary/15 dark:bg-primary/20 dark:text-blue-400 dark:border-primary/25"
                   >
                     <span>{cat.name}</span>
                   </Link>
