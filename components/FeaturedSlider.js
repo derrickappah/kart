@@ -44,7 +44,7 @@ export default function FeaturedSlider({ products, wishlistIds }) {
         <div 
             ref={containerRef}
             onScroll={handleScroll}
-            className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar gap-4 scroll-smooth"
+            className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar gap-4"
             style={{ WebkitOverflowScrolling: 'touch' }}
         >
             {tripledProducts.map((product, idx) => {
