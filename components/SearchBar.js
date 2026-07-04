@@ -102,8 +102,9 @@ function SearchInput({ placeholder, showFilter }) {
                     }`}
                 >
                     <input
-                        type="search"
-                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 text-center pl-7 pr-7 transition-all ${
+                        type="text"
+                        inputMode="search"
+                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 text-center pl-6 pr-6 transition-all ${
                             isExpanded 
                                 ? 'opacity-100 pointer-events-auto duration-500 delay-[400ms]' 
                                 : 'opacity-0 pointer-events-none duration-[100ms]'
@@ -146,7 +147,7 @@ function SearchInput({ placeholder, showFilter }) {
                     }}
                     className={`absolute h-11 flex items-center justify-center [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] z-20 ${
                         isExpanded 
-                            ? 'left-5 w-5 pointer-events-none text-primary transition-all duration-[600ms]' 
+                            ? 'left-5 w-5 pointer-events-none text-primary transition-all duration-[900ms]' 
                             : 'left-[calc(100%-88px)] w-5 text-primary cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
@@ -156,7 +157,7 @@ function SearchInput({ placeholder, showFilter }) {
                 {/* Cancel Button (only shown when expanded) */}
                 <div
                     className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
-                        isExpanded ? 'max-w-[70px] opacity-100 translate-x-0 transition-all duration-[1200ms] delay-[300ms]' : 'max-w-0 opacity-0 translate-x-4 pointer-events-none transition-all duration-[150ms]'
+                        isExpanded ? 'max-w-[70px] opacity-100 translate-x-0 transition-all duration-[900ms] delay-[300ms]' : 'max-w-0 opacity-0 translate-x-4 pointer-events-none transition-all duration-[150ms]'
                     }`}
                 >
                     <button
@@ -177,7 +178,7 @@ function SearchInput({ placeholder, showFilter }) {
                 {/* Filter Icon Button (only shown when collapsed) */}
                 <div
                     className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
-                        isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4 pointer-events-none transition-all duration-[1200ms]' : 'max-w-[52px] opacity-100 scale-100 translate-x-0 transition-all duration-[200ms]'
+                        isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4 pointer-events-none transition-all duration-[900ms]' : 'max-w-[52px] opacity-100 scale-100 translate-x-0 transition-all duration-[200ms]'
                     }`}
                 >
                     <button
