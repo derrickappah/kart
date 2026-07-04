@@ -70,10 +70,10 @@ function SearchInput({ placeholder, showFilter }) {
                 {/* App Logo (fades/slides left when search expands) */}
                 <Link
                     href="/"
-                    className={`flex items-center transition-all duration-[1200ms] [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] transform origin-left ${
+                    className={`absolute left-1 flex items-center transition-all [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] transform origin-left ${
                         isExpanded 
-                            ? 'opacity-0 -translate-x-4 max-w-0 overflow-hidden pointer-events-none' 
-                            : 'opacity-100 translate-x-0 max-w-[80px]'
+                            ? 'opacity-0 -translate-x-4 max-w-0 overflow-hidden pointer-events-none duration-[1200ms]' 
+                            : 'opacity-100 translate-x-0 max-w-[80px] duration-[200ms]'
                     }`}
                 >
                     <Image
@@ -85,111 +85,121 @@ function SearchInput({ placeholder, showFilter }) {
                     />
                 </Link>
 
-                {/* Right controls wrapper */}
-                <div className={`flex items-center justify-end flex-1 transition-all duration-[1200ms] [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${isExpanded ? 'w-full' : 'max-w-[96px]'}`}>
-                    {/* Combined Search Button / Form */}
-                    <form
-                        onSubmit={handleSearch}
-                        onClick={() => {
-                            if (!isExpanded) {
-                                setIsExpanded(true);
+                {/* Combined Search Button / Form */}
+                <form
+                    onSubmit={handleSearch}
+                    onClick={() => {
+                        if (!isExpanded) {
+                            setIsExpanded(true);
+                        }
+                    }}
+                    role="search"
+                    aria-label="Search marketplace listings"
+                    className={`absolute border [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${
+                        isExpanded 
+                            ? 'left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-200 dark:border-gray-700 rounded-2xl px-4 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent cursor-text transition-all duration-[900ms] delay-[300ms]' 
+                            : 'right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
+                    }`}
+                >
+                    <input
+                        type="search"
+                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 pl-9 ${
+                            isExpanded 
+                                ? 'opacity-100 translate-x-0 transition-all duration-500 delay-[400ms]' 
+                                : 'opacity-0 translate-x-2 pointer-events-none w-0 overflow-hidden transition-all duration-[100ms]'
+                        }`}
+                        placeholder={placeholder}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        aria-label="Search listings"
+                        autoComplete="off"
+                        maxLength={200}
+                        disabled={!isExpanded}
+                        ref={(input) => {
+                            if (input && isExpanded && document.activeElement !== input && !query) {
+                                input.focus();
                             }
                         }}
-                        role="search"
-                        aria-label="Search marketplace listings"
-                        className={`flex items-center border transition-all duration-[1200ms] [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${
-                            isExpanded 
-                                ? 'flex-1 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-200 dark:border-gray-700 rounded-2xl px-4 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent cursor-text max-w-full' 
-                                : 'w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl px-3 hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer max-w-[44px]'
-                        }`}
-                    >
-                        <DynamicLucideIcon
-                            name="search"
-                            size={20}
-                            className="text-primary font-bold shrink-0 transition-colors"
-                            aria-hidden="true"
-                        />
-                        <input
-                            type="search"
-                            className={`ml-2 flex-1 bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 transition-all duration-500 ${
-                                isExpanded ? 'opacity-100 translate-x-0 delay-[400ms]' : 'opacity-0 translate-x-2 pointer-events-none w-0 overflow-hidden'
-                            }`}
-                            placeholder={placeholder}
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            aria-label="Search listings"
-                            autoComplete="off"
-                            maxLength={200}
-                            disabled={!isExpanded}
-                            ref={(input) => {
-                                if (input && isExpanded && document.activeElement !== input && !query) {
-                                    input.focus();
-                                }
-                            }}
-                        />
-                        {query && isExpanded && (
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleClear();
-                                }}
-                                aria-label="Clear search"
-                                className="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full shrink-0"
-                            >
-                                <DynamicLucideIcon name="close" size={16} aria-hidden="true" />
-                            </button>
-                        )}
-                    </form>
-
-                    {/* Cancel Button (only shown when expanded) */}
-                    <div
-                        className={`transition-all duration-[1200ms] [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
-                            isExpanded ? 'max-w-[70px] opacity-100 translate-x-0 ml-3' : 'max-w-0 opacity-0 translate-x-4'
-                        }`}
-                    >
+                    />
+                    {query && isExpanded && (
                         <button
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                setIsExpanded(false);
-                                if (searchVal) {
-                                    handleClear();
-                                }
+                                handleClear();
                             }}
-                            className="text-sm font-black text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
+                            aria-label="Clear search"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full shrink-0"
                         >
-                            Cancel
+                            <DynamicLucideIcon name="close" size={16} aria-hidden="true" />
                         </button>
-                    </div>
+                    )}
+                </form>
 
-                    {/* Filter Icon Button (only shown when collapsed) */}
-                    <div
-                        className={`transition-all duration-[1200ms] [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
-                            isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4 ml-0' : 'max-w-[52px] opacity-100 scale-100 translate-x-0 ml-2'
-                        }`}
-                    >
-                        <button
-                            type="button"
-                            onClick={handleOpenFilters}
-                            aria-label={
-                                activeFilterCount > 0
-                                    ? `Filter & Sort — ${activeFilterCount} filters active`
-                                    : 'Filter & Sort'
+                {/* Sliding Search Icon (direct child of header for independent, non-delayed translation) */}
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (!isExpanded) {
+                            setIsExpanded(true);
+                        }
+                    }}
+                    className={`absolute h-11 flex items-center justify-center [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] z-20 ${
+                        isExpanded 
+                            ? 'left-5 w-5 pointer-events-none text-primary transition-all duration-[600ms]' 
+                            : 'left-[calc(100%-88px)] w-5 text-primary cursor-pointer transition-all duration-[200ms]'
+                    }`}
+                >
+                    <DynamicLucideIcon name="search" size={20} aria-hidden="true" />
+                </button>
+
+                {/* Cancel Button (only shown when expanded) */}
+                <div
+                    className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
+                        isExpanded ? 'max-w-[70px] opacity-100 translate-x-0 transition-all duration-[1200ms] delay-[300ms]' : 'max-w-0 opacity-0 translate-x-4 pointer-events-none transition-all duration-[150ms]'
+                    }`}
+                >
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsExpanded(false);
+                            if (searchVal) {
+                                handleClear();
                             }
-                            className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
-                        >
-                            <DynamicLucideIcon name="tune" size={20} aria-hidden="true" />
-                            {activeFilterCount > 0 && (
-                                <span
-                                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border border-white dark:border-[#242428] shadow-sm leading-none"
-                                    aria-hidden="true"
-                                >
-                                    {activeFilterCount}
-                                </span>
-                            )}
-                        </button>
-                    </div>
+                        }}
+                        className="text-sm font-black text-primary hover:text-primary/80 transition-colors whitespace-nowrap h-11 flex items-center"
+                    >
+                        Cancel
+                    </button>
+                </div>
+
+                {/* Filter Icon Button (only shown when collapsed) */}
+                <div
+                    className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
+                        isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4 pointer-events-none transition-all duration-[1200ms]' : 'max-w-[52px] opacity-100 scale-100 translate-x-0 transition-all duration-[200ms]'
+                    }`}
+                >
+                    <button
+                        type="button"
+                        onClick={handleOpenFilters}
+                        aria-label={
+                            activeFilterCount > 0
+                                ? `Filter & Sort — ${activeFilterCount} filters active`
+                                : 'Filter & Sort'
+                        }
+                        className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
+                    >
+                        <DynamicLucideIcon name="tune" size={20} aria-hidden="true" />
+                        {activeFilterCount > 0 && (
+                            <span
+                                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border border-white dark:border-[#242428] shadow-sm leading-none"
+                                aria-hidden="true"
+                            >
+                                {activeFilterCount}
+                            </span>
+                        )}
+                    </button>
                 </div>
             </div>
         );
