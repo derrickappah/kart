@@ -139,16 +139,52 @@ export default function FilterSidebar() {
     };
 
     const updateFilters = (cats, conds, min, max, campusValue, sortValue) => {
-        const params = new URLSearchParams();
-        if (searchParams?.get('search')) params.set('search', searchParams.get('search'));
+        const params = new URLSearchParams(searchParams.toString());
 
+        // Update or delete categories
         const filteredCategories = cats.filter(c => c !== 'All');
-        if (filteredCategories.length > 0) params.set('category', filteredCategories.join(','));
-        if (conds.length > 0) params.set('condition', conds.join(','));
-        if (min !== '' && !isNaN(Number(min)) && Number(min) >= 0) params.set('minPrice', min);
-        if (max !== '' && !isNaN(Number(max)) && Number(max) >= 0) params.set('maxPrice', max);
-        if (campusValue) params.set('campus', campusValue);
-        if (sortValue && sortValue !== 'newest') params.set('sort', sortValue);
+        if (filteredCategories.length > 0) {
+            params.set('category', filteredCategories.join(','));
+        } else {
+            params.delete('category');
+        }
+
+        // Update or delete conditions
+        if (conds.length > 0) {
+            params.set('condition', conds.join(','));
+        } else {
+            params.delete('condition');
+        }
+
+        // Update or delete prices (with sanitization checks)
+        if (min !== '' && !isNaN(Number(min)) && Number(min) >= 0) {
+            params.set('minPrice', min);
+        } else {
+            params.delete('minPrice');
+        }
+
+        if (max !== '' && !isNaN(Number(max)) && Number(max) >= 0) {
+            params.set('maxPrice', max);
+        } else {
+            params.delete('maxPrice');
+        }
+
+        // Update or delete campus
+        if (campusValue) {
+            params.set('campus', campusValue);
+        } else {
+            params.delete('campus');
+        }
+
+        // Update or delete sort options
+        if (sortValue && sortValue !== 'newest') {
+            params.set('sort', sortValue);
+        } else {
+            params.delete('sort');
+        }
+
+        // Reset page back to 1 when filters are adjusted
+        params.delete('page');
 
         const queryString = params.toString();
         startTransition(() => {
@@ -178,6 +214,7 @@ export default function FilterSidebar() {
     };
 
     const handleApply = () => {
+        if (isPriceRangeInvalid) return;
         updateFilters(selectedCategories, selectedConditions, minPrice, maxPrice, campus, sort);
         closeSidebar();
     };
@@ -192,6 +229,13 @@ export default function FilterSidebar() {
         updateFilters([], [], '', '', '', 'newest');
         closeSidebar();
     };
+
+    // Sanitize input helper to restrict text to positive digits and decimals
+    const sanitizePrice = (val) => {
+        return val.replace(/[^0-9.]/g, '');
+    };
+
+    const isPriceRangeInvalid = minPrice !== '' && maxPrice !== '' && Number(minPrice) > Number(maxPrice);
 
     if (!isOpen) return null;
 
@@ -259,7 +303,7 @@ export default function FilterSidebar() {
                                     onClick={() => setSort(opt.value)}
                                     className={`flex items-center gap-3 p-3.5 rounded-2xl transition-all border-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${sort === opt.value
                                         ? 'border-primary bg-primary/5 text-primary shadow-sm scale-[1.02]'
-                                        : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#34343a]'
+                                        : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                     }`}
                                 >
                                     <div className={`flex items-center justify-center size-9 rounded-xl ${sort === opt.value ? 'bg-primary text-white' : 'bg-white dark:bg-[#242428] text-gray-400'}`}>
@@ -323,18 +367,27 @@ export default function FilterSidebar() {
                                         </span>
                                         <input
                                             id={field.id}
-                                            type="number"
+                                            type="text"
+                                            inputMode="decimal"
                                             className="w-full bg-gray-50 dark:bg-[#2d2d32] border-none rounded-2xl py-4 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary transition-all placeholder:text-gray-300 outline-none focus:outline-none"
                                             placeholder={field.placeholder}
                                             value={field.val}
-                                            onChange={(e) => field.set(e.target.value)}
-                                            min="0"
-                                            step="any"
+                                            onChange={(e) => field.set(sanitizePrice(e.target.value))}
                                         />
                                     </div>
                                 </div>
                             ))}
                         </div>
+                        
+                        {/* Validation Error Message */}
+                        {isPriceRangeInvalid && (
+                            <div className="flex items-center gap-1.5 text-red-500 pl-1">
+                                <DynamicLucideIcon name="error" size={16} />
+                                <p className="text-xs font-black tracking-tight">
+                                    Min price cannot exceed Max price
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Condition Filters */}
@@ -351,7 +404,7 @@ export default function FilterSidebar() {
                                     aria-pressed={selectedConditions.includes(con)}
                                     className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 font-bold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selectedConditions.includes(con)
                                         ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]'
-                                        : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#34343a]'
+                                        : 'border-transparent bg-gray-50 dark:bg-[#2d2d32] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                     }`}
                                 >
                                     <DynamicLucideIcon
@@ -433,8 +486,12 @@ export default function FilterSidebar() {
                     <button
                         ref={lastFocusableRef}
                         onClick={handleApply}
-                        disabled={isPending}
-                        className="btn-primary w-full h-14 rounded-2xl shadow-xl shadow-primary/25 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                        disabled={isPending || isPriceRangeInvalid}
+                        className={`w-full h-14 rounded-2xl flex items-center justify-center font-bold text-white transition-all shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                            isPriceRangeInvalid 
+                                ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none' 
+                                : 'btn-primary shadow-primary/25 active:scale-[0.98]'
+                        }`}
                     >
                         {isPending
                             ? <div className="size-6 border-2 border-white border-t-transparent animate-spin rounded-full" aria-label="Applying filters…" />
