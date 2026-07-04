@@ -18,7 +18,7 @@ export default function FeaturedSlider({ products, wishlistIds }) {
         const container = containerRef.current;
         if (container && products.length > 0) {
             // Scroll to the start of the middle copy on mount
-            const cardWidth = 176; // 160px card width + 16px gap
+            const cardWidth = 180; // 160px card width + 20px gap
             const middleIndex = products.length;
             container.scrollLeft = middleIndex * cardWidth;
         }
@@ -44,7 +44,7 @@ export default function FeaturedSlider({ products, wishlistIds }) {
         <div 
             ref={containerRef}
             onScroll={handleScroll}
-            className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-4 scroll-smooth"
+            className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-5 scroll-smooth"
             style={{ WebkitOverflowScrolling: 'touch' }}
         >
             {tripledProducts.map((product, idx) => {
@@ -63,11 +63,6 @@ export default function FeaturedSlider({ products, wishlistIds }) {
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             
-                            {/* Premium Live Featured Badge */}
-                            <div className="absolute top-2.5 left-2.5 px-2.5 py-1 bg-white/95 dark:bg-[#1a1c22]/90 backdrop-blur-md text-[#0ea5e9] dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm flex items-center gap-1.5 z-20">
-                                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse shrink-0" />
-                                Featured
-                            </div>
 
                             {product.condition && (
                                 <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[9px] font-black text-white uppercase tracking-wider">
