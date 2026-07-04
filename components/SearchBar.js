@@ -98,15 +98,15 @@ function SearchInput({ placeholder, showFilter }) {
                     className={`absolute border [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${
                         isExpanded 
                             ? 'left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-200 dark:border-gray-700 rounded-2xl px-4 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent cursor-text transition-all duration-[900ms] delay-[300ms]' 
-                            : 'right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
+                            : 'left-[calc(100%-100px)] right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
                     <input
                         type="search"
-                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 text-center pl-10 pr-10 ${
+                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 text-center pl-7 pr-7 transition-all ${
                             isExpanded 
-                                ? 'opacity-100 translate-x-0 transition-all duration-500 delay-[400ms]' 
-                                : 'opacity-0 translate-x-2 pointer-events-none w-0 overflow-hidden transition-all duration-[100ms]'
+                                ? 'opacity-100 pointer-events-auto duration-500 delay-[400ms]' 
+                                : 'opacity-0 pointer-events-none duration-[100ms]'
                         }`}
                         placeholder={placeholder}
                         value={query}
