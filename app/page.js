@@ -67,7 +67,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
               href={`/marketplace/${product.id}`}
               className="min-w-[280px] group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
             >
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-200">
                 <Image
                   src={product.image_url || product.images?.[0] || '/placeholder.png'}
                   alt={product.title}
@@ -75,8 +75,14 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
                   sizes="280px"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                
+                {/* Premium Featured Badge */}
+                <div className="absolute top-3 left-3 px-2.5 py-1 bg-gradient-to-r from-blue-600 to-primary text-white rounded-lg text-[9px] font-black uppercase tracking-wider shadow-md">
+                  ⚡ Featured
+                </div>
+
                 {product.condition && (
-                  <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
+                  <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-black text-white uppercase tracking-widest border border-white/10">
                     {product.condition}
                   </div>
                 )}
@@ -119,51 +125,51 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
         <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Recommended for You</h2>
         <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">View New</Link>
       </div>
-      <div className="flex flex-col gap-6 px-5">
-        {latestProducts.map(product => (
-          <Link
-            key={product.id}
-            href={`/marketplace/${product.id}`}
-            className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-[#2d2d32] dark:shadow-none dark:border dark:border-gray-700/50 cursor-pointer"
-          >
-            <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-200">
-              <Image
-                src={product.image_url || product.images?.[0] || '/placeholder.png'}
-                alt={product.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 448px"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              {product.condition && (
-                <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
-                  {product.condition}
+      <div className="grid grid-cols-2 gap-4 px-5">
+        {latestProducts.map(product => {
+          const recReason = getRecReason(product);
+          const badgeText = recReason === "Highest Priority" ? "⭐ Top Pick" :
+                            recReason.includes("Highly requested") ? "✨ For You" :
+                            recReason.includes("Trending") ? "🔥 Popular" : "🔍 Matching";
+
+          return (
+            <Link
+              key={product.id}
+              href={`/marketplace/${product.id}`}
+              className="group flex flex-col gap-2 relative h-full w-full cursor-pointer"
+            >
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#2d2d32] border dark:border-gray-700/50">
+                <Image
+                  src={product.image_url || product.images?.[0] || '/placeholder.png'}
+                  alt={product.title}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 200px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                
+                {/* Recommendation Reason overlay */}
+                <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 dark:bg-black/70 backdrop-blur-md rounded-lg text-[9px] font-black text-primary dark:text-blue-400 uppercase tracking-wider shadow-sm border border-black/5 dark:border-white/5">
+                  {badgeText}
                 </div>
-              )}
-              <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
-            </div>
-            <div className="flex flex-col p-4">
-              <div className="mb-2 flex flex-wrap gap-2">
-                <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-black uppercase tracking-widest border border-primary/20">{getRecReason(product)}</span>
-                <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">{product.category || 'General'}</span>
-              </div>
-              <div className="mb-3 flex items-start justify-between">
-                <div className="pr-4 flex-1">
-                  <h3 className="text-lg font-bold leading-tight text-gray-900 dark:text-white line-clamp-2">{toSentenceCase(product.title)}</h3>
-                  <div className="mt-1 flex items-center gap-2">
-                    {product.seller?.avatar_url ? (
-                      <img src={product.seller.avatar_url} className="h-5 w-5 rounded-full object-cover" alt={product.seller.display_name} />
-                    ) : (
-                      <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[10px] text-white font-bold">{product.seller?.display_name?.[0] || 'U'}</div>
-                    )}
-                    <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 truncate">{product.seller?.display_name || 'Seller'}</p>
-                    {product.seller?.is_verified && <DynamicLucideIcon name="verified" className="text-primary text-[14px] font-bold" />}
+
+                {product.condition && (
+                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md text-[9px] font-black text-white uppercase tracking-wider">
+                    {product.condition}
                   </div>
-                </div>
-                <p className="shrink-0 text-xl font-black text-primary tracking-tighter">₵ {formatPrice(product.price)}</p>
+                )}
+                <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
               </div>
-            </div>
-          </Link>
-        ))}
+              <div className="flex flex-col gap-0.5 px-1">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(product.title)}</h3>
+                <p className="text-primary text-base font-extrabold">₵ {formatPrice(product.price)}</p>
+                <div className="flex items-center gap-1 text-gray-400">
+                  <DynamicLucideIcon name="location_on" size={14} className="text-[14px]" aria-hidden="true" />
+                  <p className="text-[10px] font-bold truncate uppercase">{product.campus || 'On Campus'}</p>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </>
   );
