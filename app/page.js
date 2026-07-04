@@ -53,6 +53,34 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
     return "Based on your search interest";
   };
 
+  const getBadgeStyle = (recReason) => {
+    if (recReason === "Highest Priority") {
+      return {
+        bg: "bg-indigo-50/95 dark:bg-[#1a1c2e]/90 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40",
+        dot: "bg-indigo-500",
+        label: "Top Pick"
+      };
+    } else if (recReason.includes("Highly requested")) {
+      return {
+        bg: "bg-rose-50/95 dark:bg-[#2e1a22]/90 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/40",
+        dot: "bg-rose-500",
+        label: "For You"
+      };
+    } else if (recReason.includes("Trending")) {
+      return {
+        bg: "bg-amber-50/95 dark:bg-[#2c2017]/90 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/40",
+        dot: "bg-amber-500",
+        label: "Popular"
+      };
+    } else {
+      return {
+        bg: "bg-teal-50/95 dark:bg-[#182a26]/90 text-teal-600 dark:text-teal-400 border-teal-100 dark:border-teal-900/40",
+        dot: "bg-teal-500",
+        label: "Matching"
+      };
+    }
+  };
+
   return (
     <>
       {/* Featured Section */}
@@ -65,60 +93,52 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
           const cardContent = (
             <Link
               href={`/marketplace/${product.id}`}
-              className="min-w-[250px] w-[250px] aspect-[3/4] group relative flex flex-col overflow-hidden rounded-[2rem] bg-gray-200 shadow-md hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100/10 dark:border-gray-800/30"
+              className="min-w-[210px] w-[210px] group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800/80 shadow-soft hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer"
             >
-              {/* Full-bleed Image with hover scale */}
-              <div className="absolute inset-0 w-full h-full">
+              {/* Landscape Image aspect-16/10 */}
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-200">
                 <Image
                   src={product.image_url || product.images?.[0] || '/placeholder.png'}
                   alt={product.title}
                   fill
-                  sizes="250px"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  sizes="210px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-              </div>
+                
+                {/* Premium Live Featured Badge */}
+                <div className="absolute top-2.5 left-2.5 px-2.5 py-1 bg-white/95 dark:bg-[#1a1c22]/90 backdrop-blur-md text-[#0ea5e9] dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm flex items-center gap-1.5 z-20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse shrink-0" />
+                  Featured
+                </div>
 
-              {/* Gradient overlay mask for high text contrast */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/10 z-10 transition-opacity duration-300 group-hover:opacity-90" />
-              
-              {/* Premium Featured Badge */}
-              <div className="absolute top-4 left-4 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md z-20">
-                ⚡ Featured
-              </div>
-
-              <div className="absolute top-4 right-4 z-20">
+                {product.condition && (
+                  <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[9px] font-black text-white uppercase tracking-wider">
+                    {product.condition}
+                  </div>
+                )}
                 <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
               </div>
 
-              {/* Bottom Info Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 z-20 flex flex-col gap-2">
-                {product.condition && (
-                  <span className="self-start px-2 py-0.5 bg-white/20 backdrop-blur-md rounded-md text-[9px] font-black text-white uppercase tracking-widest border border-white/10">
-                    {product.condition}
-                  </span>
-                )}
-                
-                <h3 className="text-base font-extrabold text-white line-clamp-1 leading-tight tracking-tight">
-                  {toSentenceCase(product.title)}
-                </h3>
-                
-                <div className="flex items-center justify-between mt-1 pt-2 border-t border-white/10">
-                  <p className="text-lg font-black text-sky-400">₵ {formatPrice(product.price)}</p>
-                  <div className="flex items-center gap-1.5 overflow-hidden max-w-[120px]">
+              {/* Compact bottom metadata */}
+              <div className="flex flex-col p-3">
+                <h3 className="text-xs font-black leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-sm font-extrabold text-primary">₵ {formatPrice(product.price)}</p>
+                  <div className="flex items-center gap-1 overflow-hidden max-w-[90px]">
                     {product.seller?.avatar_url ? (
                       <img 
                         src={product.seller.avatar_url} 
-                        className="h-5 w-5 rounded-full object-cover shrink-0 border border-white/20 shadow-sm" 
+                        className="h-4.5 w-4.5 rounded-full object-cover shrink-0 border border-gray-100 dark:border-gray-800" 
                         alt={product.seller.display_name} 
                       />
                     ) : (
-                      <div className="h-5 w-5 rounded-full bg-white/25 flex items-center justify-center text-[9px] text-white font-bold shrink-0 shadow-sm">
+                      <div className="h-4.5 w-4.5 rounded-full bg-primary/10 flex items-center justify-center text-[8px] text-primary font-bold shrink-0">
                         {product.seller?.display_name?.[0] || 'U'}
                       </div>
                     )}
-                    <span className="text-[11px] font-bold text-gray-200 truncate">{product.seller?.display_name || 'Seller'}</span>
+                    <span className="text-[10px] font-bold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</span>
                     {product.seller?.is_verified && (
-                      <DynamicLucideIcon name="verified" className="text-sky-400 text-[12px] font-bold shrink-0" />
+                      <DynamicLucideIcon name="verified" className="text-primary text-[10px] font-bold shrink-0" />
                     )}
                   </div>
                 </div>
@@ -146,9 +166,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
       <div className="grid grid-cols-2 gap-4 px-5">
         {latestProducts.map(product => {
           const recReason = getRecReason(product);
-          const badgeText = recReason === "Highest Priority" ? "⭐ Top Pick" :
-                            recReason.includes("Highly requested") ? "✨ For You" :
-                            recReason.includes("Trending") ? "🔥 Popular" : "🔍 Matching";
+          const badge = getBadgeStyle(recReason);
 
           return (
             <Link
@@ -165,13 +183,14 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 
-                {/* Recommendation Reason overlay */}
-                <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 dark:bg-black/70 backdrop-blur-md rounded-lg text-[9px] font-black text-primary dark:text-blue-400 uppercase tracking-wider shadow-sm border border-black/5 dark:border-white/5">
-                  {badgeText}
+                {/* Premium Recommendation Badge */}
+                <div className={`absolute top-2.5 left-2.5 px-2 py-0.5 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm border flex items-center gap-1.5 ${badge.bg}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${badge.dot}`} />
+                  {badge.label}
                 </div>
 
                 {product.condition && (
-                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md text-[9px] font-black text-white uppercase tracking-wider">
+                  <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[9px] font-black text-white uppercase tracking-wider">
                     {product.condition}
                   </div>
                 )}
