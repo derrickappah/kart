@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '../../utils/supabase/client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import SearchBar from '../SearchBar';
 
 const supabase = createClient();
 
@@ -105,18 +106,25 @@ export default function ConversationList() {
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-[#242428] font-display overflow-hidden">
-            <header className="flex-none sticky top-0 bg-white/80 dark:bg-[#242428]/80 backdrop-blur-md px-6 pt-6 pb-4 z-30">
-
-                {conversations.length > 0 && (
-                    <div className="group flex w-full items-center rounded-2xl bg-white dark:bg-[#232628] px-4 py-3.5 transition-all focus-within:ring-2 focus-within:ring-[#1daddd]/50 border border-gray-100 dark:border-gray-800 shadow-sm">
-                        <DynamicLucideIcon name="search" className="text-[#1daddd] text-[24px] font-bold" />
-                        <input
-                            type="text"
-                            className="ml-3 flex-1 bg-transparent text-base font-semibold text-gray-900 placeholder-gray-500 focus:outline-none dark:text-white dark:placeholder-gray-400 border-none p-0 focus:ring-0"
-                            placeholder="Search conversations..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+            <header className="flex-none sticky top-0 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 z-30 border-b border-gray-100/50 dark:border-gray-800/30">
+                {conversations.length > 0 ? (
+                    <SearchBar
+                        placeholder="Search conversations..."
+                        showFilter={true}
+                        hideFilter={true}
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        leftContent={
+                            <h1 className="text-2xl font-black text-gray-900 dark:text-white px-2">
+                                Messages
+                            </h1>
+                        }
+                    />
+                ) : (
+                    <div className="h-14 flex items-center px-2">
+                        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+                            Messages
+                        </h1>
                     </div>
                 )}
             </header>
