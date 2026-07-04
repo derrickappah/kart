@@ -8,12 +8,17 @@ import Image from 'next/image';
 export default function CheckoutClient({ product, user, walletBalance, serviceFee, feePercent, feeFixed }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet' or 'paystack'
     const [paymentError, setPaymentError] = useState(null);
 
     // Calculate totals: Buyer only pays the Marketplace Service Fee
     const price = parseFloat(product.price);
     const total = price + serviceFee;
+
+    // Determine balance affordability
+    const canAfford = walletBalance >= total;
+
+    // Pre-select payment method: wallet if they can afford, paystack otherwise
+    const [paymentMethod, setPaymentMethod] = useState(canAfford ? 'wallet' : 'paystack');
 
     // Determine image to show
     const productImage = product.images?.[0] || product.image_url;
@@ -23,9 +28,6 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
     useEffect(() => {
         setImgSrc(productImage || fallbackImage);
     }, [productImage]);
-
-    // Determine balance color
-    const canAfford = walletBalance >= total;
 
     const handleConfirmPay = async () => {
         setLoading(true);
@@ -144,28 +146,19 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                             </div>
                             <div className="flex justify-between pt-3 pb-1">
                                 <p className="text-[#0e181b] dark:text-white text-lg font-bold">Total</p>
-                                <p className="text-[#1daddd] text-xl font-extrabold">GHS {total.toFixed(2)}</p>
+                                <p className="text-[#0e7490] dark:text-primary-light text-xl font-extrabold">GHS {total.toFixed(2)}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Section: Payment Method Selection */}
-                    <div className="flex flex-col gap-3" role="radiogroup" aria-label="Payment method selection">
+                    <div className="flex flex-col gap-3" role="radiogroup" aria-label="Choose payment method">
                         <h3 className="text-[#333940] dark:text-gray-300 text-sm font-bold uppercase tracking-wider px-1">Choose Payment Method</h3>
 
                         {/* KART Wallet Option */}
                         <div
                             onClick={() => setPaymentMethod('wallet')}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    setPaymentMethod('wallet');
-                                }
-                            }}
-                            role="radio"
-                            aria-checked={paymentMethod === 'wallet'}
-                            tabIndex={0}
-                            className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]
+                            className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-3
                             ${paymentMethod === 'wallet'
                                     ? 'bg-[#1daddd]/5 border-[#1daddd] shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
                                     : 'bg-white dark:bg-[#1f2229] border-gray-100 dark:border-gray-800'}`}
@@ -177,54 +170,44 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold text-[#7A818C] uppercase tracking-tighter">KART Wallet</p>
-                                        <p className={`text-base font-bold ${canAfford ? 'text-[#42B883]' : 'text-red-500'}`}>
+                                        <p className={`text-base font-bold ${canAfford ? 'text-[#1e8a57] dark:text-[#42b883]' : 'text-red-600 dark:text-red-400'}`}>
                                             Balance: GHS {parseFloat(walletBalance).toFixed(2)}
                                         </p>
                                     </div>
                                 </div>
-                                <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#1daddd]' : 'border-gray-200'}`}>
+                                <button
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={paymentMethod === 'wallet'}
+                                    aria-label="Pay with KART Wallet"
+                                    onClick={(e) => { e.stopPropagation(); setPaymentMethod('wallet'); }}
+                                    className={`size-6 rounded-full border-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd] ${paymentMethod === 'wallet' ? 'border-[#1daddd]' : 'border-gray-200'}`}
+                                >
                                     {paymentMethod === 'wallet' && <div className="size-3 rounded-full bg-[#1daddd]"></div>}
-                                </div>
+                                </button>
                             </div>
 
                             {!canAfford && paymentMethod === 'wallet' && (
                                 <div className="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 p-2 rounded-lg">
-                                    <DynamicLucideIcon name="error" className="text-red-500 text-sm" />
-                                    <p className="text-red-500 text-[11px] font-medium leading-tight">Insufficient balance. Please top up or pay with card.</p>
+                                    <DynamicLucideIcon name="error" className="text-red-600 dark:text-red-400 text-sm" />
+                                    <p className="text-red-600 dark:text-red-400 text-[11px] font-medium leading-tight">Insufficient balance. Please top up or pay with card.</p>
                                 </div>
                             )}
 
-                            <div 
+                            <button 
+                                type="button"
                                 onClick={(e) => { e.stopPropagation(); router.push('/dashboard/wallet'); }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        router.push('/dashboard/wallet');
-                                    }
-                                }}
-                                role="button"
-                                tabIndex={0}
-                                className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors self-end text-[#0e181b] dark:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]"
+                                className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors self-end text-[#0e181b] dark:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]"
                             >
                                 <DynamicLucideIcon name="add" className="text-sm" />
                                 <span className="text-sm font-bold">Top Up</span>
-                            </div>
+                            </button>
                         </div>
 
                         {/* Direct Paystack Payment Option */}
                         <div
                             onClick={() => setPaymentMethod('paystack')}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    setPaymentMethod('paystack');
-                                }
-                            }}
-                            role="radio"
-                            aria-checked={paymentMethod === 'paystack'}
-                            tabIndex={0}
-                            className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd]
+                            className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between
                             ${paymentMethod === 'paystack'
                                     ? 'bg-[#1daddd]/5 border-[#1daddd] shadow-[0px_4px_12px_rgba(29,173,221,0.1)]'
                                     : 'bg-white dark:bg-[#1f2229] border-gray-100 dark:border-gray-800'}`}
@@ -238,16 +221,23 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                                     <p className="text-[#0e181b] dark:text-white text-base font-bold">Paystack (Momo/Card)</p>
                                 </div>
                             </div>
-                            <div className={`size-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'paystack' ? 'border-[#1daddd]' : 'border-gray-200'}`}>
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={paymentMethod === 'paystack'}
+                                aria-label="Pay with Paystack"
+                                onClick={(e) => { e.stopPropagation(); setPaymentMethod('paystack'); }}
+                                className={`size-6 rounded-full border-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd] ${paymentMethod === 'paystack' ? 'border-[#1daddd]' : 'border-gray-200'}`}
+                            >
                                 {paymentMethod === 'paystack' && <div className="size-3 rounded-full bg-[#1daddd]"></div>}
-                            </div>
+                            </button>
                         </div>
                     </div>
 
                     {/* Safety Note */}
                     <div className="bg-[#e9f7fb] dark:bg-[#1daddd]/10 p-4 rounded-xl border border-[#1daddd]/20 flex gap-3">
-                        <DynamicLucideIcon name="verified_user" className="text-[#1daddd] shrink-0" />
-                        <p className="text-[#4f8596] dark:text-[#1daddd]/90 text-sm leading-snug font-medium">
+                        <DynamicLucideIcon name="verified_user" className="text-[#0f7295] dark:text-[#1daddd] shrink-0" />
+                        <p className="text-[#1b657e] dark:text-[#1daddd]/90 text-sm leading-snug font-medium">
                             <span className="font-bold">Safety Note:</span> Your funds are held securely in escrow and only released once you confirm the handover.
                         </p>
                     </div>
@@ -267,9 +257,9 @@ export default function CheckoutClient({ product, user, walletBalance, serviceFe
                     <button
                         onClick={handleConfirmPay}
                         disabled={loading || (paymentMethod === 'wallet' && !canAfford)}
-                        className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1daddd]
+                        className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0e7490]
                         ${(paymentMethod === 'paystack' || canAfford)
-                                ? 'bg-[#1daddd] hover:bg-[#1daddd]/90 text-white shadow-[#1daddd]/20'
+                                ? 'bg-[#0e7490] hover:bg-[#0b5f76] text-white shadow-[0_10px_20px_-10px_rgba(14,116,144,0.4)]'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'}`}
                     >
                         {loading

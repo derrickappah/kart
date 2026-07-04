@@ -4,10 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '../../../utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import BuyButton from './BuyButton';
-import { toSentenceCase, formatPrice } from '../../../utils/formatters';
-import { timeAgo } from '../../../utils/dateUtils';
+import { toSentenceCase, formatPrice, seededShuffle } from '@/utils/formatters';
+import { timeAgo } from '@/utils/dateUtils';
 
 export default function ProductDetailsClient({ product }) {
     const [loadingChat, setLoadingChat] = useState(false);
@@ -20,7 +20,8 @@ export default function ProductDetailsClient({ product }) {
     const [shareFeedback, setShareFeedback] = useState(null);
 
     // Initialize with first image from array if available, otherwise fallback to image_url
-    const images = (product?.images && product.images.length > 0) ? product.images : [product?.image_url];
+    const rawImages = (product?.images && Array.isArray(product.images)) ? product.images.filter(Boolean) : [];
+    const images = rawImages.length > 0 ? rawImages : (product?.image_url ? [product.image_url] : ['/placeholder.png']);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
@@ -67,6 +68,7 @@ export default function ProductDetailsClient({ product }) {
 
     // Combined data fetch — runs on mount, all requests run in parallel
     useEffect(() => {
+        let active = true;
         // Create a fresh client per component instance (not module-level)
         // to prevent cross-user data leakage and stale session issues.
         const supabase = createClient();
@@ -86,12 +88,12 @@ export default function ProductDetailsClient({ product }) {
                 .eq('user_id', userId)
                 .eq('product_id', product.id)
                 .maybeSingle();
-            setIsInWishlist(!!wishlistItem);
+            if (active) setIsInWishlist(!!wishlistItem);
         };
 
         const fetchSimilar = async () => {
             if (!product?.category) {
-                setLoadingSimilar(false);
+                if (active) setLoadingSimilar(false);
                 return;
             }
             const { data } = await supabase
@@ -101,17 +103,18 @@ export default function ProductDetailsClient({ product }) {
                 .eq('status', 'Active')
                 .neq('id', product.id)
                 .limit(12);
-            if (data) {
-                // Use a seeded-style deterministic slice rather than Math.random()
-                // to prevent UI flicker on hydration
-                setSimilarProducts(data.slice(0, 4));
+            if (active) {
+                if (data) {
+                    const shuffled = seededShuffle(data, product.id.charCodeAt(0) || 42);
+                    setSimilarProducts(shuffled.slice(0, 4));
+                }
+                setLoadingSimilar(false);
             }
-            setLoadingSimilar(false);
         };
 
         const init = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
+            if (active && user) {
                 setIsOwner(user.id === product.seller_id);
             }
             await Promise.all([
@@ -121,6 +124,10 @@ export default function ProductDetailsClient({ product }) {
         };
 
         init();
+
+        return () => {
+            active = false;
+        };
     }, [product.id, product.seller_id, product.category]);
 
     const handleWishlistToggle = async () => {
@@ -169,20 +176,23 @@ export default function ProductDetailsClient({ product }) {
             return;
         }
         try {
-            const { data: myConvs } = await supabase
+            const { data: existingConv, error: fetchError } = await supabase
                 .from('conversations')
-                .select('*')
-                .contains('participants', [user.id]);
-            const existingConv = myConvs?.find(c => c.participants.includes(product.seller_id));
+                .select('id')
+                .contains('participants', [user.id, product.seller_id])
+                .maybeSingle();
+
+            if (fetchError) throw fetchError;
+
             if (existingConv) {
                 router.push(`/dashboard/messages/${existingConv.id}`);
             } else {
-                const { data: newConv, error } = await supabase
+                const { data: newConv, error: insertError } = await supabase
                     .from('conversations')
                     .insert([{ participants: [user.id, product.seller_id] }])
                     .select()
                     .single();
-                if (error) throw error;
+                if (insertError) throw insertError;
                 router.push(`/dashboard/messages/${newConv.id}`);
             }
         } catch (error) {
@@ -233,7 +243,7 @@ export default function ProductDetailsClient({ product }) {
                 <button
                     onClick={() => router.back()}
                     aria-label="Go back"
-                    className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >
                     <DynamicLucideIcon name="arrow_back" aria-hidden="true" />
                 </button>
@@ -250,7 +260,7 @@ export default function ProductDetailsClient({ product }) {
                     <button
                         onClick={handleShare}
                         aria-label="Share this listing"
-                        className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                     >
                         <DynamicLucideIcon name="share" aria-hidden="true" />
                     </button>
@@ -259,9 +269,9 @@ export default function ProductDetailsClient({ product }) {
                         disabled={loadingWishlist}
                         aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
                         aria-pressed={isInWishlist}
-                        className={`pointer-events-auto size-11 flex items-center justify-center rounded-full backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 ${isInWishlist ? 'bg-primary text-white' : 'bg-white/20 text-white'}`}
+                        className={`pointer-events-auto size-11 flex items-center justify-center rounded-full backdrop-blur-md border border-white/10 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 ${isInWishlist ? 'bg-primary text-white border-transparent' : 'bg-black/45 hover:bg-black/60 text-white'}`}
                     >
-                        <DynamicLucideIcon name="favorite" className={`${isInWishlist ? 'fill-current' : ''}`} aria-hidden="true" />
+                        <DynamicLucideIcon name="favorite" fill={isInWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
                     </button>
                 </div>
             </div>
@@ -310,7 +320,7 @@ export default function ProductDetailsClient({ product }) {
 
                     {/* Pagination Dots */}
                     {images.length > 1 && (
-                        <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-2 z-10" aria-hidden="true">
+                        <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-2 z-10">
                             {images.map((_, idx) => (
                                 <button
                                     key={idx}
@@ -341,7 +351,7 @@ export default function ProductDetailsClient({ product }) {
                         <h1 className="text-[#0e181b] dark:text-white text-3xl font-extrabold leading-tight mt-2">
                             {toSentenceCase(product.title)}
                         </h1>
-                        <p className="text-primary text-3xl font-bold mt-2" aria-label={`Price: ₵ ${formatPrice(product.price)}`}>
+                        <p className="text-[#0f7295] dark:text-primary-light text-3xl font-bold mt-2" aria-label={`Price: ₵ ${formatPrice(product.price)}`}>
                             ₵ {formatPrice(product.price)}
                         </p>
                     </div>
@@ -353,7 +363,7 @@ export default function ProductDetailsClient({ product }) {
                         aria-label={`View ${product.seller?.display_name || 'seller'}'s profile`}
                     >
                         <div className="flex items-center gap-4">
-                            <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/20 overflow-hidden shrink-0">
+                            <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-[#0f7295] dark:text-primary ring-2 ring-primary/20 overflow-hidden shrink-0">
                                 {product.seller?.avatar_url ? (
                                     <Image
                                         src={product.seller.avatar_url}
@@ -369,13 +379,24 @@ export default function ProductDetailsClient({ product }) {
                                 )}
                             </div>
                             <div className="flex flex-col">
-                                <p className="font-bold text-base">{product.seller?.display_name || 'Anonymous'}</p>
+                                <div className="font-bold text-base flex items-center gap-1.5">
+                                    <span>{product.seller?.display_name || 'Anonymous'}</span>
+                                    {product.seller?.is_verified && (
+                                        <DynamicLucideIcon
+                                            name="verified"
+                                            size={16}
+                                            className="text-[#1daddd] shrink-0"
+                                            fill="currentColor"
+                                            aria-label="Verified Seller"
+                                        />
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-1">
-                                    <DynamicLucideIcon name="star" size={14} className="text-yellow-400 text-sm fill-current" aria-hidden="true" />
+                                    <DynamicLucideIcon name="star" size={14} fill="currentColor" className="text-yellow-400 text-sm" aria-hidden="true" />
                                     <span className="text-sm font-medium">
                                         {product.seller?.average_rating ? parseFloat(product.seller.average_rating).toFixed(1) : '0.0'}
                                     </span>
-                                    <span className="text-xs text-slate-500">• {product.seller?.total_reviews || 0} reviews</span>
+                                    <span className="text-xs text-slate-600 dark:text-slate-400">• {product.seller?.total_reviews || 0} reviews</span>
                                 </div>
                             </div>
                         </div>
@@ -476,7 +497,7 @@ export default function ProductDetailsClient({ product }) {
                             onClick={handleContactSeller}
                             disabled={loadingChat}
                             aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
-                            className="flex-1 h-14 rounded-2xl border border-primary/20 text-primary font-bold text-base flex items-center justify-center gap-3 bg-primary/[0.04] dark:bg-primary/10 hover:bg-primary/10 active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="flex-1 h-14 rounded-2xl border border-primary/20 text-[#0f7295] dark:text-primary-light font-bold text-base flex items-center justify-center gap-3 bg-primary/[0.04] dark:bg-primary/10 hover:bg-primary/10 active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             {loadingChat
                                 ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />

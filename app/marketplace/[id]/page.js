@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import ProductDetailsClient from './ProductDetailsClient';
 import Link from 'next/link';
-import { toSentenceCase, formatPrice } from '../../../utils/formatters';
+import { toSentenceCase, formatPrice } from '@/utils/formatters';
 
 /**
  * ISR revalidation: 60 seconds keeps sold/removed listings from being
@@ -98,5 +98,5 @@ export default async function ProductDetails({ params }) {
         );
     }
 
-    return <ProductDetailsClient product={product} />;
+    return <ProductDetailsClient key={product.id} product={product} />;
 }

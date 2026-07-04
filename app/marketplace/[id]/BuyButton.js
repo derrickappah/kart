@@ -62,7 +62,7 @@ export default function BuyButton({ product }) {
             <button
                 onClick={handleBuyNow}
                 disabled={loading}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-[#159ac6] text-white font-bold text-base flex items-center justify-center gap-3 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.5)] active:scale-[0.98] transition-all disabled:opacity-50 whitespace-nowrap px-6"
+                className="w-full h-14 rounded-2xl bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-gradient-to-r dark:from-primary dark:to-[#159ac6] text-white font-bold text-base flex items-center justify-center gap-3 shadow-[0_10px_20px_-10px_rgba(14,116,144,0.4)] dark:shadow-[0_10px_20px_-10px_rgba(29,173,221,0.5)] active:scale-[0.98] transition-all disabled:opacity-50 whitespace-nowrap px-6"
             >
                 <DynamicLucideIcon name="shopping_bag" className="text-[22px]" />
                 {loading ? 'Processing...' : 'Buy Now'}
