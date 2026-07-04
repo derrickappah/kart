@@ -16,6 +16,7 @@ function SearchInput({ placeholder, showFilter }) {
     const [prevSearch, setPrevSearch] = useState(searchVal);
     const [isPending, startTransition] = useTransition();
     const [isExpanded, setIsExpanded] = useState(!!searchVal);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     // Sync input value with external URL changes (e.g. back button, clears)
     if (searchVal !== prevSearch) {
@@ -65,6 +66,8 @@ function SearchInput({ placeholder, showFilter }) {
         window.dispatchEvent(new CustomEvent('open-filters'));
     };
 
+    const showHighlight = isExpanded && isAnimating;
+
     // Header layout with complex transitions for expanded/collapsed states
     if (showFilter) {
         return (
@@ -94,13 +97,21 @@ function SearchInput({ placeholder, showFilter }) {
                     onClick={() => {
                         if (!isExpanded) {
                             setIsExpanded(true);
+                            setIsAnimating(true);
+                            setTimeout(() => {
+                                setIsAnimating(false);
+                            }, 900);
                         }
                     }}
                     role="search"
                     aria-label="Search marketplace listings"
                     className={`absolute border [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${
                         isExpanded 
-                            ? 'flex items-center left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-200 dark:border-gray-700 rounded-2xl px-4 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent cursor-text transition-all duration-[900ms]' 
+                            ? `flex items-center left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] rounded-2xl px-4 shadow-soft cursor-text transition-all duration-[900ms] ${
+                                showHighlight 
+                                    ? 'ring-2 ring-primary border-transparent' 
+                                    : 'ring-0 border-gray-200 dark:border-gray-700'
+                              }`
                             : 'flex items-center left-[calc(100%-100px)] right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
@@ -108,7 +119,7 @@ function SearchInput({ placeholder, showFilter }) {
                     <input
                         type="text"
                         inputMode="search"
-                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 text-left pl-7 pr-10 transition-all ${
+                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 dark:text-white border-none p-0 text-left pl-7 pr-10 transition-all outline-none focus:outline-none focus:ring-0 focus:ring-transparent focus:border-transparent focus-visible:outline-none focus-visible:ring-0 shadow-none focus:shadow-none ${
                             isExpanded 
                                 ? 'opacity-100 pointer-events-auto duration-500 delay-[400ms]' 
                                 : 'opacity-0 pointer-events-none duration-[100ms]'
@@ -149,6 +160,10 @@ function SearchInput({ placeholder, showFilter }) {
                     onClick={() => {
                         if (!isExpanded) {
                             setIsExpanded(true);
+                            setIsAnimating(true);
+                            setTimeout(() => {
+                                setIsAnimating(false);
+                            }, 900);
                         }
                     }}
                     className={`absolute h-11 flex items-center justify-center [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] z-20 ${
@@ -173,6 +188,7 @@ function SearchInput({ placeholder, showFilter }) {
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsExpanded(false);
+                            setIsAnimating(false);
                             if (searchVal) {
                                 handleClear();
                             }
