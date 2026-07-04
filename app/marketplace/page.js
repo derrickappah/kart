@@ -69,16 +69,30 @@ export default async function Marketplace({ searchParams }) {
         .eq('status', 'Active');
 
     if (params?.category) {
-        const categories = params.category.split(',').slice(0, 20); // limit array length
-        query = categories.length === 1
-            ? query.eq('category', categories[0])
-            : query.in('category', categories);
+        const categories = params.category
+            .split(',')
+            .map(c => c.trim())
+            .filter(Boolean)
+            .slice(0, 20); // limit array length
+        
+        if (categories.length > 0) {
+            query = categories.length === 1
+                ? query.eq('category', categories[0])
+                : query.in('category', categories);
+        }
     }
     if (params?.condition) {
-        const conditions = params.condition.split(',').slice(0, 10);
-        query = conditions.length === 1
-            ? query.eq('condition', conditions[0])
-            : query.in('condition', conditions);
+        const conditions = params.condition
+            .split(',')
+            .map(c => c.trim())
+            .filter(Boolean)
+            .slice(0, 10);
+            
+        if (conditions.length > 0) {
+            query = conditions.length === 1
+                ? query.eq('condition', conditions[0])
+                : query.in('condition', conditions);
+        }
     }
     if (minPrice !== null) query = query.gte('price', minPrice);
     if (maxPrice !== null) query = query.lte('price', maxPrice);
@@ -106,6 +120,11 @@ export default async function Marketplace({ searchParams }) {
             : Promise.resolve({ data: [] }),
     ]);
     const productsRes = wishlistProduct;
+    const hasDbError = !!productsRes.error;
+
+    if (productsRes.error) {
+        console.error('Error fetching marketplace products:', productsRes.error);
+    }
 
     const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
     const rawProducts = productsRes.data || [];
@@ -145,6 +164,11 @@ export default async function Marketplace({ searchParams }) {
     const hasActiveFilters = !!(params?.category || params?.condition || params?.minPrice || params?.maxPrice || params?.campus);
     const hasActiveSearch = !!searchQuery;
 
+    // Build intelligent reset URL that preserves active text search query
+    const clearFiltersHref = searchQuery
+        ? `/marketplace?search=${encodeURIComponent(searchQuery)}`
+        : '/marketplace';
+
     return (
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
@@ -154,7 +178,23 @@ export default async function Marketplace({ searchParams }) {
 
                 <main className="px-4 pt-4 flex-1">
                     <div className="grid grid-cols-2 gap-4 pb-8">
-                        {products && products.length > 0 ? (
+                        {hasDbError ? (
+                            <div className="col-span-2 py-16 px-6 text-center flex flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl text-red-500">
+                                <DynamicLucideIcon name="report" className="text-4xl mb-3 opacity-80" aria-hidden="true" />
+                                <p className="font-bold text-red-900 dark:text-red-300">
+                                    Failed to retrieve listings
+                                </p>
+                                <p className="text-xs text-red-600 dark:text-red-400 mt-1 max-w-xs mx-auto">
+                                    There was an issue communicating with the database. Please try again.
+                                </p>
+                                <Link
+                                    href="/marketplace"
+                                    className="mt-4 px-5 py-2.5 bg-red-600 hover:bg-red-750 text-white rounded-2xl text-xs font-bold shadow-md shadow-red-500/20 transition-all active:scale-[0.98]"
+                                >
+                                    Retry Connection
+                                </Link>
+                            </div>
+                        ) : products && products.length > 0 ? (
                             products.map((p) => {
                                 const cardContent = (
                                     <Link
@@ -218,7 +258,7 @@ export default async function Marketplace({ searchParams }) {
                                 </p>
                                 {(hasActiveSearch || hasActiveFilters) && (
                                     <Link
-                                        href="/marketplace"
+                                        href={clearFiltersHref}
                                         className="mt-4 text-primary font-bold text-sm hover:underline"
                                     >
                                         Clear all filters
