@@ -108,7 +108,7 @@ function SearchInput({ placeholder, showFilter }) {
                     <input
                         type="text"
                         inputMode="search"
-                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 text-center pl-6 pr-6 transition-all ${
+                        className={`w-full bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white border-none p-0 focus:ring-0 text-left pl-7 pr-10 transition-all ${
                             isExpanded 
                                 ? 'opacity-100 pointer-events-auto duration-500 delay-[400ms]' 
                                 : 'opacity-0 pointer-events-none duration-[100ms]'
