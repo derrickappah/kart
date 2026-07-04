@@ -18,7 +18,7 @@ export default function FeaturedSlider({ products, wishlistIds }) {
         const container = containerRef.current;
         if (container && products.length > 0) {
             // Scroll to the start of the middle copy on mount
-            const cardWidth = 226; // 210px card width + 16px gap
+            const cardWidth = 176; // 160px card width + 16px gap
             const middleIndex = products.length;
             container.scrollLeft = middleIndex * cardWidth;
         }
@@ -51,15 +51,15 @@ export default function FeaturedSlider({ products, wishlistIds }) {
                 const cardContent = (
                     <Link
                         href={`/marketplace/${product.id}`}
-                        className="min-w-[210px] w-[210px] flex flex-col overflow-hidden rounded-xl bg-white dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 shadow-soft hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                        className="min-w-[160px] w-[160px] group flex flex-col gap-2 relative h-full cursor-pointer shrink-0"
                     >
-                        {/* Landscape Image aspect-16/10 */}
-                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-250 dark:bg-gray-800">
+                        {/* 4:5 Aspect Ratio Image container with grey border */}
+                        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-[#2d2d32] border dark:border-gray-700/50">
                             <Image
                                 src={product.image_url || product.images?.[0] || '/placeholder.png'}
                                 alt={product.title}
                                 fill
-                                sizes="210px"
+                                sizes="160px"
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             
@@ -77,28 +77,13 @@ export default function FeaturedSlider({ products, wishlistIds }) {
                             <WishlistButton productId={product.id} initialIsSaved={wishlistIds.includes(product.id)} />
                         </div>
 
-                        {/* Compact bottom metadata */}
-                        <div className="flex flex-col p-3">
-                            <h3 className="text-xs font-bold leading-tight text-gray-900 dark:text-white line-clamp-1">{toSentenceCase(product.title)}</h3>
-                            <div className="mt-2 flex items-center justify-between">
-                                <p className="text-sm font-extrabold text-primary">₵ {formatPrice(product.price)}</p>
-                                <div className="flex items-center gap-1 overflow-hidden max-w-[90px]">
-                                    {product.seller?.avatar_url ? (
-                                        <img 
-                                            src={product.seller.avatar_url} 
-                                            className="h-4.5 w-4.5 rounded-full object-cover shrink-0 border border-gray-100 dark:border-gray-800" 
-                                            alt={product.seller.display_name} 
-                                        />
-                                    ) : (
-                                        <div className="h-4.5 w-4.5 rounded-full bg-primary/10 flex items-center justify-center text-[8px] text-primary font-bold shrink-0">
-                                            {product.seller?.display_name?.[0] || 'U'}
-                                        </div>
-                                    )}
-                                    <span className="text-[10px] font-bold text-gray-500 truncate">{product.seller?.display_name || 'Seller'}</span>
-                                    {product.seller?.is_verified && (
-                                        <DynamicLucideIcon name="verified" className="text-primary text-[10px] font-bold shrink-0" />
-                                    )}
-                                </div>
+                        {/* Identical metadata structure */}
+                        <div className="flex flex-col gap-0.5 px-1">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{toSentenceCase(product.title)}</h3>
+                            <p className="text-primary text-base font-extrabold">₵ {formatPrice(product.price)}</p>
+                            <div className="flex items-center gap-1 text-gray-400">
+                                <DynamicLucideIcon name="location_on" size={14} className="text-[14px]" aria-hidden="true" />
+                                <p className="text-[10px] font-bold truncate uppercase">{product.campus || 'On Campus'}</p>
                             </div>
                         </div>
                     </Link>
