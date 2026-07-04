@@ -3,6 +3,7 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function UserManagementClient({ initialUsers, stats = {} }) {
     const [users, setUsers] = useState(initialUsers);
@@ -35,6 +36,30 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
             router.refresh();
         } catch (err) {
             alert('Error updating user: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleAdmin = async (userId, currentStatus) => {
+        if (!confirm(`Are you sure you want to ${currentStatus ? 'revoke admin status from' : 'promote'} this user ${currentStatus ? 'to a regular user' : 'to an admin'}?`)) return;
+
+        setLoading(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ is_admin: !currentStatus })
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            // Update local state for immediate UI feedback
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_admin: !currentStatus } : u));
+
+            // Still refresh in background to sync server data
+            router.refresh();
+        } catch (err) {
+            alert('Error updating admin status: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -111,15 +136,17 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                             <tr key={user.id} className="hover:bg-primary/[0.02] transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary overflow-hidden">
+                                        <Link href={`/dashboard/admin/users/${user.id}`} className="size-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                                             {user.avatar_url ? (
                                                 <img src={user.avatar_url} alt="" className="size-full object-cover" />
                                             ) : (
                                                 user.display_name?.[0]?.toUpperCase() || 'U'
                                             )}
-                                        </div>
+                                        </Link>
                                         <div>
-                                            <p className="text-sm font-black text-[#111618] dark:text-gray-200 group-hover:text-primary transition-colors">{user.display_name || 'Anonymous'}</p>
+                                            <Link href={`/dashboard/admin/users/${user.id}`} className="hover:underline">
+                                                <p className="text-sm font-black text-[#111618] dark:text-gray-200 group-hover:text-primary transition-colors">{user.display_name || 'Anonymous'}</p>
+                                            </Link>
                                             <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-tighter">{user.email}</p>
                                         </div>
                                     </div>
@@ -146,9 +173,12 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center justify-center gap-2">
-                                        <button className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20">
+                                        <Link 
+                                            href={`/dashboard/admin/users/${user.id}`}
+                                            className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20"
+                                        >
                                             <DynamicLucideIcon name="visibility" className="text-[18px]" />
-                                        </button>
+                                        </Link>
                                         <button
                                             onClick={() => toggleBan(user.id, user.banned)}
                                             disabled={loading || user.is_admin}
@@ -159,7 +189,15 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                                         >
                                             <DynamicLucideIcon name={user.banned ? 'undo' : 'block'} className="text-[18px]" />
                                         </button>
-                                        <button className="size-8 rounded-lg bg-background-light dark:bg-[#212b30] flex items-center justify-center text-[#4b636c] hover:text-primary transition-colors border border-transparent hover:border-primary/20">
+                                        <button
+                                            onClick={() => toggleAdmin(user.id, user.is_admin)}
+                                            disabled={loading}
+                                            className={`size-8 rounded-lg flex items-center justify-center transition-colors border border-transparent ${user.is_admin
+                                                ? 'bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 hover:border-purple-500/20'
+                                                : 'bg-background-light dark:bg-[#212b30] text-[#4b636c] hover:text-primary border border-transparent hover:border-primary/20'
+                                                }`}
+                                            title={user.is_admin ? "Revoke Admin" : "Make Admin"}
+                                        >
                                             <DynamicLucideIcon name="admin_panel_settings" className="text-[18px]" />
                                         </button>
                                     </div>

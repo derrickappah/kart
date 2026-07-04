@@ -28,6 +28,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
         { href: '/dashboard/admin/refund-requests', label: 'Refunds', icon: 'keyboard_return' },
         { href: '/dashboard/admin/reports', label: 'Reports', icon: 'analytics' },
         { href: '/dashboard/admin/withdrawals', label: 'Withdrawals', icon: 'payments' },
+        { href: '/dashboard/admin/transactions', label: 'Transactions', icon: 'history' },
         { href: '/dashboard/admin/reviews', label: 'Reviews', icon: 'star' },
         { href: '/dashboard/admin/subscriptions', label: 'Subscriptions', icon: 'card_membership' },
         { href: '/dashboard/admin/advertisements', label: 'Advertisements', icon: 'campaign' },
