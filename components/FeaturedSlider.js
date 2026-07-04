@@ -18,7 +18,7 @@ export default function FeaturedSlider({ products, wishlistIds }) {
         const container = containerRef.current;
         if (container && products.length > 0) {
             // Scroll to the start of the middle copy on mount
-            const cardWidth = 180; // 160px card width + 20px gap
+            const cardWidth = 176; // 160px card width + 16px gap
             const middleIndex = products.length;
             container.scrollLeft = middleIndex * cardWidth;
         }
@@ -44,7 +44,7 @@ export default function FeaturedSlider({ products, wishlistIds }) {
         <div 
             ref={containerRef}
             onScroll={handleScroll}
-            className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-5 scroll-smooth"
+            className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar space-x-4 scroll-smooth"
             style={{ WebkitOverflowScrolling: 'touch' }}
         >
             {tripledProducts.map((product, idx) => {
