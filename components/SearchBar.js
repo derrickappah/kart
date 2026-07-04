@@ -100,8 +100,8 @@ function SearchInput({ placeholder, showFilter }) {
                     aria-label="Search marketplace listings"
                     className={`absolute border [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${
                         isExpanded 
-                            ? 'left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-200 dark:border-gray-700 rounded-2xl px-4 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent cursor-text transition-all duration-[900ms] delay-[300ms]' 
-                            : 'left-[calc(100%-100px)] right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
+                            ? 'flex items-center left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-200 dark:border-gray-700 rounded-2xl px-4 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent cursor-text transition-all duration-[900ms]' 
+                            : 'flex items-center left-[calc(100%-100px)] right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
                     {/* Centered Input element with symmetric clearance padding */}
@@ -164,7 +164,7 @@ function SearchInput({ placeholder, showFilter }) {
                 <div
                     className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
                         isExpanded 
-                            ? 'max-w-[70px] opacity-100 translate-x-0 transition-all duration-[900ms] delay-[300ms]' 
+                            ? 'max-w-[70px] opacity-100 translate-x-0 transition-all duration-[900ms]' 
                             : 'max-w-0 opacity-0 translate-x-4 pointer-events-none transition-all duration-[150ms]'
                     }`}
                 >
