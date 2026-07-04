@@ -143,7 +143,7 @@ function SearchInput({ placeholder, showFilter }) {
                         type="button"
                         onClick={() => setIsExpanded(true)}
                         aria-label="Search marketplace"
-                        className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+                        className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                     >
                         <DynamicLucideIcon name="search" size={20} aria-hidden="true" />
                     </button>
@@ -157,7 +157,7 @@ function SearchInput({ placeholder, showFilter }) {
                                 ? `Filter & Sort — ${activeFilterCount} filters active`
                                 : 'Filter & Sort'
                         }
-                        className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
+                        className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
                     >
                         <DynamicLucideIcon name="tune" size={20} aria-hidden="true" />
                         {activeFilterCount > 0 && (

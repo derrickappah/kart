@@ -148,7 +148,7 @@ export default async function Marketplace({ searchParams }) {
     return (
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
-                <header className="bg-white/95 dark:bg-[#242428]/95 border-b border-gray-100 dark:border-gray-800 px-4 py-4">
+                <header className="bg-white/95 dark:bg-[#242428]/95 px-4 py-4">
                     <SearchBar placeholder="Search campus finds..." showFilter={true} />
                 </header>
 
