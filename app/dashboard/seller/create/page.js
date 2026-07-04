@@ -15,6 +15,7 @@ export default function CreateListingPage() {
     const [imageFiles, setImageFiles] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+    const [verificationStatus, setVerificationStatus] = useState(null);
     const [checkingSubscription, setCheckingSubscription] = useState(true);
 
     const isSubmittingRef = useRef(false);
@@ -58,9 +59,9 @@ export default function CreateListingPage() {
         }
     };
 
-    // Check subscription status on mount
+    // Check subscription and verification status on mount
     useEffect(() => {
-        const checkSubscription = async () => {
+        const checkAccess = async () => {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) {
@@ -68,11 +69,22 @@ export default function CreateListingPage() {
                     return;
                 }
 
-                const { data: allSubscriptions } = await supabase
-                    .from('subscriptions')
-                    .select('*, plan:subscription_plans(*)')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
+                // Fetch subscriptions and profile in parallel
+                const [subsResult, profileResult] = await Promise.all([
+                    supabase
+                        .from('subscriptions')
+                        .select('*, plan:subscription_plans(*)')
+                        .eq('user_id', user.id)
+                        .order('created_at', { ascending: false }),
+                    supabase
+                        .from('profiles')
+                        .select('is_verified, verification_status')
+                        .eq('id', user.id)
+                        .single()
+                ]);
+
+                const allSubscriptions = subsResult.data;
+                const profile = profileResult.data;
 
                 const subscription = allSubscriptions?.find(sub =>
                     (sub.status === 'Active' || sub.status === 'active') &&
@@ -84,13 +96,21 @@ export default function CreateListingPage() {
                 } else {
                     setSubscriptionStatus('expired');
                 }
+
+                if (profile) {
+                    const isVerified = profile.is_verified || profile.verification_status === 'Approved';
+                    setVerificationStatus(isVerified ? 'approved' : (profile.verification_status || 'none'));
+                } else {
+                    setVerificationStatus('none');
+                }
             } catch (err) {
                 setSubscriptionStatus('expired');
+                setVerificationStatus('none');
             } finally {
                 setCheckingSubscription(false);
             }
         };
-        checkSubscription();
+        checkAccess();
     }, [router, supabase]);
 
     const handleChange = (e) => {
@@ -190,6 +210,9 @@ export default function CreateListingPage() {
 
             if (subscriptionStatus !== 'active') {
                 throw new Error('Active subscription required to create listings. Please subscribe first.');
+            }
+            if (verificationStatus !== 'approved') {
+                throw new Error('Seller verification required to create listings. Please get verified first.');
             }
 
             // Client-side input validations
@@ -291,7 +314,7 @@ export default function CreateListingPage() {
     };
 
     if (checkingSubscription) {
-        return <LoadingScreen message="Checking subscription..." fullScreen={false} />;
+        return <LoadingScreen message="Checking access..." fullScreen={false} />;
     }
 
     if (subscriptionStatus !== 'active') {
@@ -306,6 +329,31 @@ export default function CreateListingPage() {
                 </p>
                 <Link href="/subscriptions" className="w-full max-w-xs btn-primary h-14">
                     View Subscription Plans
+                </Link>
+            </main>
+        );
+    }
+
+    if (verificationStatus !== 'approved') {
+        const isPending = verificationStatus === 'Pending';
+        return (
+            <main className="bg-white dark:bg-[#242428] min-h-screen flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6">
+                    <DynamicLucideIcon name={isPending ? 'schedule' : 'verified_user'} className="text-4xl" />
+                </div>
+                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">
+                    {isPending ? 'Verification Pending' : 'Verification Required'}
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm">
+                    {isPending
+                        ? 'Your verification request is currently under review. We will notify you once it has been approved.'
+                        : 'To keep our campus marketplace safe, we verify all sellers. Please complete your identity verification to start listing.'}
+                </p>
+                <Link
+                    href="/dashboard/settings/verify"
+                    className="w-full max-w-xs h-14 bg-primary hover:bg-[#159ac6] text-white rounded-xl font-bold flex items-center justify-center shadow-lg shadow-primary/25 active:scale-[0.98] transition-all"
+                >
+                    {isPending ? 'Check Progress' : 'Verify Identity'}
                 </Link>
             </main>
         );

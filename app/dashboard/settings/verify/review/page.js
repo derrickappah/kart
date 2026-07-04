@@ -18,6 +18,39 @@ export default function IDReviewPage() {
     });
 
     useEffect(() => {
+        const checkStatus = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+
+            const [profileRes, requestRes] = await Promise.all([
+                supabase
+                    .from('profiles')
+                    .select('is_verified, verification_status')
+                    .eq('id', user.id)
+                    .maybeSingle(),
+                supabase
+                    .from('verification_requests')
+                    .select('status')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+            ]);
+
+            const profile = profileRes.data;
+            const isVerified = profile?.is_verified || profile?.verification_status === 'Approved';
+            const hasPending = requestRes.data && requestRes.data[0]?.status === 'Pending';
+
+            if (isVerified || hasPending) {
+                router.push('/dashboard/settings/verify');
+            }
+        };
+        checkStatus();
+    }, [router, supabase]);
+
+    useEffect(() => {
         // Retrieve the captured image from sessionStorage
         const storedImage = sessionStorage.getItem('capturedIDImage');
         if (storedImage) {
@@ -84,18 +117,13 @@ export default function IDReviewPage() {
 
             if (uploadError) throw uploadError;
 
-            // Get Public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('verifications')
-                .getPublicUrl(fileName);
-
             // 2. Insert into verification_requests
             const { error: insertError } = await supabase
                 .from('verification_requests')
                 .insert({
                     user_id: user.id,
                     student_id: details.idNumber,
-                    student_id_image: publicUrl,
+                    student_id_image: fileName,
                     status: 'Pending'
                 });
 

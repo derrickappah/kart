@@ -20,6 +20,24 @@ export async function POST(request) {
 
         const adminSupabase = createServiceRoleClient();
 
+        // Rate Limiting Check: Check if user has requested an OTP in the last 60 seconds
+        const { data: existingVerification } = await adminSupabase
+            .from('email_verifications')
+            .select('created_at')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        if (existingVerification) {
+            const timeElapsed = Date.now() - new Date(existingVerification.created_at).getTime();
+            const cooldownMs = 60 * 1000;
+            if (timeElapsed < cooldownMs) {
+                const secondsLeft = Math.ceil((cooldownMs - timeElapsed) / 1000);
+                return NextResponse.json({
+                    error: `Please wait ${secondsLeft} seconds before requesting a new code.`
+                }, { status: 429 });
+            }
+        }
+
         // Remove any existing OTPs for this user
         await adminSupabase
             .from('email_verifications')

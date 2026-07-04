@@ -179,9 +179,30 @@ export default function SellerDashboardClient({
                     </section>
 
                     {/* Subscriptions Status / Alerts */}
-                    {(visiblePendingSubs.length > 0 || !isSubscribed || daysUntilExpiry <= 7) && (
+                    {(visiblePendingSubs.length > 0 || !isSubscribed || daysUntilExpiry <= 7 || (!profile?.is_verified && profile?.verification_status !== 'Approved')) && (
                         <section className="space-y-4">
                             <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 px-1 uppercase tracking-widest leading-none">Important Alerts</h3>
+
+                            {!profile?.is_verified && profile?.verification_status !== 'Approved' && (
+                                <div className="bg-amber-500/10 dark:bg-amber-500/5 ring-1 ring-amber-500/20 p-5 rounded-2xl flex items-center justify-between shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                                            <DynamicLucideIcon name={profile?.verification_status === 'Pending' ? 'schedule' : 'verified_user'} className="text-amber-500 text-2xl fill-1" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-black text-amber-900 dark:text-amber-500 uppercase tracking-tight">
+                                                {profile?.verification_status === 'Pending' ? 'Verification Pending' : 'Verification Required'}
+                                            </p>
+                                            <p className="text-[10px] font-bold text-amber-700/60 dark:text-amber-500/50 uppercase tracking-widest mt-0.5">
+                                                {profile?.verification_status === 'Pending' ? 'Under administrative review' : 'Verify ID to create listings'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Link href="/dashboard/settings/verify" className="h-9 px-4 flex items-center bg-amber-500 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl active:scale-95 transition-all shrink-0">
+                                        {profile?.verification_status === 'Pending' ? 'Status' : 'Verify'}
+                                    </Link>
+                                </div>
+                            )}
 
                             {visiblePendingSubs.map(sub => (
                                 <div key={sub.id} className="bg-amber-500/10 dark:bg-amber-500/5 ring-1 ring-amber-500/20 p-5 rounded-2xl shadow-sm space-y-4">

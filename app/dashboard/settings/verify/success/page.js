@@ -33,7 +33,7 @@ export default function VerificationSuccessPage() {
                     {/* Text Content */}
                     <div className="text-center space-y-4">
                         <h1 className="text-[#0e181b] dark:text-white text-[28px] font-bold leading-tight tracking-tight px-2">
-                            Information Successfully Captured
+                            Information Captured
                         </h1>
                         <p className="text-[#4e5b5f] dark:text-zinc-400 text-base font-normal leading-relaxed px-4">
                             Our system admins are currently reviewing your account. You will be notified once your verification is complete.
@@ -56,10 +56,10 @@ export default function VerificationSuccessPage() {
                 <footer className="p-6 pb-12 w-full">
                     <div className="flex flex-col gap-4">
                         <button
-                            onClick={() => router.push('/')}
+                            onClick={() => router.push('/dashboard/settings/verify')}
                             className="w-full h-14 bg-primary text-white rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center"
                         >
-                            <span>Back to Home</span>
+                            <span>Back to Settings</span>
                         </button>
                         <p className="text-center text-xs text-[#4e5b5f] dark:text-zinc-500 font-bold">
                             Need help? <a className="text-primary underline decoration-primary/30" href="#">Contact Support</a>

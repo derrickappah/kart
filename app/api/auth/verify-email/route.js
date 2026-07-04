@@ -19,16 +19,57 @@ export async function POST(request) {
 
         const adminSupabase = createServiceRoleClient();
 
-        // Check if OTP exists and is valid
-        const { data: verification, error: fetchError } = await adminSupabase
+        // Fetch the verification session for the user
+        const { data: verification } = await adminSupabase
             .from('email_verifications')
             .select('*')
             .eq('user_id', user.id)
-            .eq('otp', otp)
-            .single();
+            .maybeSingle();
 
-        if (fetchError || !verification) {
-            return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
+        if (!verification) {
+            return NextResponse.json({ error: 'No verification code requested or session expired.' }, { status: 400 });
+        }
+
+        const MAX_ATTEMPTS = 5;
+
+        // If user already exceeded attempts, delete record and block
+        if (verification.attempts >= MAX_ATTEMPTS) {
+            await adminSupabase
+                .from('email_verifications')
+                .delete()
+                .eq('id', verification.id);
+
+            return NextResponse.json({
+                error: 'Too many incorrect attempts. Please request a new verification code.'
+            }, { status: 429 });
+        }
+
+        // Validate the OTP
+        if (verification.otp !== otp) {
+            const nextAttempts = (verification.attempts || 0) + 1;
+            
+            if (nextAttempts >= MAX_ATTEMPTS) {
+                // Delete verification record on final failure
+                await adminSupabase
+                    .from('email_verifications')
+                    .delete()
+                    .eq('id', verification.id);
+
+                return NextResponse.json({
+                    error: 'Too many incorrect attempts. Please request a new verification code.'
+                }, { status: 429 });
+            }
+
+            // Increment attempts counter
+            await adminSupabase
+                .from('email_verifications')
+                .update({ attempts: nextAttempts })
+                .eq('id', verification.id);
+
+            const remaining = MAX_ATTEMPTS - nextAttempts;
+            return NextResponse.json({
+                error: `Invalid verification code. ${remaining} attempts remaining.`
+            }, { status: 400 });
         }
 
         // Check if expired

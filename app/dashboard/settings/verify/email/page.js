@@ -15,11 +15,41 @@ export default function EmailVerificationPage() {
 
     useEffect(() => {
         let mounted = true;
-        const getEmailAndSendOtp = async () => {
+        const checkStatusAndLoad = async () => {
             const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
-            if (user && mounted) {
+            if (!user) {
+                if (mounted) router.push('/login');
+                return;
+            }
+
+            // Check status
+            const [profileRes, requestRes] = await Promise.all([
+                supabase
+                    .from('profiles')
+                    .select('is_verified, verification_status')
+                    .eq('id', user.id)
+                    .maybeSingle(),
+                supabase
+                    .from('verification_requests')
+                    .select('status')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+            ]);
+
+            if (mounted) {
+                const profile = profileRes.data;
+                const isVerified = profile?.is_verified || profile?.verification_status === 'Approved';
+                const hasPending = requestRes.data && requestRes.data[0]?.status === 'Pending';
+
+                if (isVerified || hasPending) {
+                    router.push('/dashboard/settings/verify');
+                    return;
+                }
+
                 setEmail(user.email);
+                
                 // Automatically send OTP on mount
                 if (resendCooldown === 0) {
                     setLoading(true);
@@ -28,19 +58,19 @@ export default function EmailVerificationPage() {
                         const response = await fetch('/api/auth/send-verification-otp', { method: 'POST' });
                         const data = await response.json();
                         if (!response.ok) {
-                            if (mounted) setError(data.error || 'Failed to send verification code');
+                            setError(data.error || 'Failed to send verification code');
                         } else {
-                            if (mounted) setResendCooldown(60);
+                            setResendCooldown(60);
                         }
                     } catch {
-                        if (mounted) setError('Failed to send verification code');
+                        setError('Failed to send verification code');
                     } finally {
-                        if (mounted) setLoading(false);
+                        setLoading(false);
                     }
                 }
             }
         };
-        getEmailAndSendOtp();
+        checkStatusAndLoad();
         return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Intentionally empty — runs only on mount to auto-send OTP

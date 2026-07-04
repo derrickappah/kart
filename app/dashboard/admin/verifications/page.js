@@ -10,7 +10,17 @@ export default async function AdminVerificationsPage({ searchParams }) {
         redirect('/login');
     }
 
-    // Admin check is handled by layout
+    // Verify if user is actually an admin server-side
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || !profile.is_admin) {
+        redirect('/dashboard');
+    }
+
     // Get filter from search params
     const resolvedSearchParams = await searchParams;
     const statusFilter = resolvedSearchParams?.status || 'all';
@@ -28,7 +38,7 @@ export default async function AdminVerificationsPage({ searchParams }) {
 
     const { data: verifications, error } = await query;
 
-    // Manual mapping for profiles since relationship is with auth.users
+    // Manual mapping for profiles and generating batch signed URLs for private files
     let verificationsWithUsers = [];
     if (verifications && verifications.length > 0) {
         const userIds = [...new Set(verifications.map(v => v.user_id))];
@@ -37,10 +47,39 @@ export default async function AdminVerificationsPage({ searchParams }) {
             .select('id, email, display_name, is_verified')
             .in('id', userIds);
 
-        verificationsWithUsers = verifications.map(verification => ({
-            ...verification,
-            user: profiles?.find(p => p.id === verification.user_id) || null
-        }));
+        // Collect relative paths to sign (those that do not start with http/https)
+        const relativePaths = verifications
+            .map(v => v.student_id_image)
+            .filter(path => path && !path.startsWith('http'));
+
+        let signedUrlMap = {};
+        if (relativePaths.length > 0) {
+            const { data: signedUrls, error: signError } = await supabase.storage
+                .from('verifications')
+                .createSignedUrls(relativePaths, 3600); // 1 hour expiry
+
+            if (!signError && signedUrls) {
+                // Map the relative path back to its signed URL
+                relativePaths.forEach((path, idx) => {
+                    if (signedUrls[idx]?.signedUrl) {
+                        signedUrlMap[path] = signedUrls[idx].signedUrl;
+                    }
+                });
+            }
+        }
+
+        verificationsWithUsers = verifications.map(verification => {
+            const imagePath = verification.student_id_image;
+            const studentIdImage = (imagePath && !imagePath.startsWith('http'))
+                ? (signedUrlMap[imagePath] || '')
+                : imagePath;
+
+            return {
+                ...verification,
+                student_id_image: studentIdImage,
+                user: profiles?.find(p => p.id === verification.user_id) || null
+            };
+        });
     }
 
     // 2. Fetch Global Stats (Independent of filters)
