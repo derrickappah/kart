@@ -224,20 +224,24 @@ export default async function Home() {
       <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24 max-w-md mx-auto bg-white dark:bg-[#242428]">
         <PromotedBanner products={bannerProducts} />
 
-        <div className="px-5 pt-4 pb-2">
-          <SearchBar placeholder="Search campus finds..." />
-        </div>
-
-        <div className="flex w-full overflow-x-auto px-5 py-4 no-scrollbar space-x-3">
-          {categories.map((cat) => (
-            <Link
-              key={cat.name}
-              href={cat.name === 'All' ? '/marketplace' : `/marketplace?category=${cat.name}`}
-              className="chip chip-inactive whitespace-nowrap"
-            >
-              <span>{cat.name}</span>
-            </Link>
-          ))}
+        <div className="px-4 py-3 sticky top-0 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
+          <SearchBar
+            placeholder="Search campus finds..."
+            showFilter={true}
+            leftContent={
+              <div className="flex items-center overflow-x-auto no-scrollbar space-x-2 w-full py-1">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.name}
+                    href={cat.name === 'All' ? '/marketplace' : `/marketplace?category=${cat.name}`}
+                    className="chip chip-inactive whitespace-nowrap h-9 px-4 text-xs"
+                  >
+                    <span>{cat.name}</span>
+                  </Link>
+                ))}
+              </div>
+            }
+          />
         </div>
 
         {/* Heavy products section is streamed separately — page renders above instantly */}

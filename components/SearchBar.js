@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
-function SearchInput({ placeholder, showFilter }) {
+function SearchInput({ placeholder, showFilter, leftContent }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const searchVal = searchParams.get('search') || '';
@@ -73,23 +73,28 @@ function SearchInput({ placeholder, showFilter }) {
         return (
             <div className="relative flex items-center justify-between w-full h-14 px-1 overflow-hidden">
                 
-                {/* 1. App Logo: Vanishes smoothly on expand, restores smoothly on collapse */}
-                <Link
-                    href="/"
-                    className={`absolute left-1 flex items-center transition-all [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] transform origin-left ${
+                {/* 1. Left Content (Logo or Category Chips): Vanishes smoothly on expand, restores smoothly on collapse */}
+                <div
+                    className={`absolute left-1 flex items-center transition-all [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] transform origin-left w-full ${
                         isExpanded 
                             ? 'opacity-0 -translate-x-4 max-w-0 overflow-hidden pointer-events-none duration-[600ms]' 
-                            : 'opacity-100 translate-x-0 max-w-[80px] duration-[200ms]'
+                            : leftContent 
+                                ? 'opacity-100 translate-x-0 max-w-[calc(100%-120px)] duration-[200ms]'
+                                : 'opacity-100 translate-x-0 max-w-[80px] duration-[200ms]'
                     }`}
                 >
-                    <Image
-                        src="/logo.png"
-                        alt="KART Logo"
-                        width={80}
-                        height={32}
-                        priority
-                    />
-                </Link>
+                    {leftContent || (
+                        <Link href="/" className="flex items-center">
+                            <Image
+                                src="/logo.png"
+                                alt="KART Logo"
+                                width={80}
+                                height={32}
+                                priority
+                            />
+                        </Link>
+                    )}
+                </div>
 
                 {/* 2. Search Container (Input Wrapper): Animates from collapsed button to full-width text container */}
                 <form
@@ -270,7 +275,7 @@ function SearchInput({ placeholder, showFilter }) {
     );
 }
 
-export default function SearchBar({ placeholder = 'Search...', showFilter = false }) {
+export default function SearchBar({ placeholder = 'Search...', showFilter = false, leftContent }) {
     return (
         <Suspense fallback={
             <div className="flex w-full items-center justify-between h-12 bg-gray-100 dark:bg-[#2d2d32] px-4 rounded-2xl">
@@ -278,7 +283,7 @@ export default function SearchBar({ placeholder = 'Search...', showFilter = fals
                 <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-full" />
             </div>
         }>
-            <SearchInput placeholder={placeholder} showFilter={showFilter} />
+            <SearchInput placeholder={placeholder} showFilter={showFilter} leftContent={leftContent} />
         </Suspense>
     );
 }
