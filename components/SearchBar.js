@@ -1,4 +1,5 @@
 'use client';
+
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useTransition, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -9,14 +10,14 @@ function SearchInput({ placeholder, showFilter }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const searchVal = searchParams.get('search') || '';
+    
+    // Core state management
     const [query, setQuery] = useState(searchVal);
     const [prevSearch, setPrevSearch] = useState(searchVal);
     const [isPending, startTransition] = useTransition();
-
-    // If there is an active search query in URL, start expanded
     const [isExpanded, setIsExpanded] = useState(!!searchVal);
 
-    // Sync local state when the URL search param changes externally
+    // Sync input value with external URL changes (e.g. back button, clears)
     if (searchVal !== prevSearch) {
         setPrevSearch(searchVal);
         setQuery(searchVal);
@@ -25,6 +26,7 @@ function SearchInput({ placeholder, showFilter }) {
         }
     }
 
+    // Form submit handlers
     const handleSearch = (e) => {
         e.preventDefault();
         const next = new URLSearchParams(searchParams.toString());
@@ -34,7 +36,6 @@ function SearchInput({ placeholder, showFilter }) {
         } else {
             next.delete('search');
         }
-
         const queryString = next.toString();
         startTransition(() => {
             router.push(`/marketplace${queryString ? `?${queryString}` : ''}`);
@@ -51,7 +52,7 @@ function SearchInput({ placeholder, showFilter }) {
         });
     };
 
-    // Calculate active filters to display in the badge
+    // Calculate count of active filters for badge notification
     const activeFilterCount = [
         searchParams.get('category'),
         searchParams.get('condition'),
@@ -64,10 +65,12 @@ function SearchInput({ placeholder, showFilter }) {
         window.dispatchEvent(new CustomEvent('open-filters'));
     };
 
+    // Header layout with complex transitions for expanded/collapsed states
     if (showFilter) {
         return (
             <div className="relative flex items-center justify-between w-full h-14 px-1 overflow-hidden">
-                {/* App Logo (fades/slides left when search expands) */}
+                
+                {/* 1. App Logo: Vanishes instantly on expand, restores smoothly on collapse */}
                 <Link
                     href="/"
                     className={`absolute left-1 flex items-center transition-all [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] transform origin-left ${
@@ -85,7 +88,7 @@ function SearchInput({ placeholder, showFilter }) {
                     />
                 </Link>
 
-                {/* Combined Search Button / Form */}
+                {/* 2. Search Container (Input Wrapper): Animates from collapsed button to full-width text container */}
                 <form
                     onSubmit={handleSearch}
                     onClick={() => {
@@ -101,6 +104,7 @@ function SearchInput({ placeholder, showFilter }) {
                             : 'left-[calc(100%-100px)] right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
+                    {/* Centered Input element with symmetric clearance padding */}
                     <input
                         type="text"
                         inputMode="search"
@@ -122,6 +126,8 @@ function SearchInput({ placeholder, showFilter }) {
                             }
                         }}
                     />
+
+                    {/* Single clear/close button inside input bounds */}
                     {query && isExpanded && (
                         <button
                             type="button"
@@ -137,7 +143,7 @@ function SearchInput({ placeholder, showFilter }) {
                     )}
                 </form>
 
-                {/* Sliding Search Icon (direct child of header for independent, non-delayed translation) */}
+                {/* 3. Sliding Search Icon: Translates independently to match speed and curves */}
                 <button
                     type="button"
                     onClick={() => {
@@ -154,10 +160,12 @@ function SearchInput({ placeholder, showFilter }) {
                     <DynamicLucideIcon name="search" size={20} aria-hidden="true" />
                 </button>
 
-                {/* Cancel Button (only shown when expanded) */}
+                {/* 4. Cancel Button: Staggered slide-in during expansion, instant disappear during collapse */}
                 <div
                     className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
-                        isExpanded ? 'max-w-[70px] opacity-100 translate-x-0 transition-all duration-[900ms] delay-[300ms]' : 'max-w-0 opacity-0 translate-x-4 pointer-events-none transition-all duration-[150ms]'
+                        isExpanded 
+                            ? 'max-w-[70px] opacity-100 translate-x-0 transition-all duration-[900ms] delay-[300ms]' 
+                            : 'max-w-0 opacity-0 translate-x-4 pointer-events-none transition-all duration-[150ms]'
                     }`}
                 >
                     <button
@@ -175,10 +183,12 @@ function SearchInput({ placeholder, showFilter }) {
                     </button>
                 </div>
 
-                {/* Filter Icon Button (only shown when collapsed) */}
+                {/* 5. Filter Icon Button: Fades out smoothly on expand, returns snappy on collapse */}
                 <div
                     className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
-                        isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4 pointer-events-none transition-all duration-[900ms]' : 'max-w-[52px] opacity-100 scale-100 translate-x-0 transition-all duration-[200ms]'
+                        isExpanded 
+                            ? 'max-w-0 opacity-0 scale-90 translate-x-4 pointer-events-none transition-all duration-[900ms]' 
+                            : 'max-w-[52px] opacity-100 scale-100 translate-x-0 transition-all duration-[200ms]'
                     }`}
                 >
                     <button
@@ -206,6 +216,7 @@ function SearchInput({ placeholder, showFilter }) {
         );
     }
 
+    // Default standalone inline SearchBar form (used in main page hero/lists)
     return (
         <form
             className="group flex w-full items-center rounded-2xl bg-white dark:bg-surface-dark px-4 py-3.5 transition-all focus-within:ring-2 focus-within:ring-primary border border-gray-200 dark:border-gray-700 shadow-soft"
