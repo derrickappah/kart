@@ -66,7 +66,7 @@ function SearchInput({ placeholder, showFilter }) {
 
     if (showFilter) {
         return (
-            <div className="relative flex items-center justify-between w-full h-14 px-1 overflow-hidden">
+            <div className="relative flex items-center justify-between w-full h-12 px-1 overflow-hidden">
                 {/* App Logo (fades/slides left when search expands) */}
                 <Link
                     href="/"
@@ -92,7 +92,7 @@ function SearchInput({ placeholder, showFilter }) {
                     aria-label="Search marketplace listings"
                     className={`flex items-center border border-gray-200 dark:border-gray-700 shadow-soft focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
                         isExpanded 
-                            ? 'flex-1 h-11 bg-gray-50 dark:bg-[#2d2d32] rounded-2xl px-4 py-2 opacity-100 scale-100 translate-x-0' 
+                            ? 'flex-1 h-10 bg-gray-50 dark:bg-[#2d2d32] rounded-2xl px-4 py-2 opacity-100 scale-100 translate-x-0' 
                             : 'max-w-0 opacity-0 scale-95 -translate-x-4 pointer-events-none overflow-hidden'
                     }`}
                 >
@@ -155,7 +155,7 @@ function SearchInput({ placeholder, showFilter }) {
                 {/* Collapsed Control Icons (only shown when collapsed) */}
                 <div
                     className={`flex items-center gap-2 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
-                        isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4' : 'max-w-[96px] opacity-100 scale-100 translate-x-0'
+                        isExpanded ? 'max-w-0 opacity-0 scale-90 translate-x-4' : 'max-w-[88px] opacity-100 scale-100 translate-x-0'
                     }`}
                 >
                     {/* Search Icon Button */}
@@ -163,7 +163,7 @@ function SearchInput({ placeholder, showFilter }) {
                         type="button"
                         onClick={() => setIsExpanded(true)}
                         aria-label="Search marketplace"
-                        className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+                        className="size-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                     >
                         <DynamicLucideIcon name="search" size={20} aria-hidden="true" />
                     </button>
@@ -177,7 +177,7 @@ function SearchInput({ placeholder, showFilter }) {
                                 ? `Filter & Sort — ${activeFilterCount} filters active`
                                 : 'Filter & Sort'
                         }
-                        className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
+                        className="size-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
                     >
                         <DynamicLucideIcon name="tune" size={20} aria-hidden="true" />
                         {activeFilterCount > 0 && (
