@@ -93,9 +93,9 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
           const cardContent = (
             <Link
               href={`/marketplace/${product.id}`}
-              className="min-w-[210px] w-[210px] p-[1.5px] rounded-[22px] bg-gradient-to-tr from-sky-400/60 via-blue-500/40 to-indigo-500/40 dark:from-sky-500/30 dark:via-blue-600/20 dark:to-indigo-500/30 shadow-sm hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] hover:-translate-y-1 transition-all duration-300 cursor-pointer flex shrink-0 group"
+              className="min-w-[210px] w-[210px] p-[1.5px] rounded-2xl bg-gradient-to-tr from-sky-400/60 via-blue-500/40 to-indigo-500/40 dark:from-sky-500/30 dark:via-blue-600/20 dark:to-indigo-500/30 shadow-sm hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] hover:-translate-y-1 transition-all duration-300 cursor-pointer flex shrink-0 group"
             >
-              <div className="rounded-[20px] bg-white dark:bg-[#1a1c22] overflow-hidden flex flex-col w-full h-full">
+              <div className="rounded-[14px] bg-white dark:bg-[#1a1c22] overflow-hidden flex flex-col w-full h-full">
                 {/* Landscape Image aspect-16/10 */}
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-200">
                   <Image
@@ -176,7 +176,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
               href={`/marketplace/${product.id}`}
               className="group flex flex-col gap-2 relative h-full w-full cursor-pointer"
             >
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#2d2d32] border dark:border-gray-700/50">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-[#2d2d32] border dark:border-gray-700/50">
                 <Image
                   src={product.image_url || product.images?.[0] || '/placeholder.png'}
                   alt={product.title}
