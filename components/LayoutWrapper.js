@@ -57,6 +57,7 @@ export default function LayoutWrapper({ children }) {
     const isEditingPage = (pathname === '/login' ||
         pathname === '/signup' ||
         pathname === '/forgot-password' ||
+        pathname === '/reset-password' ||
         pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
         pathname?.includes('/promote/') ||

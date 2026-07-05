@@ -74,10 +74,16 @@ export async function signup(formData) {
 
 export async function forgotPassword(formData) {
     const supabase = await createClient()
-    const email = formData.get('email')
+    const email = String(formData.get('email') || '').trim()
+
+    // Server-side email structure validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+        return { error: "Please enter a valid email address." }
+    }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/callback?next=/dashboard/settings/security/password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/callback?next=/reset-password`,
     })
 
     if (error) {

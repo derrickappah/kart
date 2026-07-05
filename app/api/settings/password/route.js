@@ -27,6 +27,19 @@ export async function POST(request) {
       );
     }
 
+    // Verify current password by attempting to sign in
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+
+    if (signInError) {
+      return NextResponse.json(
+        { error: 'Incorrect current password' },
+        { status: 400 }
+      );
+    }
+
     // Update password using Supabase Auth
     const { error: updateError } = await supabase.auth.updateUser({
       password: newPassword,
