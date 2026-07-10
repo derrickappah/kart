@@ -13,7 +13,7 @@ export default function IDReviewPage() {
     const [capturedImage, setCapturedImage] = useState(null);
     const [details, setDetails] = useState({
         fullName: '',
-        university: '',
+        location: '',
         idNumber: ''
     });
 
@@ -59,11 +59,12 @@ export default function IDReviewPage() {
             // Simulate OCR data extraction
             const timer = setTimeout(() => {
                 setDetails({
-                    fullName: 'Alex Johnson',
-                    university: 'State University of Technology',
-                    idNumber: '88291044'
+                    fullName: '',
+                    location: '',
+                    idNumber: ''
                 });
                 setIsReading(false);
+                setIsEditing(true);
             }, 2500);
 
             return () => clearTimeout(timer);
@@ -98,6 +99,10 @@ export default function IDReviewPage() {
     };
 
     const handleSubmit = async () => {
+        if (!details.fullName.trim() || !details.location.trim() || !details.idNumber.trim()) {
+            alert('All fields are mandatory.');
+            return;
+        }
         if (!capturedImage || isSubmitting) return;
 
         setIsSubmitting(true);
@@ -197,7 +202,7 @@ export default function IDReviewPage() {
                             )}
                         </div>
                         <p className="text-[#647e87] dark:text-gray-400 text-base font-normal leading-normal pb-4">
-                            {isReading ? "Extracting information from your ID document..." : "Please ensure all details match your physical ID card exactly."}
+                            {isReading ? "Extracting information from your ID document..." : "Please ensure all details match your physical ID card exactly. All fields are mandatory."}
                         </p>
                     </div>
 
@@ -216,7 +221,7 @@ export default function IDReviewPage() {
                         )}
 
                         {/* Name Item */}
-                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 ${!isReading && details.fullName ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
+                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
                             <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
                                 <DynamicLucideIcon name="person" />
                             </div>
@@ -236,29 +241,29 @@ export default function IDReviewPage() {
                             </div>
                         </div>
 
-                        {/* University Item */}
-                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-75 ${!isReading && details.university ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
+                        {/* Location Item */}
+                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-75 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
                             <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <DynamicLucideIcon name="school" />
+                                <DynamicLucideIcon name="location_on" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
                                     <input
                                         type="text"
-                                        name="university"
-                                        value={details.university}
+                                        name="location"
+                                        value={details.location}
                                         onChange={handleChange}
                                         className="bg-gray-50 dark:bg-[#1a1d23] border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary w-full"
                                     />
                                 ) : (
-                                    <p className="text-[#111617] dark:text-white text-sm font-bold leading-normal line-clamp-1 min-h-[1.25rem]">{details.university || (isReading ? "Analyzing..." : "Not found")}</p>
+                                    <p className="text-[#111617] dark:text-white text-sm font-bold leading-normal line-clamp-1 min-h-[1.25rem]">{details.location || (isReading ? "Analyzing..." : "Not found")}</p>
                                 )}
-                                <p className="text-[#647e87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">University</p>
+                                <p className="text-[#647e87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">location</p>
                             </div>
                         </div>
 
                         {/* ID Number Item */}
-                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-150 ${!isReading && details.idNumber ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
+                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-150 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
                             <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
                                 <DynamicLucideIcon name="pin" />
                             </div>
@@ -274,7 +279,7 @@ export default function IDReviewPage() {
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-base font-bold leading-normal min-h-[1.5rem]">{details.idNumber || (isReading ? "Analyzing..." : "Not found")}</p>
                                 )}
-                                <p className="text-[#647e87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Student ID Number</p>
+                                <p className="text-[#647e87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">id number</p>
                             </div>
                         </div>
                     </div>
