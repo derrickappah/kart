@@ -190,7 +190,7 @@ export default function StudentIDCapturePage() {
                 {/* Main Viewfinder Section */}
                 <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full">
                     <h2 className="text-2xl font-bold text-white text-center mb-10 drop-shadow-lg px-8 leading-tight">
-                        {showChecking ? "Processing capture..." : "Position your Student ID within the frame"}
+                        {showChecking ? "Processing capture..." : "Position your ID within the frame"}
                     </h2>
 
                     {/* The Cutout/Viewfinder */}
@@ -237,15 +237,7 @@ export default function StudentIDCapturePage() {
                         )}
                     </div>
 
-                    {/* Helper Pill */}
-                    {!showChecking && (
-                        <div className="mt-10 relative z-20">
-                            <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
-                                <DynamicLucideIcon name="wb_incandescent" className="text-primary text-lg animate-pulse" />
-                                <p className="text-white text-sm font-medium tracking-wide">Avoid glare and shadows</p>
-                            </div>
-                        </div>
-                    )}
+
                 </div>
 
                 {/* Bottom Controls */}
@@ -283,7 +275,6 @@ export default function StudentIDCapturePage() {
                             </div>
                         </button>
                     </div>
-                    <p className="text-center text-white/30 text-xs mt-6 font-medium tracking-wider uppercase">Auto-capture enabled</p>
                 </div>
 
                 {/* Help Modal */}
