@@ -21,7 +21,7 @@ export async function POST(request) {
     // Check if user already has an active or pending subscription
     const { data: existingSub, error: existingError } = await supabase
       .from('subscriptions')
-      .select('status, end_date')
+      .select('id, status, end_date')
       .eq('user_id', user.id)
       .in('status', ['Active', 'Pending'])
       .order('created_at', { ascending: false })
@@ -29,11 +29,21 @@ export async function POST(request) {
       .maybeSingle();
 
     if (existingSub) {
-      return NextResponse.json({
-        error: existingSub.status === 'Active'
-          ? 'You already have an active subscription. Please wait for it to expire before renewing.'
-          : 'You have a pending subscription purchase. Please complete it or wait for it to expire.'
-      }, { status: 400 });
+      const isActuallyActive = existingSub.status === 'Active' && new Date(existingSub.end_date) > new Date();
+      
+      if (existingSub.status === 'Active' && !isActuallyActive) {
+        // Automatically mark the expired subscription as 'Expired' in the database
+        await supabase
+          .from('subscriptions')
+          .update({ status: 'Expired' })
+          .eq('id', existingSub.id);
+      } else {
+        return NextResponse.json({
+          error: existingSub.status === 'Active'
+            ? 'You already have an active subscription. Please wait for it to expire before renewing.'
+            : 'You have a pending subscription purchase. Please complete it or wait for it to expire.'
+        }, { status: 400 });
+      }
     }
 
     // Fetch plan details
