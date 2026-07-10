@@ -65,8 +65,8 @@ export async function POST(request) {
             console.log('Attempting to send OTP email to:', order.buyer.email);
             try {
                 const { data, error: emailError } = await resend.emails.send({
-                    // Use verified domain info.kart.cx
-                    from: 'Kart <noreply@info.kart.cx>',
+                    // Use verified domain kart.cx
+                    from: 'Kart <noreply@kart.cx>',
                     to: [order.buyer.email],
                     subject: 'Verify your order delivery - Kart',
                     html: `
