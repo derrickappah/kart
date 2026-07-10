@@ -64,7 +64,7 @@ export async function POST(request) {
             console.log('Attempting to send verification email to:', user.email);
             try {
                 const { data, error: emailError } = await resend.emails.send({
-                    from: 'Kart <onboarding@resend.dev>',
+                    from: 'Kart <noreply@info.kart.cx>',
                     to: [user.email],
                     subject: 'Verify your email - Kart',
                     html: `
