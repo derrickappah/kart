@@ -11,6 +11,7 @@ export default function IDReviewPage() {
     const [isReading, setIsReading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [capturedImage, setCapturedImage] = useState(null);
+    const [error, setError] = useState('');
     const [details, setDetails] = useState({
         fullName: '',
         location: '',
@@ -77,6 +78,7 @@ export default function IDReviewPage() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setDetails(prev => ({ ...prev, [name]: value }));
+        setError('');
     };
 
     const handleToggleEdit = () => {
@@ -100,7 +102,7 @@ export default function IDReviewPage() {
 
     const handleSubmit = async () => {
         if (!details.fullName.trim() || !details.location.trim() || !details.idNumber.trim()) {
-            alert('All fields are mandatory.');
+            setError('All fields are mandatory.');
             return;
         }
         if (!capturedImage || isSubmitting) return;
@@ -232,7 +234,8 @@ export default function IDReviewPage() {
                                         name="fullName"
                                         value={details.fullName}
                                         onChange={handleChange}
-                                        className="bg-gray-50 dark:bg-[#1a1d23] border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary w-full"
+                                        placeholder="Full Name"
+                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.fullName.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
                                     />
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-base font-bold leading-normal min-h-[1.5rem]">{details.fullName || (isReading ? "Analyzing..." : "Not found")}</p>
@@ -253,7 +256,8 @@ export default function IDReviewPage() {
                                         name="location"
                                         value={details.location}
                                         onChange={handleChange}
-                                        className="bg-gray-50 dark:bg-[#1a1d23] border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary w-full"
+                                        placeholder="Location"
+                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.location.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
                                     />
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-sm font-bold leading-normal line-clamp-1 min-h-[1.25rem]">{details.location || (isReading ? "Analyzing..." : "Not found")}</p>
@@ -274,7 +278,8 @@ export default function IDReviewPage() {
                                         name="idNumber"
                                         value={details.idNumber}
                                         onChange={handleChange}
-                                        className="bg-gray-50 dark:bg-[#1a1d23] border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary w-full"
+                                        placeholder="ID Number"
+                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.idNumber.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
                                     />
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-base font-bold leading-normal min-h-[1.5rem]">{details.idNumber || (isReading ? "Analyzing..." : "Not found")}</p>
@@ -293,6 +298,12 @@ export default function IDReviewPage() {
 
                 {/* Bottom Actions */}
                 <div className="p-4 bg-white dark:bg-[#1a1d23] border-t border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+                    {error && (
+                        <div className="text-red-500 text-sm font-semibold flex items-center justify-center gap-1.5 py-2.5 px-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <DynamicLucideIcon name="warning" className="text-base text-red-500 animate-pulse" />
+                            <span>{error}</span>
+                        </div>
+                    )}
                     <button
                         onClick={handleSubmit}
                         disabled={isReading || isSubmitting}
