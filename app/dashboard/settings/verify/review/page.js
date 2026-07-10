@@ -240,7 +240,6 @@ export default function IDReviewPage() {
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-base font-bold leading-normal min-h-[1.5rem]">{details.fullName || (isReading ? "Analyzing..." : "Not found")}</p>
                                 )}
-                                <p className="text-[#647e87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">Full Name</p>
                             </div>
                         </div>
 
@@ -262,7 +261,6 @@ export default function IDReviewPage() {
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-sm font-bold leading-normal line-clamp-1 min-h-[1.25rem]">{details.location || (isReading ? "Analyzing..." : "Not found")}</p>
                                 )}
-                                <p className="text-[#647e87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">location</p>
                             </div>
                         </div>
 
@@ -284,7 +282,6 @@ export default function IDReviewPage() {
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-base font-bold leading-normal min-h-[1.5rem]">{details.idNumber || (isReading ? "Analyzing..." : "Not found")}</p>
                                 )}
-                                <p className="text-[#647e87] dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider">id number</p>
                             </div>
                         </div>
                     </div>
