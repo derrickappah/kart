@@ -265,7 +265,7 @@ export default function IDReviewPage() {
                         {/* ID Number Item */}
                         <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-150 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
                             <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <DynamicLucideIcon name="pin" />
+                                <DynamicLucideIcon name="credit_card" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
