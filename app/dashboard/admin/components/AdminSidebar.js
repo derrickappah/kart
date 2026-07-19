@@ -32,6 +32,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
         { href: '/dashboard/admin/reviews', label: 'Reviews', icon: 'star' },
         { href: '/dashboard/admin/subscriptions', label: 'Subscriptions', icon: 'card_membership' },
         { href: '/dashboard/admin/advertisements', label: 'Advertisements', icon: 'campaign' },
+        { href: '/dashboard/admin/campuses', label: 'Campuses', icon: 'location_on' },
         { href: '/dashboard/admin/settings', label: 'Settings', icon: 'settings' },
     ];
 

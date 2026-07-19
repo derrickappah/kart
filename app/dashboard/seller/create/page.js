@@ -30,6 +30,28 @@ export default function CreateListingPage() {
         campus: '',
     });
 
+    const [campuses, setCampuses] = useState([]);
+    const [campusSearch, setCampusSearch] = useState('');
+    const [showCampusDropdown, setShowCampusDropdown] = useState(false);
+
+    // Fetch official campuses from database
+    useEffect(() => {
+        const fetchCampuses = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('campus_locations')
+                    .select('*')
+                    .order('name', { ascending: true });
+                if (!error && data) {
+                    setCampuses(data);
+                }
+            } catch (err) {
+                console.error('Error fetching campuses:', err);
+            }
+        };
+        fetchCampuses();
+    }, [supabase]);
+
     // Sync previews ref
     useEffect(() => {
         previewsRef.current = imagePreviews;
@@ -527,18 +549,77 @@ export default function CreateListingPage() {
                     </div>
 
                     {/* Campus Location */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                         <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="campus">Campus Location</label>
-                        <input
-                            disabled={loading}
-                            className="w-full bg-[#F5F5F5] dark:bg-[#2E2E32] border-none rounded-xl px-4 py-4 text-base font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow disabled:opacity-50"
-                            id="campus"
-                            name="campus"
-                            placeholder="e.g. University of Ghana"
-                            type="text"
-                            value={formData.campus}
-                            onChange={handleChange}
-                        />
+                        <div className="relative">
+                            <input
+                                disabled={loading}
+                                className="w-full bg-[#F5F5F5] dark:bg-[#2E2E32] border-none rounded-xl px-4 py-4 pr-10 text-base font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow disabled:opacity-50"
+                                id="campus"
+                                name="campus"
+                                placeholder="Search by name, abbreviation (e.g. UG), or region..."
+                                type="text"
+                                value={campusSearch}
+                                onChange={(e) => {
+                                    setCampusSearch(e.target.value);
+                                    setFormData(prev => ({ ...prev, campus: e.target.value }));
+                                    setShowCampusDropdown(true);
+                                }}
+                                onFocus={() => setShowCampusDropdown(true)}
+                                onBlur={() => {
+                                    // Delay to let click event on option fire before dropdown hides
+                                    setTimeout(() => setShowCampusDropdown(false), 250);
+                                }}
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                <DynamicLucideIcon name="search" className="text-xl" />
+                            </div>
+                        </div>
+
+                        {/* Search Results Dropdown */}
+                        {showCampusDropdown && (
+                            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#2E2E32] border border-gray-100 dark:border-gray-800 rounded-xl shadow-xl max-h-60 overflow-y-auto scrollbar-thin animate-fade-in">
+                                {campuses.filter(c => {
+                                    const q = campusSearch.toLowerCase();
+                                    return (
+                                        c.name.toLowerCase().includes(q) ||
+                                        c.abbreviation.toLowerCase().includes(q) ||
+                                        c.region.toLowerCase().includes(q)
+                                    );
+                                }).length > 0 ? (
+                                    campuses.filter(c => {
+                                        const q = campusSearch.toLowerCase();
+                                        return (
+                                            c.name.toLowerCase().includes(q) ||
+                                            c.abbreviation.toLowerCase().includes(q) ||
+                                            c.region.toLowerCase().includes(q)
+                                        );
+                                    }).map((c) => (
+                                        <button
+                                            key={c.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData(prev => ({ ...prev, campus: c.name }));
+                                                setCampusSearch(c.name);
+                                                setShowCampusDropdown(false);
+                                            }}
+                                            className="w-full px-4 py-3 text-left hover:bg-primary/5 hover:text-primary transition-colors flex flex-col gap-0.5 border-b border-gray-50 dark:border-gray-800/50 last:border-none"
+                                        >
+                                            <span className="text-sm font-black text-gray-900 dark:text-white">
+                                                {c.name} ({c.abbreviation})
+                                            </span>
+                                            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">
+                                                {c.region}
+                                            </span>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        No campuses found. You can keep typing to use a custom location.
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Description */}
