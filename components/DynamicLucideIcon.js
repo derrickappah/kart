@@ -136,10 +136,17 @@ import {
   Palette,
   Cpu,
   Handshake,
-  TrendingUp
+  TrendingUp,
+  Circle,
+  Gavel
 } from 'lucide-react';
 
 const iconMap = {
+  'circle': Circle,
+  'gavel': Gavel,
+  'savings': Coins,
+  'help_outline': HelpCircle,
+  'error_outline': AlertCircle,
   // Google Icon Name : Lucide Icon Component
   'menu_book': BookOpen,
   'devices': Laptop,
