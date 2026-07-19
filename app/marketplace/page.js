@@ -169,8 +169,23 @@ export default async function Marketplace({ searchParams }) {
         ? `/marketplace?search=${encodeURIComponent(searchQuery)}`
         : '/marketplace';
 
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        'itemListElement': products.map((p, index) => ({
+            '@type': 'ListItem',
+            'position': index + 1,
+            'url': `https://www.kart.cx/marketplace/${p.id}`,
+            'name': p.title
+        }))
+    };
+
     return (
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
                 <header className="bg-white/95 dark:bg-[#242428]/95 px-4 pt-3 pb-2">
                     <SearchBar placeholder="Search campus finds..." showFilter={true} />

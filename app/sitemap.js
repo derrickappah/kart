@@ -29,16 +29,15 @@ export default async function sitemap() {
     // Dynamic product listing pages
     let productPages = [];
     try {
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SUPABASE_URL : 'https://ldenazbzeidskjbqjxwe.supabase.co', // Safe fallback if envs aren't resolved in some environments
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ldenazbzeidskjbqjxwe.supabase.co';
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
         const { data: products } = await supabase
             .from('products')
             .select('id, updated_at')
             .eq('status', 'Active')
             .order('updated_at', { ascending: false })
-            .limit(1000); // Limit to most recent 1000 active listings
+            .limit(50000); // Support indexing of up to 50,000 active listings
 
         if (products) {
             productPages = products.map((p) => ({

@@ -98,5 +98,50 @@ export default async function ProductDetails({ params }) {
         );
     }
 
-    return <ProductDetailsClient key={product.id} product={product} />;
+    const fallbackImage = 'https://www.kart.cx/icon.png';
+    const ogImage = product.images?.[0] || product.image_url || fallbackImage;
+    const absoluteOgImage = ogImage.startsWith('/') ? `https://www.kart.cx${ogImage}` : ogImage;
+    const imagesList = product.images && product.images.length > 0
+        ? product.images.map(img => img.startsWith('/') ? `https://www.kart.cx${img}` : img)
+        : [absoluteOgImage];
+
+    let schemaCondition = 'https://schema.org/UsedCondition';
+    if (product.condition) {
+        const condLower = product.condition.toLowerCase();
+        if (condLower === 'new') {
+            schemaCondition = 'https://schema.org/NewCondition';
+        } else if (condLower === 'refurbished') {
+            schemaCondition = 'https://schema.org/RefurbishedCondition';
+        }
+    }
+
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        'name': product.title,
+        'description': product.description || `Buy ${product.title} for ₵${product.price} on KART — the campus marketplace.`,
+        'image': imagesList,
+        'offers': {
+            '@type': 'Offer',
+            'price': product.price,
+            'priceCurrency': 'GHS',
+            'itemCondition': schemaCondition,
+            'availability': product.status === 'Active' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'url': `https://www.kart.cx/marketplace/${product.id}`,
+            'seller': {
+                '@type': 'Person',
+                'name': product.seller?.display_name || 'Anonymous'
+            }
+        }
+    };
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <ProductDetailsClient key={product.id} product={product} />
+        </>
+    );
 }
