@@ -46,6 +46,7 @@ function ProductCardSkeleton() {
 
 async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts }) {
   const displayFeatured = boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 10);
+  const displayRecommended = latestProducts.filter(p => !displayFeatured.some(f => f.id === p.id));
 
   const getRecReason = (product) => {
     if (product.is_boosted) return "Highest Priority";
@@ -97,7 +98,7 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
         <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">View New</Link>
       </div>
       <div className="grid grid-cols-2 gap-4 px-5">
-        {latestProducts.map(product => {
+        {displayRecommended.map(product => {
           const recReason = getRecReason(product);
           const badge = getBadgeStyle(recReason);
 
