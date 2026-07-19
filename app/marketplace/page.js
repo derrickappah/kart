@@ -156,7 +156,7 @@ export default async function Marketplace({ searchParams }) {
         products = [
             ...seededShuffle(boosted, getDailySeed(0)),
             ...seededShuffle(featured, getDailySeed(1)),
-            ...seededShuffle(regular, getDailySeed(2))
+            ...seededShuffle(regular, Math.floor(Math.random() * 1000000))
         ];
     }
 

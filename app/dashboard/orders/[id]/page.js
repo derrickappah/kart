@@ -11,6 +11,14 @@ import MarkAsShippedButton from './MarkAsShippedButton';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Order Details | KART',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function OrderDetailPage({ params }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -73,13 +81,13 @@ export default async function OrderDetailPage({ params }) {
   const fmt = (val) => parseFloat(val).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const statusConfig = {
-    'Pending':   { icon: 'schedule',        color: '#F59E0B', bg: '#FEF3C7', darkBg: 'rgba(245,158,11,0.12)',  label: 'Payment Pending',  step: 0 },
-    'Paid':      { icon: 'payments',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Order Paid',       step: 1 },
-    'Shipped':   { icon: 'local_shipping',  color: '#3B82F6', bg: '#DBEAFE', darkBg: 'rgba(59,130,246,0.12)',  label: 'Item Shipped',     step: 2 },
-    'Delivered': { icon: 'package_2',       color: '#8B5CF6', bg: '#EDE9FE', darkBg: 'rgba(139,92,246,0.12)',  label: 'Delivered',        step: 3 },
-    'Completed': { icon: 'verified',        color: '#10B981', bg: '#D1FAE5', darkBg: 'rgba(16,185,129,0.12)',  label: 'Completed',        step: 3 },
-    'Cancelled': { icon: 'cancel',          color: '#EF4444', bg: '#FEE2E2', darkBg: 'rgba(239,68,68,0.12)',   label: 'Cancelled',        step: -1 },
-    'Refunded':  { icon: 'keyboard_return', color: '#EF4444', bg: '#FEE2E2', darkBg: 'rgba(239,68,68,0.12)',   label: 'Refunded',         step: -1 },
+    'Pending':   { icon: 'schedule',        color: '#D97706', bg: '#FEF3C7', darkBg: 'rgba(217,119,6,0.12)',  label: 'Payment Pending',  step: 0 },
+    'Paid':      { icon: 'payments',        color: '#059669', bg: '#D1FAE5', darkBg: 'rgba(5,150,105,0.12)',  label: 'Order Paid',       step: 1 },
+    'Shipped':   { icon: 'local_shipping',  color: '#2563EB', bg: '#DBEAFE', darkBg: 'rgba(37,99,235,0.12)',  label: 'Item Shipped',     step: 2 },
+    'Delivered': { icon: 'package_2',       color: '#7C3AED', bg: '#EDE9FE', darkBg: 'rgba(124,58,237,0.12)',  label: 'Delivered',        step: 3 },
+    'Completed': { icon: 'verified',        color: '#059669', bg: '#D1FAE5', darkBg: 'rgba(5,150,105,0.12)',  label: 'Completed',        step: 3 },
+    'Cancelled': { icon: 'cancel',          color: '#DC2626', bg: '#FEE2E2', darkBg: 'rgba(220,38,38,0.12)',   label: 'Cancelled',        step: -1 },
+    'Refunded':  { icon: 'keyboard_return', color: '#DC2626', bg: '#FEE2E2', darkBg: 'rgba(220,38,38,0.12)',   label: 'Refunded',         step: -1 },
   };
 
   const STEPS = ['Pending', 'Paid', 'Shipped', 'Delivered'];

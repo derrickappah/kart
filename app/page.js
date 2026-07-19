@@ -193,7 +193,7 @@ export default async function Home() {
 
   const bannerProducts = seededShuffle(activeAds, 42);
   const boostedProducts = seededShuffle(activeAds.filter(ad => ad.ad_type === 'Boost'), 43);
-  const latestProducts = seededShuffle(latestRes.data || [], 44);
+  const latestProducts = seededShuffle(latestRes.data || [], Math.floor(Math.random() * 1000000));
 
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">
