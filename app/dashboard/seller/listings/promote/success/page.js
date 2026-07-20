@@ -60,7 +60,7 @@ function PromotionSuccessContent() {
                     className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"
                     aria-hidden="true"
                 />
-                <h1 className="text-2xl font-bold mb-2">Verifying Payment</h1>
+                <h1 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Verifying Payment</h1>
                 <p className="text-slate-500" aria-live="polite" aria-atomic="true">
                     Please wait while we activate your promotion…
                 </p>
@@ -72,7 +72,7 @@ function PromotionSuccessContent() {
         return (
             <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center">
                 <DynamicLucideIcon name="error" className="text-red-500 text-7xl mb-6" aria-hidden="true" />
-                <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
+                <h1 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Verification Failed</h1>
                 <p
                     className="text-slate-500 mb-8 text-sm max-w-xs"
                     role="alert"
@@ -123,7 +123,7 @@ function PromotionSuccessContent() {
                     </div>
                 </div>
 
-                <h1 className="text-3xl font-extrabold mb-4 tracking-tight">Boost Activated!</h1>
+                <h1 className="text-3xl font-extrabold mb-4 tracking-tight text-slate-900 dark:text-white">Boost Activated!</h1>
                 <p className="text-slate-500 dark:text-gray-400 mb-10 font-medium leading-relaxed">
                     Your listing is now being promoted. Get ready for more inquiries and faster sales!
                 </p>
