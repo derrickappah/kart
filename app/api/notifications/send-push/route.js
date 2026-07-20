@@ -10,10 +10,12 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    // Trigger push notification delivery asynchronously
-    triggerPushNotification(user_id, title, message, related_order_id).catch(err => {
+    // Trigger push notification delivery and await it
+    try {
+      await triggerPushNotification(user_id, title, message, related_order_id);
+    } catch (err) {
       console.error('[Push Webhook] Delivery failed:', err.message);
-    });
+    }
 
     return NextResponse.json({ success: true, message: 'Push notification triggered' });
   } catch (err) {
