@@ -345,6 +345,16 @@ export default function NotificationSettingsPage() {
                     Your web browser does not support Web Push. Try on a mobile device or modern desktop browser.
                   </p>
                 </div>
+              ) : pushPermission === 'denied' ? (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 animate-in slide-in-from-top-2">
+                  <DynamicLucideIcon name="warning" className="text-amber-500 text-sm shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-amber-600 dark:text-amber-500 text-xs font-bold uppercase tracking-wider mb-0.5">Notification Permission Blocked</h4>
+                    <p className="text-amber-700 dark:text-amber-500/80 text-xs font-medium leading-relaxed">
+                      Push permissions are currently blocked in your browser settings. Please click the lock/settings icon in your browser address bar to allow notifications, then reload.
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-3 pt-2">
                   <div className="flex justify-between items-center bg-slate-50 dark:bg-white/5 rounded-xl px-4 py-3 text-xs font-semibold">
