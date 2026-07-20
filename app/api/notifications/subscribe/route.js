@@ -20,13 +20,32 @@ export async function POST(req) {
       .from('profiles')
       .select('notification_prefs')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (getError) {
-      return NextResponse.json({ error: 'Failed to retrieve profile' }, { status: 500 });
+      return NextResponse.json({ error: getError.message }, { status: 500 });
     }
 
-    const prefs = profile.notification_prefs || {};
+    let prefs = {};
+    if (!profile) {
+      // Create profile row if it somehow does not exist yet
+      const defaultPrefs = {
+        push_orders: true,
+        push_messages: true,
+        push_promotions: false,
+        email_weekly: true
+      };
+      await supabase.from('profiles').insert({
+        id: user.id,
+        email: user.email,
+        display_name: user.email.split('@')[0],
+        notification_prefs: defaultPrefs
+      });
+      prefs = defaultPrefs;
+    } else {
+      prefs = profile.notification_prefs || {};
+    }
+
     const subs = prefs.web_push_subscriptions || [];
 
     // Filter out duplicate endpoints and append new one
@@ -72,13 +91,13 @@ export async function DELETE(req) {
       .from('profiles')
       .select('notification_prefs')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (getError) {
-      return NextResponse.json({ error: 'Failed to retrieve profile' }, { status: 500 });
+      return NextResponse.json({ error: getError.message }, { status: 500 });
     }
 
-    const prefs = profile.notification_prefs || {};
+    const prefs = profile?.notification_prefs || {};
     const subs = prefs.web_push_subscriptions || [];
 
     const newSubs = subs.filter(s => s.endpoint !== endpoint);
