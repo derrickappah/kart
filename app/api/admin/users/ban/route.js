@@ -52,5 +52,14 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Update ban status in Supabase Auth (auth.users)
+  try {
+    await adminSupabase.auth.admin.updateUserById(userId, {
+      ban_duration: banned ? '876000h' : 'none'
+    });
+  } catch (authError) {
+    console.error('Failed to update auth ban status:', authError);
+  }
+
   return NextResponse.json({ success: true });
 }

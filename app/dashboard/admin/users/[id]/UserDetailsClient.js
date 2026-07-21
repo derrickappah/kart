@@ -30,12 +30,13 @@ export default function UserDetailsClient({
 
         setLoading(true);
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ banned: nextStatus })
-                .eq('id', profileState.id);
-
-            if (error) throw error;
+            const res = await fetch('/api/admin/users/ban', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: profileState.id, banned: nextStatus }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to update ban status');
 
             setProfileState(prev => ({ ...prev, banned: nextStatus }));
             router.refresh();

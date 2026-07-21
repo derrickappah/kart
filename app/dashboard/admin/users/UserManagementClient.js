@@ -22,17 +22,18 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
 
         setLoading(true);
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ banned: !currentStatus })
-                .eq('id', userId);
-
-            if (error) throw error;
+            const res = await fetch('/api/admin/users/ban', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, banned: !currentStatus }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to update ban status');
 
             // Update local state for immediate UI feedback
             setUsers(prev => prev.map(u => u.id === userId ? { ...u, banned: !currentStatus } : u));
 
-            // Still refresh in background to sync server data
+            // Refresh in background to sync server data
             router.refresh();
         } catch (err) {
             alert('Error updating user: ' + err.message);

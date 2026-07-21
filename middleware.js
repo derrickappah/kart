@@ -54,8 +54,28 @@ export async function middleware(request) {
     }
   )
 
-  // IMPORTANT: This prevents the redirection loop by ensuring the session is refreshed
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('banned')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.banned) {
+      if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth/')) {
+        return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
+      }
+      if (!url.pathname.startsWith('/banned') && !url.pathname.startsWith('/auth/')) {
+        return NextResponse.redirect(new URL('/banned', request.url))
+      }
+    } else if (url.pathname.startsWith('/banned')) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  } else if (url.pathname.startsWith('/banned')) {
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
 
   // Prevent caching of the auth state check response on mobile browsers
   response.headers.set('x-middleware-cache', 'no-cache')
