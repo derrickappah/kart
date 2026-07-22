@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
     try {
@@ -89,14 +89,15 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Failed to submit refund request' }, { status: 500 });
         }
 
-        // 5. Update order refund_status
-        await supabase
+        // 5. Update order refund_status using service role client
+        const adminSupabase = createServiceRoleClient();
+        await adminSupabase
             .from('orders')
             .update({ refund_status: 'Requested' })
             .eq('id', orderId);
 
         // 6. Record history
-        await supabase.from('order_status_history').insert({
+        await adminSupabase.from('order_status_history').insert({
             order_id: orderId,
             old_status: order.status,
             new_status: order.status,

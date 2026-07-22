@@ -93,7 +93,25 @@ export default async function OrderDetailPage({ params }) {
     .eq('order_id', id)
     .order('created_at', { ascending: true });
 
-  const productImage = order.product?.images?.[0] || order.product?.image_url;
+  // Helper to resolve product image from string, array, or JSON string
+  let productImage = null;
+  if (Array.isArray(order.product?.images) && order.product.images.length > 0) {
+    productImage = order.product.images[0];
+  } else if (typeof order.product?.images === 'string') {
+    try {
+      const parsed = JSON.parse(order.product.images);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        productImage = parsed[0];
+      } else {
+        productImage = order.product.images;
+      }
+    } catch {
+      productImage = order.product.images;
+    }
+  }
+  if (!productImage && order.product?.image_url) {
+    productImage = order.product.image_url;
+  }
 
   const normalizedStatus = order.status
     ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()
@@ -113,14 +131,14 @@ export default async function OrderDetailPage({ params }) {
 
   return (
     <div className="bg-[#f0f2f5] dark:bg-[#0d1517] text-[#0e181b] dark:text-white font-display min-h-screen antialiased">
-      <div className="max-w-md md:max-w-5xl mx-auto min-h-screen flex flex-col relative px-4 md:px-6">
+      <div className="w-full max-w-5xl mx-auto min-h-screen flex flex-col relative px-4 md:px-6">
 
         {/* ── Sticky Header ── */}
         <header className="sticky top-0 z-50 flex items-center gap-3 py-4 bg-[#f0f2f5]/90 dark:bg-[#0d1517]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5 mb-4">
           <Link
             href={isBuyer ? '/dashboard/orders' : '/dashboard/seller/orders'}
             aria-label="Go back to orders"
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white dark:bg-white/8 border border-black/8 dark:border-white/10 shadow-sm hover:bg-slate-100 dark:hover:bg-white/12 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex min-h-[44px] min-w-[44px] size-11 shrink-0 items-center justify-center rounded-full bg-white dark:bg-white/8 border border-black/8 dark:border-white/10 shadow-sm hover:bg-slate-100 dark:hover:bg-white/12 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
           >
             <DynamicLucideIcon name="arrow_back_ios_new" className="text-base" />
           </Link>

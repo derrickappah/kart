@@ -95,6 +95,7 @@ export async function POST(request) {
                 status: 'Delivered',
                 escrow_status: 'Released',
                 escrow_released_at: new Date().toISOString(),
+                refund_status: order.refund_status === 'Requested' ? 'Rejected' : order.refund_status,
                 updated_at: new Date().toISOString(),
                 delivery_verification_otp: null,
                 delivery_verification_expires_at: null,
@@ -141,7 +142,7 @@ export async function POST(request) {
                 }
 
                 if (wallet) {
-                    const payoutAmount = parseFloat(order.seller_payout_amount);
+                    const payoutAmount = parseFloat(order.seller_payout_amount ?? order.total_amount ?? 0) || 0;
                     const currentBalance = parseFloat(wallet.balance || 0);
                     const currentPending = parseFloat(wallet.pending_balance || 0);
                     const newBalance = currentBalance + payoutAmount;
