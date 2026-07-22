@@ -637,6 +637,7 @@ export default function ProductDetailsClient({ product }) {
                             ))}
                         </div>
                     </section>
+                )}
             </main>
         </div>
     );
