@@ -325,7 +325,7 @@ export default function ProductDetailsClient({ product }) {
                 </div>
             </div>
 
-            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-28 md:pb-12">
+            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-12">
                 {/* Main Content Layout: Stack on Mobile, 2 Columns on Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
                     {/* Left Column: Hero Carousel + Gallery Thumbnails (7 Cols Desktop) */}
@@ -637,41 +637,7 @@ export default function ProductDetailsClient({ product }) {
                             ))}
                         </div>
                     </section>
-                )}
             </main>
-
-            {/* Persistent Mobile Sticky Bottom Action Bar — only shown to non-owners */}
-            {!isOwner && (
-                <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-2xl border-t border-gray-100 dark:border-gray-800 px-4 pt-2.5 pb-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                    {inlineError && (
-                        <div
-                            role="alert"
-                            className="mb-3 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-600 dark:text-red-400 text-sm font-medium text-center max-w-md mx-auto"
-                        >
-                            {inlineError}
-                        </div>
-                    )}
-                    <div className="max-w-md mx-auto flex items-center gap-3">
-                        <button
-                            onClick={handleContactSeller}
-                            disabled={loadingChat}
-                            aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
-                            className="flex-1 h-14 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        >
-                            {loadingChat
-                                ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
-                                : (
-                                    <>
-                                        <DynamicLucideIcon name="chat_bubble" size={22} className="text-[#0e7490] dark:text-primary-light" aria-hidden="true" />
-                                        <span>Chat</span>
-                                    </>
-                                )
-                            }
-                        </button>
-                        <BuyButton product={product} />
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
