@@ -609,7 +609,7 @@ export default function ProductDetailsClient({ product }) {
 
             {/* Persistent Sticky Bottom Action Bar — only shown to non-owners */}
             {!isOwner && (
-                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-2xl border-t border-gray-100 dark:border-gray-800 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-2xl border-t border-gray-100 dark:border-gray-800 px-4 pt-2.5 pb-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                     {inlineError && (
                         <div
                             role="alert"
