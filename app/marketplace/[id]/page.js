@@ -23,6 +23,7 @@ export async function generateMetadata({ params }) {
     const resolvedParams = await params;
     const id = decodeURIComponent(resolvedParams.id);
     const supabase = await createClient();
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.kart.cx';
 
     const { data: product } = await supabase
         .from('products')
@@ -39,10 +40,20 @@ export async function generateMetadata({ params }) {
 
     const title = toSentenceCase(product.title);
     const price = formatPrice(product.price);
-    const description = product.description
-        ? `${product.description.slice(0, 140).trim()}…`
-        : `Buy ${title} for ₵${price} on KART — the campus marketplace.`;
-    const ogImage = product.images?.[0] || product.image_url || '/icon.png';
+
+    let description = `Buy ${title} for ₵${price} on KART — the campus marketplace.`;
+    if (product.description) {
+        const rawDesc = product.description.trim();
+        if (rawDesc.length > 150) {
+            description = `${rawDesc.slice(0, 147).split(' ').slice(0, -1).join(' ')}…`;
+        } else {
+            description = rawDesc;
+        }
+    }
+
+    const fallbackImage = `${baseUrl}/icon.png`;
+    const rawOgImage = product.images?.[0] || product.image_url || fallbackImage;
+    const ogImage = rawOgImage.startsWith('/') ? `${baseUrl}${rawOgImage}` : rawOgImage;
 
     return {
         title: `${title} — ₵${price} | KART Marketplace`,
@@ -52,7 +63,7 @@ export async function generateMetadata({ params }) {
             description,
             images: [{ url: ogImage, width: 800, height: 1000, alt: title }],
             type: 'website',
-            url: `https://www.kart.cx/marketplace/${id}`,
+            url: `${baseUrl}/marketplace/${id}`,
         },
         twitter: {
             card: 'summary_large_image',
@@ -61,7 +72,7 @@ export async function generateMetadata({ params }) {
             images: [ogImage],
         },
         alternates: {
-            canonical: `https://www.kart.cx/marketplace/${id}`,
+            canonical: `${baseUrl}/marketplace/${id}`,
         },
     };
 }
@@ -98,11 +109,12 @@ export default async function ProductDetails({ params }) {
         );
     }
 
-    const fallbackImage = 'https://www.kart.cx/icon.png';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.kart.cx';
+    const fallbackImage = `${baseUrl}/icon.png`;
     const ogImage = product.images?.[0] || product.image_url || fallbackImage;
-    const absoluteOgImage = ogImage.startsWith('/') ? `https://www.kart.cx${ogImage}` : ogImage;
+    const absoluteOgImage = ogImage.startsWith('/') ? `${baseUrl}${ogImage}` : ogImage;
     const imagesList = product.images && product.images.length > 0
-        ? product.images.map(img => img.startsWith('/') ? `https://www.kart.cx${img}` : img)
+        ? product.images.map(img => img.startsWith('/') ? `${baseUrl}${img}` : img)
         : [absoluteOgImage];
 
     let schemaCondition = 'https://schema.org/UsedCondition';
@@ -126,8 +138,8 @@ export default async function ProductDetails({ params }) {
             'price': product.price,
             'priceCurrency': 'GHS',
             'itemCondition': schemaCondition,
-            'availability': product.status === 'Active' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            'url': `https://www.kart.cx/marketplace/${product.id}`,
+            'availability': product.status === 'Active' || product.status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'url': `${baseUrl}/marketplace/${product.id}`,
             'seller': {
                 '@type': 'Person',
                 'name': product.seller?.display_name || 'Anonymous'
