@@ -417,9 +417,9 @@ export default function ProductDetailsClient({ product }) {
                         )}
                     </div>
 
-                    {/* Right Column: Details, Seller & Action Sidebar (5 Cols Desktop) */}
-                    <div className="md:col-span-5 px-4 md:px-0 pt-4 md:pt-0">
-                        <div className="flex flex-col gap-6">
+                    {/* Right Column: Details, Seller & Action Sidebar (5 Cols Desktop, Sticky on Desktop) */}
+                    <div className="md:col-span-5 px-4 md:px-0 pt-4 md:pt-0 md:sticky md:top-24 self-start">
+                        <div className="flex flex-col gap-5">
                             {/* Product Header & Title */}
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -441,6 +441,39 @@ export default function ProductDetailsClient({ product }) {
                                     ₵ {formatPrice(product.price)}
                                 </p>
                             </div>
+
+                            {/* Immediate Action CTAs (Above the fold for instant access) */}
+                            {!isOwner && (
+                                <div className="flex flex-col gap-2 my-1">
+                                    {inlineError && (
+                                        <div
+                                            role="alert"
+                                            className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium text-center"
+                                        >
+                                            {inlineError}
+                                        </div>
+                                    )}
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={handleContactSeller}
+                                            disabled={loadingChat}
+                                            aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
+                                            className="flex-1 h-14 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        >
+                                            {loadingChat
+                                                ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
+                                                : (
+                                                    <>
+                                                        <DynamicLucideIcon name="chat_bubble" size={22} className="text-[#0e7490] dark:text-primary-light" aria-hidden="true" />
+                                                        <span>Chat</span>
+                                                    </>
+                                                )
+                                            }
+                                        </button>
+                                        <BuyButton product={product} />
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Seller Info Card */}
                             <Link
@@ -607,9 +640,9 @@ export default function ProductDetailsClient({ product }) {
                 )}
             </main>
 
-            {/* Persistent Sticky Bottom Action Bar — only shown to non-owners */}
+            {/* Persistent Mobile Sticky Bottom Action Bar — only shown to non-owners */}
             {!isOwner && (
-                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-2xl border-t border-gray-100 dark:border-gray-800 px-4 pt-2.5 pb-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-2xl border-t border-gray-100 dark:border-gray-800 px-4 pt-2.5 pb-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                     {inlineError && (
                         <div
                             role="alert"
