@@ -17,25 +17,25 @@ export default function Navbar({ user }) {
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center bg-white/95 dark:bg-[#242428]/95 py-2 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
-            <div className="flex items-center justify-between w-full max-w-md px-3">
+            <div className="flex items-center justify-between w-full max-w-md px-3 h-14">
                 {isMarketplacePage ? (
                     <div className="w-full">
                         <SearchBar placeholder="Search campus finds..." showFilter={true} />
                     </div>
                 ) : (
                     <>
-                        <Link href="/" className="flex items-center">
+                        <Link href="/" className="flex items-center pl-1">
                             <Image
                                 src="/logo.png"
                                 alt="KART Logo"
-                                width={80}
-                                height={32}
-                                style={{ width: '80px', height: 'auto' }}
+                                width={95}
+                                height={38}
+                                style={{ width: '95px', height: 'auto' }}
                                 className="object-contain"
                                 priority
                             />
                         </Link>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 pr-1">
                             <NotificationBell />
                         </div>
                     </>
