@@ -42,7 +42,7 @@ export default function BuyButton({ product }) {
     if (!isAvailable || isOutOfStock) {
         return (
             <button 
-                className="flex-[2] h-14 rounded-2xl bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-bold text-base flex items-center justify-center gap-2 cursor-not-allowed border border-black/5 dark:border-white/5" 
+                className="flex-1 h-14 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-bold text-base flex items-center justify-center gap-2 cursor-not-allowed border border-black/5 dark:border-white/5" 
                 disabled
                 aria-disabled="true"
             >
@@ -63,7 +63,7 @@ export default function BuyButton({ product }) {
                 onClick={handleBuyNow}
                 disabled={loading}
                 aria-label={loading ? 'Processing purchase request…' : 'Buy item now'}
-                className="w-full h-14 rounded-2xl bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-gradient-to-r dark:from-primary dark:to-[#159ac6] text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-[0_10px_20px_-10px_rgba(14,116,144,0.4)] dark:shadow-[0_10px_20px_-10px_rgba(29,173,221,0.5)] active:scale-[0.98] transition-all disabled:opacity-50 whitespace-nowrap px-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-full h-14 rounded-full bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all disabled:opacity-50 whitespace-nowrap px-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
                 {loading ? (
                     <div className="size-5 border-2 border-white border-t-transparent animate-spin rounded-full" aria-hidden="true" />

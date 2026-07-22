@@ -607,29 +607,29 @@ export default function ProductDetailsClient({ product }) {
                 )}
             </main>
 
-            {/* Persistent Mobile Bottom Action Bar — only shown to non-owners */}
+            {/* Persistent Sticky Bottom Action Bar — only shown to non-owners */}
             {!isOwner && (
-                <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-2xl border-t border-black/5 dark:border-white/5 p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] z-50">
+                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-2xl border-t border-gray-100 dark:border-gray-800 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                     {inlineError && (
                         <div
                             role="alert"
-                            className="mb-3 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium text-center"
+                            className="mb-3 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-600 dark:text-red-400 text-sm font-medium text-center max-w-md mx-auto"
                         >
                             {inlineError}
                         </div>
                     )}
-                    <div className="max-w-screen-md mx-auto flex items-center gap-3">
+                    <div className="max-w-md mx-auto flex items-center gap-3">
                         <button
                             onClick={handleContactSeller}
                             disabled={loadingChat}
                             aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
-                            className="flex-1 h-14 rounded-2xl border border-primary/20 text-[#0f7295] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2 bg-primary/[0.04] dark:bg-primary/10 hover:bg-primary/10 active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_10px_20px_-10px_rgba(29,173,221,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="flex-1 h-14 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             {loadingChat
                                 ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
                                 : (
                                     <>
-                                        <DynamicLucideIcon name="chat_bubble" size={22} aria-hidden="true" />
+                                        <DynamicLucideIcon name="chat_bubble" size={22} className="text-[#0e7490] dark:text-primary-light" aria-hidden="true" />
                                         <span>Chat</span>
                                     </>
                                 )
