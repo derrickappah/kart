@@ -166,9 +166,9 @@ export default function StudentIDCapturePage() {
     };
 
     return (
-        <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 transition-colors duration-200">
+        <div className="fixed inset-0 bg-white dark:bg-[#242428] font-display antialiased h-screen h-[100dvh] w-screen overflow-hidden flex flex-col items-center justify-center p-0 sm:p-4 transition-colors duration-200">
             {/* Mobile Frame Simulation */}
-            <div className="relative w-full sm:max-w-[400px] h-screen sm:h-[850px] bg-black sm:rounded-[2.5rem] overflow-hidden shadow-2xl sm:border-8 sm:border-neutral-900 flex flex-col group/design-root">
+            <div className="relative w-full sm:max-w-[400px] h-full sm:h-full sm:max-h-[850px] bg-black sm:rounded-[2.5rem] overflow-hidden shadow-2xl sm:border-8 sm:border-neutral-900 flex flex-col group/design-root">
 
                 {/* Flash Overlay */}
                 <div id="flash-overlay" className="absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-75"></div>
@@ -203,18 +203,18 @@ export default function StudentIDCapturePage() {
                 <canvas ref={canvasRef} className="hidden" />
 
                 {/* Header Area */}
-                <div className="relative z-20 w-full pt-12 pb-4 px-6 flex justify-center items-center bg-gradient-to-b from-black/80 to-transparent">
-                    <h1 className="text-xl font-bold tracking-tight text-white text-center drop-shadow-md">
+                <div className="relative z-20 w-full pt-8 sm:pt-12 pb-3 px-6 flex justify-center items-center bg-gradient-to-b from-black/80 to-transparent">
+                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white text-center drop-shadow-md">
                         {showChecking ? "Processing capture..." : "Position your ID within the frame"}
                     </h1>
                 </div>
 
                 {/* Main Viewfinder Section (Centered) */}
-                <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full">
+                <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full min-h-0 overflow-hidden">
                     {/* The Cutout/Viewfinder */}
                     <div
                         ref={viewfinderRef}
-                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl mx-6 overflow-hidden group shadow-2xl"
+                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl mx-6 overflow-hidden group shadow-2xl shrink-0"
                     >
                         {/* The "Hole" Effect Mask */}
                         <div
@@ -272,7 +272,7 @@ export default function StudentIDCapturePage() {
                 </div>
 
                 {/* Bottom Controls */}
-                <div className="relative z-20 pb-12 pt-6 px-8 bg-gradient-to-t from-black via-black/90 to-transparent w-full flex items-center justify-center">
+                <div className="relative z-20 pb-6 sm:pb-10 pt-4 px-8 bg-gradient-to-t from-black via-black/90 to-transparent w-full flex items-center justify-center shrink-0">
                     {/* Primary Shutter Button */}
                     <button
                         onClick={handleCapture}
