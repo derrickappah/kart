@@ -187,7 +187,7 @@ export default async function Marketplace({ searchParams }) {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
-                <header className="bg-white/95 dark:bg-[#242428]/95 px-4 pt-3 pb-2">
+                <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#242428]/95 px-4 pt-3 pb-2 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
                     <SearchBar placeholder="Search campus finds..." showFilter={true} />
                 </header>
 

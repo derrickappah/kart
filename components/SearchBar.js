@@ -87,7 +87,7 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
         return (
             <div className="relative flex items-center justify-between w-full h-14 px-1 overflow-hidden">
                 
-                {/* 1. Left Content (Logo or Category Chips): Vanishes smoothly on expand, restores smoothly on collapse */}
+                {/* 1. Left Content (Logo): Vanishes smoothly on expand, restores smoothly on collapse */}
                 <div
                     className={`absolute left-1 flex items-center transition-all [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] transform origin-left w-full ${
                         isExpanded 
@@ -96,7 +96,7 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                                 ? hideFilter
                                     ? 'opacity-100 translate-x-0 max-w-[calc(100%-60px)] duration-[200ms]'
                                     : 'opacity-100 translate-x-0 max-w-[calc(100%-120px)] duration-[200ms]'
-                                : 'opacity-100 translate-x-0 max-w-[80px] duration-[200ms]'
+                                : 'opacity-100 translate-x-0 max-w-[120px] duration-[200ms]'
                     }`}
                 >
                     {leftContent || (
@@ -104,8 +104,10 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                             <Image
                                 src="/logo.png"
                                 alt="KART Logo"
-                                width={80}
-                                height={32}
+                                width={95}
+                                height={38}
+                                style={{ width: '95px', height: 'auto' }}
+                                className="object-contain"
                                 priority
                             />
                         </Link>
@@ -128,14 +130,14 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                     aria-label="Search marketplace listings"
                     className={`absolute border [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${
                         isExpanded 
-                            ? `flex items-center left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] rounded-2xl px-4 shadow-soft cursor-text transition-all duration-[900ms] ${
+                            ? `flex items-center left-1 right-20 h-11 bg-gray-50 dark:bg-[#2d2d32] rounded-full px-4 shadow-soft cursor-text transition-all duration-[900ms] ${
                                 showHighlight 
                                     ? 'ring-2 ring-primary border-transparent' 
                                     : 'ring-0 border-gray-200 dark:border-gray-700'
                               }`
                             : hideFilter
-                                ? 'flex items-center left-[calc(100%-48px)] right-1 w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
-                                : 'flex items-center left-[calc(100%-100px)] right-[56px] w-11 h-11 bg-gray-50 dark:bg-[#2d2d32] border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
+                                ? 'flex items-center left-[calc(100%-48px)] right-1 size-11 bg-slate-100/80 dark:bg-[#2d2d32] border-0 rounded-full hover:bg-slate-200/80 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
+                                : 'flex items-center left-[calc(100%-104px)] right-[56px] size-11 bg-slate-100/80 dark:bg-[#2d2d32] border-0 rounded-full hover:bg-slate-200/80 dark:hover:bg-[#38383e] cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
                     {/* Centered Input element with symmetric clearance padding */}
@@ -177,7 +179,7 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                     )}
                 </form>
 
-                {/* 3. Sliding Search Icon: Translates independently to match speed and curves */}
+                {/* 3. Sliding Search Icon Button */}
                 <button
                     type="button"
                     onClick={() => {
@@ -189,18 +191,19 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                             }, 900);
                         }
                     }}
+                    aria-label="Search"
                     className={`absolute h-11 flex items-center justify-center [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] z-20 ${
                         isExpanded 
                             ? 'left-5 w-5 pointer-events-none text-primary transition-all duration-[900ms]' 
                             : hideFilter
-                                ? 'left-[calc(100%-36px)] w-5 text-primary cursor-pointer transition-all duration-[200ms]'
-                                : 'left-[calc(100%-88px)] w-5 text-primary cursor-pointer transition-all duration-[200ms]'
+                                ? 'left-[calc(100%-37px)] w-6 text-primary cursor-pointer transition-all duration-[200ms]'
+                                : 'left-[calc(100%-93px)] w-6 text-primary cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
-                    <DynamicLucideIcon name="search" size={20} aria-hidden="true" />
+                    <DynamicLucideIcon name="search" size={22} className="text-[#0f7295] dark:text-[#1daddd]" aria-hidden="true" />
                 </button>
 
-                {/* 4. Cancel Button: Staggered slide-in during expansion, instant disappear during collapse */}
+                {/* 4. Cancel Button */}
                 <div
                     className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
                         isExpanded 
@@ -224,7 +227,7 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                     </button>
                 </div>
 
-                {/* 5. Filter Icon Button: Fades out smoothly on expand, returns snappy on collapse */}
+                {/* 5. Filter Icon Button */}
                 {!hideFilter && (
                     <div
                         className={`absolute right-1 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
@@ -241,9 +244,9 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                                     ? `Filter & Sort — ${activeFilterCount} filters active`
                                     : 'Filter & Sort'
                             }
-                            className="size-11 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-[#2d2d32] border border-gray-100 dark:border-gray-800 text-primary hover:bg-gray-100 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
+                            className="size-11 flex items-center justify-center rounded-full bg-slate-100/80 dark:bg-[#2d2d32] border-0 text-[#0f7295] dark:text-[#1daddd] hover:bg-slate-200/80 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
                         >
-                            <DynamicLucideIcon name="tune" size={20} aria-hidden="true" />
+                            <DynamicLucideIcon name="tune" size={22} className="text-[#0f7295] dark:text-[#1daddd]" aria-hidden="true" />
                             {activeFilterCount > 0 && (
                                 <span
                                     className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border border-white dark:border-[#242428] shadow-sm leading-none"
