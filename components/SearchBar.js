@@ -196,11 +196,11 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                         isExpanded 
                             ? 'left-5 w-5 pointer-events-none text-primary transition-all duration-[900ms]' 
                             : hideFilter
-                                ? 'left-[calc(100%-37px)] w-6 text-primary cursor-pointer transition-all duration-[200ms]'
-                                : 'left-[calc(100%-93px)] w-6 text-primary cursor-pointer transition-all duration-[200ms]'
+                                ? 'left-[calc(100%-37px)] w-6 text-gray-900 dark:text-white cursor-pointer transition-all duration-[200ms]'
+                                : 'left-[calc(100%-93px)] w-6 text-gray-900 dark:text-white cursor-pointer transition-all duration-[200ms]'
                     }`}
                 >
-                    <DynamicLucideIcon name="search" size={22} className="text-[#0f7295] dark:text-[#1daddd]" aria-hidden="true" />
+                    <DynamicLucideIcon name="search" size={22} className="text-gray-900 dark:text-white" aria-hidden="true" />
                 </button>
 
                 {/* 4. Cancel Button */}
@@ -244,9 +244,9 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                                     ? `Filter & Sort — ${activeFilterCount} filters active`
                                     : 'Filter & Sort'
                             }
-                            className="size-11 flex items-center justify-center rounded-full bg-slate-100/80 dark:bg-[#2d2d32] border-0 text-[#0f7295] dark:text-[#1daddd] hover:bg-slate-200/80 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
+                            className="size-11 flex items-center justify-center rounded-full bg-slate-100/80 dark:bg-[#2d2d32] border-0 text-gray-900 dark:text-white hover:bg-slate-200/80 dark:hover:bg-[#38383e] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative shrink-0"
                         >
-                            <DynamicLucideIcon name="tune" size={22} className="text-[#0f7295] dark:text-[#1daddd]" aria-hidden="true" />
+                            <DynamicLucideIcon name="tune" size={22} className="text-gray-900 dark:text-white" aria-hidden="true" />
                             {activeFilterCount > 0 && (
                                 <span
                                     className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border border-white dark:border-[#242428] shadow-sm leading-none"
