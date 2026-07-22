@@ -528,39 +528,6 @@ export default function ProductDetailsClient({ product }) {
                                 <DynamicLucideIcon name="chevron_right" className="text-slate-400 shrink-0" aria-hidden="true" />
                             </Link>
 
-                            {/* Desktop Desktop Actions (Chat & Buy Buttons) */}
-                            {!isOwner && (
-                                <div className="hidden md:flex flex-col gap-3 p-5 bg-white dark:bg-[#2c3136] rounded-2xl border border-black/5 dark:border-white/5 shadow-sm">
-                                    {inlineError && (
-                                        <div
-                                            role="alert"
-                                            className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium text-center"
-                                        >
-                                            {inlineError}
-                                        </div>
-                                    )}
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={handleContactSeller}
-                                            disabled={loadingChat}
-                                            aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
-                                            className="flex-1 h-14 rounded-xl border border-primary/20 text-[#0f7295] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2 bg-primary/[0.04] dark:bg-primary/10 hover:bg-primary/15 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                        >
-                                            {loadingChat
-                                                ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
-                                                : (
-                                                    <>
-                                                        <DynamicLucideIcon name="chat_bubble" size={20} aria-hidden="true" />
-                                                        <span>Chat</span>
-                                                    </>
-                                                )
-                                            }
-                                        </button>
-                                        <BuyButton product={product} />
-                                    </div>
-                                </div>
-                            )}
-
                             {/* Description Section */}
                             <div>
                                 <h2 className="text-lg font-bold mb-2">Description</h2>
