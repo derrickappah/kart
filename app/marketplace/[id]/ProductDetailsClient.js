@@ -325,7 +325,7 @@ export default function ProductDetailsClient({ product }) {
                 </div>
             </div>
 
-            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-32">
+            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-28 md:pb-12">
                 {/* Main Content Layout: Stack on Mobile, 2 Columns on Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
                     {/* Left Column: Hero Carousel + Gallery Thumbnails (7 Cols Desktop) */}
