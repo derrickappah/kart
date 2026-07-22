@@ -68,7 +68,7 @@ export default function ProfilePage() {
     const university = profile?.university || profile?.campus || "University Student";
 
     return (
-        <div className="bg-white dark:bg-[#242428] font-display text-[#111618] dark:text-gray-100 min-h-screen pb-24 overflow-x-hidden profile-page">
+        <div className="bg-white dark:bg-[#242428] font-display text-[#111618] dark:text-gray-100 min-h-screen pb-4 md:pb-8 overflow-x-hidden profile-page">
             <main className="max-w-md mx-auto flex flex-col gap-8 px-4 pt-6">
                 {/* Profile Header Section */}
                 <section className="flex flex-col items-center animate-fade-in text-center">

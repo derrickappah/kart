@@ -165,7 +165,7 @@ export default function SellerProfilePage() {
 
     return (
         <div className="bg-[#f6f7f8] dark:bg-[#111d21] text-slate-900 dark:text-slate-100 min-h-screen font-display">
-            <main className="max-w-lg mx-auto pb-24">
+            <main className="max-w-lg mx-auto pb-4 md:pb-8">
                 {/* Profile Header Section */}
                 <section className="px-4 pt-6 pb-2">
                     <div className="flex flex-col items-center">

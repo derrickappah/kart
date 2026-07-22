@@ -129,7 +129,7 @@ export default function ConversationList() {
                 )}
             </header>
 
-            <main className="flex-1 px-4 pt-2 pb-24 overflow-y-auto no-scrollbar">
+            <main className="flex-1 px-4 pt-2 pb-4 md:pb-8 overflow-y-auto no-scrollbar">
                 {isLoading ? (
                     <div className="flex flex-col gap-2 animate-pulse">
                         {[1, 2, 3, 4, 5].map(i => (
@@ -190,8 +190,8 @@ export default function ConversationList() {
                 )}
 
                 {conversations.length > 0 && (
-                    <div className="py-8 flex flex-col items-center">
-                        <div className="w-12 h-1 bg-gray-200 dark:bg-gray-800 rounded-full mb-4"></div>
+                    <div className="py-3 flex flex-col items-center">
+                        <div className="w-12 h-1 bg-gray-200 dark:bg-gray-800 rounded-full mb-2"></div>
                         <p className="text-xs text-[#5e7d87] font-medium uppercase tracking-widest">End of Messages</p>
                     </div>
                 )}

@@ -186,9 +186,9 @@ export default async function Marketplace({ searchParams }) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
+            <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-4 md:pb-8 shadow-2xl bg-white dark:bg-[#242428]">
                 <main className="px-4 pt-3 flex-1">
-                    <div className="grid grid-cols-2 gap-4 pb-8">
+                    <div className="grid grid-cols-2 gap-4 pb-2">
                         {hasDbError ? (
                             <div className="col-span-2 py-16 px-6 text-center flex flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl text-red-500">
                                 <DynamicLucideIcon name="report" className="text-4xl mb-3 opacity-80" aria-hidden="true" />
