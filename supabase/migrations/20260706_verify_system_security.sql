@@ -15,8 +15,8 @@ CREATE POLICY "Users can update own profile"
 CREATE OR REPLACE FUNCTION public.check_profile_update_restrictions()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- If the user is admin, allow everything
-  IF EXISTS (
+  -- If the user is admin or the request is service_role, allow everything
+  IF auth.role() = 'service_role' OR EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid()
     AND is_admin = true

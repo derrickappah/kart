@@ -58,6 +58,7 @@ export default function LayoutWrapper({ children }) {
         pathname === '/signup' ||
         pathname === '/forgot-password' ||
         pathname === '/reset-password' ||
+        pathname === '/maintenance' ||
         pathname?.includes('/create') ||
         pathname?.includes('/edit') ||
         pathname?.includes('/promote/') ||
