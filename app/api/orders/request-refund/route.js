@@ -13,8 +13,23 @@ export async function POST(request) {
         const body = await request.json();
         const { orderId, reason, description } = body;
 
-        if (!orderId || !reason) {
-            return NextResponse.json({ error: 'Order ID and reason are required' }, { status: 400 });
+        if (!orderId || typeof orderId !== 'string') {
+            return NextResponse.json({ error: 'Valid Order ID is required' }, { status: 400 });
+        }
+
+        const trimmedReason = typeof reason === 'string' ? reason.trim() : '';
+        const trimmedDescription = typeof description === 'string' ? description.trim() : '';
+
+        if (!trimmedReason) {
+            return NextResponse.json({ error: 'Dispute reason is required' }, { status: 400 });
+        }
+
+        if (!trimmedDescription) {
+            return NextResponse.json({ error: 'Please describe the issue in detail' }, { status: 400 });
+        }
+
+        if (trimmedDescription.length > 1000) {
+            return NextResponse.json({ error: 'Description must not exceed 1000 characters' }, { status: 400 });
         }
 
         // 1. Get order and verify buyer
@@ -32,7 +47,7 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Unauthorized. Only the buyer can request a refund.' }, { status: 403 });
         }
 
-        // 2. Verify order is in a refundable state (Paid or Shipped, but not Completed or Refunded)
+        // 2. Verify order is in a refundable state (Paid, Shipped, or Delivered, but not Completed or Refunded)
         const allowedStatuses = ['Paid', 'Shipped', 'Delivered'];
         if (!allowedStatuses.includes(order.status)) {
             return NextResponse.json({ 
@@ -62,8 +77,8 @@ export async function POST(request) {
             .insert({
                 order_id: orderId,
                 buyer_id: user.id,
-                reason,
-                description,
+                reason: trimmedReason,
+                description: trimmedDescription,
                 status: 'Pending'
             })
             .select()
@@ -84,13 +99,10 @@ export async function POST(request) {
         await supabase.from('order_status_history').insert({
             order_id: orderId,
             old_status: order.status,
-            new_status: order.status, // Status doesn't change yet, but we record the event
+            new_status: order.status,
             changed_by: user.id,
-            notes: `Buyer requested a refund. Reason: ${reason}`,
+            notes: `Buyer requested a refund. Reason: ${trimmedReason}`,
         });
-
-        // 7. Notify admins (Optional: could be a trigger or separate logic)
-        // For now, we'll just return success
 
         return NextResponse.json({
             success: true,
@@ -103,3 +115,4 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
+

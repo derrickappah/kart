@@ -1,28 +1,55 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
-import { useState, useEffect, useId } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 
 export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess }) {
   const [reason, setReason] = useState('Item not received');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
+  const modalRef = useRef(null);
   const titleId = useId();
   const reasonId = useId();
   const descriptionId = useId();
 
-  // Handle body scroll locking
+  // Handle body scroll locking, Escape key, and Focus Trap
   useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add('overflow-hidden');
-    } else {
-      document.body.classList.remove('overflow-hidden');
-    }
+    if (!isOpen) return;
+
+    document.body.classList.add('overflow-hidden');
+
+    const handleKeyDownGlobal = (e) => {
+      if (e.key === 'Escape' && !loading) {
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusables = modalRef.current.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]:not([disabled])'
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDownGlobal);
+
     return () => {
       document.body.classList.remove('overflow-hidden');
+      window.removeEventListener('keydown', handleKeyDownGlobal);
     };
-  }, [isOpen]);
+  }, [isOpen, loading, onClose]);
 
   if (!isOpen) return null;
 
@@ -30,6 +57,13 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    const trimmedDescription = description.trim();
+    if (!trimmedDescription) {
+      setError('Please provide details explaining your dispute.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/orders/request-refund', {
@@ -40,7 +74,7 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
         body: JSON.stringify({
             orderId,
             reason,
-            description,
+            description: trimmedDescription,
         }),
       });
 
@@ -79,7 +113,10 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
       className="fixed inset-0 z-[99999] overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300"
     >
       {/* Dialog Body */}
-      <div className="relative w-full max-w-md bg-white dark:bg-[#1a2325] rounded-[32px] border border-black/5 dark:border-white/5 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-8">
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-md bg-white dark:bg-[#1a2325] rounded-[32px] border border-black/5 dark:border-white/5 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-8"
+      >
         <div className="p-6 sm:p-8">
           
           {/* Header */}
@@ -157,12 +194,17 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
 
             {/* Description Textarea */}
             <div className="space-y-1.5">
-              <label
-                htmlFor={descriptionId}
-                className="text-[10px] font-black uppercase tracking-wider text-slate-400"
-              >
-                Dispute details
-              </label>
+              <div className="flex justify-between items-center">
+                <label
+                  htmlFor={descriptionId}
+                  className="text-[10px] font-black uppercase tracking-wider text-slate-400"
+                >
+                  Dispute details
+                </label>
+                <span className="text-[10px] font-medium text-slate-400">
+                  {description.length}/1000
+                </span>
+              </div>
               <textarea
                 id={descriptionId}
                 value={description}
@@ -210,3 +252,4 @@ export default function RefundRequestModal({ orderId, isOpen, onClose, onSuccess
     </div>
   );
 }
+

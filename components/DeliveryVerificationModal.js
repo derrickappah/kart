@@ -7,6 +7,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, l
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
     const inputs = useRef([]);
+    const modalRef = useRef(null);
     const titleId = useId();
 
     if (isOpen !== prevIsOpen) {
@@ -17,11 +18,42 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, l
     }
 
     useEffect(() => {
-        if (isOpen) {
-            // Focus first input after a short delay to allow modal animation
-            setTimeout(() => inputs.current[0]?.focus(), 100);
-        }
-    }, [isOpen]);
+        if (!isOpen) return;
+
+        // Focus first input after modal opens
+        const focusTimer = setTimeout(() => inputs.current[0]?.focus(), 100);
+
+        // Escape key and focus trap handler
+        const handleKeyDownGlobal = (e) => {
+            if (e.key === 'Escape' && !loading) {
+                onClose();
+                return;
+            }
+
+            if (e.key === 'Tab' && modalRef.current) {
+                const focusables = modalRef.current.querySelectorAll(
+                    'button:not([disabled]), input:not([disabled]), a[href]:not([disabled])'
+                );
+                if (!focusables.length) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDownGlobal);
+        return () => {
+            clearTimeout(focusTimer);
+            window.removeEventListener('keydown', handleKeyDownGlobal);
+        };
+    }, [isOpen, loading, onClose]);
 
     const handleChange = (index, value) => {
         if (value.length > 1) value = value.slice(-1);
@@ -45,6 +77,12 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, l
     const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputs.current[index - 1]?.focus();
+        } else if (e.key === 'ArrowLeft' && index > 0) {
+            e.preventDefault();
+            inputs.current[index - 1]?.focus();
+        } else if (e.key === 'ArrowRight' && index < 5) {
+            e.preventDefault();
+            inputs.current[index + 1]?.focus();
         }
     };
 
@@ -71,9 +109,15 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, l
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
+            onClick={(e) => {
+                if (e.target === e.currentTarget && !loading) onClose();
+            }}
             className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
         >
-            <div className="bg-white dark:bg-[#1e292b] rounded-[32px] shadow-2xl max-w-sm w-full p-6 sm:p-8 space-y-8 animate-in zoom-in-95 duration-300 border border-white/10 relative">
+            <div
+                ref={modalRef}
+                className="bg-white dark:bg-[#1e292b] rounded-[32px] shadow-2xl max-w-sm w-full p-6 sm:p-8 space-y-8 animate-in zoom-in-95 duration-300 border border-white/10 relative"
+            >
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="size-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
@@ -105,7 +149,7 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, l
                                 onChange={(e) => handleChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
-                                className="size-10 sm:size-12 text-center text-lg sm:text-xl font-black bg-slate-50 dark:bg-white/5 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-transparent rounded-xl shadow-inner outline-none transition-all dark:text-white"
+                                className="size-10 sm:size-12 text-center text-lg sm:text-xl font-black bg-slate-50 dark:bg-white/5 border-2 border-transparent focus:border-primary focus:bg-white dark:focus:bg-transparent rounded-xl shadow-inner outline-none transition-all dark:text-white focus-visible:ring-2 focus-visible:ring-primary"
                                 placeholder="•"
                                 disabled={loading}
                             />
@@ -159,3 +203,4 @@ export default function DeliveryVerificationModal({ isOpen, onClose, onVerify, l
         </div>
     );
 }
+
