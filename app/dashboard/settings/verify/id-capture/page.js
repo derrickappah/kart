@@ -60,8 +60,8 @@ export default function StudentIDCapturePage() {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { ideal: "environment" },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     },
                     audio: false
                 });
@@ -166,80 +166,82 @@ export default function StudentIDCapturePage() {
     };
 
     return (
-        <div className="fixed inset-0 bg-black font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none">
-            {/* Flash Overlay */}
-            <div id="flash-overlay" className="absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-75"></div>
+        <div className="bg-[#111d21] font-display antialiased h-screen h-[100dvh] w-screen overflow-hidden flex flex-col items-center justify-center p-0 sm:p-4">
+            {/* Mobile Frame Simulation Container */}
+            <div className="relative w-full sm:max-w-[400px] h-full sm:h-[850px] bg-black sm:rounded-[2.5rem] overflow-hidden shadow-2xl sm:border-8 sm:border-neutral-900 flex flex-col group/design-root">
 
-            {/* Hidden Canvas for Capture */}
-            <canvas ref={canvasRef} className="hidden" />
+                {/* Flash Overlay */}
+                <div id="flash-overlay" className="absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-75"></div>
 
-            {/* Real Camera Feed Layer (Full Screen) */}
-            <div ref={containerRef} className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
-                {cameraError ? (
-                    <div className="text-white text-center px-8 h-full flex flex-col items-center justify-center">
-                        <DynamicLucideIcon name="videocam_off" className="text-4xl mb-4 text-red-500" />
-                        <p className="text-sm font-medium">{cameraError}</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="mt-4 px-6 py-2 bg-primary rounded-full text-xs font-bold"
-                        >
-                            Retry Access
-                        </button>
-                    </div>
-                ) : (
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
-                        style={{
-                            transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
-                            objectFit: 'cover',
-                            width: '100%',
-                            height: '100%'
-                        }}
-                    />
-                )}
-            </div>
+                {/* Real Camera Feed Layer */}
+                <div ref={containerRef} className="absolute inset-0 z-0 bg-neutral-900 flex items-center justify-center overflow-hidden">
+                    {cameraError ? (
+                        <div className="text-white text-center px-8">
+                            <DynamicLucideIcon name="videocam_off" className="text-4xl mb-4 text-red-500" />
+                            <p className="text-sm font-medium">{cameraError}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="mt-4 px-6 py-2 bg-primary rounded-full text-xs font-bold"
+                            >
+                                Retry Access
+                            </button>
+                        </div>
+                    ) : (
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            className="w-full h-full object-cover min-w-full min-h-full"
+                            style={{
+                                transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
+                                objectFit: 'cover'
+                            }}
+                        />
+                    )}
+                    <div className="absolute inset-0 bg-black/20"></div>
+                </div>
 
-            {/* UI Overlay Container (Header, Center Viewfinder, Shutter) */}
-            <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pointer-events-none">
+                {/* Hidden Canvas for Capture */}
+                <canvas ref={canvasRef} className="hidden" />
+
                 {/* Header Area */}
-                <div className="pointer-events-auto w-full pt-10 sm:pt-14 pb-6 px-6 flex justify-center items-center bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white text-center drop-shadow-lg">
+                <div className="relative z-20 w-full pt-10 sm:pt-12 pb-4 px-6 flex justify-center items-center bg-gradient-to-b from-black/80 to-transparent">
+                    <h1 className="text-lg font-bold tracking-tight text-white text-center drop-shadow-md">
                         {showChecking ? "Processing capture..." : "Position your ID within the frame"}
                     </h1>
                 </div>
 
-                {/* Center Viewfinder Container */}
-                <div className="pointer-events-auto flex-1 w-full flex items-center justify-center px-6 min-h-0">
+                {/* Main Viewfinder Section (Centered) */}
+                <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full min-h-0 overflow-hidden">
+                    {/* The Cutout/Viewfinder */}
                     <div
                         ref={viewfinderRef}
-                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl overflow-hidden shadow-2xl shrink-0"
+                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl mx-6 overflow-hidden group shadow-2xl shrink-0"
                     >
-                        {/* The "Hole" Mask Effect (darkens outside of viewfinder) */}
+                        {/* The "Hole" Effect Mask */}
                         <div
                             className="absolute -inset-[100vw] rounded-[inherit] pointer-events-none z-10"
-                            style={{ boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.65)' }}
+                            style={{ boxShadow: '0 0 0 9999px rgba(17, 29, 33, 0.85)' }}
                         ></div>
 
-                        {/* Grid Overlay */}
-                        <div className="absolute inset-0 overflow-hidden rounded-2xl z-0 ring-1 ring-white/20">
-                            <div className="absolute inset-0 opacity-30 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[length:40px_40px]"></div>
+                        {/* Viewfinder Overlay (Grid/Markers) */}
+                        <div className="absolute inset-0 overflow-hidden rounded-2xl z-0 ring-1 ring-white/10">
+                            {/* Grid Overlay */}
+                            <div className="absolute inset-0 opacity-30 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[length:40px_40px]"></div>
                         </div>
 
                         {/* Active Scanning Animation */}
                         {!showChecking && !capturedImage && (
                             <div className="absolute inset-0 overflow-hidden rounded-2xl z-20">
                                 <div
-                                    className="w-full h-[50%] bg-gradient-to-b from-primary/0 via-primary/20 to-primary/0 animate-[scan_3s_cubic-bezier(0.4,0,0.2,1)_infinite] border-b-2 border-primary"
+                                    className="w-full h-[50%] bg-gradient-to-b from-primary/0 via-primary/10 to-primary/0 animate-[scan_3s_cubic-bezier(0.4,0,0.2,1)_infinite] border-b border-primary/40"
                                     style={{ animationName: 'scan' }}
                                 ></div>
                             </div>
                         )}
 
-                        {/* Captured Image Display (Fits exact scanner frame) */}
+                        {/* Captured Image Display */}
                         {capturedImage && (
                             <img
                                 src={capturedImage}
@@ -249,10 +251,10 @@ export default function StudentIDCapturePage() {
                         )}
 
                         {/* Corner Markers */}
-                        <div className="absolute -top-1 -left-1 size-8 border-t-[4px] border-l-[4px] border-primary rounded-tl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
-                        <div className="absolute -top-1 -right-1 size-8 border-t-[4px] border-r-[4px] border-primary rounded-tr-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
-                        <div className="absolute -bottom-1 -left-1 size-8 border-b-[4px] border-l-[4px] border-primary rounded-bl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
-                        <div className="absolute -bottom-1 -right-1 size-8 border-b-[4px] border-r-[4px] border-primary rounded-br-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
+                        <div className="absolute -top-1 -left-1 size-8 border-t-[4px] border-l-[4px] border-primary rounded-tl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.5)]"></div>
+                        <div className="absolute -top-1 -right-1 size-8 border-t-[4px] border-r-[4px] border-primary rounded-tr-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.5)]"></div>
+                        <div className="absolute -bottom-1 -left-1 size-8 border-b-[4px] border-l-[4px] border-primary rounded-bl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.5)]"></div>
+                        <div className="absolute -bottom-1 -right-1 size-8 border-b-[4px] border-r-[4px] border-primary rounded-br-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.5)]"></div>
 
                         {/* Center Crosshair */}
                         {!capturedImage && (
@@ -262,7 +264,7 @@ export default function StudentIDCapturePage() {
                             </div>
                         )}
 
-                        {/* Checking Clarity Overlay */}
+                        {/* Checking clarity overlay */}
                         {showChecking && (
                             <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center animate-in fade-in duration-500">
                                 <div className="size-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
@@ -272,8 +274,9 @@ export default function StudentIDCapturePage() {
                     </div>
                 </div>
 
-                {/* Bottom Shutter Controls */}
-                <div className="pointer-events-auto w-full pb-8 sm:pb-12 pt-6 px-6 flex justify-center items-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                {/* Bottom Controls */}
+                <div className="relative z-20 pb-8 sm:pb-12 pt-6 px-8 bg-gradient-to-t from-black via-black/90 to-transparent w-full flex items-center justify-center">
+                    {/* Primary Shutter Button */}
                     <button
                         onClick={handleCapture}
                         disabled={isCapturing || !!cameraError}
