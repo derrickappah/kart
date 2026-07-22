@@ -60,8 +60,8 @@ export default function StudentIDCapturePage() {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { ideal: "environment" },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
                     },
                     audio: false
                 });
@@ -174,9 +174,9 @@ export default function StudentIDCapturePage() {
             <canvas ref={canvasRef} className="hidden" />
 
             {/* Real Camera Feed Layer (Full Screen) */}
-            <div ref={containerRef} className="absolute inset-0 z-0 bg-neutral-900 flex items-center justify-center">
+            <div ref={containerRef} className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
                 {cameraError ? (
-                    <div className="text-white text-center px-8">
+                    <div className="text-white text-center px-8 h-full flex flex-col items-center justify-center">
                         <DynamicLucideIcon name="videocam_off" className="text-4xl mb-4 text-red-500" />
                         <p className="text-sm font-medium">{cameraError}</p>
                         <button
@@ -192,8 +192,13 @@ export default function StudentIDCapturePage() {
                         autoPlay
                         playsInline
                         muted
-                        className="w-full h-full object-cover"
-                        style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
+                        className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
+                        style={{
+                            transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
+                            objectFit: 'cover',
+                            width: '100%',
+                            height: '100%'
+                        }}
                     />
                 )}
             </div>
@@ -234,7 +239,7 @@ export default function StudentIDCapturePage() {
                             </div>
                         )}
 
-                        {/* Captured Image Display */}
+                        {/* Captured Image Display (Fits exact scanner frame) */}
                         {capturedImage && (
                             <img
                                 src={capturedImage}
