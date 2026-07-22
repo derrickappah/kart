@@ -86,18 +86,18 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
   return (
     <>
       {/* Featured Section */}
-      <div className="flex items-center justify-between px-5 pt-2 pb-4">
-        <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Featured for You</h2>
-        <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">See All</Link>
+      <div className="flex items-center justify-between px-4 md:px-0 pt-4 pb-4">
+        <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">Featured for You</h2>
+        <Link href="/marketplace" className="text-sm font-bold text-primary hover:text-primary-dark transition-colors">See All</Link>
       </div>
       <FeaturedSlider products={displayFeatured} wishlistIds={wishlistIds} />
 
       {/* Recommended Section */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-4">
-        <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Recommended for You</h2>
-        <Link href="/marketplace" className="text-sm font-semibold text-primary hover:text-primary-dark">View New</Link>
+      <div className="flex items-center justify-between px-4 md:px-0 pt-8 pb-4">
+        <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">Recommended for You</h2>
+        <Link href="/marketplace" className="text-sm font-bold text-primary hover:text-primary-dark transition-colors">View New</Link>
       </div>
-      <div className="grid grid-cols-2 gap-4 px-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5 px-4 md:px-0">
         {displayRecommended.map(product => {
           const recReason = getRecReason(product);
           const badge = getBadgeStyle(recReason);
@@ -106,14 +106,14 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
             <Link
               key={product.id}
               href={`/marketplace/${product.id}`}
-              className="group flex flex-col gap-2 relative h-full w-full cursor-pointer"
+              className="group flex flex-col gap-2 relative h-full w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
             >
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-[#2d2d32] border dark:border-gray-700/50">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-[#2d2d32] border dark:border-gray-700/50 shadow-sm">
                 <Image
                   src={product.image_url || product.images?.[0] || '/placeholder.png'}
                   alt={product.title}
                   fill
-                  sizes="(max-width: 768px) 50vw, 200px"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 
@@ -197,11 +197,11 @@ export default async function Home() {
   const latestProducts = seededShuffle(latestRes.data || [], Math.floor(Math.random() * 1000000));
 
   return (
-    <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">
-      <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24 max-w-md mx-auto bg-white dark:bg-[#242428]">
+    <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen pt-14 md:pt-20 pb-24">
+      <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-6xl mx-auto px-0 md:px-6 bg-white dark:bg-[#242428]">
         <PromotedBanner products={bannerProducts} />
 
-        <div className="px-4 py-3 sticky top-0 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
+        <div className="px-4 py-3 sticky top-14 md:top-20 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
           <SearchBar
             placeholder="Search campus finds..."
             showFilter={true}
@@ -211,7 +211,7 @@ export default async function Home() {
                   <Link
                     key={cat.name}
                     href={cat.name === 'All' ? '/marketplace' : `/marketplace?category=${cat.name}`}
-                    className="flex h-9 items-center justify-center rounded-full px-4 text-xs font-black transition-all active:scale-95 whitespace-nowrap bg-primary/10 text-primary hover:bg-primary/20 border border-primary/15 dark:bg-primary/20 dark:text-blue-400 dark:border-primary/25"
+                    className="flex h-9 items-center justify-center rounded-full px-4 text-xs font-black transition-all active:scale-95 whitespace-nowrap bg-primary/10 text-primary hover:bg-primary/20 border border-primary/15 dark:bg-primary/20 dark:text-blue-400 dark:border-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <span>{cat.name}</span>
                   </Link>
@@ -223,10 +223,10 @@ export default async function Home() {
 
         {/* Heavy products section is streamed separately — page renders above instantly */}
         <Suspense fallback={
-          <div className="px-5">
+          <div className="px-5 py-6">
             <div className="h-7 w-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-full mb-4" />
-            <div className="flex gap-4 overflow-hidden pb-6">
-              {[1,2,3].map(i => <ProductCardSkeleton key={i} />)}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {[1,2,3,4].map(i => <ProductCardSkeleton key={i} />)}
             </div>
           </div>
         }>

@@ -181,20 +181,20 @@ export default async function Marketplace({ searchParams }) {
     };
 
     return (
-        <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
+        <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased pt-14 md:pt-20 pb-24">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
-                <header className="bg-white/95 dark:bg-[#242428]/95 px-4 pt-3 pb-2">
+            <div className="max-w-6xl mx-auto px-0 md:px-6 relative flex flex-col min-h-screen bg-white dark:bg-[#242428]">
+                <header className="bg-white/95 dark:bg-[#242428]/95 px-4 pt-3 pb-2 sticky top-14 md:top-20 z-40 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
                     <SearchBar placeholder="Search campus finds..." showFilter={true} />
                 </header>
 
-                <main className="px-4 pt-1 flex-1">
-                    <div className="grid grid-cols-2 gap-4 pb-8">
+                <main className="px-4 pt-4 flex-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5 pb-8">
                         {hasDbError ? (
-                            <div className="col-span-2 py-16 px-6 text-center flex flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl text-red-500">
+                            <div className="col-span-full py-16 px-6 text-center flex flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl text-red-500">
                                 <DynamicLucideIcon name="report" className="text-4xl mb-3 opacity-80" aria-hidden="true" />
                                 <p className="font-bold text-red-900 dark:text-red-300">
                                     Failed to retrieve listings
@@ -214,15 +214,15 @@ export default async function Marketplace({ searchParams }) {
                                 const cardContent = (
                                     <Link
                                         href={`/marketplace/${p.id}`}
-                                        className="group flex flex-col gap-2 relative h-full w-full"
+                                        className="group flex flex-col gap-2 relative h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
                                         aria-label={`${toSentenceCase(p.title)} — ₵ ${formatPrice(p.price)}`}
                                     >
-                                        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35]">
+                                        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35] shadow-sm">
                                             <Image
                                                 src={p.images?.[0] || p.image_url || '/placeholder.png'}
                                                 alt={toSentenceCase(p.title)}
                                                 fill
-                                                sizes="(max-width: 768px) 50vw, 200px"
+                                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
                                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                                             />
                                             <WishlistButton
@@ -257,7 +257,7 @@ export default async function Marketplace({ searchParams }) {
                                 );
                             })
                         ) : (
-                            <div className="col-span-2 py-20 text-center flex flex-col items-center justify-center text-gray-500">
+                            <div className="col-span-full py-20 text-center flex flex-col items-center justify-center text-gray-500">
                                 <DynamicLucideIcon name="search_off" className="text-6xl mb-4 opacity-20" aria-hidden="true" />
                                 <p className="font-semibold text-gray-700 dark:text-gray-300">
                                     {hasActiveSearch
