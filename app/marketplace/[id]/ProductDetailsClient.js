@@ -325,7 +325,7 @@ export default function ProductDetailsClient({ product }) {
                 </div>
             </div>
 
-            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-12">
+            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-2 md:pb-8">
                 {/* Main Content Layout: Stack on Mobile, 2 Columns on Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
                     {/* Left Column: Hero Carousel + Gallery Thumbnails (7 Cols Desktop) */}
@@ -557,7 +557,7 @@ export default function ProductDetailsClient({ product }) {
 
                 {/* Similar Items Section */}
                 {!loadingSimilar && similarProducts.length > 0 && (
-                    <section className="mt-16 mb-8 px-4 md:px-0" aria-label="Similar items">
+                    <section className="mt-8 md:mt-16 mb-2 md:mb-8 px-4 md:px-0" aria-label="Similar items">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-extrabold tracking-tight">Similar Items</h2>
                             <Link

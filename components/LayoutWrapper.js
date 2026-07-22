@@ -72,9 +72,8 @@ export default function LayoutWrapper({ children }) {
         (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
         !pathname?.includes('/profile/edit');
 
-    const noTopPadding = isProductPage;
-    const paddingClass = noTopPadding 
-        ? "pb-[66px]" 
+    const paddingClass = isProductPage
+        ? "" 
         : (isEditingPage ? "" : "pt-16 pb-[66px]");
 
     return (
