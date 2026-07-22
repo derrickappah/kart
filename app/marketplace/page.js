@@ -187,11 +187,7 @@ export default async function Marketplace({ searchParams }) {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-24 shadow-2xl bg-white dark:bg-[#242428]">
-                <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#242428]/95 px-4 pt-3 pb-2 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
-                    <SearchBar placeholder="Search campus finds..." showFilter={true} />
-                </header>
-
-                <main className="px-4 pt-1 flex-1">
+                <main className="px-4 pt-3 flex-1">
                     <div className="grid grid-cols-2 gap-4 pb-8">
                         {hasDbError ? (
                             <div className="col-span-2 py-16 px-6 text-center flex flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl text-red-500">

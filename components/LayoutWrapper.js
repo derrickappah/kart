@@ -72,7 +72,7 @@ export default function LayoutWrapper({ children }) {
         (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
         !pathname?.includes('/profile/edit');
 
-    const noTopPadding = isProductPage || isMarketplacePage;
+    const noTopPadding = isProductPage;
     const paddingClass = noTopPadding 
         ? "pb-[66px]" 
         : (isEditingPage ? "" : "pt-16 pb-[66px]");
@@ -80,7 +80,7 @@ export default function LayoutWrapper({ children }) {
     return (
         <>
             <AppDeepLinkHandler />
-            {!isEditingPage && !isMarketplacePage && <Navbar user={user} />}
+            {!isEditingPage && <Navbar user={user} />}
             <main className={`overflow-hidden bg-white dark:bg-[#242428] ${paddingClass}`}>
                 <PullToRefresh onRefresh={handleRefresh} disabled={isEditingPage}>
                     <PageTransition>
