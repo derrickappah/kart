@@ -172,8 +172,8 @@ export default function VerificationIntroPage() {
                                 <DynamicLucideIcon name="school" className="text-[24px]" />
                             </div>
                             <div className="flex flex-col flex-1">
-                                <p className="text-gray-900 dark:text-white text-base font-bold leading-tight">University Email</p>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal mt-0.5">Confirm your .edu address</p>
+                                <p className="text-gray-900 dark:text-white text-base font-bold leading-tight">Confirm your email</p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal mt-0.5">Enter code sent to your email</p>
                             </div>
                             {/* Connector Line */}
                             <div className="absolute left-[2.25rem] top-[3.75rem] w-0.5 h-6 bg-gray-100 dark:bg-[#2c3b3e] -z-10"></div>
@@ -185,7 +185,7 @@ export default function VerificationIntroPage() {
                             </div>
                             <div className="flex flex-col flex-1">
                                 <p className="text-gray-900 dark:text-white text-base font-bold leading-tight">Photo ID Check</p>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal mt-0.5">Scan student ID or license</p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal mt-0.5">Scan ID</p>
                             </div>
                         </div>
                     </div>
@@ -195,11 +195,6 @@ export default function VerificationIntroPage() {
             {/* Bottom Action Area */}
             <footer className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#f6f7f8] via-[#f6f7f8] to-transparent dark:from-[#111d21] dark:via-[#111d21] pb-12 sm:pb-16 z-30">
                 <div className="max-w-md mx-auto w-full flex flex-col gap-4">
-                    {/* Trust Badge */}
-                    <div className="flex items-center justify-center gap-2 text-xs font-medium text-[#57858e] dark:text-gray-500 opacity-80">
-                        <DynamicLucideIcon name="lock" className="text-[14px]" />
-                        <span>Your data is encrypted and secure</span>
-                    </div>
                     {/* Primary Button */}
                     <Link href="/dashboard/settings/verify/email" className="w-full h-14 bg-primary hover:bg-[#1e6a7a] active:scale-[0.98] transition-all duration-200 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2 group">
                         <span>Start Verification</span>
