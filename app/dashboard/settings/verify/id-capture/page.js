@@ -203,14 +203,14 @@ export default function StudentIDCapturePage() {
             {/* Single Viewport Overlay (Header, Centered Scanner, Capture Button) */}
             <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pointer-events-none py-6 px-4 sm:py-8 sm:px-6">
                 {/* Header Text */}
-                <div className="pointer-events-auto w-full pt-6 sm:pt-8 text-center">
+                <div className="pointer-events-auto w-full pt-6 sm:pt-8 text-center relative z-30">
                     <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-lg px-4">
                         {showChecking ? "Processing capture..." : "Position your ID within the frame"}
                     </h1>
                 </div>
 
                 {/* Center Scanner Viewfinder */}
-                <div className="pointer-events-auto flex-1 w-full flex items-center justify-center px-4 min-h-0">
+                <div className="pointer-events-auto flex-1 w-full flex items-center justify-center px-4 min-h-0 relative z-10">
                     <div
                         ref={viewfinderRef}
                         className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl shadow-2xl shrink-0"
@@ -271,7 +271,7 @@ export default function StudentIDCapturePage() {
                 </div>
 
                 {/* Bottom Shutter Capture Button */}
-                <div className="pointer-events-auto w-full pb-6 sm:pb-8 flex justify-center items-center">
+                <div className="pointer-events-auto w-full pb-6 sm:pb-8 flex justify-center items-center relative z-30">
                     <button
                         onClick={handleCapture}
                         disabled={isCapturing || !!cameraError}
