@@ -166,7 +166,7 @@ export default function StudentIDCapturePage() {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none touch-none">
+        <div className="fixed inset-0 z-[999] bg-black font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none touch-none">
             {/* Flash Overlay */}
             <div id="flash-overlay" className="absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-75"></div>
 
