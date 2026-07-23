@@ -192,12 +192,9 @@ export default function StudentIDCapturePage() {
                         autoPlay
                         playsInline
                         muted
-                        className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
+                        className="full-screen-camera"
                         style={{
-                            transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
-                            objectFit: 'cover',
-                            width: '100%',
-                            height: '100%'
+                            transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
                         }}
                     />
                 )}
@@ -292,6 +289,17 @@ export default function StudentIDCapturePage() {
                 @keyframes scan {
                     0% { transform: translateY(-100%); }
                     100% { transform: translateY(100%); }
+                }
+                .full-screen-camera {
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    height: 100dvh !important;
+                    min-width: 100vw !important;
+                    min-height: 100dvh !important;
+                    object-fit: cover !important;
                 }
             `}</style>
         </div>
