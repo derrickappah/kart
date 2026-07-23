@@ -203,7 +203,7 @@ export default function StudentIDCapturePage() {
             {/* Single Viewport Overlay (Header, Centered Scanner, Capture Button) */}
             <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pointer-events-none py-6 px-4 sm:py-8 sm:px-6">
                 {/* Header Text */}
-                <div className="pointer-events-auto w-full pt-6 sm:pt-8 text-center bg-gradient-to-b from-black/80 via-black/40 to-transparent py-4 rounded-b-2xl">
+                <div className="pointer-events-auto w-full pt-6 sm:pt-8 text-center">
                     <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-lg px-4">
                         {showChecking ? "Processing capture..." : "Position your ID within the frame"}
                     </h1>
@@ -213,59 +213,60 @@ export default function StudentIDCapturePage() {
                 <div className="pointer-events-auto flex-1 w-full flex items-center justify-center px-4 min-h-0">
                     <div
                         ref={viewfinderRef}
-                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl overflow-hidden shadow-2xl shrink-0"
+                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl shadow-2xl shrink-0"
                     >
-                        {/* Cutout Mask (Dark Overlay outside viewfinder) */}
+                        {/* Cutout Mask (Dark Translucent Overlay outside viewfinder) */}
                         <div
-                            className="absolute -inset-[100vw] rounded-[inherit] pointer-events-none z-10"
+                            className="absolute inset-0 rounded-[inherit] pointer-events-none z-10"
                             style={{ boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.65)' }}
                         ></div>
 
-                        {/* Viewfinder Grid Overlay */}
-                        <div className="absolute inset-0 overflow-hidden rounded-2xl z-0 ring-1 ring-white/20">
+                        {/* Viewfinder Inner Contents (Clipped to rounded-2xl) */}
+                        <div className="absolute inset-0 overflow-hidden rounded-2xl z-0">
+                            {/* Grid Overlay */}
                             <div className="absolute inset-0 opacity-30 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[length:40px_40px]"></div>
+
+                            {/* Active Scanning Animation Line */}
+                            {!showChecking && !capturedImage && (
+                                <div className="absolute inset-0 overflow-hidden rounded-2xl z-20">
+                                    <div
+                                        className="w-full h-[50%] bg-gradient-to-b from-primary/0 via-primary/20 to-primary/0 animate-[scan_3s_cubic-bezier(0.4,0,0.2,1)_infinite] border-b-2 border-primary"
+                                        style={{ animationName: 'scan' }}
+                                    ></div>
+                                </div>
+                            )}
+
+                            {/* Captured Image Display */}
+                            {capturedImage && (
+                                <img
+                                    src={capturedImage}
+                                    alt="Captured ID"
+                                    className="absolute inset-0 w-full h-full object-cover rounded-2xl z-25"
+                                />
+                            )}
+
+                            {/* Center Crosshair */}
+                            {!capturedImage && (
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-4 opacity-50 z-20">
+                                    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+                                    <div className="absolute top-0 left-1/2 h-full w-[1px] bg-white"></div>
+                                </div>
+                            )}
+
+                            {/* Checking Clarity Overlay */}
+                            {showChecking && (
+                                <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center animate-in fade-in duration-500">
+                                    <div className="size-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+                                    <p className="text-white font-bold">Checking clarity...</p>
+                                </div>
+                            )}
                         </div>
-
-                        {/* Active Scanning Animation Line */}
-                        {!showChecking && !capturedImage && (
-                            <div className="absolute inset-0 overflow-hidden rounded-2xl z-20">
-                                <div
-                                    className="w-full h-[50%] bg-gradient-to-b from-primary/0 via-primary/20 to-primary/0 animate-[scan_3s_cubic-bezier(0.4,0,0.2,1)_infinite] border-b-2 border-primary"
-                                    style={{ animationName: 'scan' }}
-                                ></div>
-                            </div>
-                        )}
-
-                        {/* Captured Image Display */}
-                        {capturedImage && (
-                            <img
-                                src={capturedImage}
-                                alt="Captured ID"
-                                className="absolute inset-0 w-full h-full object-cover rounded-2xl z-25"
-                            />
-                        )}
 
                         {/* Corner Markers */}
                         <div className="absolute -top-1 -left-1 size-8 border-t-[4px] border-l-[4px] border-primary rounded-tl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
                         <div className="absolute -top-1 -right-1 size-8 border-t-[4px] border-r-[4px] border-primary rounded-tr-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
                         <div className="absolute -bottom-1 -left-1 size-8 border-b-[4px] border-l-[4px] border-primary rounded-bl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
                         <div className="absolute -bottom-1 -right-1 size-8 border-b-[4px] border-r-[4px] border-primary rounded-br-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
-
-                        {/* Center Crosshair */}
-                        {!capturedImage && (
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-4 opacity-50 z-20">
-                                <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
-                                <div className="absolute top-0 left-1/2 h-full w-[1px] bg-white"></div>
-                            </div>
-                        )}
-
-                        {/* Checking Clarity Overlay */}
-                        {showChecking && (
-                            <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center animate-in fade-in duration-500">
-                                <div className="size-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
-                                <p className="text-white font-bold">Checking clarity...</p>
-                            </div>
-                        )}
                     </div>
                 </div>
 
