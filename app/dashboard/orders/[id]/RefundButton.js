@@ -69,7 +69,7 @@ export default function RefundButton({ orderId, orderStatus, refundStatus }) {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[11000] animate-in slide-in-from-bottom-5 fade-in duration-300 px-4 w-full max-w-xs"
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-[11000] animate-in slide-in-from-top-5 fade-in duration-300 px-4 w-full max-w-xs"
         >
           <div className={`p-4 rounded-2xl flex items-center gap-3 shadow-xl border ${
             toast.type === 'success' 
