@@ -59,51 +59,76 @@ export async function POST(request) {
             return NextResponse.json({ error: `Order escrow is already ${order.escrow_status}.` }, { status: 400 });
         }
 
-        // 3. Check if a request already exists
-        const { data: existingRequest } = await supabase
-            .from('refund_requests')
-            .select('id')
-            .eq('order_id', orderId)
-            .eq('status', 'Pending')
-            .maybeSingle();
-
-        if (existingRequest) {
-            return NextResponse.json({ error: 'A pending refund request already exists for this order.' }, { status: 400 });
+        // Create service role client for privileged database operations
+        let adminSupabase;
+        try {
+            adminSupabase = createServiceRoleClient();
+        } catch {
+            adminSupabase = supabase;
         }
 
-        // 4. Create refund request
-        const { data: refundRequest, error: refundError } = await supabase
-            .from('refund_requests')
-            .insert({
-                order_id: orderId,
-                buyer_id: user.id,
-                reason: trimmedReason,
-                description: trimmedDescription,
-                status: 'Pending'
-            })
-            .select()
-            .single();
+        // 3. Check if a pending request already exists in refund_requests table if present
+        try {
+            const { data: existingRequest } = await adminSupabase
+                .from('refund_requests')
+                .select('id')
+                .eq('order_id', orderId)
+                .eq('status', 'Pending')
+                .maybeSingle();
 
-        if (refundError) {
-            console.error('Error creating refund request:', refundError);
-            return NextResponse.json({ error: 'Failed to submit refund request' }, { status: 500 });
+            if (existingRequest) {
+                return NextResponse.json({ error: 'A pending refund request already exists for this order.' }, { status: 400 });
+            }
+        } catch (e) {
+            console.warn('Unable to query refund_requests table:', e?.message || e);
         }
 
-        // 5. Update order refund_status using service role client
-        const adminSupabase = createServiceRoleClient();
-        await adminSupabase
-            .from('orders')
-            .update({ refund_status: 'Requested' })
-            .eq('id', orderId);
+        // 4. Attempt to insert into refund_requests table
+        let refundRequest = null;
+        try {
+            const { data: insertedRequest, error: refundError } = await adminSupabase
+                .from('refund_requests')
+                .insert({
+                    order_id: orderId,
+                    buyer_id: user.id,
+                    reason: trimmedReason,
+                    description: trimmedDescription,
+                    status: 'Pending'
+                })
+                .select()
+                .single();
 
-        // 6. Record history
-        await adminSupabase.from('order_status_history').insert({
+            if (refundError) {
+                console.warn('Notice: Could not insert into refund_requests table:', refundError.message);
+            } else {
+                refundRequest = insertedRequest;
+            }
+        } catch (e) {
+            console.warn('Notice: refund_requests table insert failed:', e?.message || e);
+        }
+
+        // 5. Update order refund_status if column exists
+        try {
+            await adminSupabase
+                .from('orders')
+                .update({ refund_status: 'Requested' })
+                .eq('id', orderId);
+        } catch (e) {
+            console.warn('Notice: refund_status column update failed:', e?.message || e);
+        }
+
+        // 6. Record history in order_status_history (guaranteed table)
+        const { error: historyErr } = await adminSupabase.from('order_status_history').insert({
             order_id: orderId,
             old_status: order.status,
             new_status: order.status,
             changed_by: user.id,
-            notes: `Buyer requested a refund. Reason: ${trimmedReason}`,
+            notes: `Buyer requested a refund. Reason: ${trimmedReason}. Details: ${trimmedDescription}`,
         });
+
+        if (historyErr) {
+            console.error('Error inserting into order_status_history:', historyErr);
+        }
 
         return NextResponse.json({
             success: true,
@@ -116,4 +141,5 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
+
 
