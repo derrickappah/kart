@@ -75,6 +75,56 @@ export async function POST(request) {
       );
     }
 
+    // Return held funds from pending_balance back to wallet balance
+    try {
+      let wallet = null;
+      if (withdrawalRequest.wallet_id) {
+        const { data: w } = await adminSupabase
+          .from('wallets')
+          .select('*')
+          .eq('id', withdrawalRequest.wallet_id)
+          .maybeSingle();
+        if (w) wallet = w;
+      }
+      if (!wallet && withdrawalRequest.user_id) {
+        const { data: w } = await adminSupabase
+          .from('wallets')
+          .select('*')
+          .eq('user_id', withdrawalRequest.user_id)
+          .maybeSingle();
+        if (w) wallet = w;
+      }
+
+      if (wallet) {
+        const withdrawAmount = parseFloat(withdrawalRequest.amount || 0);
+        const currentBalance = parseFloat(wallet.balance || 0);
+        const currentPending = parseFloat(wallet.pending_balance || 0);
+        const newBalance = currentBalance + withdrawAmount;
+        const newPending = Math.max(0, currentPending - withdrawAmount);
+
+        await adminSupabase
+          .from('wallets')
+          .update({
+            balance: newBalance,
+            pending_balance: newPending,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', wallet.id);
+
+        await adminSupabase.from('wallet_transactions').insert({
+          wallet_id: wallet.id,
+          transaction_type: 'Refund',
+          amount: withdrawAmount,
+          balance_before: currentBalance,
+          balance_after: newBalance,
+          status: 'Completed',
+          admin_notes: `Withdrawal request #${withdrawalRequestId} rejected by admin. Reason: ${reason || 'N/A'}. Funds returned to balance.`,
+        });
+      }
+    } catch (err) {
+      console.error('Error restoring wallet balance on rejection:', err);
+    }
+
     // Create notification
     const { error: notificationError } = await adminSupabase.from('notifications').insert({
       user_id: withdrawalRequest.user_id,

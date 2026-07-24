@@ -93,11 +93,13 @@ export async function POST(request) {
     }
 
     const walletBalance = parseFloat(wallet.balance || 0);
+    const walletPending = parseFloat(wallet.pending_balance || 0);
     const withdrawAmount = parseFloat(amount);
+    const totalAvailableFunds = walletBalance + walletPending;
 
-    if (withdrawAmount > walletBalance) {
+    if (withdrawAmount > totalAvailableFunds) {
       return NextResponse.json(
-        { error: 'Insufficient wallet balance' },
+        { error: `Insufficient wallet funds. Total available (balance + pending): GHS ${totalAvailableFunds.toFixed(2)}` },
         { status: 400 }
       );
     }
@@ -125,12 +127,19 @@ export async function POST(request) {
       throw updateError;
     }
 
-    // Deduct from wallet balance
-    const newBalance = walletBalance - withdrawAmount;
+    // Deduct from pending_balance (or balance if pending_balance is insufficient) using adminSupabase
+    let newPendingBalance = Math.max(0, walletPending - withdrawAmount);
+    let newBalance = walletBalance;
+    if (withdrawAmount > walletPending) {
+      const remainingToDeduct = withdrawAmount - walletPending;
+      newBalance = Math.max(0, walletBalance - remainingToDeduct);
+    }
+
     const { error: walletUpdateError } = await adminSupabase
       .from('wallets')
       .update({
         balance: newBalance,
+        pending_balance: newPendingBalance,
         updated_at: new Date().toISOString(),
       })
       .eq('id', wallet.id);

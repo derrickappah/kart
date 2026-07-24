@@ -376,8 +376,15 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
                             <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-tighter">{request.user?.email}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] font-black uppercase text-[#4b636c] mb-1 group-hover:text-primary transition-colors">Available Funds</p>
-                            <p className="text-sm font-black text-green-600 tracking-tighter">GH₵ {parseFloat(request.wallet?.balance || 0).toFixed(2)}</p>
+                            <p className="text-[10px] font-black uppercase text-[#4b636c] mb-1 group-hover:text-primary transition-colors">Total Wallet Funds</p>
+                            <p className="text-sm font-black text-green-600 tracking-tighter">
+                              GH₵ {(parseFloat(request.wallet?.balance || 0) + parseFloat(request.wallet?.pending_balance || 0)).toFixed(2)}
+                            </p>
+                            {parseFloat(request.wallet?.pending_balance || 0) > 0 && (
+                              <p className="text-[9px] font-bold text-amber-600 uppercase tracking-tighter">
+                                (GH₵ {parseFloat(request.wallet?.pending_balance || 0).toFixed(2)} pending)
+                              </p>
+                            )}
                           </div>
                         </div>
 
