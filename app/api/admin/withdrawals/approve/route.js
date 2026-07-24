@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { initiateTransfer, createTransferRecipient, getBanks } from '@/lib/paystack';
 
 export async function POST(request) {
@@ -41,30 +41,51 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Withdrawal request not found' }, { status: 404 });
     }
 
-    // Fetch related wallet and user data separately
+    // Create service role client for privileged database operations
+    let adminSupabase;
+    try {
+      adminSupabase = createServiceRoleClient();
+    } catch {
+      adminSupabase = supabase;
+    }
+
+    // Fetch related wallet and user data separately using service role client
     let wallet = null;
     let requestUser = null; // User profile for the withdrawal request
 
     if (withdrawalRequest.wallet_id) {
-      const { data: walletData, error: walletError } = await supabase
+      const { data: walletData } = await adminSupabase
         .from('wallets')
         .select('*')
         .eq('id', withdrawalRequest.wallet_id)
-        .single();
+        .maybeSingle();
       
-      if (!walletError && walletData) {
+      if (walletData) {
+        wallet = walletData;
+      }
+    }
+
+    // Fallback: lookup wallet by user_id if wallet_id lookup was missing or not matched
+    if (!wallet && (withdrawalRequest.user_id || userId)) {
+      const { data: walletData } = await adminSupabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', withdrawalRequest.user_id || userId)
+        .maybeSingle();
+
+      if (walletData) {
         wallet = walletData;
       }
     }
 
     if (withdrawalRequest.user_id) {
-      const { data: userData, error: userError } = await supabase
+      const { data: userData } = await adminSupabase
         .from('profiles')
         .select('*')
         .eq('id', withdrawalRequest.user_id)
-        .single();
+        .maybeSingle();
       
-      if (!userError && userData) {
+      if (userData) {
         requestUser = userData;
       }
     }
@@ -125,8 +146,6 @@ export async function POST(request) {
     
     if (useMomo) {
       recipientAccountNumber = momoDetails.number;
-      // For mobile money, we need to get the correct bank_code from Paystack's bank list
-      // Try to fetch it, or use a fallback
       recipientBankCode = null; // Will be fetched from Paystack if needed
     } else {
       recipientAccountNumber = bankDetails.account_number;
@@ -143,8 +162,6 @@ export async function POST(request) {
           const banksResponse = await getBanks('GHS');
           const banks = banksResponse.data || [];
           
-          // Find mobile money network in the bank list
-          // Paystack might list them with specific names
           const networkSearchTerms = {
             'MTN': ['MTN', 'mtn'],
             'Vodafone': ['Vodafone', 'VODAFONE', 'vodafone'],
@@ -160,7 +177,6 @@ export async function POST(request) {
           if (mobileMoneyBank && mobileMoneyBank.code) {
             recipientBankCode = mobileMoneyBank.code;
           } else {
-            // Fallback: try common network names
             const networkMap = {
               'MTN': 'MTN',
               'Vodafone': 'VODAFONE',
@@ -170,7 +186,6 @@ export async function POST(request) {
           }
         } catch (bankListError) {
           console.error('Error fetching bank list from Paystack:', bankListError);
-          // Fallback to network name if bank list fetch fails
           const networkMap = {
             'MTN': 'MTN',
             'Vodafone': 'VODAFONE',
@@ -188,7 +203,6 @@ export async function POST(request) {
         currency: 'GHS',
       };
       
-      // Include bank_code if we have it (required for nuban, may be required for mobile_money)
       if (recipientBankCode) {
         recipientParams.bank_code = recipientBankCode;
       }
@@ -205,8 +219,8 @@ export async function POST(request) {
 
       transferReference = transferData.data.reference || transferReference;
 
-      // Update withdrawal request
-      const { data: updatedRequest, error: updateError } = await supabase
+      // Update withdrawal request using adminSupabase
+      const { data: updatedRequest, error: updateError } = await adminSupabase
         .from('withdrawal_requests')
         .update({
           status: 'Approved',
@@ -224,9 +238,9 @@ export async function POST(request) {
         throw updateError;
       }
 
-      // Deduct from wallet balance
+      // Deduct from wallet balance using adminSupabase
       const newBalance = walletBalance - withdrawAmount;
-      const { error: walletUpdateError } = await supabase
+      const { error: walletUpdateError } = await adminSupabase
         .from('wallets')
         .update({
           balance: newBalance,
@@ -239,8 +253,8 @@ export async function POST(request) {
         throw walletUpdateError;
       }
 
-      // Create wallet transaction
-      const { error: transactionError } = await supabase.from('wallet_transactions').insert({
+      // Create wallet transaction using adminSupabase
+      const { error: transactionError } = await adminSupabase.from('wallet_transactions').insert({
         wallet_id: withdrawalRequest.wallet.id,
         transaction_type: 'Withdrawal',
         amount: withdrawAmount,
@@ -252,12 +266,11 @@ export async function POST(request) {
 
       if (transactionError) {
         console.error('Error creating wallet transaction:', transactionError);
-        // Don't throw here, transaction is already processed
       }
 
-      // Create notification
+      // Create notification using adminSupabase
       const paymentMethod = useMomo ? 'mobile money account' : 'bank account';
-      const { error: notificationError } = await supabase.from('notifications').insert({
+      const { error: notificationError } = await adminSupabase.from('notifications').insert({
         user_id: userId,
         type: 'WithdrawalApproved',
         title: 'Withdrawal Approved',

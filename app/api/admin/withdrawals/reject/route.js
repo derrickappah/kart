@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
   try {
@@ -28,8 +28,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Withdrawal request ID is required' }, { status: 400 });
     }
 
+    let adminSupabase;
+    try {
+      adminSupabase = createServiceRoleClient();
+    } catch {
+      adminSupabase = supabase;
+    }
+
     // Get withdrawal request
-    const { data: withdrawalRequest, error: requestError } = await supabase
+    const { data: withdrawalRequest, error: requestError } = await adminSupabase
       .from('withdrawal_requests')
       .select('*')
       .eq('id', withdrawalRequestId)
@@ -48,7 +55,7 @@ export async function POST(request) {
     }
 
     // Update withdrawal request
-    const { data: updatedRequest, error: updateError } = await supabase
+    const { data: updatedRequest, error: updateError } = await adminSupabase
       .from('withdrawal_requests')
       .update({
         status: 'Rejected',
@@ -69,7 +76,7 @@ export async function POST(request) {
     }
 
     // Create notification
-    const { error: notificationError } = await supabase.from('notifications').insert({
+    const { error: notificationError } = await adminSupabase.from('notifications').insert({
       user_id: withdrawalRequest.user_id,
       type: 'WithdrawalRejected',
       title: 'Withdrawal Rejected',
@@ -78,7 +85,6 @@ export async function POST(request) {
 
     if (notificationError) {
       console.error('Error creating notification:', notificationError);
-      // Don't throw here, rejection is already processed
     }
 
     return NextResponse.json({
@@ -93,3 +99,4 @@ export async function POST(request) {
     );
   }
 }
+

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
   try {
@@ -36,8 +36,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    let adminSupabase;
+    try {
+      adminSupabase = createServiceRoleClient();
+    } catch {
+      adminSupabase = supabase;
+    }
+
     // Get withdrawal request
-    const { data: withdrawalRequest, error: requestError } = await supabase
+    const { data: withdrawalRequest, error: requestError } = await adminSupabase
       .from('withdrawal_requests')
       .select('*')
       .eq('id', withdrawalRequestId)
@@ -48,16 +55,28 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Withdrawal request not found' }, { status: 404 });
     }
 
-    // Fetch wallet
+    // Fetch wallet using adminSupabase (bypasses RLS)
     let wallet = null;
     if (withdrawalRequest.wallet_id) {
-      const { data: walletData, error: walletError } = await supabase
+      const { data: walletData } = await adminSupabase
         .from('wallets')
         .select('*')
         .eq('id', withdrawalRequest.wallet_id)
-        .single();
+        .maybeSingle();
       
-      if (!walletError && walletData) {
+      if (walletData) {
+        wallet = walletData;
+      }
+    }
+
+    if (!wallet && (withdrawalRequest.user_id || userId)) {
+      const { data: walletData } = await adminSupabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', withdrawalRequest.user_id || userId)
+        .maybeSingle();
+
+      if (walletData) {
         wallet = walletData;
       }
     }
@@ -84,7 +103,7 @@ export async function POST(request) {
     }
 
     // Update withdrawal request with manual processing details
-    const { data: updatedRequest, error: updateError } = await supabase
+    const { data: updatedRequest, error: updateError } = await adminSupabase
       .from('withdrawal_requests')
       .update({
         status: 'Approved',
@@ -108,13 +127,13 @@ export async function POST(request) {
 
     // Deduct from wallet balance
     const newBalance = walletBalance - withdrawAmount;
-    const { error: walletUpdateError } = await supabase
+    const { error: walletUpdateError } = await adminSupabase
       .from('wallets')
       .update({
         balance: newBalance,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', withdrawalRequest.wallet_id);
+      .eq('id', wallet.id);
 
     if (walletUpdateError) {
       console.error('Error updating wallet balance:', walletUpdateError);
@@ -123,8 +142,8 @@ export async function POST(request) {
 
     // Create wallet transaction
     const transactionNotes = `Withdrawal approved and processed manually. ${manualReference ? `Reference: ${manualReference}` : ''} ${manualTransactionId ? `Transaction ID: ${manualTransactionId}` : ''}`.trim();
-    const { error: transactionError } = await supabase.from('wallet_transactions').insert({
-      wallet_id: withdrawalRequest.wallet_id,
+    const { error: transactionError } = await adminSupabase.from('wallet_transactions').insert({
+      wallet_id: wallet.id,
       transaction_type: 'Withdrawal',
       amount: withdrawAmount,
       balance_before: walletBalance,
@@ -135,11 +154,10 @@ export async function POST(request) {
 
     if (transactionError) {
       console.error('Error creating wallet transaction:', transactionError);
-      // Don't throw here, transaction is already processed
     }
 
     // Create notification
-    const { error: notificationError } = await supabase.from('notifications').insert({
+    const { error: notificationError } = await adminSupabase.from('notifications').insert({
       user_id: userId,
       type: 'WithdrawalApproved',
       title: 'Withdrawal Approved',
@@ -148,7 +166,6 @@ export async function POST(request) {
 
     if (notificationError) {
       console.error('Error creating notification:', notificationError);
-      // Don't throw here, withdrawal is already processed
     }
 
     return NextResponse.json({
@@ -163,3 +180,4 @@ export async function POST(request) {
     );
   }
 }
+

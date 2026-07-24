@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { initiateTransfer, createTransferRecipient, getBanks } from '@/lib/paystack';
 
 export async function POST(request) {
@@ -29,8 +29,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    let adminSupabase;
+    try {
+      adminSupabase = createServiceRoleClient();
+    } catch {
+      adminSupabase = supabase;
+    }
+
     // Get withdrawal request
-    const { data: withdrawalRequest, error: requestError } = await supabase
+    const { data: withdrawalRequest, error: requestError } = await adminSupabase
       .from('withdrawal_requests')
       .select('*')
       .eq('id', withdrawalRequestId)
@@ -41,30 +48,42 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Withdrawal request not found' }, { status: 404 });
     }
 
-    // Fetch related wallet and user data separately
+    // Fetch related wallet and user data separately using adminSupabase (bypasses RLS)
     let wallet = null;
     let requestUser = null;
 
     if (withdrawalRequest.wallet_id) {
-      const { data: walletData, error: walletError } = await supabase
+      const { data: walletData } = await adminSupabase
         .from('wallets')
         .select('*')
         .eq('id', withdrawalRequest.wallet_id)
-        .single();
+        .maybeSingle();
       
-      if (!walletError && walletData) {
+      if (walletData) {
+        wallet = walletData;
+      }
+    }
+
+    if (!wallet && (withdrawalRequest.user_id || userId)) {
+      const { data: walletData } = await adminSupabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', withdrawalRequest.user_id || userId)
+        .maybeSingle();
+
+      if (walletData) {
         wallet = walletData;
       }
     }
 
     if (withdrawalRequest.user_id) {
-      const { data: userData, error: userError } = await supabase
+      const { data: userData } = await adminSupabase
         .from('profiles')
         .select('*')
         .eq('id', withdrawalRequest.user_id)
-        .single();
+        .maybeSingle();
       
-      if (!userError && userData) {
+      if (userData) {
         requestUser = userData;
       }
     }
@@ -196,8 +215,8 @@ export async function POST(request) {
       // Get current retry count
       const currentRetryCount = (withdrawalRequest.paystack_retry_count || 0);
 
-      // Update withdrawal request
-      const { data: updatedRequest, error: updateError } = await supabase
+      // Update withdrawal request using adminSupabase
+      const { data: updatedRequest, error: updateError } = await adminSupabase
         .from('withdrawal_requests')
         .update({
           status: 'Approved',
@@ -216,24 +235,24 @@ export async function POST(request) {
         throw updateError;
       }
 
-      // Deduct from wallet balance
+      // Deduct from wallet balance using adminSupabase
       const newBalance = walletBalance - withdrawAmount;
-      const { error: walletUpdateError } = await supabase
+      const { error: walletUpdateError } = await adminSupabase
         .from('wallets')
         .update({
           balance: newBalance,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', withdrawalRequest.wallet_id);
+        .eq('id', wallet.id);
 
       if (walletUpdateError) {
         console.error('Error updating wallet balance:', walletUpdateError);
         throw walletUpdateError;
       }
 
-      // Create wallet transaction
-      const { error: transactionError } = await supabase.from('wallet_transactions').insert({
-        wallet_id: withdrawalRequest.wallet_id,
+      // Create wallet transaction using adminSupabase
+      const { error: transactionError } = await adminSupabase.from('wallet_transactions').insert({
+        wallet_id: wallet.id,
         transaction_type: 'Withdrawal',
         amount: withdrawAmount,
         balance_before: walletBalance,
@@ -244,12 +263,11 @@ export async function POST(request) {
 
       if (transactionError) {
         console.error('Error creating wallet transaction:', transactionError);
-        // Don't throw here, transaction is already processed
       }
 
-      // Create notification
+      // Create notification using adminSupabase
       const paymentMethod = useMomo ? 'mobile money account' : 'bank account';
-      const { error: notificationError } = await supabase.from('notifications').insert({
+      const { error: notificationError } = await adminSupabase.from('notifications').insert({
         user_id: userId,
         type: 'WithdrawalApproved',
         title: 'Withdrawal Approved',
@@ -258,7 +276,6 @@ export async function POST(request) {
 
       if (notificationError) {
         console.error('Error creating notification:', notificationError);
-        // Don't throw here, withdrawal is already processed
       }
 
       return NextResponse.json({
@@ -273,7 +290,7 @@ export async function POST(request) {
       const currentRetryCount = (withdrawalRequest.paystack_retry_count || 0);
       
       // Update request with error but keep as Pending
-      const { error: updateError } = await supabase
+      const { error: updateError } = await adminSupabase
         .from('withdrawal_requests')
         .update({
           status: 'Pending',
@@ -306,3 +323,4 @@ export async function POST(request) {
     );
   }
 }
+
