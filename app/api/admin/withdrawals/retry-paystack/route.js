@@ -112,18 +112,21 @@ export async function POST(request) {
       );
     }
 
-    // Get user's payment details (bank or MoMo)
-    if (!requestUser) {
-      return NextResponse.json({ error: 'User not found for this withdrawal request' }, { status: 404 });
-    }
-    
-    const bankDetails = requestUser.bank_account_details;
-    const momoDetails = requestUser.momo_details;
-    
-    // Check if either bank or MoMo details are provided
-    const hasBankDetails = bankDetails && bankDetails.account_number && bankDetails.bank_code;
-    const hasMomoDetails = momoDetails && momoDetails.number && momoDetails.network;
-    
+    // Resolve user's payment details (checking both withdrawalRequest.payout_details and user profile)
+    const reqDetails = withdrawalRequest.payout_details || {};
+    const reqMethod = (withdrawalRequest.payout_method || '').toLowerCase();
+
+    const bankDetails = (reqDetails.account_number && reqDetails.bank_code) 
+      ? reqDetails 
+      : (requestUser?.bank_account_details || {});
+
+    const momoDetails = (reqDetails.number && (reqDetails.provider || reqDetails.network))
+      ? { number: reqDetails.number, network: reqDetails.provider || reqDetails.network, name: reqDetails.name }
+      : (requestUser?.momo_details || {});
+
+    const hasBankDetails = Boolean(bankDetails && bankDetails.account_number && bankDetails.bank_code);
+    const hasMomoDetails = Boolean(momoDetails && momoDetails.number && (momoDetails.network || momoDetails.provider));
+
     if (!hasBankDetails && !hasMomoDetails) {
       return NextResponse.json(
         { error: 'Seller has not provided payment details (bank account or mobile money). Please contact them to add payment details.' },
@@ -132,20 +135,13 @@ export async function POST(request) {
     }
 
     // Determine transfer type and details
-    const useMomo = hasMomoDetails && !hasBankDetails;
+    const useMomo = reqMethod.includes('momo') || reqMethod.includes('mobile') || (hasMomoDetails && !hasBankDetails);
     const transferType = useMomo ? 'mobile_money' : 'nuban';
-    const recipientName = requestUser.display_name || requestUser.email;
+    const recipientName = (useMomo ? momoDetails.name : bankDetails.account_name) || requestUser?.display_name || requestUser?.email || 'Payee';
     
-    let recipientAccountNumber;
-    let recipientBankCode;
-    
-    if (useMomo) {
-      recipientAccountNumber = momoDetails.number;
-      recipientBankCode = null;
-    } else {
-      recipientAccountNumber = bankDetails.account_number;
-      recipientBankCode = bankDetails.bank_code;
-    }
+    let recipientAccountNumber = useMomo ? momoDetails.number : bankDetails.account_number;
+    let recipientBankCode = useMomo ? null : bankDetails.bank_code;
+    const momoNetwork = useMomo ? (momoDetails.network || momoDetails.provider) : null;
 
     // Create transfer recipient (if not exists) and initiate transfer
     let transferReference = `withdrawal_${withdrawalRequestId}_${Date.now()}_retry`;
@@ -159,11 +155,11 @@ export async function POST(request) {
           
           const networkSearchTerms = {
             'MTN': ['MTN', 'mtn'],
-            'Vodafone': ['Vodafone', 'VODAFONE', 'vodafone'],
-            'AirtelTigo': ['AirtelTigo', 'AIRTELTIGO', 'airteltigo', 'Airtel', 'Tigo']
+            'Vodafone': ['Vodafone', 'VODAFONE', 'vodafone', 'Telecel', 'telecel'],
+            'AirtelTigo': ['AirtelTigo', 'AIRTELTIGO', 'airteltigo', 'Airtel', 'Tigo', 'AT', 'at']
           };
           
-          const searchTerms = networkSearchTerms[momoDetails.network] || [momoDetails.network];
+          const searchTerms = networkSearchTerms[momoNetwork] || [momoNetwork];
           const mobileMoneyBank = banks.find(bank => {
             const bankName = (bank.name || '').toLowerCase();
             return searchTerms.some(term => bankName.includes(term.toLowerCase()));
@@ -177,7 +173,7 @@ export async function POST(request) {
               'Vodafone': 'VODAFONE',
               'AirtelTigo': 'AIRTELTIGO'
             };
-            recipientBankCode = networkMap[momoDetails.network] || momoDetails.network;
+            recipientBankCode = networkMap[momoNetwork] || momoNetwork;
           }
         } catch (bankListError) {
           console.error('Error fetching bank list from Paystack:', bankListError);
@@ -186,7 +182,7 @@ export async function POST(request) {
             'Vodafone': 'VODAFONE',
             'AirtelTigo': 'AIRTELTIGO'
           };
-          recipientBankCode = networkMap[momoDetails.network] || momoDetails.network;
+          recipientBankCode = networkMap[momoNetwork] || momoNetwork;
         }
       }
       

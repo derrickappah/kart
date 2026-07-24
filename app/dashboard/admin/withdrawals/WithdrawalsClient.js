@@ -218,24 +218,32 @@ export default function WithdrawalsClient({ initialRequests, stats = {}, error: 
   };
 
   const getPaymentMethod = (request) => {
-    if (!request.user) return null;
+    const reqDetails = request.payout_details || {};
+    const reqMethod = (request.payout_method || '').toLowerCase();
 
-    const bankDetails = request.user.bank_account_details;
-    const momoDetails = request.user.momo_details;
+    const bankDetails = (reqDetails.account_number && reqDetails.bank_code) 
+      ? reqDetails 
+      : (request.user?.bank_account_details || {});
 
-    const hasBankDetails = bankDetails && bankDetails.account_number && bankDetails.bank_code;
-    const hasMomoDetails = momoDetails && momoDetails.number && momoDetails.network;
+    const momoDetails = (reqDetails.number && (reqDetails.provider || reqDetails.network))
+      ? { number: reqDetails.number, network: reqDetails.provider || reqDetails.network, name: reqDetails.name }
+      : (request.user?.momo_details || {});
+
+    const hasBankDetails = Boolean(bankDetails.account_number && bankDetails.bank_code);
+    const hasMomoDetails = Boolean(momoDetails.number && momoDetails.network);
+
+    if (reqMethod.includes('momo') || reqMethod.includes('mobile') || (hasMomoDetails && !hasBankDetails)) {
+      if (momoDetails.number) {
+        return { type: 'mobile_money', details: momoDetails };
+      }
+    }
 
     if (hasBankDetails) {
-      return {
-        type: 'bank',
-        details: bankDetails
-      };
-    } else if (hasMomoDetails) {
-      return {
-        type: 'mobile_money',
-        details: momoDetails
-      };
+      return { type: 'bank', details: bankDetails };
+    }
+
+    if (hasMomoDetails) {
+      return { type: 'mobile_money', details: momoDetails };
     }
 
     return null;
