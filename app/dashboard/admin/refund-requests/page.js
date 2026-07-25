@@ -7,39 +7,40 @@ export default async function RefundRequestsPage() {
     const supabase = createServiceRoleClient();
 
     let requests = [];
-    let pageError = null;
+    let pageNotice = null;
 
     try {
-        // 1. Fetch raw refund requests
+        let hasTable = true;
+        // 1. Try fetching from refund_requests table
         const { data: rawRequests, error: reqErr } = await supabase
             .from('refund_requests')
             .select('*')
             .order('created_at', { ascending: false });
 
         if (reqErr) {
-            console.error('Error fetching refund_requests table:', reqErr);
-            pageError = reqErr.message;
+            hasTable = false;
+            console.warn('Notice: refund_requests table not available:', reqErr.message);
         } else {
             requests = rawRequests || [];
         }
 
-        // 2. Auto-heal: Check for any orders marked as 'Requested' that are missing from refund_requests table
+        // 2. Query orders table for any orders with refund status requested/refunded/rejected
         const existingOrderIds = new Set(requests.map(r => r.order_id));
-        const { data: requestedOrders } = await supabase
+        const { data: disputedOrders } = await supabase
             .from('orders')
-            .select('id, buyer_id, created_at, refund_status')
-            .eq('refund_status', 'Requested');
+            .select('id, buyer_id, created_at, status, total_amount, escrow_status, refund_status')
+            .in('refund_status', ['Requested', 'Refunded', 'Rejected']);
 
-        if (requestedOrders && requestedOrders.length > 0) {
-            const missingOrders = requestedOrders.filter(o => !existingOrderIds.has(o.id));
+        if (disputedOrders && disputedOrders.length > 0) {
+            const missingOrders = disputedOrders.filter(o => !existingOrderIds.has(o.id));
 
             for (const order of missingOrders) {
                 // Try to extract reason/description from order history notes
                 const { data: history } = await supabase
                     .from('order_status_history')
-                    .select('notes')
+                    .select('notes, created_at')
                     .eq('order_id', order.id)
-                    .ilike('notes', '%Buyer requested a refund%')
+                    .ilike('notes', '%requested a refund%')
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
@@ -54,22 +55,36 @@ export default async function RefundRequestsPage() {
                     }
                 }
 
-                // Insert auto-healed refund request row
-                const { data: inserted, error: insertErr } = await supabase
-                    .from('refund_requests')
-                    .insert({
-                        order_id: order.id,
-                        buyer_id: order.buyer_id,
-                        reason: reason,
-                        description: description,
-                        status: 'Pending'
-                    })
-                    .select()
-                    .single();
+                const calculatedStatus = order.refund_status === 'Requested' ? 'Pending' 
+                    : order.refund_status === 'Refunded' ? 'Approved' : 'Rejected';
 
-                if (!insertErr && inserted) {
-                    requests.unshift(inserted);
+                let insertedRequest = null;
+                // If table exists, auto-heal DB row
+                if (hasTable) {
+                    const { data: inserted } = await supabase
+                        .from('refund_requests')
+                        .insert({
+                            order_id: order.id,
+                            buyer_id: order.buyer_id,
+                            reason: reason,
+                            description: description,
+                            status: calculatedStatus
+                        })
+                        .select()
+                        .maybeSingle();
+                    insertedRequest = inserted;
                 }
+
+                requests.push(insertedRequest || {
+                    id: order.id, // Use order.id as fallback requestId
+                    order_id: order.id,
+                    buyer_id: order.buyer_id,
+                    reason: reason,
+                    description: description,
+                    status: calculatedStatus,
+                    created_at: history?.created_at || order.created_at,
+                    updated_at: order.created_at
+                });
             }
         }
 
@@ -108,7 +123,7 @@ export default async function RefundRequestsPage() {
         }
     } catch (e) {
         console.error('RefundRequestsPage unexpected error:', e);
-        pageError = e.message || 'Failed to load refund requests';
+        pageNotice = e.message || 'Failed to load refund requests';
     }
 
     return (
@@ -120,9 +135,9 @@ export default async function RefundRequestsPage() {
                 </p>
             </div>
 
-            {pageError && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl text-xs font-bold flex items-center gap-3">
-                    <span>⚠️ Warning loading refund requests: {pageError}</span>
+            {pageNotice && (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl text-xs font-bold flex items-center gap-3">
+                    <span>Notice: {pageNotice}</span>
                 </div>
             )}
 

@@ -65,7 +65,7 @@ export default async function AdminDashboard() {
             adminSupabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'Active'),
             adminSupabase.from('verification_requests').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
             adminSupabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
-            adminSupabase.from('refund_requests').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
+            adminSupabase.from('orders').select('id', { count: 'exact', head: true }).eq('refund_status', 'Requested'),
             adminSupabase.from('profiles').select('id, display_name, created_at, email').order('created_at', { ascending: false }).limit(3),
             adminSupabase.from('products').select('id, title, created_at, seller:profiles!seller_id(email)').order('created_at', { ascending: false }).limit(5),
             adminSupabase.from('orders').select('id, created_at, product:products(title), buyer:profiles!orders_buyer_id_profiles_fkey(email)').order('created_at', { ascending: false }).limit(3),

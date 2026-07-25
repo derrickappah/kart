@@ -30,33 +30,57 @@ export async function POST(request) {
 
         const adminSupabase = createServiceRoleClient();
 
-        // 1. Get refund request
-        const { data: refundRequest, error: fetchError } = await adminSupabase
-            .from('refund_requests')
-            .select('*')
-            .eq('id', requestId)
-            .single();
+        // 1. Get refund request or fallback to order by ID
+        let refundRequest = null;
+        try {
+            const { data: fetchedRequest } = await adminSupabase
+                .from('refund_requests')
+                .select('*')
+                .eq('id', requestId)
+                .maybeSingle();
 
-        if (fetchError || !refundRequest) {
-            return NextResponse.json({ error: 'Refund request not found' }, { status: 404 });
+            refundRequest = fetchedRequest;
+        } catch (e) {
+            console.warn('Notice: refund_requests fetch skipped:', e?.message || e);
+        }
+
+        if (!refundRequest) {
+            const { data: order } = await adminSupabase
+                .from('orders')
+                .select('*')
+                .eq('id', requestId)
+                .maybeSingle();
+
+            if (order) {
+                refundRequest = {
+                    id: order.id,
+                    order_id: order.id,
+                    buyer_id: order.buyer_id,
+                    status: order.refund_status === 'Requested' ? 'Pending' : order.refund_status
+                };
+            }
+        }
+
+        if (!refundRequest) {
+            return NextResponse.json({ error: 'Refund request or associated order not found' }, { status: 404 });
         }
 
         if (refundRequest.status !== 'Pending') {
             return NextResponse.json({ error: 'Request is already resolved' }, { status: 400 });
         }
 
-        // 2. Update refund request status
-        const { error: updateRequestError } = await adminSupabase
-            .from('refund_requests')
-            .update({
-                status: 'Rejected',
-                admin_notes: reason || 'Refund request rejected by admin.',
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', requestId);
-
-        if (updateRequestError) {
-            return NextResponse.json({ error: 'Failed to update request' }, { status: 500 });
+        // 2. Update refund request status if table exists
+        try {
+            await adminSupabase
+                .from('refund_requests')
+                .update({
+                    status: 'Rejected',
+                    admin_notes: reason || 'Refund request rejected by admin.',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', requestId);
+        } catch (e) {
+            console.warn('Notice: refund_requests update skipped:', e?.message || e);
         }
 
         // 3. Update order refund_status
