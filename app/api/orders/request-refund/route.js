@@ -83,28 +83,24 @@ export async function POST(request) {
             console.warn('Unable to query refund_requests table:', e?.message || e);
         }
 
-        // 4. Attempt to insert into refund_requests table
-        let refundRequest = null;
-        try {
-            const { data: insertedRequest, error: refundError } = await adminSupabase
-                .from('refund_requests')
-                .insert({
-                    order_id: orderId,
-                    buyer_id: user.id,
-                    reason: trimmedReason,
-                    description: trimmedDescription,
-                    status: 'Pending'
-                })
-                .select()
-                .single();
+        // 4. Insert into refund_requests table
+        const { data: refundRequest, error: refundError } = await adminSupabase
+            .from('refund_requests')
+            .insert({
+                order_id: orderId,
+                buyer_id: user.id,
+                reason: trimmedReason,
+                description: trimmedDescription,
+                status: 'Pending'
+            })
+            .select()
+            .single();
 
-            if (refundError) {
-                console.warn('Notice: Could not insert into refund_requests table:', refundError.message);
-            } else {
-                refundRequest = insertedRequest;
-            }
-        } catch (e) {
-            console.warn('Notice: refund_requests table insert failed:', e?.message || e);
+        if (refundError) {
+            console.error('Failed to insert into refund_requests table:', refundError);
+            return NextResponse.json({ 
+                error: `Failed to submit refund request: ${refundError.message || 'Database error'}` 
+            }, { status: 500 });
         }
 
         // 5. Update order refund_status if column exists
