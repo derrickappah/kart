@@ -1,6 +1,6 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '../../../utils/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,8 +10,15 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
     const supabase = createClient();
     const [wallet, setWallet] = useState(initialWallet);
     const [transactions, setTransactions] = useState(initialTransactions || []);
+    const [showAllTransactions, setShowAllTransactions] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
+
+    const sortedTransactions = useMemo(() => {
+        return [...transactions].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    }, [transactions]);
+
+    const displayedTransactions = showAllTransactions ? sortedTransactions : sortedTransactions.slice(0, 5);
 
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
@@ -135,14 +142,23 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
 
                 {/* Recent Transactions Section Header */}
                 <div className="flex items-center justify-between px-5 pb-3 pt-6">
-                    <h2 className="text-[20px] font-black tracking-tight">Recent Transactions</h2>
-                    <button className="text-primary text-sm font-bold">See all</button>
+                    <h2 className="text-[20px] font-black tracking-tight">
+                        {showAllTransactions ? 'All Transactions' : 'Recent Transactions'}
+                    </h2>
+                    {sortedTransactions.length > 5 && (
+                        <button 
+                            onClick={() => setShowAllTransactions(prev => !prev)}
+                            className="text-primary text-sm font-bold hover:underline focus:outline-none"
+                        >
+                            {showAllTransactions ? 'Show less' : 'See all'}
+                        </button>
+                    )}
                 </div>
 
                 {/* Transaction List */}
                 <div className="px-4 space-y-2">
-                    {transactions.length > 0 ? (
-                        transactions.map((t) => {
+                    {displayedTransactions.length > 0 ? (
+                        displayedTransactions.map((t) => {
                             const isCredit = t.transaction_type === 'Credit' || t.transaction_type === 'Refund';
                             return (
                                 <div key={t.id} className="flex items-center gap-4 bg-white dark:bg-[#1a2b31] p-4 min-h-[80px] rounded-2xl shadow-sm hover:shadow-md transition-shadow">
