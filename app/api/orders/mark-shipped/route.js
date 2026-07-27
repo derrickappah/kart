@@ -54,7 +54,10 @@ export async function POST(request) {
 
         if (updateError) {
             console.error('Error updating status to Shipped:', updateError);
-            return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 });
+            return NextResponse.json(
+                { error: `Failed to update order status: ${updateError.message}` },
+                { status: 500 }
+            );
         }
 
         // 5. Create status history record

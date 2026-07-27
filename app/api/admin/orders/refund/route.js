@@ -155,7 +155,7 @@ export async function POST(request) {
         }
 
         // 3. Update order status
-        const { error: orderUpdateError } = await adminSupabase
+        let { error: orderUpdateError } = await adminSupabase
             .from('orders')
             .update({
                 status: 'Refunded',
@@ -166,8 +166,27 @@ export async function POST(request) {
             .eq('id', order.id);
 
         if (orderUpdateError) {
+            console.warn('Initial order refund update failed, trying fallback:', orderUpdateError.message);
+            const { error: fallbackErr } = await adminSupabase
+                .from('orders')
+                .update({
+                    status: 'Refunded',
+                    escrow_status: 'Refunded',
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', order.id);
+
+            if (!fallbackErr) {
+                orderUpdateError = null;
+            }
+        }
+
+        if (orderUpdateError) {
             console.error('Error updating order:', orderUpdateError);
-            return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 });
+            return NextResponse.json(
+                { error: `Failed to update order status: ${orderUpdateError.message}` },
+                { status: 500 }
+            );
         }
 
         // 4. Record history
