@@ -192,24 +192,7 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
                     )}
                 </div>
 
-                {/* Referral Banner */}
-                <div className="p-4 mt-4">
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-dark p-6 text-white shadow-lg shadow-primary/20">
-                        <div className="relative z-10 flex flex-col gap-2">
-                            <h3 className="text-lg font-black tracking-tight">Refer a friend</h3>
-                            <p className="text-sm font-medium text-white/90 leading-snug">Get GHS 5.00 credit for every student who joins and makes their first sale!</p>
-                            <button
-                                onClick={handleInviteNow}
-                                className="mt-3 w-fit px-6 py-2.5 bg-white text-primary text-xs font-black rounded-full shadow-sm active:scale-95 transition-transform uppercase tracking-wider"
-                            >
-                                Invite Now
-                            </button>
-                        </div>
-                        <div className="absolute -right-4 -bottom-4 opacity-20 rotate-12">
-                            <DynamicLucideIcon name="share" className="text-[120px]" />
-                        </div>
-                    </div>
-                </div>
+
             </main>
 
             {/* Toast Notification */}
