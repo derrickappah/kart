@@ -1,6 +1,6 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
@@ -17,7 +17,6 @@ export default function FaceCapturePage() {
     const [cameraError, setCameraError] = useState(null);
     const [facingMode, setFacingMode] = useState('user');
     const [capturedImage, setCapturedImage] = useState(null);
-    const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
 
     // Check verification status and ensure ID was captured first
     useEffect(() => {
@@ -61,63 +60,49 @@ export default function FaceCapturePage() {
         checkStatus();
     }, [router]);
 
-    // Initialize or switch camera
-    const startCamera = useCallback(async (mode) => {
-        try {
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-
-            const constraints = {
-                video: {
-                    facingMode: { ideal: mode },
-                    width: { ideal: 1280 },
-                    height: { ideal: 1280 }
-                },
-                audio: false
-            };
-
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                streamRef.current = stream;
-                const track = stream.getVideoTracks()[0];
-                const actualFacingMode = track?.getSettings()?.facingMode || mode;
-                setFacingMode(actualFacingMode);
-                setCameraError(null);
-            }
-        } catch (err) {
-            console.error("Error accessing front camera:", err);
-            setCameraError("Unable to access camera. Please check camera permissions.");
-        } finally {
-            setIsSwitchingCamera(false);
-        }
-    }, []);
-
+    // Initialize Camera (front-facing for face capture)
     useEffect(() => {
-        startCamera(facingMode);
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: "user" },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: false
+                });
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    streamRef.current = stream;
+                    const track = stream.getVideoTracks()[0];
+                    const actualFacingMode = track?.getSettings()?.facingMode;
+                    if (actualFacingMode) {
+                        setFacingMode(actualFacingMode);
+                    }
+                }
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                setCameraError("Unable to access camera. Please check permissions.");
+            }
+        }
+
+        startCamera();
 
         return () => {
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
         };
-    }, [startCamera, facingMode]);
-
-    const handleFlipCamera = () => {
-        if (isSwitchingCamera || isCapturing) return;
-        setIsSwitchingCamera(true);
-        const newMode = facingMode === 'user' ? 'environment' : 'user';
-        setFacingMode(newMode);
-    };
+    }, []);
 
     const handleCapture = () => {
         if (!videoRef.current || !canvasRef.current || isCapturing) return;
 
         setIsCapturing(true);
 
-        // Flash animation
-        const flashOverlay = document.getElementById('face-flash-overlay');
+        // Instant flash effect
+        const flashOverlay = document.getElementById('flash-overlay');
         if (flashOverlay) {
             flashOverlay.style.opacity = '1';
             setTimeout(() => {
@@ -178,24 +163,24 @@ export default function FaceCapturePage() {
             sessionStorage.setItem('capturedFaceImage', imageData);
         }
 
-        // Show "Analyzing facial clarity" after flash
+        // Show "Checking clarity" after flash
         setTimeout(() => {
             setShowChecking(true);
             setTimeout(() => {
                 router.push('/dashboard/settings/verify/review');
-            }, 1800);
+            }, 2000);
         }, 300);
     };
 
     return (
         <div className="fixed inset-0 z-[999] bg-black font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none touch-none">
             {/* Flash Overlay */}
-            <div id="face-flash-overlay" className="absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-75"></div>
+            <div id="flash-overlay" className="absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-75"></div>
 
             {/* Hidden Canvas for Capture */}
             <canvas ref={canvasRef} className="hidden" />
 
-            {/* Camera Feed Layer */}
+            {/* Real Camera Feed Layer (Full Screen Background Canvas) */}
             <div ref={containerRef} className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
                 {cameraError ? (
                     <div className="text-white text-center px-8 h-full flex flex-col items-center justify-center">
@@ -222,41 +207,37 @@ export default function FaceCapturePage() {
                 )}
             </div>
 
-            {/* Overlay Viewport */}
+            {/* Single Viewport Overlay (Header, Centered Scanner, Capture Button) */}
             <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pointer-events-none py-6 px-4 sm:py-8 sm:px-6">
-                {/* Header */}
-                <div className="pointer-events-auto w-full pt-4 sm:pt-6 flex flex-col items-center relative z-30">
-                    <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 mb-2">
-                        <span className="size-2 rounded-full bg-primary animate-pulse"></span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Step 3 of 3: Live Face Match</span>
-                    </div>
-                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-lg text-center px-4">
-                        {showChecking ? "Analyzing facial capture..." : "Center your face in the oval"}
+                {/* Header Text */}
+                <div className="pointer-events-auto w-full pt-6 sm:pt-8 text-center relative z-30">
+                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-lg px-4">
+                        {showChecking ? "Processing capture..." : "Position your face within the frame"}
                     </h1>
-                    <p className="text-xs text-white/70 font-medium text-center mt-1 drop-shadow-md">
-                        Look straight at the camera with good lighting
-                    </p>
                 </div>
 
-                {/* Oval Viewfinder */}
+                {/* Center Scanner Viewfinder */}
                 <div className="pointer-events-auto flex-1 w-full flex items-center justify-center px-4 min-h-0 relative z-10">
                     <div
                         ref={viewfinderRef}
-                        className="relative w-full max-w-[270px] sm:max-w-[300px] aspect-[1/1.3] rounded-[50%] shadow-2xl shrink-0"
+                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl shadow-2xl shrink-0"
                     >
-                        {/* Cutout Mask */}
+                        {/* Cutout Mask (Dark Translucent Overlay outside viewfinder) */}
                         <div
                             className="absolute inset-0 rounded-[inherit] pointer-events-none z-10"
-                            style={{ boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.68)' }}
+                            style={{ boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.65)' }}
                         ></div>
 
-                        {/* Viewfinder Inner */}
-                        <div className="absolute inset-0 overflow-hidden rounded-[50%] z-0 border-2 border-primary/40">
-                            {/* Scanning Animation */}
+                        {/* Viewfinder Inner Contents (Clipped to rounded-2xl) */}
+                        <div className="absolute inset-0 overflow-hidden rounded-2xl z-0">
+                            {/* Grid Overlay */}
+                            <div className="absolute inset-0 opacity-30 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[length:40px_40px]"></div>
+
+                            {/* Active Scanning Animation Line */}
                             {!showChecking && !capturedImage && (
-                                <div className="absolute inset-0 overflow-hidden rounded-[50%] z-20">
+                                <div className="absolute inset-0 overflow-hidden rounded-2xl z-20">
                                     <div
-                                        className="w-full h-[50%] bg-gradient-to-b from-primary/0 via-primary/25 to-primary/0 animate-[scan_3s_cubic-bezier(0.4,0,0.2,1)_infinite] border-b-2 border-primary"
+                                        className="w-full h-[50%] bg-gradient-to-b from-primary/0 via-primary/20 to-primary/0 animate-[scan_3s_cubic-bezier(0.4,0,0.2,1)_infinite] border-b-2 border-primary"
                                         style={{ animationName: 'scan' }}
                                     ></div>
                                 </div>
@@ -266,66 +247,48 @@ export default function FaceCapturePage() {
                             {capturedImage && (
                                 <img
                                     src={capturedImage}
-                                    alt="Captured Selfie"
-                                    className="absolute inset-0 w-full h-full object-cover rounded-[50%] z-25"
+                                    alt="Captured Face"
+                                    className="absolute inset-0 w-full h-full object-cover rounded-2xl z-25"
                                 />
                             )}
 
-                            {/* Center Crosshair / Silhouette Guidance */}
+                            {/* Center Crosshair */}
                             {!capturedImage && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center opacity-35 z-20 pointer-events-none">
-                                    <div className="size-20 rounded-full border border-dashed border-white/60 mb-6"></div>
-                                    <div className="w-24 h-12 rounded-t-full border border-dashed border-white/60"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-4 opacity-50 z-20">
+                                    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white"></div>
+                                    <div className="absolute top-0 left-1/2 h-full w-[1px] bg-white"></div>
                                 </div>
                             )}
 
                             {/* Checking Clarity Overlay */}
                             {showChecking && (
                                 <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center animate-in fade-in duration-500">
-                                    <div className="size-14 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-3"></div>
-                                    <p className="text-white text-sm font-bold">Checking clarity...</p>
+                                    <div className="size-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+                                    <p className="text-white font-bold">Checking clarity...</p>
                                 </div>
                             )}
                         </div>
 
-                        {/* Glowing Oval Guide Ring */}
-                        <div className="absolute -inset-1 rounded-[50%] border-2 border-primary/60 pointer-events-none z-30 shadow-[0_0_20px_rgba(29,173,221,0.4)]"></div>
+                        {/* Corner Markers */}
+                        <div className="absolute -top-1 -left-1 size-8 border-t-[4px] border-l-[4px] border-primary rounded-tl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
+                        <div className="absolute -top-1 -right-1 size-8 border-t-[4px] border-r-[4px] border-primary rounded-tr-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
+                        <div className="absolute -bottom-1 -left-1 size-8 border-b-[4px] border-l-[4px] border-primary rounded-bl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
+                        <div className="absolute -bottom-1 -right-1 size-8 border-b-[4px] border-r-[4px] border-primary rounded-br-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
                     </div>
                 </div>
 
-                {/* Bottom Shutter & Controls */}
-                <div className="pointer-events-auto w-full pb-6 sm:pb-8 flex justify-center items-center gap-6 relative z-30">
-                    {/* Back to ID Capture button */}
-                    <button
-                        onClick={() => router.push('/dashboard/settings/verify/id-capture')}
-                        disabled={isCapturing}
-                        className="size-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white flex items-center justify-center transition-all active:scale-90 border border-white/20"
-                        title="Retake ID Card"
-                    >
-                        <DynamicLucideIcon name="arrow_back" className="size-5" />
-                    </button>
-
-                    {/* Main Capture Button */}
+                {/* Bottom Shutter Capture Button */}
+                <div className="pointer-events-auto w-full pb-6 sm:pb-8 flex justify-center items-center relative z-30">
                     <button
                         onClick={handleCapture}
                         disabled={isCapturing || !!cameraError}
-                        aria-label="Capture Selfie"
+                        aria-label="Take Photo"
                         className="relative flex items-center justify-center size-[84px] rounded-full border-4 border-white transition-all active:scale-95 group shadow-2xl disabled:opacity-50"
                     >
                         <div className="absolute inset-0 rounded-full bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div className={`size-[68px] rounded-full ${isCapturing ? 'bg-[#1daddd]' : 'bg-primary'} group-hover:bg-[#159ac6] transition-colors shadow-inner flex items-center justify-center relative overflow-hidden`}>
                             <DynamicLucideIcon name="camera" className="text-black/40 text-4xl opacity-0 group-active:opacity-100 transition-opacity duration-100" />
                         </div>
-                    </button>
-
-                    {/* Switch Camera Button */}
-                    <button
-                        onClick={handleFlipCamera}
-                        disabled={isCapturing}
-                        className="size-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white flex items-center justify-center transition-all active:scale-90 border border-white/20"
-                        title="Switch Camera"
-                    >
-                        <DynamicLucideIcon name="flip_camera_ios" className="size-5" />
                     </button>
                 </div>
             </div>
