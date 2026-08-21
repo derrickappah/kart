@@ -210,8 +210,16 @@ export default function FaceCapturePage() {
                         autoPlay
                         playsInline
                         muted
-                        className="full-screen-camera"
+                        className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
                         style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            minWidth: '100vw',
+                            minHeight: '100vh',
+                            objectFit: 'cover',
                             transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
                         }}
                     />
