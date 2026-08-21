@@ -343,7 +343,7 @@ export default function IDReviewPage() {
                                         name="idNumber"
                                         value={details.idNumber}
                                         onChange={handleChange}
-                                        placeholder="Student ID Number"
+                                        placeholder="ID Number"
                                         className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.idNumber.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-lg px-2.5 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
                                     />
                                 ) : (
