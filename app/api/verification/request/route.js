@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { studentId, studentIdImage } = body;
+    const { studentId, studentIdImage, faceImage, face_image } = body;
 
     if (!studentId || !studentIdImage) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -24,6 +24,7 @@ export async function POST(request) {
         user_id: user.id,
         student_id: studentId,
         student_id_image: studentIdImage,
+        face_image: faceImage || face_image || null,
         status: 'Pending',
       });
 

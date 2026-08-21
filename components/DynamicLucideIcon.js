@@ -325,6 +325,9 @@ const iconMap = {
   'handshake': Handshake,
   'new_releases': Sparkles,
   'build': Wrench,
+  'user_check': UserCheck,
+  'flip_camera_ios': RotateCw,
+  'person_off': UserX,
 };
 
 export default function DynamicLucideIcon({ name, className = '', ...props }) {

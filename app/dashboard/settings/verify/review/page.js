@@ -10,7 +10,8 @@ export default function IDReviewPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isReading, setIsReading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [capturedImage, setCapturedImage] = useState(null);
+    const [capturedIDImage, setCapturedIDImage] = useState(null);
+    const [capturedFaceImage, setCapturedFaceImage] = useState(null);
     const [error, setError] = useState('');
     const [details, setDetails] = useState({
         fullName: '',
@@ -52,28 +53,36 @@ export default function IDReviewPage() {
     }, [router, supabase]);
 
     useEffect(() => {
-        // Retrieve the captured image from sessionStorage
-        const storedImage = sessionStorage.getItem('capturedIDImage');
-        if (storedImage) {
-            setCapturedImage(storedImage);
+        // Retrieve the captured images from sessionStorage
+        const storedID = sessionStorage.getItem('capturedIDImage');
+        const storedFace = sessionStorage.getItem('capturedFaceImage');
 
-            // Simulate OCR data extraction
-            const timer = setTimeout(() => {
-                setDetails({
-                    fullName: '',
-                    location: '',
-                    idNumber: ''
-                });
-                setIsReading(false);
-                setIsEditing(true);
-            }, 2500);
-
-            return () => clearTimeout(timer);
-        } else {
-            // No image found, stop reading state
-            setIsReading(false);
+        if (!storedID) {
+            router.replace('/dashboard/settings/verify/id-capture');
+            return;
         }
-    }, []);
+
+        if (!storedFace) {
+            router.replace('/dashboard/settings/verify/face-capture');
+            return;
+        }
+
+        setCapturedIDImage(storedID);
+        setCapturedFaceImage(storedFace);
+
+        // Simulate OCR data extraction
+        const timer = setTimeout(() => {
+            setDetails({
+                fullName: '',
+                location: '',
+                idNumber: ''
+            });
+            setIsReading(false);
+            setIsEditing(true);
+        }, 2200);
+
+        return () => clearTimeout(timer);
+    }, [router]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -105,38 +114,49 @@ export default function IDReviewPage() {
             setError('All fields are mandatory.');
             return;
         }
-        if (!capturedImage || isSubmitting) return;
+        if (!capturedIDImage || !capturedFaceImage || isSubmitting) return;
 
         setIsSubmitting(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('User not authenticated');
 
-            // 1. Upload Image to Storage
-            const blob = dataURLtoBlob(capturedImage);
-            if (!blob) throw new Error('Failed to process image');
+            // 1. Upload ID Image to Storage
+            const idBlob = dataURLtoBlob(capturedIDImage);
+            if (!idBlob) throw new Error('Failed to process student ID image');
 
-            const fileName = `${user.id}/${Date.now()}.jpg`;
-
-            const { error: uploadError } = await supabase.storage
+            const idFileName = `${user.id}/${Date.now()}_id.jpg`;
+            const { error: idUploadError } = await supabase.storage
                 .from('verifications')
-                .upload(fileName, blob);
+                .upload(idFileName, idBlob);
 
-            if (uploadError) throw uploadError;
+            if (idUploadError) throw idUploadError;
 
-            // 2. Insert into verification_requests
+            // 2. Upload Face Image to Storage
+            const faceBlob = dataURLtoBlob(capturedFaceImage);
+            if (!faceBlob) throw new Error('Failed to process face selfie image');
+
+            const faceFileName = `${user.id}/${Date.now()}_face.jpg`;
+            const { error: faceUploadError } = await supabase.storage
+                .from('verifications')
+                .upload(faceFileName, faceBlob);
+
+            if (faceUploadError) throw faceUploadError;
+
+            // 3. Insert into verification_requests
             const { error: insertError } = await supabase
                 .from('verification_requests')
                 .insert({
                     user_id: user.id,
                     student_id: details.idNumber,
-                    student_id_image: fileName,
+                    student_id_image: idFileName,
+                    face_image: faceFileName,
                     status: 'Pending'
                 });
 
             if (insertError) throw insertError;
 
-            // 3. Update profile status
+            // 4. Update profile status
             const { error: profileError } = await supabase
                 .from('profiles')
                 .update({
@@ -149,6 +169,7 @@ export default function IDReviewPage() {
 
             // Success! Clean up and navigate
             sessionStorage.removeItem('capturedIDImage');
+            sessionStorage.removeItem('capturedFaceImage');
             router.push('/dashboard/settings/verify/success');
         } catch (error) {
             console.error('Submission error:', error);
@@ -160,50 +181,96 @@ export default function IDReviewPage() {
 
     return (
         <div className="bg-white dark:bg-[#242428] font-display text-[#111617] dark:text-gray-100 antialiased min-h-screen flex flex-col items-center pt-0 sm:pt-4 transition-colors duration-200">
-            <div className="flex flex-col min-h-screen sm:min-h-[800px] w-full max-w-md bg-white dark:bg-[#1a1d23] shadow-2xl relative sm:rounded-[2.5rem] overflow-hidden overflow-y-auto no-scrollbar">
+            <div className="flex flex-col min-h-screen sm:min-h-[850px] w-full max-w-md bg-white dark:bg-[#1a1d23] shadow-2xl relative sm:rounded-[2.5rem] overflow-hidden overflow-y-auto no-scrollbar">
 
                 <div className="flex-1 pb-8">
-                    {/* ID Photo Card Section */}
-                    <div className="px-4 pt-4">
-                        <div className="bg-white dark:bg-[#23272e] rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                            <div className="p-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-                                <DynamicLucideIcon name="badge" className="text-primary text-sm" />
-                                <span className="text-xs font-semibold uppercase tracking-wider text-[#647e87]">Captured ID Document</span>
+                    {/* Header Banner */}
+                    <div className="px-5 pt-6 pb-2">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">Verification Review</span>
+                        </div>
+                        <h2 className="text-[#111617] dark:text-white tracking-tight text-2xl font-black leading-tight">Review Verification Documents</h2>
+                        <p className="text-[#647e87] dark:text-gray-400 text-xs font-normal leading-relaxed mt-1">
+                            Verify that both your student ID card and selfie are sharp and clearly legible.
+                        </p>
+                    </div>
+
+                    {/* Dual Document Photos Grid */}
+                    <div className="px-4 pt-3 grid grid-cols-2 gap-3">
+                        {/* ID Document Card */}
+                        <div className="bg-white dark:bg-[#23272e] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+                            <div className="p-2.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <DynamicLucideIcon name="badge" className="text-primary text-xs shrink-0" />
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-[#647e87] dark:text-gray-400 truncate">ID Card</span>
+                                </div>
+                                <button
+                                    onClick={() => router.push('/dashboard/settings/verify/id-capture')}
+                                    disabled={isSubmitting}
+                                    className="text-[9px] font-black text-primary hover:underline uppercase tracking-wider"
+                                >
+                                    Retake
+                                </button>
                             </div>
-                            <div className="flex w-full p-3">
-                                <div className="w-full aspect-[1.6/1] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative shadow-inner">
-                                    {capturedImage ? (
+                            <div className="p-2 flex-1 flex items-center justify-center">
+                                <div className="w-full aspect-[1.5/1] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative shadow-inner border border-primary/20">
+                                    {capturedIDImage ? (
                                         <div
-                                            className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 hover:scale-105"
-                                            style={{ backgroundImage: `url("${capturedImage}")` }}
+                                            className="w-full h-full bg-center bg-no-repeat bg-cover"
+                                            style={{ backgroundImage: `url("${capturedIDImage}")` }}
                                         ></div>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center text-gray-400 gap-2">
-                                            <DynamicLucideIcon name="image_not_supported" className="text-4xl" />
-                                            <p className="text-xs font-medium">No image captured</p>
-                                        </div>
+                                        <DynamicLucideIcon name="image_not_supported" className="text-gray-400 text-2xl" />
                                     )}
-                                    <div className="absolute inset-0 bg-primary/5 pointer-events-none border-2 border-primary/20 rounded-lg"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Face Selfie Card */}
+                        <div className="bg-white dark:bg-[#23272e] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+                            <div className="p-2.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <DynamicLucideIcon name="user_check" className="text-primary text-xs shrink-0" />
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-[#647e87] dark:text-gray-400 truncate">Face Selfie</span>
+                                </div>
+                                <button
+                                    onClick={() => router.push('/dashboard/settings/verify/face-capture')}
+                                    disabled={isSubmitting}
+                                    className="text-[9px] font-black text-primary hover:underline uppercase tracking-wider"
+                                >
+                                    Retake
+                                </button>
+                            </div>
+                            <div className="p-2 flex-1 flex items-center justify-center">
+                                <div className="w-full aspect-[1.5/1] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative shadow-inner border border-primary/20">
+                                    {capturedFaceImage ? (
+                                        <div
+                                            className="w-full h-full bg-center bg-no-repeat bg-cover"
+                                            style={{ backgroundImage: `url("${capturedFaceImage}")` }}
+                                        ></div>
+                                    ) : (
+                                        <DynamicLucideIcon name="image_not_supported" className="text-gray-400 text-2xl" />
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Header Text */}
+                    {/* Extracted Details Header */}
                     <div className="px-4">
-                        <div className="flex items-center justify-between pb-1 pt-8">
-                            <h3 className="text-[#111617] dark:text-white tracking-tight text-2xl font-bold leading-tight">Review Your Details</h3>
+                        <div className="flex items-center justify-between pb-1 pt-6">
+                            <h3 className="text-[#111617] dark:text-white tracking-tight text-lg font-black leading-tight">Student Details</h3>
                             {!isReading && (
                                 <button
                                     onClick={handleToggleEdit}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                                 >
-                                    <DynamicLucideIcon name={isEditing ? 'check' : 'edit'} className="text-lg" />
-                                    <span className="text-xs font-bold uppercase tracking-wider">{isEditing ? 'Done' : 'Edit'}</span>
+                                    <DynamicLucideIcon name={isEditing ? 'check' : 'edit'} className="text-sm" />
+                                    <span className="text-[10px] font-black uppercase tracking-wider">{isEditing ? 'Done' : 'Edit'}</span>
                                 </button>
                             )}
                         </div>
-                        <p className="text-[#647e87] dark:text-gray-400 text-base font-normal leading-normal pb-4">
+                        <p className="text-[#647e87] dark:text-gray-400 text-xs font-normal leading-normal pb-3">
                             {isReading ? "Extracting information from your ID document..." : "Please ensure all details match your physical ID card exactly. All fields are mandatory."}
                         </p>
                     </div>
@@ -212,7 +279,7 @@ export default function IDReviewPage() {
                     <div className="px-4 space-y-3 relative">
                         {/* Reading Overlay */}
                         {isReading && (
-                            <div className="absolute inset-x-4 inset-y-0 z-10 bg-white/60 dark:bg-[#1a1d23]/60 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center gap-3 animate-in fade-in duration-300">
+                            <div className="absolute inset-x-4 inset-y-0 z-10 bg-white/70 dark:bg-[#1a1d23]/70 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center gap-3 animate-in fade-in duration-300">
                                 <div className="flex items-center gap-1">
                                     <div className="size-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                                     <div className="size-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
@@ -223,9 +290,9 @@ export default function IDReviewPage() {
                         )}
 
                         {/* Name Item */}
-                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
-                            <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <DynamicLucideIcon name="person" />
+                        <div className={`flex items-center gap-3.5 bg-white dark:bg-[#23272e] px-4 min-h-[64px] py-2 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-500 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
+                            <div className="text-primary flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10 shadow-sm">
+                                <DynamicLucideIcon name="person" className="text-lg" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
@@ -235,18 +302,18 @@ export default function IDReviewPage() {
                                         value={details.fullName}
                                         onChange={handleChange}
                                         placeholder="Full Name"
-                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.fullName.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
+                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.fullName.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-lg px-2.5 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
                                     />
                                 ) : (
-                                    <p className="text-[#111617] dark:text-white text-base font-bold leading-normal min-h-[1.5rem]">{details.fullName || (isReading ? "Analyzing..." : "Not found")}</p>
+                                    <p className="text-[#111617] dark:text-white text-sm font-bold leading-normal min-h-[1.25rem]">{details.fullName || (isReading ? "Analyzing..." : "Not found")}</p>
                                 )}
                             </div>
                         </div>
 
                         {/* Location Item */}
-                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-75 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
-                            <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <DynamicLucideIcon name="location_on" />
+                        <div className={`flex items-center gap-3.5 bg-white dark:bg-[#23272e] px-4 min-h-[64px] py-2 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-500 delay-75 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
+                            <div className="text-primary flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10 shadow-sm">
+                                <DynamicLucideIcon name="location_on" className="text-lg" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
@@ -255,8 +322,8 @@ export default function IDReviewPage() {
                                         name="location"
                                         value={details.location}
                                         onChange={handleChange}
-                                        placeholder="Location"
-                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.location.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
+                                        placeholder="Campus / Location"
+                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.location.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-lg px-2.5 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
                                     />
                                 ) : (
                                     <p className="text-[#111617] dark:text-white text-sm font-bold leading-normal line-clamp-1 min-h-[1.25rem]">{details.location || (isReading ? "Analyzing..." : "Not found")}</p>
@@ -265,9 +332,9 @@ export default function IDReviewPage() {
                         </div>
 
                         {/* ID Number Item */}
-                        <div className={`flex items-center gap-4 bg-white dark:bg-[#23272e] px-4 min-h-[72px] py-2 rounded-xl border border-gray-50 dark:border-gray-800 shadow-sm transition-all duration-500 delay-150 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
-                            <div className="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12 shadow-sm">
-                                <DynamicLucideIcon name="credit_card" />
+                        <div className={`flex items-center gap-3.5 bg-white dark:bg-[#23272e] px-4 min-h-[64px] py-2 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-500 delay-150 ${!isReading ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-60'}`}>
+                            <div className="text-primary flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10 shadow-sm">
+                                <DynamicLucideIcon name="credit_card" className="text-lg" />
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                                 {isEditing ? (
@@ -276,40 +343,40 @@ export default function IDReviewPage() {
                                         name="idNumber"
                                         value={details.idNumber}
                                         onChange={handleChange}
-                                        placeholder="ID Number"
-                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.idNumber.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-md px-2 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
+                                        placeholder="Student ID Number"
+                                        className={`bg-gray-50 dark:bg-[#1a1d23] border ${error && !details.idNumber.trim() ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:ring-primary'} rounded-lg px-2.5 py-1 text-sm font-bold text-[#111617] dark:text-white focus:outline-none focus:ring-1 w-full`}
                                     />
                                 ) : (
-                                    <p className="text-[#111617] dark:text-white text-base font-bold leading-normal min-h-[1.5rem]">{details.idNumber || (isReading ? "Analyzing..." : "Not found")}</p>
+                                    <p className="text-[#111617] dark:text-white text-sm font-bold leading-normal min-h-[1.25rem]">{details.idNumber || (isReading ? "Analyzing..." : "Not found")}</p>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     {/* Reassurance Note */}
-                    <div className="px-6 py-4 flex items-start gap-3 bg-primary/5 mx-4 mt-6 rounded-2xl border border-primary/10 shadow-sm">
-                        <DynamicLucideIcon name="verified_user" className="text-primary text-xl" />
-                        <p className="text-primary text-xs font-bold leading-tight">Your data is encrypted and used only for marketplace trust verification.</p>
+                    <div className="px-5 py-3.5 flex items-start gap-2.5 bg-primary/5 mx-4 mt-5 rounded-2xl border border-primary/10 shadow-sm">
+                        <DynamicLucideIcon name="verified_user" className="text-primary text-lg shrink-0 mt-0.5" />
+                        <p className="text-primary text-xs font-bold leading-relaxed">Your data and photos are securely encrypted and used strictly for verification.</p>
                     </div>
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="p-4 bg-white dark:bg-[#1a1d23] border-t border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+                <div className="p-4 bg-white dark:bg-[#1a1d23] border-t border-gray-100 dark:border-gray-800 flex flex-col gap-2.5">
                     {error && (
-                        <div className="text-red-500 text-sm font-semibold flex items-center justify-center gap-1.5 py-2.5 px-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <DynamicLucideIcon name="warning" className="text-base text-red-500 animate-pulse" />
+                        <div className="text-red-500 text-xs font-bold flex items-center justify-center gap-1.5 py-2.5 px-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl animate-in fade-in duration-200">
+                            <DynamicLucideIcon name="warning" className="text-sm text-red-500" />
                             <span>{error}</span>
                         </div>
                     )}
                     <button
                         onClick={handleSubmit}
                         disabled={isReading || isSubmitting}
-                        className={`w-full h-14 rounded-xl font-bold text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg ${(isReading || isSubmitting) ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-[#159ac6] shadow-primary/25'}`}
+                        className={`w-full h-14 rounded-2xl font-black text-base active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg ${(isReading || isSubmitting) ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-[#159ac6] shadow-primary/25'}`}
                     >
                         {isSubmitting ? (
                             <>
                                 <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                <span>Submitting...</span>
+                                <span>Submitting Verification...</span>
                             </>
                         ) : (
                             <>
@@ -319,12 +386,12 @@ export default function IDReviewPage() {
                         )}
                     </button>
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/dashboard/settings/verify/face-capture')}
                         disabled={isSubmitting}
-                        className="w-full h-14 bg-gray-100 dark:bg-[#23272e] text-[#111617] dark:text-white rounded-xl font-bold text-base hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full h-12 bg-gray-100 dark:bg-[#23272e] text-[#111617] dark:text-white rounded-xl font-bold text-xs hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
                     >
-                        <DynamicLucideIcon name="photo_camera" className="text-xl" />
-                        <span>Retake Photo</span>
+                        <DynamicLucideIcon name="photo_camera" className="text-base" />
+                        <span>Retake Face Selfie</span>
                     </button>
                 </div>
             </div>

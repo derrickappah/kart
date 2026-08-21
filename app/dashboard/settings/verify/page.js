@@ -179,13 +179,25 @@ export default function VerificationIntroPage() {
                             <div className="absolute left-[2.25rem] top-[3.75rem] w-0.5 h-6 bg-gray-100 dark:bg-[#2c3b3e] -z-10"></div>
                         </div>
                         {/* Step 2 */}
-                        <div className="flex items-center gap-4 p-4 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-white/5">
+                        <div className="relative flex items-center gap-4 p-4 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-white/5">
                             <div className="flex items-center justify-center shrink-0 size-12 rounded-xl bg-gray-100 dark:bg-[#2c3b3e] text-primary">
                                 <DynamicLucideIcon name="badge" className="text-[24px]" />
                             </div>
                             <div className="flex flex-col flex-1">
                                 <p className="text-gray-900 dark:text-white text-base font-bold leading-tight">Photo ID Check</p>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal mt-0.5">Scan ID</p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal mt-0.5">Scan your student ID card</p>
+                            </div>
+                            {/* Connector Line */}
+                            <div className="absolute left-[2.25rem] top-[3.75rem] w-0.5 h-6 bg-gray-100 dark:bg-[#2c3b3e] -z-10"></div>
+                        </div>
+                        {/* Step 3 */}
+                        <div className="flex items-center gap-4 p-4 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-white/5">
+                            <div className="flex items-center justify-center shrink-0 size-12 rounded-xl bg-gray-100 dark:bg-[#2c3b3e] text-primary">
+                                <DynamicLucideIcon name="user_check" className="text-[24px]" />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <p className="text-gray-900 dark:text-white text-base font-bold leading-tight">Face Verification</p>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal mt-0.5">Quick live selfie match</p>
                             </div>
                         </div>
                     </div>

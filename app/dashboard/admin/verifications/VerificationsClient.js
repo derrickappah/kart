@@ -7,6 +7,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const REJECT_REASONS = [
+    { label: 'Face Mismatch', text: 'The live face selfie does not match the portrait on the provided student ID card.' },
+    { label: 'Blurry Face Selfie', text: 'The live face selfie is blurry, dark, or not clearly visible. Please submit a well-lit, clear selfie.' },
+    { label: 'Face Obstructed', text: 'Your face is partially covered (e.g. mask, heavy sunglasses, or hand). Please ensure your full face is clearly visible.' },
     { label: 'Blurry ID Image', text: 'The uploaded student ID image is too blurry, cropped, or of low quality to verify details. Please upload a clear, legible picture.' },
     { label: 'Expired Credentials', text: 'The student identification card provided has expired or is no longer valid for the current academic term.' },
     { label: 'Name Discrepancy', text: 'The name printed on the student ID does not match the display name or registered name on your profile.' },
@@ -352,32 +355,63 @@ export default function VerificationsClient({ initialVerifications, stats = {} }
                                     </div>
                                 </div>
 
-                                {/* ID Card Document Preview */}
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] flex items-center gap-1.5">
-                                            <DynamicLucideIcon name="category" className="size-3.5" /> ID Verification Document
-                                        </label>
-                                        {selectedVerification.student_id_image && (
-                                            <a 
-                                                href={selectedVerification.student_id_image} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="text-[9px] font-black uppercase tracking-wider text-primary hover:underline flex items-center gap-1"
-                                            >
-                                                Open Full Lens <DynamicLucideIcon name="open_in_new" className="size-3" />
-                                            </a>
+                                {/* Side-by-Side Document & Face Verification Comparative Inspector */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Left: ID Card Document Preview */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] flex items-center gap-1.5">
+                                                <DynamicLucideIcon name="badge" className="size-3.5 text-primary" /> ID Card Document
+                                            </label>
+                                            {selectedVerification.student_id_image && (
+                                                <a 
+                                                    href={selectedVerification.student_id_image} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-[9px] font-black uppercase tracking-wider text-primary hover:underline flex items-center gap-1"
+                                                >
+                                                    Full Lens <DynamicLucideIcon name="open_in_new" className="size-3" />
+                                                </a>
+                                            )}
+                                        </div>
+
+                                        {selectedVerification.student_id_image ? (
+                                            <IDMagnifier src={selectedVerification.student_id_image} />
+                                        ) : (
+                                            <div className="w-full h-64 sm:h-72 md:h-80 rounded-2xl border border-dashed border-[#dce3e5] dark:border-[#2d3b41] flex flex-col items-center justify-center bg-black/5 dark:bg-black/20 text-[#4b636c]/40 gap-2">
+                                                <DynamicLucideIcon name="no_photography" className="size-8" />
+                                                <span className="text-[10px] font-black uppercase tracking-wider">No ID uploaded</span>
+                                            </div>
                                         )}
                                     </div>
 
-                                    {selectedVerification.student_id_image ? (
-                                        <IDMagnifier src={selectedVerification.student_id_image} />
-                                    ) : (
-                                        <div className="w-full h-64 rounded-2xl border border-dashed border-[#dce3e5] dark:border-[#2d3b41] flex flex-col items-center justify-center bg-black/5 dark:bg-black/20 text-[#4b636c]/40 gap-2">
-                                            <DynamicLucideIcon name="no_photography" className="size-10" />
-                                            <span className="text-[10px] font-black uppercase tracking-wider">No image uploaded</span>
+                                    {/* Right: Live Face Selfie Preview */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-[#4b636c] flex items-center gap-1.5">
+                                                <DynamicLucideIcon name="user_check" className="size-3.5 text-primary" /> Live Face Selfie
+                                            </label>
+                                            {selectedVerification.face_image && (
+                                                <a 
+                                                    href={selectedVerification.face_image} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-[9px] font-black uppercase tracking-wider text-primary hover:underline flex items-center gap-1"
+                                                >
+                                                    Full Lens <DynamicLucideIcon name="open_in_new" className="size-3" />
+                                                </a>
+                                            )}
                                         </div>
-                                    )}
+
+                                        {selectedVerification.face_image ? (
+                                            <IDMagnifier src={selectedVerification.face_image} />
+                                        ) : (
+                                            <div className="w-full h-64 sm:h-72 md:h-80 rounded-2xl border border-dashed border-[#dce3e5] dark:border-[#2d3b41] flex flex-col items-center justify-center bg-black/5 dark:bg-black/20 text-[#4b636c]/40 gap-2">
+                                                <DynamicLucideIcon name="person_off" className="size-8" />
+                                                <span className="text-[10px] font-black uppercase tracking-wider">No Face Selfie (Legacy)</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Resolution Form or Verdict display */}

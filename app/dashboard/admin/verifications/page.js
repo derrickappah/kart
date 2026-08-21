@@ -47,20 +47,26 @@ export default async function AdminVerificationsPage({ searchParams }) {
             .select('id, email, display_name, is_verified')
             .in('id', userIds);
 
-        // Collect relative paths to sign (those that do not start with http/https)
-        const relativePaths = verifications
+        // Collect relative paths to sign (both student_id_image and face_image)
+        const idPaths = verifications
             .map(v => v.student_id_image)
             .filter(path => path && !path.startsWith('http'));
 
+        const facePaths = verifications
+            .map(v => v.face_image)
+            .filter(path => path && !path.startsWith('http'));
+
+        const allRelativePaths = [...new Set([...idPaths, ...facePaths])];
+
         let signedUrlMap = {};
-        if (relativePaths.length > 0) {
+        if (allRelativePaths.length > 0) {
             const { data: signedUrls, error: signError } = await supabase.storage
                 .from('verifications')
-                .createSignedUrls(relativePaths, 3600); // 1 hour expiry
+                .createSignedUrls(allRelativePaths, 3600); // 1 hour expiry
 
             if (!signError && signedUrls) {
                 // Map the relative path back to its signed URL
-                relativePaths.forEach((path, idx) => {
+                allRelativePaths.forEach((path, idx) => {
                     if (signedUrls[idx]?.signedUrl) {
                         signedUrlMap[path] = signedUrls[idx].signedUrl;
                     }
@@ -69,14 +75,20 @@ export default async function AdminVerificationsPage({ searchParams }) {
         }
 
         verificationsWithUsers = verifications.map(verification => {
-            const imagePath = verification.student_id_image;
-            const studentIdImage = (imagePath && !imagePath.startsWith('http'))
-                ? (signedUrlMap[imagePath] || '')
-                : imagePath;
+            const idPath = verification.student_id_image;
+            const studentIdImage = (idPath && !idPath.startsWith('http'))
+                ? (signedUrlMap[idPath] || '')
+                : idPath;
+
+            const facePath = verification.face_image;
+            const faceImage = (facePath && !facePath.startsWith('http'))
+                ? (signedUrlMap[facePath] || '')
+                : facePath;
 
             return {
                 ...verification,
                 student_id_image: studentIdImage,
+                face_image: faceImage || null,
                 user: profiles?.find(p => p.id === verification.user_id) || null
             };
         });
