@@ -191,7 +191,7 @@ export default function IDReviewPage() {
                         </div>
                         <h2 className="text-[#111617] dark:text-white tracking-tight text-2xl font-black leading-tight">Review Verification Documents</h2>
                         <p className="text-[#647e87] dark:text-gray-400 text-xs font-normal leading-relaxed mt-1">
-                            Verify that both your student ID card and selfie are sharp and clearly legible.
+                            Verify that both your ID card and selfie are sharp and clearly legible.
                         </p>
                     </div>
 
@@ -259,7 +259,7 @@ export default function IDReviewPage() {
                     {/* Extracted Details Header */}
                     <div className="px-4">
                         <div className="flex items-center justify-between pb-1 pt-6">
-                            <h3 className="text-[#111617] dark:text-white tracking-tight text-lg font-black leading-tight">Student Details</h3>
+                            <h3 className="text-[#111617] dark:text-white tracking-tight text-lg font-black leading-tight">Details</h3>
                             {!isReading && (
                                 <button
                                     onClick={handleToggleEdit}
