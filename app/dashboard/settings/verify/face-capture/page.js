@@ -18,7 +18,7 @@ export default function FaceCapturePage() {
     const [facingMode, setFacingMode] = useState('user');
     const [capturedImage, setCapturedImage] = useState(null);
 
-    // Check verification status and redirect if already verified or pending
+    // Check verification status and ensure ID was captured first
     useEffect(() => {
         const checkStatus = async () => {
             const supabase = createClient();
@@ -51,7 +51,7 @@ export default function FaceCapturePage() {
                 return;
             }
 
-            // Ensure ID image is in session storage
+            // Check if ID image exists in session storage
             const hasIDImage = sessionStorage.getItem('capturedIDImage');
             if (!hasIDImage) {
                 router.replace('/dashboard/settings/verify/id-capture');
@@ -60,7 +60,7 @@ export default function FaceCapturePage() {
         checkStatus();
     }, [router]);
 
-    // Initialize Camera
+    // Initialize Camera (front-facing camera for face capture)
     useEffect(() => {
         async function startCamera() {
             try {
@@ -99,6 +99,16 @@ export default function FaceCapturePage() {
     const handleCapture = () => {
         if (!videoRef.current || !canvasRef.current || isCapturing) return;
 
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const vWidth = video.videoWidth;
+        const vHeight = video.videoHeight;
+
+        if (!vWidth || !vHeight) {
+            console.error("Video dimensions not available");
+            return;
+        }
+
         setIsCapturing(true);
 
         // Instant flash effect
@@ -110,65 +120,66 @@ export default function FaceCapturePage() {
             }, 100);
         }
 
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const vWidth = video.videoWidth;
-        const vHeight = video.videoHeight;
+        let sX = 0, sY = 0, sWidth = vWidth, sHeight = vHeight;
 
-        if (vWidth && vHeight) {
-            let sX = 0, sY = 0, sWidth = vWidth, sHeight = vHeight;
+        if (viewfinderRef.current && containerRef.current) {
+            const vRect = viewfinderRef.current.getBoundingClientRect();
+            const cRect = containerRef.current.getBoundingClientRect();
 
-            if (viewfinderRef.current && containerRef.current) {
-                const vRect = viewfinderRef.current.getBoundingClientRect();
-                const cRect = containerRef.current.getBoundingClientRect();
+            if (cRect.width > 0 && cRect.height > 0 && vRect.width > 0 && vRect.height > 0) {
+                const scale = Math.max(cRect.width / vWidth, cRect.height / vHeight);
+                const displayedVideoWidth = vWidth * scale;
+                const displayedVideoHeight = vHeight * scale;
 
-                if (cRect.width > 0 && cRect.height > 0 && vRect.width > 0 && vRect.height > 0) {
-                    const scale = Math.max(cRect.width / vWidth, cRect.height / vHeight);
-                    const displayedVideoWidth = vWidth * scale;
-                    const displayedVideoHeight = vHeight * scale;
+                const videoOffsetX = (displayedVideoWidth - cRect.width) / 2;
+                const videoOffsetY = (displayedVideoHeight - cRect.height) / 2;
 
-                    const videoOffsetX = (displayedVideoWidth - cRect.width) / 2;
-                    const videoOffsetY = (displayedVideoHeight - cRect.height) / 2;
+                const vRelX = vRect.left - cRect.left;
+                const vRelY = vRect.top - cRect.top;
 
-                    const vRelX = vRect.left - cRect.left;
-                    const vRelY = vRect.top - cRect.top;
+                const videoDisplayX = vRelX + videoOffsetX;
+                const videoDisplayY = vRelY + videoOffsetY;
 
-                    const videoDisplayX = vRelX + videoOffsetX;
-                    const videoDisplayY = vRelY + videoOffsetY;
+                sX = Math.max(0, videoDisplayX / scale);
+                sY = Math.max(0, videoDisplayY / scale);
+                sWidth = Math.min(vWidth - sX, vRect.width / scale);
+                sHeight = Math.min(vHeight - sY, vRect.height / scale);
 
-                    sX = Math.max(0, videoDisplayX / scale);
-                    sY = Math.max(0, videoDisplayY / scale);
-                    sWidth = Math.min(vWidth - sX, vRect.width / scale);
-                    sHeight = Math.min(vHeight - sY, vRect.height / scale);
-
-                    if (facingMode === 'user') {
-                        sX = vWidth - (sX + sWidth);
-                    }
+                if (facingMode === 'user') {
+                    sX = Math.max(0, vWidth - (sX + sWidth));
                 }
             }
-
-            const context = canvas.getContext('2d');
-            canvas.width = sWidth;
-            canvas.height = sHeight;
-
-            if (facingMode === 'user') {
-                context.translate(canvas.width, 0);
-                context.scale(-1, 1);
-            }
-
-            context.drawImage(video, sX, sY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/jpeg', 0.85);
-
-            setCapturedImage(imageData);
-            sessionStorage.setItem('capturedFaceImage', imageData);
         }
+
+        // Safety fallback if calculation results in 0
+        if (!sWidth || !sHeight || sWidth <= 0 || sHeight <= 0) {
+            sX = 0;
+            sY = 0;
+            sWidth = vWidth;
+            sHeight = vHeight;
+        }
+
+        canvas.width = sWidth;
+        canvas.height = sHeight;
+        const context = canvas.getContext('2d');
+
+        if (facingMode === 'user') {
+            context.translate(canvas.width, 0);
+            context.scale(-1, 1);
+        }
+
+        context.drawImage(video, sX, sY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/jpeg', 0.85);
+
+        setCapturedImage(imageData);
+        sessionStorage.setItem('capturedFaceImage', imageData);
 
         // Show "Checking clarity" after flash
         setTimeout(() => {
             setShowChecking(true);
             setTimeout(() => {
                 router.push('/dashboard/settings/verify/review');
-            }, 1800);
+            }, 2000);
         }, 300);
     };
 
@@ -215,7 +226,7 @@ export default function FaceCapturePage() {
                 )}
             </div>
 
-            {/* Single Viewport Overlay (Header, Centered Scanner, Capture Button) */}
+            {/* Single Viewport Overlay (Header, Centered Oval Scanner, Capture Button) */}
             <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pointer-events-none py-6 px-4 sm:py-8 sm:px-6">
                 {/* Header Text */}
                 <div className="pointer-events-auto w-full pt-6 sm:pt-8 text-center relative z-30">
@@ -224,26 +235,26 @@ export default function FaceCapturePage() {
                     </h1>
                 </div>
 
-                {/* Center Scanner Viewfinder */}
+                {/* Center Oval Scanner Viewfinder */}
                 <div className="pointer-events-auto flex-1 w-full flex items-center justify-center px-4 min-h-0 relative z-10">
                     <div
                         ref={viewfinderRef}
-                        className="relative w-full max-w-[340px] aspect-[1.58/1] rounded-2xl shadow-2xl shrink-0"
+                        className="relative w-full max-w-[280px] sm:max-w-[300px] aspect-[1/1.3] rounded-[50%] shadow-2xl shrink-0"
                     >
-                        {/* Cutout Mask (Dark Translucent Overlay outside viewfinder) */}
+                        {/* Cutout Mask (Dark Translucent Overlay outside oval viewfinder) */}
                         <div
                             className="absolute inset-0 rounded-[inherit] pointer-events-none z-10"
                             style={{ boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.65)' }}
                         ></div>
 
-                        {/* Viewfinder Inner Contents (Clipped to rounded-2xl) */}
-                        <div className="absolute inset-0 overflow-hidden rounded-2xl z-0">
+                        {/* Viewfinder Inner Contents (Clipped to oval) */}
+                        <div className="absolute inset-0 overflow-hidden rounded-[inherit] z-0">
                             {/* Grid Overlay */}
                             <div className="absolute inset-0 opacity-30 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[length:40px_40px]"></div>
 
                             {/* Active Scanning Animation Line */}
                             {!showChecking && !capturedImage && (
-                                <div className="absolute inset-0 overflow-hidden rounded-2xl z-20">
+                                <div className="absolute inset-0 overflow-hidden rounded-[inherit] z-20">
                                     <div
                                         className="w-full h-[50%] bg-gradient-to-b from-primary/0 via-primary/20 to-primary/0 animate-[scan_3s_cubic-bezier(0.4,0,0.2,1)_infinite] border-b-2 border-primary"
                                         style={{ animationName: 'scan' }}
@@ -256,7 +267,7 @@ export default function FaceCapturePage() {
                                 <img
                                     src={capturedImage}
                                     alt="Captured Face"
-                                    className="absolute inset-0 w-full h-full object-cover rounded-2xl z-25"
+                                    className="absolute inset-0 w-full h-full object-cover rounded-[inherit] z-25"
                                 />
                             )}
 
@@ -277,11 +288,8 @@ export default function FaceCapturePage() {
                             )}
                         </div>
 
-                        {/* Corner Markers */}
-                        <div className="absolute -top-1 -left-1 size-8 border-t-[4px] border-l-[4px] border-primary rounded-tl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
-                        <div className="absolute -top-1 -right-1 size-8 border-t-[4px] border-r-[4px] border-primary rounded-tr-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
-                        <div className="absolute -bottom-1 -left-1 size-8 border-b-[4px] border-l-[4px] border-primary rounded-bl-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
-                        <div className="absolute -bottom-1 -right-1 size-8 border-b-[4px] border-r-[4px] border-primary rounded-br-2xl z-30 drop-shadow-[0_0_8px_rgba(29,173,221,0.6)]"></div>
+                        {/* Oval Glowing Border Guide */}
+                        <div className="absolute -inset-[2px] rounded-[inherit] border-2 border-primary pointer-events-none z-30 drop-shadow-[0_0_10px_rgba(29,173,221,0.6)]"></div>
                     </div>
                 </div>
 

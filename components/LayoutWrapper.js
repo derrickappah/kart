@@ -76,7 +76,7 @@ export default function LayoutWrapper({ children }) {
         ? "" 
         : (isEditingPage ? "" : "pt-16 pb-[66px]");
 
-    const isFullViewportPage = pathname === '/dashboard/settings/verify/id-capture';
+    const isFullViewportPage = pathname === '/dashboard/settings/verify/id-capture' || pathname === '/dashboard/settings/verify/face-capture';
 
     if (isFullViewportPage) {
         return (
