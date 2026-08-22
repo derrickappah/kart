@@ -30,6 +30,16 @@ export async function POST(request) {
             });
         }
 
+        // --- SECURITY: Validate Payment Currency ---
+        const paidCurrency = verification.data.currency;
+        if (!paidCurrency || paidCurrency.toUpperCase() !== 'GHS') {
+            console.error('[Wallet Verify] Currency mismatch. Expected GHS, got:', paidCurrency);
+            return NextResponse.json({
+                success: false,
+                message: 'Payment currency must be GHS'
+            }, { status: 400 });
+        }
+
         // Check if this is a wallet deposit
         const isWalletDeposit = reference.startsWith('wdp_') || reference.startsWith('wallet_dep_');
 
@@ -38,6 +48,29 @@ export async function POST(request) {
                 success: false,
                 message: 'Not a wallet deposit'
             });
+        }
+
+        // --- SECURITY: Validate Ownership ---
+        // Verify that this transaction reference actually belongs to the authenticated user
+        const metadata = verification.data.metadata || {};
+        const metaUserId = metadata.user_id || (metadata.custom_fields?.find(f => f.variable_name === 'user_id')?.value);
+        const customerEmail = verification.data.customer?.email;
+
+        let isOwner = false;
+        if (metaUserId && metaUserId === user.id) {
+            isOwner = true;
+        } else if (reference.startsWith(`wdp_${user.id}_`)) {
+            isOwner = true;
+        } else if (customerEmail && customerEmail.toLowerCase() === user.email?.toLowerCase()) {
+            isOwner = true;
+        }
+
+        if (!isOwner) {
+            console.error('[Wallet Verify] Ownership verification failed for user:', user.id, 'reference:', reference);
+            return NextResponse.json({
+                success: false,
+                message: 'This payment does not belong to your account'
+            }, { status: 403 });
         }
 
         const adminSupabase = createServiceRoleClient();

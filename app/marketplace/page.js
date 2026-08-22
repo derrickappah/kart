@@ -184,7 +184,7 @@ export default async function Marketplace({ searchParams }) {
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
             />
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-4 md:pb-8 shadow-2xl bg-white dark:bg-[#242428]">
                 <main className="px-4 pt-3 flex-1">

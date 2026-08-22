@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
   try {
@@ -11,14 +11,38 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { amount, method } = body;
+    const { amount, method, details } = body;
 
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
     }
 
-    // Get wallet
-    const { data: wallet, error: walletError } = await supabase
+    const withdrawAmount = parseFloat(amount);
+    const adminSupabase = createServiceRoleClient();
+
+    // 1. Try Atomic RPC first
+    const { data: rpcResult, error: rpcError } = await adminSupabase.rpc('execute_wallet_withdrawal', {
+      p_user_id: user.id,
+      p_amount: withdrawAmount,
+      p_method: method || 'bank',
+      p_payout_details: details || {}
+    });
+
+    if (!rpcError && rpcResult && rpcResult.success) {
+      return NextResponse.json({
+        success: true,
+        withdrawal_request_id: rpcResult.withdrawal_request_id,
+        new_balance: rpcResult.new_balance,
+        pending_balance: rpcResult.pending_balance,
+      });
+    }
+
+    if (rpcError && !rpcError.message?.includes('function public.execute_wallet_withdrawal') && !rpcError.message?.includes('does not exist')) {
+      return NextResponse.json({ error: rpcError.message }, { status: 400 });
+    }
+
+    // 2. Fallback: Sequential execution
+    const { data: wallet, error: walletError } = await adminSupabase
       .from('wallets')
       .select('*')
       .eq('user_id', user.id)
@@ -28,7 +52,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Wallet not found' }, { status: 404 });
     }
 
-    const withdrawAmount = parseFloat(amount);
     const availableBalance = parseFloat(wallet.balance || 0);
 
     if (withdrawAmount > availableBalance) {
@@ -39,7 +62,7 @@ export async function POST(request) {
     }
 
     // Create withdrawal request
-    const { data: withdrawalRequest, error: requestError } = await supabase
+    const { data: withdrawalRequest, error: requestError } = await adminSupabase
       .from('withdrawal_requests')
       .insert({
         wallet_id: wallet.id,
@@ -48,34 +71,27 @@ export async function POST(request) {
         currency: 'GHS',
         status: 'Pending',
         payout_method: method || 'bank',
-        payout_details: body.details || {},
+        payout_details: details || {},
       })
       .select()
       .single();
 
     if (requestError) {
       console.error('Error creating withdrawal request:', requestError);
-      console.error('Error details:', {
-        code: requestError.code,
-        message: requestError.message,
-        details: requestError.details,
-        hint: requestError.hint
-      });
       return NextResponse.json(
         {
           error: 'Failed to create withdrawal request',
           details: requestError.message,
-          code: requestError.code
         },
         { status: 500 }
       );
     }
 
-    // Update wallet: move amount from balance to pending_balance
+    // Update wallet
     const newBalance = availableBalance - withdrawAmount;
     const newPendingBalance = parseFloat(wallet.pending_balance || 0) + withdrawAmount;
 
-    const { error: walletUpdateError } = await supabase
+    const { error: walletUpdateError } = await adminSupabase
       .from('wallets')
       .update({
         balance: newBalance,
@@ -86,8 +102,7 @@ export async function POST(request) {
 
     if (walletUpdateError) {
       console.error('Error updating wallet:', walletUpdateError);
-      // Rollback: delete the withdrawal request
-      await supabase
+      await adminSupabase
         .from('withdrawal_requests')
         .delete()
         .eq('id', withdrawalRequest.id);
@@ -99,7 +114,7 @@ export async function POST(request) {
     }
 
     // Record transaction
-    await supabase.from('wallet_transactions').insert({
+    await adminSupabase.from('wallet_transactions').insert({
       wallet_id: wallet.id,
       amount: withdrawAmount,
       transaction_type: 'Withdrawal',

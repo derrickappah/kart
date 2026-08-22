@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { Resend } from 'resend';
+import crypto from 'crypto';
 
 export async function POST(request) {
     try {
@@ -14,8 +15,8 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Generate 5-digit OTP
-        const otp = Math.floor(10000 + Math.random() * 90000).toString();
+        // Generate cryptographically secure 5-digit OTP (CSPRNG)
+        const otp = crypto.randomInt(10000, 99999).toString();
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes expiry
 
         const adminSupabase = createServiceRoleClient();
@@ -115,8 +116,7 @@ export async function POST(request) {
 
         return NextResponse.json({
             success: true,
-            // Only return OTP in development for testing convenience
-            otp: process.env.NODE_ENV === 'development' ? otp : undefined
+            message: 'Verification code sent to your email'
         });
 
     } catch (error) {

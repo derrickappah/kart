@@ -25,24 +25,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Quantity must be at least 1' }, { status: 400 });
     }
 
-    // 1. Handle sample ID for dev testing (Early Return)
-    if (productId === '021ec46d-43e5-4891-9439-2e59d53bbf28') {
-      const sampleOrderId = 'sample-' + Date.now();
-      return NextResponse.json({
-        success: true,
-        order: {
-          id: sampleOrderId,
-          total_amount: 46.50,
-          currency: 'GHS',
-        },
-        payment: {
-          authorization_url: `${process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000')}/dashboard/orders?success=true&sample=true`,
-          reference: 'sample-ref-' + Date.now(),
-        },
-      });
-    }
-
-    // 2. Fetch real product from database
+    // 1. Fetch real product from database
     let product;
     const result = await supabase
       .from('products')

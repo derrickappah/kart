@@ -115,9 +115,24 @@ export async function POST(request) {
         console.log('[Manual Activate] Paystack verification result:', {
           status: verification.data?.status,
           reference: verification.data?.reference,
+          amount: verification.data?.amount,
+          currency: verification.data?.currency,
         });
 
         if (verification.data.status === 'success') {
+          // --- SECURITY: Validate Currency and Amount for non-admins ---
+          const paidCurrency = verification.data.currency;
+          const paidAmount = verification.data.amount / 100;
+          const expectedPrice = parseFloat(subscription.plan?.price || 0);
+
+          if (!profile?.is_admin) {
+            if (!paidCurrency || paidCurrency.toUpperCase() !== 'GHS') {
+              return NextResponse.json({ error: 'Payment currency must be GHS' }, { status: 400 });
+            }
+            if (expectedPrice > 0 && Math.abs(paidAmount - expectedPrice) > 0.01) {
+              return NextResponse.json({ error: 'Payment amount does not match plan price' }, { status: 400 });
+            }
+          }
           verificationSucceeded = true;
         }
       } catch (verifyError) {
@@ -135,7 +150,7 @@ export async function POST(request) {
     // Check if we can proceed (either verification succeeded or user is admin)
     if (!verificationSucceeded && !profile?.is_admin) {
       return NextResponse.json({
-        error: 'Payment not successful. Please ensure you have completed the payment.',
+        error: 'Payment not successful or invalid amount. Please ensure you have completed the payment.',
       }, { status: 400 });
     }
 

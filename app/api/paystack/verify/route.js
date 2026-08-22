@@ -69,6 +69,28 @@ export async function POST(request) {
       });
     }
 
+    // --- SECURITY: Validate Payment Currency ---
+    const paidCurrency = verification.data.currency;
+    const expectedCurrency = order.currency || 'GHS';
+    if (!paidCurrency || paidCurrency.toUpperCase() !== expectedCurrency.toUpperCase()) {
+      console.error('[Verify] Currency mismatch. Expected:', expectedCurrency, 'Got:', paidCurrency);
+      return NextResponse.json({
+        success: false,
+        message: 'Payment currency mismatch',
+      }, { status: 400 });
+    }
+
+    // --- SECURITY: Validate Paid Amount against Order Total ---
+    const paidAmountGHS = verification.data.amount / 100;
+    const expectedAmount = parseFloat(order.total_amount);
+    if (Math.abs(paidAmountGHS - expectedAmount) > 0.01) {
+      console.error('[Verify] Amount mismatch. Paid:', paidAmountGHS, 'Expected:', expectedAmount);
+      return NextResponse.json({
+        success: false,
+        message: 'Payment amount mismatch',
+      }, { status: 400 });
+    }
+
     // Check if payment reference matches
     // Handle cases where payment_reference might be null or reference format variations
     const referenceMatches =
@@ -99,34 +121,31 @@ export async function POST(request) {
         .eq('id', order.id);
     }
 
-    // Update order if still pending
-    console.log('[Verify] Order status check:', {
-      order_id: order.id,
-      current_status: order.status,
-      will_update: order.status === 'Pending'
-    });
+    // Atomic update: only update if status is still 'Pending' to prevent race condition double-crediting
+    console.log('[Verify] Attempting atomic order update to Paid status...');
+    const { data: updatedOrder, error: updateError } = await adminSupabase
+      .from('orders')
+      .update({
+        status: 'Paid',
+        paystack_transaction_id: verification.data.id.toString(),
+        escrow_status: 'Held',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', order.id)
+      .eq('status', 'Pending')
+      .select()
+      .maybeSingle();
 
-    if (order.status === 'Pending') {
-      console.log('[Verify] Updating order to Paid status...');
-      const { error: updateError } = await adminSupabase
-        .from('orders')
-        .update({
-          status: 'Paid',
-          paystack_transaction_id: verification.data.id.toString(),
-          escrow_status: 'Held',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', order.id);
+    if (updateError) {
+      console.error('[Verify] Error updating order:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to update order: ' + updateError.message },
+        { status: 500 }
+      );
+    }
 
-      if (updateError) {
-        console.error('[Verify] Error updating order:', updateError);
-        return NextResponse.json(
-          { error: 'Failed to update order: ' + updateError.message },
-          { status: 500 }
-        );
-      }
-
-      console.log('[Verify] Order updated successfully to Paid');
+    if (updatedOrder) {
+      console.log('[Verify] Order updated successfully to Paid atomically');
 
       // Update product stock
       const { data: product } = await adminSupabase

@@ -30,10 +30,10 @@ export async function POST(request) {
       );
     }
 
-    // Get subscription
+    // Get subscription with plan details
     const { data: subscription, error: subError } = await supabase
       .from('subscriptions')
-      .select('*')
+      .select('*, plan:subscription_plans(*)')
       .eq('id', subscriptionId)
       .eq('user_id', user.id)
       .single();
@@ -88,6 +88,25 @@ export async function POST(request) {
         message: 'Payment not successful',
         status: verification.data.status,
       });
+    }
+
+    // --- SECURITY: Validate Currency & Amount ---
+    const paidCurrency = verification.data.currency;
+    if (!paidCurrency || paidCurrency.toUpperCase() !== 'GHS') {
+      return NextResponse.json({
+        success: false,
+        message: 'Payment currency must be GHS',
+      }, { status: 400 });
+    }
+
+    const paidAmountGHS = verification.data.amount / 100;
+    const expectedPlanPrice = parseFloat(subscription.plan?.price || 0);
+    if (expectedPlanPrice > 0 && Math.abs(paidAmountGHS - expectedPlanPrice) > 0.01) {
+      console.error('[Verify] Subscription amount mismatch. Paid:', paidAmountGHS, 'Expected:', expectedPlanPrice);
+      return NextResponse.json({
+        success: false,
+        message: 'Payment amount does not match subscription plan price',
+      }, { status: 400 });
     }
 
     // Check if payment reference matches (case-insensitive, trim whitespace)
@@ -161,8 +180,9 @@ export async function POST(request) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', subscription.id)
+        .eq('status', 'Pending')
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         console.error('[Verify] Error updating subscription:', {

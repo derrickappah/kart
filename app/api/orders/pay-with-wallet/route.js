@@ -11,65 +11,15 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { productId } = body;
+        const { productId, quantity = 1 } = body;
 
         if (!productId) {
             return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
         }
 
-        // 1. Fetch product and seller details
-        let product;
-        let productError;
-
-        // Handle sample ID for dev testing
-        if (productId === '021ec46d-43e5-4891-9439-2e59d53bbf28') {
-            return NextResponse.json({
-                success: true,
-                orderId: 'sample-order-' + Date.now(),
-                message: 'Purchase completed successfully (Demo Mode)'
-            });
-        } else {
-            const result = await supabase
-                .from('products')
-                .select('*, seller:profiles!products_seller_id_profiles_fkey(id, email, display_name)')
-                .eq('id', productId)
-                .single();
-
-            product = result.data;
-            productError = result.error;
-
-            // Try fallback relationship name if first one fails
-            if (productError) {
-                const retry = await supabase
-                    .from('products')
-                    .select('*, seller:profiles!products_seller_id_fkey(id, email, display_name)')
-                    .eq('id', productId)
-                    .single();
-                product = retry.data;
-                productError = retry.error;
-            }
-        }
-
-        if (productError || !product) {
-            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-        }
-
-        // 2. Check product availability
-        if (product.status !== 'Active' && product.status !== 'active') {
-            return NextResponse.json({ error: 'Product is no longer available' }, { status: 400 });
-        }
-
-        if (product.seller_id === user.id) {
-            return NextResponse.json({ error: 'You cannot buy your own product' }, { status: 400 });
-        }
-
-        // 3. Calculate totals (using same logic as Paystack if possible)
-        const price = parseFloat(product.price);
-
-        // Use service role client to bypass RLS for administrative updates
         const adminSupabase = createServiceRoleClient();
 
-        // Fetch dynamic fees from settings
+        // 1. Fetch dynamic platform fees
         const { data: settings } = await adminSupabase
             .from('platform_settings')
             .select('key, value')
@@ -85,20 +35,56 @@ export async function POST(request) {
         const feeFixed = getParam('transaction_fee_fixed', 1);
         const marketplaceFee = getParam('marketplace_service_fee', 0);
 
-        // Calculate platform fees
-        const percentageFee = (price * feePercent) / 100;
+        // 2. Try Atomic Transaction via PostgreSQL RPC first
+        const { data: rpcResult, error: rpcError } = await adminSupabase.rpc('execute_wallet_payment', {
+            p_buyer_id: user.id,
+            p_product_id: productId,
+            p_quantity: quantity,
+            p_fee_percent: feePercent,
+            p_fee_fixed: feeFixed,
+            p_marketplace_fee: marketplaceFee
+        });
 
-        // Buyer pays: Price + Marketplace Fee
-        const totalAmount = price + marketplaceFee;
+        if (!rpcError && rpcResult && rpcResult.success) {
+            return NextResponse.json({
+                success: true,
+                orderId: rpcResult.order_id,
+                message: 'Purchase completed successfully'
+            });
+        }
 
-        // Seller receives: Price - Commission (Deducted from payout)
-        const sellerPayoutAmount = price - percentageFee - feeFixed;
+        if (rpcError && !rpcError.message?.includes('function public.execute_wallet_payment') && !rpcError.message?.includes('does not exist')) {
+            return NextResponse.json({ error: rpcError.message }, { status: 400 });
+        }
 
-        // Total platform engine revenue for this order
+        // 3. Fallback: Sequential execution with atomic row validation
+        const { data: product, error: productError } = await adminSupabase
+            .from('products')
+            .select('*')
+            .eq('id', productId)
+            .single();
+
+        if (productError || !product) {
+            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        if (product.status !== 'Active' && product.status !== 'active') {
+            return NextResponse.json({ error: 'Product is no longer available' }, { status: 400 });
+        }
+
+        if (product.seller_id === user.id) {
+            return NextResponse.json({ error: 'You cannot buy your own product' }, { status: 400 });
+        }
+
+        const price = parseFloat(product.price);
+        const subtotal = price * quantity;
+        const totalAmount = subtotal + marketplaceFee;
+        const percentageFee = (subtotal * feePercent) / 100;
+        const sellerPayoutAmount = Math.max(0, subtotal - percentageFee - feeFixed);
         const platformFeeTotal = marketplaceFee + percentageFee + feeFixed;
 
-        // 4. Check buyer wallet balance
-        const { data: buyerWallet, error: walletError } = await supabase
+        // Check buyer wallet
+        const { data: buyerWallet, error: walletError } = await adminSupabase
             .from('wallets')
             .select('*')
             .eq('user_id', user.id)
@@ -108,26 +94,45 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Insufficient wallet balance' }, { status: 400 });
         }
 
-        // 5. Perform transaction
-        // A. Deduct balance from buyer (Using admin client for sequential consistency)
+        const currentBuyerBalance = parseFloat(buyerWallet.balance);
+        const newBuyerBalance = currentBuyerBalance - totalAmount;
+
+        // Atomically lock product status to Sold
+        const { data: updatedProduct, error: prodUpdateError } = await adminSupabase
+            .from('products')
+            .update({ status: 'Sold', updated_at: new Date().toISOString() })
+            .eq('id', productId)
+            .in('status', ['Active', 'active'])
+            .select('id')
+            .maybeSingle();
+
+        if (prodUpdateError || !updatedProduct) {
+            return NextResponse.json({ error: 'Product is no longer available or was just sold' }, { status: 400 });
+        }
+
+        // Deduct buyer wallet
         const { error: deductError } = await adminSupabase
             .from('wallets')
             .update({
-                balance: parseFloat(buyerWallet.balance) - totalAmount,
+                balance: newBuyerBalance,
                 updated_at: new Date().toISOString()
             })
-            .eq('user_id', user.id);
+            .eq('id', buyerWallet.id);
 
-        if (deductError) throw deductError;
+        if (deductError) {
+            // Revert product status
+            await adminSupabase.from('products').update({ status: 'Active' }).eq('id', productId);
+            throw deductError;
+        }
 
-        // B. Create Order
+        // Create Order
         const { data: order, error: orderError } = await adminSupabase
             .from('orders')
             .insert({
                 buyer_id: user.id,
                 seller_id: product.seller_id,
                 product_id: productId,
-                quantity: 1,
+                quantity,
                 unit_price: price,
                 total_amount: totalAmount,
                 platform_fee_percentage: feePercent,
@@ -144,20 +149,12 @@ export async function POST(request) {
 
         if (orderError) throw orderError;
 
-        // C. Update Product Status to Sold
-        const { error: productUpdateError } = await adminSupabase
-            .from('products')
-            .update({ status: 'Sold' })
-            .eq('id', productId);
-
-        if (productUpdateError) throw productUpdateError;
-
-        // D. Update Seller Pending Balance
+        // Update seller pending balance
         const { data: sellerWallet } = await adminSupabase
             .from('wallets')
             .select('*')
             .eq('user_id', product.seller_id)
-            .single();
+            .maybeSingle();
 
         if (sellerWallet) {
             await adminSupabase
@@ -168,7 +165,6 @@ export async function POST(request) {
                 })
                 .eq('id', sellerWallet.id);
         } else {
-            // Create wallet for seller if it doesn't exist
             await adminSupabase
                 .from('wallets')
                 .insert({
@@ -179,15 +175,15 @@ export async function POST(request) {
                 });
         }
 
-        // E. Record Transactions
+        // Record Ledger
         await adminSupabase.from('wallet_transactions').insert([
             {
                 wallet_id: buyerWallet.id,
                 order_id: order.id,
                 transaction_type: 'Debit',
                 amount: totalAmount,
-                balance_before: parseFloat(buyerWallet.balance),
-                balance_after: parseFloat(buyerWallet.balance) - totalAmount,
+                balance_before: currentBuyerBalance,
+                balance_after: newBuyerBalance,
                 status: 'Completed',
                 reference: order.id,
                 description: 'Product Purchase',
@@ -195,8 +191,8 @@ export async function POST(request) {
             }
         ]);
 
-        // F. Create Notifications
-        const notifications = [
+        // Create Notifications
+        await adminSupabase.from('notifications').insert([
             {
                 user_id: user.id,
                 type: 'PaymentReceived',
@@ -211,10 +207,9 @@ export async function POST(request) {
                 message: `Your item "${product.title}" has been bought. Please coordinate with the buyer for handover.`,
                 related_order_id: order.id
             }
-        ];
-        await adminSupabase.from('notifications').insert(notifications);
+        ]);
 
-        // G. Record Status History
+        // Status History
         await adminSupabase.from('order_status_history').insert({
             order_id: order.id,
             old_status: null,

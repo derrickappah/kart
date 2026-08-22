@@ -19,18 +19,6 @@ export async function POST(request) {
     if (display_name !== undefined) {
       updatePayload.display_name = (typeof display_name === 'string' && display_name.trim()) || null;
     }
-    if (email !== undefined) {
-      // Email should be a valid email or null
-      const emailValue = (typeof email === 'string' && email.trim()) || null;
-      // Basic email validation if provided
-      if (emailValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
-        return NextResponse.json(
-          { error: 'Invalid email format' },
-          { status: 400 }
-        );
-      }
-      updatePayload.email = emailValue;
-    }
     if (campus !== undefined) {
       updatePayload.campus = (typeof campus === 'string' && campus.trim()) || null;
     }

@@ -88,8 +88,25 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
-        // Update order status to Delivered and escrow to Released
-        const { error: orderUpdateError } = await adminSupabase
+        // Try Atomic Escrow Release via PostgreSQL RPC first
+        const { data: rpcResult, error: rpcError } = await adminSupabase.rpc('execute_escrow_release', {
+            p_order_id: orderId,
+            p_buyer_id: user.id
+        });
+
+        if (!rpcError && rpcResult && rpcResult.success) {
+            return NextResponse.json({
+                success: true,
+                message: 'Delivery confirmed and escrow released successfully'
+            });
+        }
+
+        if (rpcError && !rpcError.message?.includes('function public.execute_escrow_release') && !rpcError.message?.includes('does not exist')) {
+            return NextResponse.json({ error: rpcError.message }, { status: 400 });
+        }
+
+        // Fallback: Atomic status update guard
+        const { data: updatedOrder, error: orderUpdateError } = await adminSupabase
             .from('orders')
             .update({
                 status: 'Delivered',
@@ -99,16 +116,18 @@ export async function POST(request) {
                 updated_at: new Date().toISOString(),
                 delivery_verification_otp: null,
                 delivery_verification_expires_at: null,
-                delivery_otp_attempts: 0, // Reset attempt counter on success
+                delivery_otp_attempts: 0,
             })
-            .eq('id', order.id);
+            .eq('id', order.id)
+            .in('status', ['Paid', 'Shipped'])
+            .eq('escrow_status', 'Held')
+            .select()
+            .maybeSingle();
 
-        if (orderUpdateError) {
-            console.error('Error updating order status:', orderUpdateError);
-            return NextResponse.json(
-                { error: 'Failed to update order status: ' + orderUpdateError.message },
-                { status: 500 }
-            );
+        if (orderUpdateError || !updatedOrder) {
+            return NextResponse.json({
+                error: 'Order is not eligible for delivery confirmation or already processed.'
+            }, { status: 400 });
         }
 
         // Release escrow funds to seller wallet automatically
