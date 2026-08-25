@@ -17,6 +17,7 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
     display_name: initialProfile?.display_name || initialUser?.user_metadata?.full_name || '',
     email: initialProfile?.email || initialUser?.email || '',
     phone: initialProfile?.phone || initialUser?.phone || '',
+    phone_verified: Boolean(initialProfile?.phone_verified),
     campus: initialProfile?.campus || '',
   });
 
@@ -106,6 +107,19 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
                 </div>
               </div>
               <div className="flex items-center gap-2 pl-4 shrink-0">
+                {profileData.phone && (
+                  profileData.phone_verified ? (
+                    <div className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full border border-green-200 dark:border-green-900/50">
+                      <DynamicLucideIcon name="verified" style={{ fontVariationSettings: "'FILL' 1" }} className="text-[13px] text-green-700 dark:text-green-400" />
+                      <span className="text-[11px] font-bold text-green-700 dark:text-green-400">Verified</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/50">
+                      <DynamicLucideIcon name="warning" className="text-[13px] text-amber-600 dark:text-amber-400" />
+                      <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">Unverified</span>
+                    </div>
+                  )
+                )}
                 <DynamicLucideIcon name="chevron_right" className="text-slate-300 dark:text-slate-600" />
               </div>
             </Link>
