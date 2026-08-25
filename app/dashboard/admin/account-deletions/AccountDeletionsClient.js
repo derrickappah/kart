@@ -70,7 +70,7 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to approve account deletion');
 
-            setFeedback({ type: 'success', message: data.message || 'Account successfully deleted and purged' });
+            setFeedback({ type: 'success', message: data.message || 'Account successfully marked as inactive/deleted' });
             
             // Update local state
             setRequests((prev) =>
@@ -138,7 +138,7 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                 return (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-red-500/10 text-red-600 border border-red-500/20">
                         <DynamicLucideIcon name="check" className="text-xs" />
-                        Approved & Purged
+                        Approved / Deactivated
                     </span>
                 );
             case 'rejected':
@@ -183,7 +183,7 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                 {[
                     { label: 'Total Requests', value: stats.total, color: 'text-primary bg-primary/10', icon: 'history' },
                     { label: 'Pending Review', value: stats.pending, color: 'text-amber-500 bg-amber-500/10', icon: 'pending' },
-                    { label: 'Approved & Purged', value: stats.approved, color: 'text-red-500 bg-red-500/10', icon: 'delete_forever' },
+                    { label: 'Deactivated / Approved', value: stats.approved, color: 'text-red-500 bg-red-500/10', icon: 'person_off' },
                     { label: 'Rejected', value: stats.rejected, color: 'text-gray-500 bg-gray-500/10', icon: 'close' },
                 ].map((stat, i) => (
                     <div
@@ -247,7 +247,7 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                         <thead>
                             <tr className="bg-gray-50/50 dark:bg-[#212b30]/50 text-[#4b636c] text-[10px] font-black uppercase tracking-widest border-b border-[#dce3e5] dark:border-[#2d3b41]">
                                 <th className="px-6 py-4">User Account</th>
-                                <th className="px-6 py-4">Reason / Notes</th>
+                                <th className="px-6 py-4">Reason / Feedback</th>
                                 <th className="px-6 py-4">Status</th>
                                 <th className="px-6 py-4">Requested At</th>
                                 <th className="px-6 py-4 text-center">Actions</th>
@@ -283,7 +283,7 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                                                         </Link>
                                                     ) : (
                                                         <p className="text-sm font-black text-[#111618] dark:text-gray-200">
-                                                            {req.user?.display_name || 'Account Deleted'}
+                                                            {req.user?.display_name || 'User Profile'}
                                                         </p>
                                                     )}
                                                     <p className="text-[10px] text-[#4b636c] font-black tracking-tight">{req.email}</p>
@@ -324,10 +324,10 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                                                         <button
                                                             onClick={() => handleOpenApproveModal(req)}
                                                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white transition-all text-xs font-bold border border-red-500/20"
-                                                            title="Approve Deletion & Purge Account"
+                                                            title="Approve & Deactivate Account"
                                                         >
-                                                            <DynamicLucideIcon name="delete_forever" className="text-sm" />
-                                                            Approve & Purge
+                                                            <DynamicLucideIcon name="person_off" className="text-sm" />
+                                                            Approve & Deactivate
                                                         </button>
                                                         <button
                                                             onClick={() => handleOpenRejectModal(req)}
@@ -341,13 +341,13 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                                                 ) : req.status === 'approved' ? (
                                                     <span className="text-[11px] font-bold text-red-500 flex items-center gap-1">
                                                         <DynamicLucideIcon name="check" className="text-xs" />
-                                                        Purged
+                                                        Deactivated
                                                     </span>
                                                 ) : (
                                                     <button
                                                         onClick={() => handleOpenApproveModal(req)}
                                                         className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-[#4b636c] hover:text-red-600 transition-colors text-xs font-bold"
-                                                        title="Re-open & Purge"
+                                                        title="Re-open & Deactivate"
                                                     >
                                                         Re-evaluate
                                                     </button>
@@ -362,22 +362,22 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                 </div>
             </div>
 
-            {/* Approve Confirmation Modal */}
+            {/* Approve / Deactivate Confirmation Modal */}
             {modalAction === 'approve' && selectedRequest && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-5 border border-red-200 dark:border-red-900/40 animate-in fade-in zoom-in-95 duration-150">
                         <div className="flex items-center gap-3">
                             <div className="size-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 shrink-0">
-                                <DynamicLucideIcon name="warning" className="text-2xl" />
+                                <DynamicLucideIcon name="person_off" className="text-2xl" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 dark:text-white">Approve Account Deletion</h3>
-                                <p className="text-xs text-[#4b636c] dark:text-gray-400">This operation cannot be undone</p>
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white">Approve & Deactivate Account</h3>
+                                <p className="text-xs text-[#4b636c] dark:text-gray-400">Account will be marked as inactive</p>
                             </div>
                         </div>
 
                         <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-xl p-4 text-xs text-red-900 dark:text-red-200 space-y-2">
-                            <p className="font-bold">You are about to permanently purge the user account:</p>
+                            <p className="font-bold">You are marking this account as deleted/inactive:</p>
                             <div className="font-mono bg-white/80 dark:bg-black/30 p-2.5 rounded-lg text-[11px] space-y-1">
                                 <p><span className="text-gray-500 font-sans">Email:</span> {selectedRequest.email}</p>
                                 <p><span className="text-gray-500 font-sans">User ID:</span> {selectedRequest.user_id}</p>
@@ -386,8 +386,9 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                                 )}
                             </div>
                             <ul className="list-disc list-inside space-y-0.5 text-red-700 dark:text-red-300">
-                                <li>The user will be deleted from Supabase Auth</li>
-                                <li>Profile, product listings, and active sessions will be deleted</li>
+                                <li>The user will be blocked from logging into the platform</li>
+                                <li>All active marketplace listings will be archived</li>
+                                <li>Order history, wallet logs, and database records remain safely preserved as inactive</li>
                             </ul>
                         </div>
 
@@ -409,10 +410,10 @@ export default function AccountDeletionsClient({ initialRequests = [], stats = {
                                 {loading ? (
                                     <>
                                         <span className="animate-spin rounded-full size-3.5 border-2 border-white border-t-transparent" />
-                                        Purging...
+                                        Deactivating...
                                     </>
                                 ) : (
-                                    'Confirm & Purge Account'
+                                    'Approve & Deactivate'
                                 )}
                             </button>
                         </div>

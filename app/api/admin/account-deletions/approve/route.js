@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server';
 /**
  * POST /api/admin/account-deletions/approve
  * Body: { requestId, userId }
- * Approves an account deletion request and deletes the user account.
+ * Approves an account deletion request, marks the account as inactive/banned,
+ * disables login access, and archives listings without permanently deleting records.
  */
 export async function POST(request) {
     try {
@@ -35,7 +36,7 @@ export async function POST(request) {
 
         const adminSupabase = createServiceRoleClient();
 
-        // Prevent deleting another admin
+        // Prevent modifying another admin
         const { data: targetProfile } = await adminSupabase
             .from('profiles')
             .select('is_admin')
@@ -43,7 +44,7 @@ export async function POST(request) {
             .maybeSingle();
 
         if (targetProfile?.is_admin) {
-            return NextResponse.json({ error: 'Cannot delete an admin account' }, { status: 403 });
+            return NextResponse.json({ error: 'Cannot deactivate an admin account' }, { status: 403 });
         }
 
         // 1. Update the deletion request status to approved
@@ -57,43 +58,49 @@ export async function POST(request) {
 
         if (updateError) {
             console.error('Error updating deletion request status:', updateError);
+            return NextResponse.json({ error: 'Failed to update request status' }, { status: 500 });
         }
 
-        // 2. Clean up user's active products / listings
+        // 2. Mark profile as inactive / banned
+        const { error: profileError } = await adminSupabase
+            .from('profiles')
+            .update({
+                banned: true,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+
+        if (profileError) {
+            console.error('Error updating profile status:', profileError);
+        }
+
+        // 3. Archive user's active products / listings
         try {
             await adminSupabase
                 .from('products')
                 .update({ status: 'archived' })
                 .eq('seller_id', userId);
         } catch (cleanupErr) {
-            console.warn('Product cleanup notice:', cleanupErr.message);
+            console.warn('Product archiving notice:', cleanupErr.message);
         }
 
-        // 3. Delete the auth user (this cascades to profile and other tables)
-        const { error: authDeleteError } = await adminSupabase.auth.admin.deleteUser(userId);
-
-        if (authDeleteError) {
-            console.error('Error deleting auth user:', authDeleteError);
-            // If auth delete fails, at least ban the user
-            await adminSupabase
-                .from('profiles')
-                .update({ banned: true })
-                .eq('id', userId);
-
-            return NextResponse.json({
-                success: true,
-                warning: 'User deactivated, but auth record could not be removed: ' + authDeleteError.message
+        // 4. Disable login in Supabase Auth (ban session for 100 years)
+        try {
+            await adminSupabase.auth.admin.updateUserById(userId, {
+                ban_duration: '876000h'
             });
+        } catch (authError) {
+            console.error('Failed to update auth ban status:', authError);
         }
 
         return NextResponse.json({
             success: true,
-            message: 'Account deletion approved and user purged successfully'
+            message: 'Account marked as inactive/deleted and login access disabled.'
         });
     } catch (error) {
         console.error('Approve deletion error:', error);
         return NextResponse.json(
-            { error: error.message || 'Failed to approve deletion request' },
+            { error: error.message || 'Failed to process deletion approval' },
             { status: 500 }
         );
     }
