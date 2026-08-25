@@ -92,11 +92,14 @@ export async function POST(request) {
             console.error('Moolre SMS sending failed:', smsError);
 
             // Clean up the created OTP session so rate-limiting doesn't lock the user out after a delivery failure
-            await adminSupabase
-                .from('phone_verifications')
-                .delete()
-                .eq('user_id', user.id)
-                .catch(() => null);
+            try {
+                await adminSupabase
+                    .from('phone_verifications')
+                    .delete()
+                    .eq('user_id', user.id);
+            } catch (cleanupErr) {
+                console.error('Failed to cleanup verification session:', cleanupErr);
+            }
 
             const errorMessage = smsError?.message || 'Failed to deliver SMS. Please check the phone number and try again.';
 
