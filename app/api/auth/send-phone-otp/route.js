@@ -9,7 +9,7 @@ export async function POST(request) {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
         }
 
         const body = await request.json().catch(() => ({}));
@@ -31,11 +31,20 @@ export async function POST(request) {
         const adminSupabase = createServiceRoleClient();
 
         // Rate Limiting Check: Check if user has requested an OTP in the last 60 seconds
-        const { data: existingVerification } = await adminSupabase
+        const { data: existingVerification, error: checkError } = await adminSupabase
             .from('phone_verifications')
             .select('created_at')
             .eq('user_id', user.id)
             .maybeSingle();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+            console.error('Error querying phone_verifications table:', checkError);
+            if (checkError.message?.includes('does not exist')) {
+                return NextResponse.json({
+                    error: 'Database table "phone_verifications" does not exist. Please execute the SQL migration in Supabase.'
+                }, { status: 500 });
+            }
+        }
 
         if (existingVerification) {
             const timeElapsed = Date.now() - new Date(existingVerification.created_at).getTime();
@@ -67,7 +76,9 @@ export async function POST(request) {
 
         if (insertError) {
             console.error('Error storing phone OTP in database:', insertError);
-            return NextResponse.json({ error: 'Failed to generate verification code' }, { status: 500 });
+            return NextResponse.json({
+                error: insertError.message || 'Failed to generate verification code'
+            }, { status: 500 });
         }
 
         // Dispatch SMS via Moolre SMS Gateway
@@ -92,7 +103,7 @@ export async function POST(request) {
             if (process.env.NODE_ENV === 'development') {
                 return NextResponse.json({
                     error: `SMS Error: ${errorMessage}`,
-                    otp: otp // Expose OTP in dev for local debugging
+                    otp: otp
                 }, { status: 200 });
             }
 
@@ -108,7 +119,9 @@ export async function POST(request) {
         });
 
     } catch (error) {
-        console.error('Send phone OTP error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        console.error('Send phone OTP fatal error:', error);
+        return NextResponse.json({
+            error: error?.message || 'Internal server error'
+        }, { status: 500 });
     }
 }

@@ -7,7 +7,7 @@ export async function POST(request) {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
         }
 
         const body = await request.json().catch(() => ({}));
@@ -20,11 +20,18 @@ export async function POST(request) {
         const adminSupabase = createServiceRoleClient();
 
         // Fetch the verification session for the user
-        const { data: verification } = await adminSupabase
+        const { data: verification, error: fetchError } = await adminSupabase
             .from('phone_verifications')
             .select('*')
             .eq('user_id', user.id)
             .maybeSingle();
+
+        if (fetchError) {
+            console.error('Error querying phone_verifications table:', fetchError);
+            return NextResponse.json({
+                error: fetchError.message || 'Database error occurred'
+            }, { status: 500 });
+        }
 
         if (!verification) {
             return NextResponse.json({
@@ -98,7 +105,9 @@ export async function POST(request) {
 
         if (profileError) {
             console.error('Error updating profile with verified phone:', profileError);
-            return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
+            return NextResponse.json({
+                error: profileError.message || 'Failed to update user profile'
+            }, { status: 500 });
         }
 
         // Delete the verification record
@@ -114,7 +123,9 @@ export async function POST(request) {
         });
 
     } catch (error) {
-        console.error('Verify phone error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        console.error('Verify phone fatal error:', error);
+        return NextResponse.json({
+            error: error?.message || 'Internal server error'
+        }, { status: 500 });
     }
 }
