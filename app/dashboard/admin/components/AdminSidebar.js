@@ -25,6 +25,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
         { href: '/dashboard/admin/orders', label: 'Orders', icon: 'receipt_long' },
         { href: '/dashboard/admin/verifications', label: 'Verifications', icon: 'verified_user' },
         { href: '/dashboard/admin/users', label: 'Users', icon: 'group' },
+        { href: '/dashboard/admin/account-deletions', label: 'Deletions', icon: 'person_off' },
         { href: '/dashboard/admin/refund-requests', label: 'Refunds', icon: 'keyboard_return' },
         { href: '/dashboard/admin/reports', label: 'Reports', icon: 'analytics' },
         { href: '/dashboard/admin/withdrawals', label: 'Withdrawals', icon: 'payments' },
