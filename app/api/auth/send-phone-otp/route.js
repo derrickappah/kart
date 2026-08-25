@@ -79,15 +79,26 @@ export async function POST(request) {
             });
         } catch (smsError) {
             console.error('Moolre SMS sending failed:', smsError);
+
+            // Clean up the created OTP session so rate-limiting doesn't lock the user out after a delivery failure
+            await adminSupabase
+                .from('phone_verifications')
+                .delete()
+                .eq('user_id', user.id)
+                .catch(() => null);
+
+            const errorMessage = smsError?.message || 'Failed to deliver SMS. Please check the phone number and try again.';
+
             if (process.env.NODE_ENV === 'development') {
                 return NextResponse.json({
-                    error: `SMS Error: ${smsError.message}`,
+                    error: `SMS Error: ${errorMessage}`,
                     otp: otp // Expose OTP in dev for local debugging
                 }, { status: 200 });
             }
+
             return NextResponse.json({
-                error: 'Failed to deliver SMS. Please check the phone number and try again.'
-            }, { status: 502 });
+                error: errorMessage
+            }, { status: 400 });
         }
 
         return NextResponse.json({
