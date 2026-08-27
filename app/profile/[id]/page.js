@@ -211,6 +211,27 @@ export default function SellerProfilePage() {
                     </div>
                 </section>
 
+                {/* Profile Actions: Message & Follow */}
+                <section className="px-4 pb-2">
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleContactSeller}
+                            disabled={loadingChat}
+                            className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-[#159ac6] text-white py-3.5 px-5 rounded-xl font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                        >
+                            <DynamicLucideIcon name="chat_bubble" className="text-lg" />
+                            {loadingChat ? 'Connecting...' : `Message ${profile.username || (profile.display_name?.split(' ')[0] || 'Seller')}`}
+                        </button>
+                        <button 
+                            className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#2d2d32] dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold text-sm border border-slate-200 dark:border-slate-700/60 shadow-sm active:scale-[0.98] transition-all"
+                            title="Follow Seller"
+                        >
+                            <DynamicLucideIcon name="person_add" className="text-lg" />
+                            <span>Follow</span>
+                        </button>
+                    </div>
+                </section>
+
                 {/* Contact Information Section - Premium Redesign */}
                 {(profile.phone || profile.instagram || profile.snapchat) && (
                     <section className="px-4 py-4">
@@ -424,23 +445,6 @@ export default function SellerProfilePage() {
                     )}
                 </section>
             </main>
-
-            {/* Fixed Bottom CTA */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white dark:from-[#242428] via-white/95 dark:via-[#242428]/95 to-transparent">
-                <div className="max-w-lg mx-auto flex gap-3">
-                    <button
-                        onClick={handleContactSeller}
-                        disabled={loadingChat}
-                        className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-primary/25 active:scale-95 transition-transform disabled:opacity-50"
-                    >
-                        <DynamicLucideIcon name="chat_bubble" />
-                        {loadingChat ? '...' : `Message ${profile.username || (profile.display_name?.split(' ')[0] || 'Seller')}`}
-                    </button>
-                    <button className="flex size-14 items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-sm active:scale-95 transition-transform">
-                        <DynamicLucideIcon name="person_add" />
-                    </button>
-                </div>
-            </div>
-        </div >
+        </div>
     );
 }
