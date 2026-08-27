@@ -284,18 +284,15 @@ export default function SellerProfilePage() {
                                                 href={`https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="relative flex items-center gap-5 p-5 rounded-[1.5rem] bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white shadow-xl active:scale-[0.98] transition-all duration-300 group/btn overflow-hidden"
+                                                className="relative flex items-center gap-4 p-4 sm:p-5 rounded-[1.5rem] bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white shadow-xl active:scale-[0.98] transition-all duration-300 group/btn overflow-hidden"
                                             >
                                                 <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
-                                                <div className="size-14 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md shadow-inner">
-                                                    <img src="/icons/whatsapp.png" alt="WhatsApp" className="size-9 object-contain" />
+                                                <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md shadow-inner shrink-0">
+                                                    <img src="/icons/whatsapp.png" alt="WhatsApp" className="size-8 object-contain shrink-0" />
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <p className="text-[11px] font-black uppercase tracking-wider opacity-90">Send WhatsApp Message</p>
-                                                    <p className="text-lg font-black tracking-tight">{profile.phone}</p>
-                                                </div>
-                                                <div className="size-10 rounded-full bg-white/10 flex items-center justify-center group-hover/btn:bg-white/20 transition-colors">
-                                                    <DynamicLucideIcon name="arrow_forward" className="text-xl font-bold group-hover/btn:translate-x-1 transition-transform" />
+                                                    <p className="text-lg font-black tracking-tight truncate">{profile.phone}</p>
                                                 </div>
                                             </a>
                                         </div>
@@ -307,12 +304,12 @@ export default function SellerProfilePage() {
                                                 href={`https://instagram.com/${profile.instagram.replace('@', '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500"
+                                                className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500 min-w-0"
                                             >
-                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/10">
-                                                    <img src="/icons/instagram.png" alt="Instagram" className="size-11 object-contain" />
+                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/10 shrink-0">
+                                                    <img src="/icons/instagram.png" alt="Instagram" className="size-10 object-contain shrink-0" />
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Instagram</p>
                                                     <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">@{profile.instagram.replace('@', '')}</p>
                                                 </div>
@@ -323,12 +320,12 @@ export default function SellerProfilePage() {
                                                 href={`https://snapchat.com/add/${profile.snapchat.replace('@', '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500"
+                                                className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500 min-w-0"
                                             >
-                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/10">
-                                                    <img src="/icons/snapchat.png" alt="Snapchat" className="size-11 object-contain" />
+                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/10 shrink-0">
+                                                    <img src="/icons/snapchat.png" alt="Snapchat" className="size-10 object-contain shrink-0" />
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Snapchat</p>
                                                     <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">@{profile.snapchat.replace('@', '')}</p>
                                                 </div>
