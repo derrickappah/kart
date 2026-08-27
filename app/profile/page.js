@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import useSWR from 'swr';
 import Link from 'next/link';
@@ -6,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '../../utils/supabase/client';
 import { timeAgo } from '../../utils/dateUtils';
 import LoadingScreen from '@/components/LoadingScreen';
+import FollowersListModal from '@/components/FollowersListModal';
 
 const supabase = createClient();
 
@@ -20,10 +22,12 @@ const profileFetcher = async () => {
 
     if (!authUser) return null;
 
-    const [profileRes, listingsRes, walletRes] = await Promise.all([
+    const [profileRes, listingsRes, walletRes, followersRes, followingRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(),
         supabase.from('products').select('*', { count: 'exact', head: true }).eq('seller_id', authUser.id),
         supabase.from('wallets').select('balance').eq('user_id', authUser.id).maybeSingle(),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', authUser.id),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', authUser.id),
     ]);
 
     return {
@@ -33,12 +37,15 @@ const profileFetcher = async () => {
         stats: {
             listings: listingsRes.count || 0,
             reviews: profileRes.data?.average_rating || 0,
+            followers: followersRes.count || 0,
+            following: followingRes.count || 0,
         },
     };
 };
 
 export default function ProfilePage() {
     const router = useRouter();
+    const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'followers' });
     const { data, error, isLoading } = useSWR('profile-data', profileFetcher, {
         revalidateOnFocus: false,
         dedupingInterval: 30000,
@@ -91,18 +98,37 @@ export default function ProfilePage() {
                 </section>
 
                 {/* Stats Section */}
-                <section className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all cursor-default">
-                        <p className="text-2xl font-bold text-[#111618] dark:text-white">{stats.listings}</p>
-                        <p className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Listings</p>
-                    </div>
-                    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all cursor-default">
-                        <div className="flex items-center gap-1">
-                            <p className="text-2xl font-bold text-[#111618] dark:text-white">{parseFloat(stats.reviews).toFixed(1)}</p>
-                            <DynamicLucideIcon name="star" className="filled text-yellow-500 text-lg" />
+                <section className="grid grid-cols-4 gap-2.5">
+                    <Link
+                        href="/dashboard/seller/listings"
+                        className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm"
+                    >
+                        <p className="text-xl font-bold text-[#111618] dark:text-white">{stats.listings}</p>
+                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Listings</p>
+                    </Link>
+                    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 text-center shadow-sm">
+                        <div className="flex items-center gap-0.5">
+                            <p className="text-xl font-bold text-[#111618] dark:text-white">{parseFloat(stats.reviews).toFixed(1)}</p>
+                            <DynamicLucideIcon name="star" className="filled text-yellow-500 text-sm" />
                         </div>
-                        <p className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Reviews</p>
+                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Rating</p>
                     </div>
+                    <button
+                        type="button"
+                        onClick={() => setModalConfig({ isOpen: true, type: 'followers' })}
+                        className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                    >
+                        <p className="text-xl font-bold text-primary">{stats.followers}</p>
+                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Followers</p>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setModalConfig({ isOpen: true, type: 'following' })}
+                        className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                    >
+                        <p className="text-xl font-bold text-primary">{stats.following}</p>
+                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Following</p>
+                    </button>
                 </section>
 
                 {/* Menu List Section */}
@@ -154,6 +180,14 @@ export default function ProfilePage() {
                     </Link>
                 </section>
             </main>
+
+            <FollowersListModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                userId={user?.id}
+                type={modalConfig.type}
+                title={modalConfig.type === 'followers' ? 'My Followers' : 'Following'}
+            />
         </div>
     );
 }

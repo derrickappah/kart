@@ -6,6 +6,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
 import { timeAgo } from '../../../utils/dateUtils';
 import LoadingScreen from '@/components/LoadingScreen';
+import FollowButton from '@/components/FollowButton';
+import FollowersListModal from '@/components/FollowersListModal';
 
 export default function SellerProfilePage() {
     const router = useRouter();
@@ -20,6 +22,8 @@ export default function SellerProfilePage() {
     const [reviewers, setReviewers] = useState({});
     const [showContact, setShowContact] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
+    const [followersCount, setFollowersCount] = useState(0);
+    const [showFollowersModal, setShowFollowersModal] = useState(false);
 
     const tagIcons = {
         'Fair Price': 'thumb_up',
@@ -76,6 +80,16 @@ export default function SellerProfilePage() {
 
                 if (reviewsError) throw reviewsError;
                 setReviews(reviewsData || []);
+
+                // Fetch followers count
+                const { count: followsCount, error: followsError } = await supabase
+                    .from('follows')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('following_id', id);
+
+                if (!followsError && followsCount !== null) {
+                    setFollowersCount(followsCount);
+                }
 
                 // Fetch reviewers profiles
                 if (reviewsData && reviewsData.length > 0) {
@@ -192,22 +206,30 @@ export default function SellerProfilePage() {
 
                 {/* Reputation Metrics */}
                 <section className="px-4 py-4">
-                    <div className="flex gap-3">
-                        <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center shadow-sm">
+                    <div className="grid grid-cols-4 gap-2.5">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm">
                             <div className="flex items-center justify-center gap-1 text-primary">
-                                <p className="text-2xl font-bold">{parseFloat(profile.average_rating || 0).toFixed(1)}</p>
-                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-lg" />
+                                <p className="text-xl font-bold">{parseFloat(profile.average_rating || 0).toFixed(1)}</p>
+                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-base" />
                             </div>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Rating</p>
+                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Rating</p>
                         </div>
-                        <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center shadow-sm">
-                            <p className="text-2xl font-bold">{profile.total_reviews || 0}</p>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Reviews</p>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm">
+                            <p className="text-xl font-bold">{profile.total_reviews || 0}</p>
+                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Reviews</p>
                         </div>
-                        <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center shadow-sm">
-                            <p className="text-2xl font-bold">{activeListings.length}</p>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Listings</p>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm">
+                            <p className="text-xl font-bold">{activeListings.length}</p>
+                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Listings</p>
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowFollowersModal(true)}
+                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors"
+                        >
+                            <p className="text-xl font-bold text-primary">{followersCount}</p>
+                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Followers</p>
+                        </button>
                     </div>
                 </section>
 
@@ -222,13 +244,10 @@ export default function SellerProfilePage() {
                             <DynamicLucideIcon name="chat_bubble" className="text-lg" />
                             {loadingChat ? 'Connecting...' : `Message ${profile.username || (profile.display_name?.split(' ')[0] || 'Seller')}`}
                         </button>
-                        <button 
-                            className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#2d2d32] dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold text-sm border border-slate-200 dark:border-slate-700/60 shadow-sm active:scale-[0.98] transition-all"
-                            title="Follow Seller"
-                        >
-                            <DynamicLucideIcon name="person_add" className="text-lg" />
-                            <span>Follow</span>
-                        </button>
+                        <FollowButton
+                            targetUserId={id}
+                            onFollowChange={(data) => setFollowersCount(data.followerCount)}
+                        />
                     </div>
                 </section>
 
@@ -445,6 +464,14 @@ export default function SellerProfilePage() {
                     )}
                 </section>
             </main>
+
+            <FollowersListModal
+                isOpen={showFollowersModal}
+                onClose={() => setShowFollowersModal(false)}
+                userId={id}
+                type="followers"
+                title={`${profile.username || profile.display_name || 'Seller'}'s Followers`}
+            />
         </div>
     );
 }
