@@ -186,7 +186,6 @@ export default function SellerProfilePage() {
                             <h2 className="text-2xl font-bold tracking-tight">
                                 {profile.username || profile.display_name || 'Anonymous'}
                             </h2>
-                            </div>
                         </div>
                     </div>
                 </section>
