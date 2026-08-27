@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '../../../utils/supabase/client';
 import { timeAgo } from '../../../utils/dateUtils';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function SellerProfilePage() {
     const router = useRouter();
@@ -147,16 +148,12 @@ export default function SellerProfilePage() {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] flex items-center justify-center">
-                <div className="animate-pulse text-primary font-bold">Loading profile...</div>
-            </div>
-        );
+        return <LoadingScreen message="Loading profile..." fullScreen={false} />;
     }
 
     if (!profile) {
         return (
-            <div className="min-h-screen bg-[#f6f7f8] dark:bg-[#111d21] flex items-center justify-center">
+            <div className="min-h-screen bg-white dark:bg-[#242428] flex items-center justify-center">
                 <div className="text-slate-900 dark:text-white font-bold">Seller profile not found.</div>
             </div>
         );
@@ -164,7 +161,7 @@ export default function SellerProfilePage() {
 
 
     return (
-        <div className="bg-[#f6f7f8] dark:bg-[#111d21] text-slate-900 dark:text-slate-100 min-h-screen font-display">
+        <div className="bg-white dark:bg-[#242428] text-slate-900 dark:text-slate-100 min-h-screen font-display">
             <main className="max-w-lg mx-auto pb-4 md:pb-8">
                 {/* Profile Header Section */}
                 <section className="px-4 pt-6 pb-2">
@@ -180,7 +177,7 @@ export default function SellerProfilePage() {
                                 )}
                             </div>
                             {profile.is_verified && (
-                                <div className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-4 border-[#f6f7f8] dark:border-[#111d21] flex items-center justify-center shadow-lg">
+                                <div className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-4 border-white dark:border-[#242428] flex items-center justify-center shadow-lg">
                                     <DynamicLucideIcon name="verified" style={{ fontVariationSettings: "'FILL' 1" }} className="text-[16px] font-bold" />
                                 </div>
                             )}
@@ -189,15 +186,7 @@ export default function SellerProfilePage() {
                             <h2 className="text-2xl font-bold tracking-tight">
                                 {profile.username || profile.display_name || 'Anonymous'}
                             </h2>
-                            <div className="flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 mt-1">
-                                <DynamicLucideIcon name="school" className="text-sm" />
-                                <p className="text-sm font-medium">{profile.campus || 'University Campus'}</p>
                             </div>
-                            {profile.is_verified && (
-                                <div className="inline-flex items-center mt-3 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                                    <span className="text-xs font-bold uppercase tracking-wider">Verified Student Badge</span>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </section>
@@ -218,7 +207,7 @@ export default function SellerProfilePage() {
                         </div>
                         <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center shadow-sm">
                             <p className="text-2xl font-bold">{activeListings.length}</p>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Active</p>
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Listings</p>
                         </div>
                     </div>
                 </section>
@@ -438,7 +427,7 @@ export default function SellerProfilePage() {
             </main>
 
             {/* Fixed Bottom CTA */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#f6f7f8] dark:from-[#111d21] via-[#f6f7f8]/95 dark:via-[#111d21]/95 to-transparent">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white dark:from-[#242428] via-white/95 dark:via-[#242428]/95 to-transparent">
                 <div className="max-w-lg mx-auto flex gap-3">
                     <button
                         onClick={handleContactSeller}
