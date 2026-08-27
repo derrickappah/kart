@@ -171,9 +171,9 @@ export default function FollowersListModal({
                                                 @{user.username}
                                             </p>
                                         )}
-                                        {(user.campus || user.university) && (
+                                        {user.campus && (
                                             <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                                                {user.campus || user.university}
+                                                {user.campus}
                                             </p>
                                         )}
                                     </div>

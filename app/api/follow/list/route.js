@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function GET(request) {
     try {
@@ -12,7 +12,7 @@ export async function GET(request) {
             return NextResponse.json({ error: 'userId is required' }, { status: 400 });
         }
 
-        const supabase = await createClient();
+        const supabase = createServiceRoleClient();
 
         if (type === 'followers') {
             // Find users who follow userId (follower_id)
@@ -35,7 +35,7 @@ export async function GET(request) {
             const followerIds = followRecords.map(f => f.follower_id);
             const { data: profiles, error: profilesError } = await supabase
                 .from('profiles')
-                .select('id, display_name, username, avatar_url, is_verified, campus, university')
+                .select('id, display_name, username, avatar_url, is_verified, campus')
                 .in('id', followerIds);
 
             if (profilesError) {
@@ -43,7 +43,7 @@ export async function GET(request) {
                 return NextResponse.json({ error: 'Failed to fetch profiles' }, { status: 500 });
             }
 
-            // Map order
+            // Map in correct order
             const profilesMap = new Map((profiles || []).map(p => [p.id, p]));
             const result = followRecords
                 .map(f => profilesMap.get(f.follower_id))
@@ -71,7 +71,7 @@ export async function GET(request) {
             const followingIds = followRecords.map(f => f.following_id);
             const { data: profiles, error: profilesError } = await supabase
                 .from('profiles')
-                .select('id, display_name, username, avatar_url, is_verified, campus, university')
+                .select('id, display_name, username, avatar_url, is_verified, campus')
                 .in('id', followingIds);
 
             if (profilesError) {
