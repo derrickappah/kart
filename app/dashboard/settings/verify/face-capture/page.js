@@ -1,6 +1,6 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
@@ -11,6 +11,7 @@ export default function FaceCapturePage() {
     const streamRef = useRef(null);
     const containerRef = useRef(null);
     const viewfinderRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const [isCapturing, setIsCapturing] = useState(false);
     const [showChecking, setShowChecking] = useState(false);
@@ -60,33 +61,64 @@ export default function FaceCapturePage() {
         checkStatus();
     }, [router]);
 
-    // Initialize Camera (front-facing camera for face capture)
-    useEffect(() => {
-        async function startCamera() {
+    // Progressive Camera Initializer with fallbacks
+    const startCamera = useCallback(async () => {
+        setCameraError(null);
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+
+        if (!navigator?.mediaDevices?.getUserMedia) {
+            setCameraError("Camera is not supported on this browser. Please upload a selfie instead.");
+            return;
+        }
+
+        const constraintSets = [
+            { video: { facingMode: { ideal: "user" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
+            { video: { facingMode: { ideal: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+            { video: { facingMode: { ideal: "user" } }, audio: false },
+            { video: { facingMode: "user" }, audio: false },
+            { video: true, audio: false }
+        ];
+
+        let stream = null;
+        let lastError = null;
+
+        for (const constraints of constraintSets) {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: "user" },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    },
-                    audio: false
-                });
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    streamRef.current = stream;
-                    const track = stream.getVideoTracks()[0];
-                    const actualFacingMode = track?.getSettings()?.facingMode;
-                    if (actualFacingMode) {
-                        setFacingMode(actualFacingMode);
-                    }
-                }
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                if (stream) break;
             } catch (err) {
-                console.error("Error accessing camera:", err);
-                setCameraError("Unable to access camera. Please check permissions.");
+                lastError = err;
+                console.warn("Camera constraint failed, trying fallback:", err);
             }
         }
 
+        if (stream && videoRef.current) {
+            videoRef.current.srcObject = stream;
+            streamRef.current = stream;
+            const track = stream.getVideoTracks()[0];
+            const actualFacingMode = track?.getSettings()?.facingMode;
+            if (actualFacingMode) {
+                setFacingMode(actualFacingMode);
+            }
+            setCameraError(null);
+        } else if (lastError) {
+            console.error("Error accessing camera:", lastError);
+            if (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError') {
+                setCameraError("Camera access denied. Please allow camera permissions in your browser settings.");
+            } else if (lastError.name === 'NotFoundError' || lastError.name === 'DevicesNotFoundError') {
+                setCameraError("No camera detected on this device. You can upload a selfie below.");
+            } else if (lastError.name === 'NotReadableError' || lastError.name === 'TrackStartError') {
+                setCameraError("Camera is in use by another app or tab. Please close other camera apps and retry.");
+            } else {
+                setCameraError("Unable to access camera. Please check permissions or upload a selfie.");
+            }
+        }
+    }, []);
+
+    useEffect(() => {
         startCamera();
 
         return () => {
@@ -94,7 +126,26 @@ export default function FaceCapturePage() {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
         };
-    }, []);
+    }, [startCamera]);
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataUrl = event.target?.result;
+            if (dataUrl) {
+                setCapturedImage(dataUrl);
+                sessionStorage.setItem('capturedFaceImage', dataUrl);
+                setShowChecking(true);
+                setTimeout(() => {
+                    router.push('/dashboard/settings/verify/review');
+                }, 1500);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
 
     const handleCapture = () => {
         if (!videoRef.current || !canvasRef.current || isCapturing) return;
@@ -191,40 +242,66 @@ export default function FaceCapturePage() {
             {/* Hidden Canvas for Capture */}
             <canvas ref={canvasRef} className="hidden" />
 
+            {/* Hidden File Input Fallback */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                onChange={handleFileUpload}
+                className="hidden"
+            />
+
             {/* Real Camera Feed Layer (Full Screen Background Canvas) */}
             <div ref={containerRef} className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
-                {cameraError ? (
-                    <div className="text-white text-center px-8 h-full flex flex-col items-center justify-center">
-                        <DynamicLucideIcon name="videocam_off" className="text-4xl mb-4 text-red-500" />
-                        <p className="text-sm font-medium">{cameraError}</p>
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        minWidth: '100vw',
+                        minHeight: '100vh',
+                        objectFit: 'cover',
+                        transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
+                    }}
+                />
+            </div>
+
+            {/* Camera Error Overlay Modal */}
+            {cameraError && (
+                <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center text-white animate-in fade-in duration-300">
+                    <div className="size-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-4 border border-red-500/20">
+                        <DynamicLucideIcon name="videocam_off" className="text-3xl" />
+                    </div>
+                    <h3 className="font-bold text-base text-white mb-2">Camera Access Issue</h3>
+                    <p className="text-xs text-white/70 max-w-xs mb-6 leading-relaxed">{cameraError}</p>
+                    <div className="flex flex-col gap-3 w-full max-w-[260px]">
                         <button
-                            onClick={() => window.location.reload()}
-                            className="mt-4 px-6 py-2 bg-primary rounded-full text-xs font-bold"
+                            type="button"
+                            onClick={() => startCamera()}
+                            className="w-full py-3.5 bg-primary hover:bg-[#159ac6] active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                         >
-                            Retry Access
+                            <DynamicLucideIcon name="refresh" className="size-4" />
+                            Retry Camera Access
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full py-3.5 bg-white/10 hover:bg-white/20 active:scale-95 text-white rounded-xl text-xs font-bold transition-all border border-white/20 flex items-center justify-center gap-2"
+                        >
+                            <DynamicLucideIcon name="photo_camera" className="size-4" />
+                            Upload Selfie from Device
                         </button>
                     </div>
-                ) : (
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100vw',
-                            height: '100vh',
-                            minWidth: '100vw',
-                            minHeight: '100vh',
-                            objectFit: 'cover',
-                            transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
-                        }}
-                    />
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Single Viewport Overlay (Header, Centered Oval Scanner, Capture Button) */}
             <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pointer-events-none py-6 px-4 sm:py-8 sm:px-6">
@@ -293,8 +370,8 @@ export default function FaceCapturePage() {
                     </div>
                 </div>
 
-                {/* Bottom Shutter Capture Button */}
-                <div className="pointer-events-auto w-full pb-6 sm:pb-8 flex justify-center items-center relative z-30">
+                {/* Bottom Shutter & Upload Buttons */}
+                <div className="pointer-events-auto w-full pb-6 sm:pb-8 flex flex-col items-center gap-4 relative z-30">
                     <button
                         onClick={handleCapture}
                         disabled={isCapturing || !!cameraError}
@@ -306,6 +383,16 @@ export default function FaceCapturePage() {
                             <DynamicLucideIcon name="camera" className="text-black/40 text-4xl opacity-0 group-active:opacity-100 transition-opacity duration-100" />
                         </div>
                     </button>
+
+                    {/* Quick Upload Alternative Button */}
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white/90 text-xs font-bold backdrop-blur-md border border-white/15 flex items-center gap-1.5 transition-all active:scale-95"
+                    >
+                        <DynamicLucideIcon name="upload" className="size-3.5" />
+                        <span>Or upload selfie image</span>
+                    </button>
                 </div>
             </div>
 
@@ -313,17 +400,6 @@ export default function FaceCapturePage() {
                 @keyframes scan {
                     0% { transform: translateY(-100%); }
                     100% { transform: translateY(100%); }
-                }
-                .full-screen-camera {
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100vw !important;
-                    height: 100vh !important;
-                    height: 100dvh !important;
-                    min-width: 100vw !important;
-                    min-height: 100dvh !important;
-                    object-fit: cover !important;
                 }
             `}</style>
         </div>
