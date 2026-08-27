@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 
@@ -14,6 +15,33 @@ export default function FollowersListModal({
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    // Prevent background scrolling and handle Escape key when modal is open
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.body.style.overflow = originalOverflow;
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
 
     useEffect(() => {
         if (!isOpen || !userId) return;
@@ -53,12 +81,15 @@ export default function FollowersListModal({
         };
     }, [isOpen, userId, type]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
     const modalTitle = title || (type === 'followers' ? 'Followers' : 'Following');
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    const modalContent = (
+        <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={onClose}
+        >
             <div
                 className="relative w-full max-w-md bg-white dark:bg-[#242428] rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[80vh] animate-scale-up"
                 onClick={(e) => e.stopPropagation()}
@@ -158,4 +189,6 @@ export default function FollowersListModal({
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 }
