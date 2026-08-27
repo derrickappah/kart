@@ -70,16 +70,15 @@ export async function POST(request) {
                     to: [order.buyer.email],
                     subject: 'Verify your order delivery - Kart',
                     html: `
-                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; rounded: 12px;">
-                            <h2 style="color: #1daddd; font-size: 24px; font-weight: 800; text-transform: uppercase;">Verify Delivery</h2>
-                            <p style="color: #666; font-size: 16px;">Hello,</p>
-                            <p style="color: #666; font-size: 16px;">Please use the following 6-digit code to verify your delivery for order <strong>#${order.id.slice(0, 8)}</strong>:</p>
-                            <div style="background: #f6f7f8; padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0;">
-                                <span style="font-size: 42px; font-weight: 900; letter-spacing: 12px; color: #0e181b;">${otp}</span>
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 520px; margin: 0 auto; padding: 20px;">
+                            <p style="color: #333; font-size: 15px; margin: 0 0 16px;">Hi there,</p>
+                            <p style="color: #333; font-size: 15px; margin: 0 0 16px;">Here's your delivery verification code for order <strong>#${order.id.slice(0, 8)}</strong>:</p>
+                            <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 6px;">
+                                <span style="font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #111;">${otp}</span>
                             </div>
-                            <p style="color: #999; font-size: 12px;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
-                            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-                            <p style="color: #999; font-size: 10px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">&copy; ${new Date().getFullYear()} Kart Marketplace</p>
+                            <p style="color: #555; font-size: 14px; margin: 0 0 8px;">This code expires in 10 minutes.</p>
+                            <p style="color: #888; font-size: 13px; margin: 0;">If you didn't request this, you can safely ignore this email.</p>
+                            <p style="color: #aaa; font-size: 12px; margin: 32px 0 0; border-top: 1px solid #eee; padding-top: 16px;">Kart</p>
                         </div>
                     `,
                 });
