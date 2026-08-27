@@ -288,7 +288,7 @@ export default function SellerProfilePage() {
                                             >
                                                 <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
                                                 <div className="size-14 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md shadow-inner">
-                                                    <DynamicLucideIcon name="chat" className="text-3xl font-bold" />
+                                                    <img src="/icons/whatsapp.png" alt="WhatsApp" className="size-9 object-contain" />
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-[11px] font-black uppercase tracking-wider opacity-90">Send WhatsApp Message</p>
@@ -309,10 +309,8 @@ export default function SellerProfilePage() {
                                                 rel="noopener noreferrer"
                                                 className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500"
                                             >
-                                                <div className="size-12 rounded-2xl bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-                                                    <svg className="size-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                        <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 7.765a4.235 4.235 0 100 8.47 4.235 4.235 0 000-8.47zm0 1.802a2.433 2.433 0 110 4.866 2.433 2.433 0 010-4.866zm5.272-4.331a1.08 1.08 0 11-2.16 0 1.08 1.08 0 012.16 0z" clipRule="evenodd" />
-                                                    </svg>
+                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/10">
+                                                    <img src="/icons/instagram.png" alt="Instagram" className="size-11 object-contain" />
                                                 </div>
                                                 <div>
                                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Instagram</p>
@@ -327,10 +325,8 @@ export default function SellerProfilePage() {
                                                 rel="noopener noreferrer"
                                                 className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500"
                                             >
-                                                <div className="size-12 rounded-2xl bg-[#FFFC00] flex items-center justify-center text-black shadow-lg shadow-yellow-500/20">
-                                                    <svg className="size-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                        <path d="M12 2.944c-3.181 0-4.706 2.059-4.706 4.312 0 .546.104.912.104.912s-1.879.314-1.879 1.5c0 .332.128.572.338.74.218.175.52.28 1.157.348-.12.3-.398.918-.398.918s-.863.155-1.125.393c-.263.238-.34.618-.34.904 0 .825.962 1.353 1.94 1.353.493 0 .809-.044.809-.044s.306 1.168 2.043 1.168c1.328 0 1.547-.48 2.057-2.008.51 1.528.73 2.008 2.057 2.008 1.737 0 2.043-1.168 2.043-1.168s.316.044.809.044c.978 0 1.94-.528 1.94-1.353 0-.286-.077-.666-.34-.904-.262-.238-1.125-.393-1.125-.393s-.278-.618-.398-.918c.637-.068.939-.173 1.157-.348.21-.168.338-.408.338-.74 0-1.186-1.879-1.5-1.879-1.5s.104-.366.104-.912c0-2.253-1.525-4.312-4.706-4.312z" />
-                                                    </svg>
+                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/10">
+                                                    <img src="/icons/snapchat.png" alt="Snapchat" className="size-11 object-contain" />
                                                 </div>
                                                 <div>
                                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Snapchat</p>
