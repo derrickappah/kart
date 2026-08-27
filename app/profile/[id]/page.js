@@ -196,39 +196,42 @@ export default function SellerProfilePage() {
                                 </div>
                             )}
                         </div>
-                        <div className="mt-4 text-center">
+                        <div className="mt-4 text-center flex flex-col items-center">
                             <h2 className="text-2xl font-bold tracking-tight">
                                 {profile.username || profile.display_name || 'Anonymous'}
                             </h2>
+                            {/* Rating Badge */}
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold shadow-sm">
+                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-sm text-amber-500" />
+                                <span>{parseFloat(profile.average_rating || 0).toFixed(1)}</span>
+                                <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">({profile.total_reviews || 0} reviews)</span>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 {/* Reputation Metrics */}
                 <section className="px-4 py-4">
-                    <div className="grid grid-cols-4 gap-2.5">
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm">
-                            <div className="flex items-center justify-center gap-1 text-primary">
-                                <p className="text-xl font-bold">{parseFloat(profile.average_rating || 0).toFixed(1)}</p>
-                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-base" />
-                            </div>
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Rating</p>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm">
-                            <p className="text-xl font-bold">{profile.total_reviews || 0}</p>
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Reviews</p>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm">
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm">
                             <p className="text-xl font-bold">{activeListings.length}</p>
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Listings</p>
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Listings</p>
                         </div>
                         <button
                             type="button"
                             onClick={() => setShowFollowersModal(true)}
-                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors"
+                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors cursor-pointer"
                         >
                             <p className="text-xl font-bold text-primary">{followersCount}</p>
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Followers</p>
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Followers</p>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('reviews')}
+                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors cursor-pointer"
+                        >
+                            <p className="text-xl font-bold">{profile.total_reviews || 0}</p>
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Reviews</p>
                         </button>
                     </div>
                 </section>

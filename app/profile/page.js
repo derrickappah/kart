@@ -89,34 +89,33 @@ export default function ProfilePage() {
                             <DynamicLucideIcon name="edit" className="text-[18px]" />
                         </Link>
                     </div>
-                    <div className="mt-4 space-y-1">
+                    <div className="mt-4 space-y-1.5 flex flex-col items-center">
                         <h1 className="text-[26px] font-bold leading-tight tracking-tight text-[#111618] dark:text-white">{displayName}</h1>
                         <p className="text-[#5e7d87] dark:text-gray-400 text-sm font-medium">
                             {university} • Joined {timeAgo(user?.created_at)}
                         </p>
+                        {/* Rating Badge */}
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold shadow-sm">
+                            <DynamicLucideIcon name="star" className="text-sm filled text-amber-500" />
+                            <span>{parseFloat(stats.reviews || 0).toFixed(1)}</span>
+                            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Rating</span>
+                        </div>
                     </div>
                 </section>
 
                 {/* Stats Section */}
-                <section className="grid grid-cols-4 gap-2.5">
+                <section className="grid grid-cols-3 gap-3">
                     <Link
                         href="/dashboard/seller/listings"
-                        className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm"
+                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm"
                     >
                         <p className="text-xl font-bold text-[#111618] dark:text-white">{stats.listings}</p>
                         <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Listings</p>
                     </Link>
-                    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 text-center shadow-sm">
-                        <div className="flex items-center gap-0.5">
-                            <p className="text-xl font-bold text-[#111618] dark:text-white">{parseFloat(stats.reviews).toFixed(1)}</p>
-                            <DynamicLucideIcon name="star" className="filled text-yellow-500 text-sm" />
-                        </div>
-                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Rating</p>
-                    </div>
                     <button
                         type="button"
                         onClick={() => setModalConfig({ isOpen: true, type: 'followers' })}
-                        className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
                     >
                         <p className="text-xl font-bold text-primary">{stats.followers}</p>
                         <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Followers</p>
@@ -124,7 +123,7 @@ export default function ProfilePage() {
                     <button
                         type="button"
                         onClick={() => setModalConfig({ isOpen: true, type: 'following' })}
-                        className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
                     >
                         <p className="text-xl font-bold text-primary">{stats.following}</p>
                         <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Following</p>
