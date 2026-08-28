@@ -55,7 +55,7 @@ function PromotionSuccessContent() {
 
     if (status === 'verifying') {
         return (
-            <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center">
+            <div className="min-h-screen bg-white dark:bg-[#242428] flex flex-col items-center justify-center p-6 text-center">
                 <div
                     className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"
                     aria-hidden="true"
@@ -70,7 +70,7 @@ function PromotionSuccessContent() {
 
     if (status === 'error') {
         return (
-            <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center">
+            <div className="min-h-screen bg-white dark:bg-[#242428] flex flex-col items-center justify-center p-6 text-center">
                 <DynamicLucideIcon name="error" className="text-red-500 text-7xl mb-6" aria-hidden="true" />
                 <h1 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Verification Failed</h1>
                 <p
@@ -83,7 +83,7 @@ function PromotionSuccessContent() {
                 <div className="flex flex-col gap-3 w-full max-w-xs">
                     <button
                         onClick={() => window.location.reload()}
-                        className="w-full h-14 bg-primary text-white font-bold rounded-xl"
+                        className="w-full h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:bg-[#159ac6] active:scale-[0.98] transition-all"
                     >
                         Try Again
                     </button>
@@ -100,7 +100,7 @@ function PromotionSuccessContent() {
     const listingHref = productId ? `/dashboard/seller/listings/${productId}` : '/dashboard/seller/listings';
 
     return (
-        <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
+        <div className="min-h-screen bg-white dark:bg-[#242428] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
             {/* Confetti particles */}
             <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
                 <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping" />
@@ -131,7 +131,7 @@ function PromotionSuccessContent() {
                 <div className="w-full space-y-3">
                     <button
                         onClick={() => router.push(listingHref)}
-                        className="w-full h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                        className="w-full h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:bg-[#159ac6] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
                         {productId ? 'View Listing Stats' : 'View My Listings'}
                         <DynamicLucideIcon name="bar_chart" className="text-xl" aria-hidden="true" />
@@ -151,7 +151,7 @@ function PromotionSuccessContent() {
 export default function PromotionSuccessPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-[#f7f7f8] dark:bg-[#111d21] flex items-center justify-center">
+            <div className="min-h-screen bg-white dark:bg-[#242428] flex items-center justify-center">
                 <div className="animate-pulse text-primary font-bold">Loading…</div>
             </div>
         }>
