@@ -3,6 +3,8 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import SearchBar from '@/components/SearchBar';
+import { formatPrice } from '@/utils/formatters';
 
 const STATUS_CONFIG = {
   'pending':   { label: 'Pending',   color: '#F59E0B', bg: 'bg-amber-500/10',   text: 'text-amber-600 dark:text-amber-400',   border: 'border-amber-500/20'  },
@@ -16,73 +18,77 @@ const STATUS_CONFIG = {
 
 const FILTERS = ['All', 'Active', 'Completed', 'Cancelled'];
 
-const fmt = (val) =>
-  parseFloat(val).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 export default function OrdersClient({ orders }) {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredOrders = orders.filter((order) => {
     const s = order.status?.toLowerCase();
-    if (activeFilter === 'All') return true;
-    if (activeFilter === 'Active') return ['pending', 'paid', 'shipped', 'delivered'].includes(s);
-    if (activeFilter === 'Completed') return s === 'completed';
-    if (activeFilter === 'Cancelled') return s === 'cancelled' || s === 'refunded';
+    let matchesFilter = true;
+    if (activeFilter === 'Active') matchesFilter = ['pending', 'paid', 'shipped', 'delivered'].includes(s);
+    else if (activeFilter === 'Completed') matchesFilter = s === 'completed';
+    else if (activeFilter === 'Cancelled') matchesFilter = s === 'cancelled' || s === 'refunded';
+
+    if (!matchesFilter) return false;
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      const titleMatch = order.product?.title?.toLowerCase().includes(query);
+      const sellerMatch = (order.seller?.display_name || order.seller?.email)?.toLowerCase().includes(query);
+      const statusMatch = order.status?.toLowerCase().includes(query);
+      const amountMatch = order.total_amount?.toString().includes(query);
+      const idMatch = order.id?.toLowerCase().includes(query);
+      return titleMatch || sellerMatch || statusMatch || amountMatch || idMatch;
+    }
+
     return true;
   });
-
-  const activeCount = orders.filter((o) =>
-    ['pending', 'paid', 'shipped', 'delivered'].includes(o.status?.toLowerCase())
-  ).length;
 
   return (
     <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen">
       <div className="max-w-[440px] mx-auto min-h-screen flex flex-col">
 
-        {/* ── Header ── */}
-        <header className="sticky top-0 z-50 px-4 pt-4 pb-3 bg-white/90 dark:bg-[#242428]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">My Orders</h1>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">
-                {orders.length} order{orders.length !== 1 ? 's' : ''}
-                {activeCount > 0 && (
-                  <span className="ml-1.5 inline-flex items-center gap-1 text-[#1daddd] font-bold">
-                    · {activeCount} active
-                  </span>
-                )}
-              </p>
-            </div>
-            <Link
-              href="/marketplace"
-              aria-label="Browse marketplace"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#1daddd]/10 border border-[#1daddd]/20 text-[#1daddd] text-xs font-bold hover:bg-[#1daddd]/20 transition-colors"
-            >
-              <DynamicLucideIcon name="shopping_bag" className="text-sm" />
-              Shop
-            </Link>
-          </div>
-
-          {/* Filter Chips */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setActiveFilter(f)}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 border ${
-                  activeFilter === f
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-sm'
-                    : 'bg-white dark:bg-white/5 text-slate-500 dark:text-slate-400 border-black/5 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+        {/* ── Sticky Header with Home SearchBar ── */}
+        <header className="sticky top-0 z-50 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
+          <SearchBar
+            placeholder="Search your orders..."
+            showFilter={true}
+            hideFilter={true}
+            value={searchQuery}
+            onChange={setSearchQuery}
+            leftContent={
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setActiveFilter(f)}
+                    className={`chip ${activeFilter === f ? 'chip-active' : 'chip-inactive'} whitespace-nowrap`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            }
+          />
         </header>
 
         {/* ── Order List ── */}
         <main className="flex-1 flex flex-col gap-3 px-4 pt-4 pb-32">
+          {/* Active search filter feedback */}
+          {searchQuery.trim() && (
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-1">
+              <span>
+                Found <strong className="text-slate-800 dark:text-slate-200">{filteredOrders.length}</strong> {filteredOrders.length === 1 ? 'order' : 'orders'}
+              </span>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-primary font-bold hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+
           {filteredOrders.length > 0 ? (
             filteredOrders.map((order) => {
               const productImage = order.product?.images?.[0] || order.product?.image_url;
@@ -129,15 +135,15 @@ export default function OrdersClient({ orders }) {
                             {status.label}
                           </span>
                         </div>
-                        <p className="text-base font-black" style={{ color: '#1daddd' }}>
-                          GHS {fmt(order.total_amount)}
+                        <p className="text-base font-black text-primary">
+                          ₵{formatPrice(order.total_amount)}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-1.5">
-                          <div className="size-4 rounded-full bg-[#1daddd]/10 flex items-center justify-center shrink-0">
-                            <DynamicLucideIcon name="person" className="text-[#1daddd] text-[10px]" />
+                          <div className="size-4 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <DynamicLucideIcon name="person" className="text-primary text-[10px]" />
                           </div>
                           <span className="text-[11px] text-slate-400 font-medium truncate max-w-[90px]">{sellerName}</span>
                         </div>
@@ -156,14 +162,32 @@ export default function OrdersClient({ orders }) {
                 </Link>
               );
             })
+          ) : searchQuery.trim() ? (
+            /* ── Empty Search State ── */
+            <div className="flex flex-col items-center justify-center flex-1 py-20 text-center">
+              <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+                <DynamicLucideIcon name="search" className="text-4xl opacity-50" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                No matching orders
+              </h2>
+              <p className="text-sm text-slate-400 mb-6 text-center max-w-[240px]">
+                No {activeFilter !== 'All' ? activeFilter.toLowerCase() : ''} orders match &quot;{searchQuery}&quot;
+              </p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="h-11 flex items-center justify-center px-6 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
+              >
+                Clear Search
+              </button>
+            </div>
           ) : (
-            /* ── Empty State ── */
+            /* ── Empty Filter State ── */
             <div className="flex flex-col items-center justify-center flex-1 py-24 text-center">
               <div
-                className="size-24 rounded-3xl flex items-center justify-center mb-5 border"
-                style={{ backgroundColor: '#1daddd10', borderColor: '#1daddd25' }}
+                className="size-24 rounded-3xl flex items-center justify-center mb-5 border bg-primary/10 border-primary/25"
               >
-                <DynamicLucideIcon name="shopping_bag" className="text-4xl" style={{ color: '#1daddd' }} />
+                <DynamicLucideIcon name="shopping_bag" className="text-4xl text-primary" />
               </div>
               <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">
                 {activeFilter === 'All' ? 'No orders yet' : `No ${activeFilter} orders`}
@@ -176,8 +200,7 @@ export default function OrdersClient({ orders }) {
               {activeFilter === 'All' ? (
                 <Link
                   href="/marketplace"
-                  className="h-12 flex items-center justify-center px-8 rounded-2xl text-white font-bold text-sm shadow-lg transition-all active:scale-[0.98] hover:opacity-90"
-                  style={{ backgroundColor: '#1daddd', boxShadow: '0 8px 24px #1daddd30' }}
+                  className="h-12 flex items-center justify-center px-8 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all active:scale-[0.98]"
                 >
                   Browse Marketplace
                 </Link>

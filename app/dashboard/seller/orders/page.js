@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { formatPrice } from '@/utils/formatters';
 
 export default function SellerOrdersPage() {
   const router = useRouter();
@@ -132,7 +133,7 @@ export default function SellerOrdersPage() {
 
                   <div className="text-right space-y-1">
                     <p className="text-sm font-black text-primary uppercase tracking-tight">
-                        ₵{parseFloat(order.seller_payout_amount || order.total_amount).toFixed(2)}
+                        ₵{formatPrice(order.seller_payout_amount || order.total_amount)}
                     </p>
                     {order.escrow_status && (
                         <p className={`text-[8px] font-bold uppercase tracking-widest ${escrowColors[order.escrow_status] || 'text-slate-400'}`}>
