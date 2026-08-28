@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { formatPrice } from '@/utils/formatters';
 
 export default function PromotionClient({ product, pricing = {}, activeAds = [] }) {
     const router = useRouter();
@@ -157,7 +158,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                                 {product.title}
                             </p>
                             <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
-                                ₵{parseFloat(product.price || 0).toFixed(2)}
+                                ₵{formatPrice(product.price)}
                             </p>
                         </div>
                         <div className="pr-2 shrink-0">
@@ -232,7 +233,7 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                                 <div>
                                     <h3 className="text-lg font-bold text-[#111617] dark:text-white">{tier.name}</h3>
                                     <div className="flex items-baseline gap-1 mt-0.5">
-                                        <span className="text-2xl font-black text-[#111617] dark:text-white">₵{tier.price}</span>
+                                        <span className="text-2xl font-black text-[#111617] dark:text-white">₵{formatPrice(tier.price)}</span>
                                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium ml-1">/ {tier.duration}</span>
                                     </div>
                                 </div>
@@ -286,14 +287,14 @@ export default function PromotionClient({ product, pricing = {}, activeAds = [] 
                     <div className="flex justify-between items-center px-1">
                         <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Total to pay</span>
                         <span className="text-2xl font-black text-primary drop-shadow-sm">
-                            ₵{currentTier.price}
+                            ₵{formatPrice(currentTier.price)}
                         </span>
                     </div>
                     <button
                         onClick={handlePayment}
                         disabled={loading}
                         aria-busy={loading}
-                        aria-label={loading ? 'Initializing payment, please wait' : `Continue to payment — ₵${currentTier.price} for ${currentTier.name}`}
+                        aria-label={loading ? 'Initializing payment, please wait' : `Continue to payment — ₵${formatPrice(currentTier.price)} for ${currentTier.name}`}
                         className="w-full h-14 bg-primary text-white text-base font-bold rounded-2xl shadow-lg shadow-primary/25 hover:bg-[#159ac6] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? (

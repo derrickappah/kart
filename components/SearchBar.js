@@ -36,6 +36,9 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
             onSubmit(query);
             return;
         }
+        if (isControlled) {
+            return;
+        }
         const next = new URLSearchParams(searchParams.toString());
         const trimmed = query.trim();
         if (trimmed) {
@@ -57,6 +60,9 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
         }
         if (onClear) {
             onClear();
+            return;
+        }
+        if (isControlled) {
             return;
         }
         const next = new URLSearchParams(searchParams.toString());
@@ -217,7 +223,7 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                             e.stopPropagation();
                             setIsExpanded(false);
                             setIsAnimating(false);
-                            if (searchVal) {
+                            if (query || searchVal) {
                                 handleClear();
                             }
                         }}
@@ -281,7 +287,7 @@ function SearchInput({ placeholder, showFilter, leftContent, hideFilter, value, 
                 className="ml-3 flex-1 bg-transparent text-base font-semibold text-gray-900 placeholder-gray-500 focus:outline-none dark:text-white dark:placeholder-gray-400 border-none p-0 focus:ring-0"
                 placeholder={placeholder}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => isControlled ? onChange(e.target.value) : setLocalQuery(e.target.value)}
                 aria-label="Search listings"
                 autoComplete="off"
                 maxLength={200}

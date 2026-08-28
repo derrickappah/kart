@@ -5,11 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import SearchBar from '@/components/SearchBar';
+import { formatPrice } from '@/utils/formatters';
 
 export default function MyListingsClient({ initialProducts }) {
     const router = useRouter();
     const supabase = createClient();
     const [activeTab, setActiveTab] = useState('Active');
+    const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState(initialProducts || []);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
@@ -48,9 +51,22 @@ export default function MyListingsClient({ initialProducts }) {
 
     const filteredProducts = products.filter(product => {
         const status = product.status || 'Active';
-        if (activeTab === 'Active') return status === 'Active';
-        if (activeTab === 'Sold') return status === 'Sold' || status === 'Completed';
-        if (activeTab === 'Expired') return status === 'Expired';
+        let matchesTab = true;
+        if (activeTab === 'Active') matchesTab = status === 'Active';
+        else if (activeTab === 'Sold') matchesTab = status === 'Sold' || status === 'Completed';
+        else if (activeTab === 'Expired') matchesTab = status === 'Expired';
+        if (!matchesTab) return false;
+
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            const titleMatch = product.title?.toLowerCase().includes(query);
+            const descMatch = product.description?.toLowerCase().includes(query);
+            const categoryMatch = product.category?.toLowerCase().includes(query);
+            const campusMatch = product.campus?.toLowerCase().includes(query);
+            const priceMatch = product.price?.toString().includes(query);
+            return titleMatch || descMatch || categoryMatch || campusMatch || priceMatch;
+        }
+
         return true;
     });
 
@@ -69,24 +85,46 @@ export default function MyListingsClient({ initialProducts }) {
         <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
             <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl overflow-hidden">
 
-                {/* Main Content */}
-                <main className="flex-1 px-4 py-8 space-y-6 pb-32 overflow-y-auto no-scrollbar">
-                    {/* Section Title & Tabs */}
-                    <div className="space-y-4">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-2">My Listings</h3>
+                {/* Sticky Header with Home SearchBar & Tabs */}
+                <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 border-b border-gray-100/50 dark:border-gray-800/30">
+                    <SearchBar
+                        placeholder="Search your listings..."
+                        showFilter={true}
+                        hideFilter={true}
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        leftContent={
+                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`chip ${activeTab === tab ? 'chip-active' : 'chip-inactive'} whitespace-nowrap`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                        }
+                    />
+                </header>
 
-                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`chip ${activeTab === tab ? 'chip-active' : 'chip-inactive'} whitespace-nowrap`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
+                {/* Main Content */}
+                <main className="flex-1 px-4 py-6 space-y-6 pb-32 overflow-y-auto no-scrollbar">
+                    {/* Active search filter feedback */}
+                    {searchQuery.trim() && (
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+                            <span>
+                                Found <strong className="text-slate-800 dark:text-slate-200">{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'listing' : 'listings'}
+                            </span>
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="text-primary font-bold hover:underline"
+                            >
+                                Clear
+                            </button>
                         </div>
-                    </div>
+                    )}
 
                     {filteredProducts.length > 0 ? (
                         <div className="space-y-4">
@@ -129,7 +167,7 @@ export default function MyListingsClient({ initialProducts }) {
 
                                              <div className="flex flex-wrap items-center justify-between gap-y-1 gap-x-2">
                                                 <p className="text-[13px] font-extrabold text-primary">
-                                                    ₵{parseFloat(product.price || 0).toFixed(2)}
+                                                    ₵{formatPrice(product.price)}
                                                 </p>
                                                 <div className="flex items-center gap-1.5 shrink-0">
                                                     {activeTab !== 'Active' && (
@@ -173,6 +211,22 @@ export default function MyListingsClient({ initialProducts }) {
                                     )}
                                 </article>
                             ))}
+                        </div>
+                    ) : searchQuery.trim() ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
+                            <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+                                <DynamicLucideIcon name="search" className="text-4xl opacity-50" />
+                            </div>
+                            <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No matching listings</p>
+                            <p className="text-sm mb-6 text-center text-slate-500 dark:text-slate-400">
+                                No {activeTab.toLowerCase()} listings match &quot;{searchQuery}&quot;
+                            </p>
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="h-11 flex items-center justify-center px-6 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
+                            >
+                                Clear Search
+                            </button>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-slate-600">

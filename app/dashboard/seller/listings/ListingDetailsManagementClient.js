@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { formatPrice } from '@/utils/formatters';
 
 export default function ListingDetailsManagementClient({ product }) {
     const router = useRouter();
@@ -144,10 +145,10 @@ export default function ListingDetailsManagementClient({ product }) {
                             {product?.title}
                         </h1>
                         <div className="flex items-center gap-3">
-                            <span className="text-primary text-2xl font-black tracking-tight">₵{parseFloat(product?.price || 0).toFixed(0)}</span>
+                            <span className="text-primary text-2xl font-black tracking-tight">₵{formatPrice(product?.price)}</span>
                             {product?.original_price && (
                                 <>
-                                    <span className="text-slate-400 dark:text-slate-500 text-sm line-through font-bold">₵{parseFloat(product.original_price).toFixed(0)}</span>
+                                    <span className="text-slate-400 dark:text-slate-500 text-sm line-through font-bold">₵{formatPrice(product.original_price)}</span>
                                     <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-wider ring-1 ring-emerald-500/20">
                                         {Math.round((1 - (product.price / product.original_price)) * 100)}% OFF
                                     </span>
