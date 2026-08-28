@@ -72,15 +72,6 @@ export default function CreateListingPage() {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [formData, imageFiles]);
 
-    const handleCancel = (e) => {
-        if (isSubmittingRef.current) return;
-        const hasChanges = formData.title || formData.price || formData.description || imageFiles.length > 0;
-        if (hasChanges) {
-            if (!confirm('Are you sure you want to discard your changes?')) {
-                e.preventDefault();
-            }
-        }
-    };
 
     // Check subscription and verification status on mount
     useEffect(() => {
@@ -383,21 +374,7 @@ export default function CreateListingPage() {
     }
 
     return (
-        <main className="bg-white dark:bg-[#242428] font-display text-gray-900 dark:text-white min-h-screen flex flex-col">
-            {/* Header */}
-            <header className="flex-none px-4 pt-6 pb-2 bg-white dark:bg-[#242428] z-20 sticky top-0 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center justify-between h-12 max-w-[430px] mx-auto w-full">
-                    <Link 
-                        href="/dashboard/seller" 
-                        onClick={handleCancel}
-                        className={`text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors ${loading ? 'pointer-events-none opacity-50' : ''}`}
-                    >
-                        Cancel
-                    </Link>
-                    <h1 className="text-lg font-extrabold tracking-tight">List Item</h1>
-                </div>
-            </header>
-
+        <main className="bg-white dark:bg-[#242428] font-display text-gray-900 dark:text-white min-h-screen flex flex-col pt-4">
             {/* Main Content Area */}
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden pb-32 relative max-w-[430px] mx-auto w-full">
                 {error && (
