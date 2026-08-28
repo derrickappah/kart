@@ -46,12 +46,18 @@ function ProductCardSkeleton() {
 }
 
 async function FeaturedSection({ wishlistIds, featuredProducts, latestProducts }) {
-  const displayFeatured = featuredProducts.length > 0 ? featuredProducts : latestProducts.slice(0, 10);
+  const TARGET_FEATURED_COUNT = 10;
+  const featuredIds = new Set(featuredProducts.map(p => p.id));
+  const organicFill = latestProducts
+    .filter(p => !featuredIds.has(p.id))
+    .slice(0, Math.max(0, TARGET_FEATURED_COUNT - featuredProducts.length));
+
+  const displayFeatured = [...featuredProducts, ...organicFill];
   const displayRecommended = latestProducts.filter(p => !displayFeatured.some(f => f.id === p.id));
 
   const getRecReason = (product) => {
     if (product.ad_type === 'Featured' || product.is_featured) return "Featured";
-    if (product.is_boosted) return "Highest Priority";
+    if (product.ad_type === 'Boost' || product.is_boosted) return "Highest Priority";
     if (product.category === 'Textbooks') return "Highly requested in your level";
     if (product.campus) return `Trending at ${product.campus}`;
     return "Based on your search interest";
