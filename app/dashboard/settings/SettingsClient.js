@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signout } from '../../auth/actions';
 import DeleteAccountModal from '@/components/DeleteAccountModal';
+import AndroidInstallModal from '@/components/AndroidInstallModal';
 
 export default function SettingsClient({ initialProfile, initialUser, whatsappSupportNumber = '0500502158' }) {
   const router = useRouter();
@@ -28,6 +29,50 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
 
   // Delivery PIN configuration state
   const [hasPin, setHasPin] = useState(!!initialProfile?.delivery_pin_hash);
+
+  // PWA Install state
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showAndroidInstallModal, setShowAndroidInstallModal] = useState(false);
+
+  // Listen for PWA install prompt events and standalone state
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+      setShowAndroidInstallModal(false);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      setIsInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleAndroidInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        setShowAndroidInstallModal(false);
+      }
+    } else {
+      setShowAndroidInstallModal(true);
+    }
+  };
 
   // Fetch deletion request status and PIN status on mount
   useEffect(() => {
@@ -362,7 +407,7 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
         </section>
 
         {/* Footer Actions */}
-        <div className="pt-4 pb-12 flex flex-col items-center gap-4">
+        <div className="pt-4 pb-12 flex flex-col items-center gap-6">
           <button
             onClick={() => signout()}
             className="w-full bg-white dark:bg-[#1E292B] border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 font-bold py-4 rounded-xl shadow-sm active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
@@ -370,6 +415,44 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
             <DynamicLucideIcon name="logout" className="text-lg" />
             Log Out
           </button>
+
+          {/* Get App / PWA Install Badges */}
+          <div className="w-full flex flex-col items-center gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              Get the KART App
+            </span>
+            <div className="w-full grid grid-cols-2 gap-3 items-center">
+              {/* Google Play Badge / Android PWA Install */}
+              <button
+                type="button"
+                onClick={handleAndroidInstallClick}
+                className="group relative flex items-center justify-center h-12 w-full bg-black hover:bg-neutral-900 active:scale-95 rounded-xl border border-white/10 shadow-sm transition-all overflow-hidden p-1.5 cursor-pointer"
+                title="Install for Android"
+                aria-label="Install for Android (Google Play)"
+              >
+                <img
+                  src="/badges/google-play-badge.svg"
+                  alt="Get it on Google Play"
+                  className="h-full w-auto max-w-full object-contain pointer-events-none"
+                />
+              </button>
+
+              {/* App Store Badge / iOS Guide Page */}
+              <Link
+                href="/install/ios"
+                className="group relative flex items-center justify-center h-12 w-full bg-black hover:bg-neutral-900 active:scale-95 rounded-xl border border-white/10 shadow-sm transition-all overflow-hidden p-1.5 cursor-pointer"
+                title="Install on iOS"
+                aria-label="Download on the App Store (iOS Setup Guide)"
+              >
+                <img
+                  src="/badges/app-store-badge.svg"
+                  alt="Download on the App Store"
+                  className="h-full w-auto max-w-full object-contain pointer-events-none"
+                />
+              </Link>
+            </div>
+          </div>
+
           <p className="text-xs text-slate-400 dark:text-slate-600 font-medium">Version 2.4.0 (Build 302)</p>
         </div>
       </main>
@@ -379,6 +462,15 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onSuccess={handleDeletionSuccess}
+      />
+
+      {/* Android PWA Install Modal */}
+      <AndroidInstallModal
+        isOpen={showAndroidInstallModal}
+        onClose={() => setShowAndroidInstallModal(false)}
+        isInstalled={isInstalled}
+        hasPrompt={Boolean(deferredPrompt)}
+        onTriggerPrompt={handleAndroidInstallClick}
       />
     </div>
   );
