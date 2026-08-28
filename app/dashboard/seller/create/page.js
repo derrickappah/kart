@@ -621,16 +621,7 @@ export default function CreateListingPage() {
                         </div>
                     </div>
 
-                    {/* Campus Context: Meetup Spot Suggestion */}
-                    <div className="bg-primary/5 dark:bg-primary/10 rounded-xl p-4 flex items-start gap-3 border border-primary/10 mb-8">
-                        <DynamicLucideIcon name="location_on" className="text-primary mt-0.5" />
-                        <div>
-                            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Suggested Meetup</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                Most students prefer meeting at <span className="text-primary font-semibold">The Campus Library</span> for safe exchanges.
-                            </p>
-                        </div>
-                    </div>
+
                 </section>
 
                 {/* Sticky Bottom Action Bar */}
