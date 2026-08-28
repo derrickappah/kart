@@ -6,6 +6,7 @@ import { createClient } from '../../../../utils/supabase/client';
 import Link from 'next/link';
 import { validateImage } from '@/utils/imageUtils';
 import LoadingScreen from '@/components/LoadingScreen';
+import CategorySelector from '@/components/CategorySelector';
 
 export default function CreateListingPage() {
     const router = useRouter();
@@ -496,35 +497,12 @@ export default function CreateListingPage() {
                         </div>
                         <div className="space-y-2">
                             <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="category">Category</label>
-                            <div className="relative">
-                                <select
-                                    required
-                                    disabled={loading}
-                                    className="w-full appearance-none bg-none bg-[#F5F5F5] dark:bg-[#2E2E32] border-none rounded-xl px-4 py-4 text-base font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow pr-10 truncate disabled:opacity-50"
-                                    id="category"
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleChange}
-                                >
-                                    <option disabled value="">Select</option>
-                                    <option value="Textbooks">Textbooks</option>
-                                    <option value="Electronics">Electronics</option>
-                                    <option value="Dorm Furniture">Dorm Furniture</option>
-                                    <option value="Clothing">Clothing</option>
-                                    <option value="School Supplies">School Supplies</option>
-                                    <option value="Tickets & Events">Tickets & Events</option>
-                                    <option value="Services & Tutoring">Services & Tutoring</option>
-                                    <option value="Beauty & Grooming">Beauty & Grooming</option>
-                                    <option value="Sports & Fitness">Sports & Fitness</option>
-                                    <option value="Kitchenware">Kitchenware</option>
-                                    <option value="Musical Instruments">Musical Instruments</option>
-                                    <option value="Games & Consoles">Games & Consoles</option>
-                                    <option value="Health & Wellness">Health & Wellness</option>
-                                    <option value="Arts & Crafts">Arts & Crafts</option>
-                                    <option value="Home Appliances">Home Appliances</option>
-                                </select>
-                                <DynamicLucideIcon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xl" />
-                            </div>
+                            <CategorySelector
+                                id="category"
+                                value={formData.category}
+                                onChange={(category) => setFormData((prev) => ({ ...prev, category }))}
+                                disabled={loading}
+                            />
                         </div>
                     </div>
 
