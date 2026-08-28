@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import WishlistButton from './WishlistButton';
@@ -8,46 +7,15 @@ import AdTracker from './AdTracker';
 import DynamicLucideIcon from './DynamicLucideIcon';
 import { toSentenceCase, formatPrice } from '../utils/formatters';
 
-export default function FeaturedSlider({ products, wishlistIds }) {
-    const containerRef = useRef(null);
-
-    // Triple the products array to support seamless infinite scroll
-    const tripledProducts = [...products, ...products, ...products];
-
-    useEffect(() => {
-        const container = containerRef.current;
-        if (container && products.length > 0) {
-            // Scroll to the start of the middle copy on mount
-            const cardWidth = 176; // 160px card width + 16px gap
-            const middleIndex = products.length;
-            container.scrollLeft = middleIndex * cardWidth;
-        }
-    }, [products]);
-
-    const handleScroll = () => {
-        const container = containerRef.current;
-        if (!container || products.length === 0) return;
-        const { scrollLeft, scrollWidth } = container;
-        const oneThird = scrollWidth / 3;
-        
-        // Snap back to middle if scrolled too far left or right
-        if (scrollLeft >= oneThird * 2) {
-            container.scrollLeft = scrollLeft - oneThird;
-        } else if (scrollLeft <= 0) {
-            container.scrollLeft = scrollLeft + oneThird;
-        }
-    };
-
-    if (products.length === 0) return null;
+export default function FeaturedSlider({ products = [], wishlistIds = [] }) {
+    if (!products || products.length === 0) return null;
 
     return (
         <div 
-            ref={containerRef}
-            onScroll={handleScroll}
             className="flex w-full overflow-x-auto px-5 pb-6 no-scrollbar gap-4"
             style={{ WebkitOverflowScrolling: 'touch' }}
         >
-            {tripledProducts.map((product, idx) => {
+            {products.map((product) => {
                 const cardContent = (
                     <Link
                         href={`/marketplace/${product.id}`}
@@ -62,7 +30,6 @@ export default function FeaturedSlider({ products, wishlistIds }) {
                                 sizes="160px"
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                             />
-                            
 
                             {product.condition && (
                                 <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[9px] font-black text-white uppercase tracking-wider">
@@ -84,14 +51,12 @@ export default function FeaturedSlider({ products, wishlistIds }) {
                     </Link>
                 );
 
-                const key = `${product.id}-${idx}`;
-
                 return product.advertisement_id ? (
-                    <AdTracker key={key} advertisementId={product.advertisement_id}>
+                    <AdTracker key={product.id} advertisementId={product.advertisement_id}>
                         {cardContent}
                     </AdTracker>
                 ) : (
-                    <div key={key} className="contents">
+                    <div key={product.id} className="contents">
                         {cardContent}
                     </div>
                 );
