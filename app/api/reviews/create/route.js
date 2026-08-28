@@ -11,9 +11,9 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { orderId, productId, sellerId, rating, comment } = body;
+    const { orderId, rating, comment } = body;
 
-    if (!orderId || !productId || !sellerId || !rating) {
+    if (!orderId || !rating) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -26,10 +26,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Review comment exceeds maximum length' }, { status: 400 });
     }
 
-    // Verify order belongs to user and is in a reviewable state
+    // Verify order belongs to user and is in a reviewable state, fetching seller_id and product_id
     const { data: order } = await supabase
       .from('orders')
-      .select('id, status, buyer_id')
+      .select('id, status, buyer_id, seller_id, product_id')
       .eq('id', orderId)
       .eq('buyer_id', user.id)
       .single();
@@ -56,13 +56,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Review already exists for this order' }, { status: 400 });
     }
 
-    // Create review
+    // Create review using verified database entity values
     const { error: reviewError } = await supabase
       .from('reviews')
       .insert({
-        order_id: orderId,
-        product_id: productId,
-        seller_id: sellerId,
+        order_id: order.id,
+        product_id: order.product_id,
+        seller_id: order.seller_id,
         buyer_id: user.id,
         rating,
         comment: comment || null,

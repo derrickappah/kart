@@ -43,7 +43,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Cannot ban an admin account' }, { status: 403 });
   }
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('profiles')
     .update({ banned })
     .eq('id', userId);

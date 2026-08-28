@@ -55,9 +55,31 @@ export async function middleware(request) {
   )
 
   // Refresh the user's session — this is the core purpose of the middleware.
-  // This is the ONLY network call. Maintenance mode and banned checks are
-  // handled in the LayoutWrapper to avoid 504 Gateway Timeouts on Vercel.
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Centralized Defense-in-Depth for Admin Routes
+  const isAdminPath = url.pathname.startsWith('/api/admin') || url.pathname.startsWith('/dashboard/admin')
+  if (isAdminPath) {
+    if (!user) {
+      if (url.pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.is_admin) {
+      if (url.pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 })
+      }
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
 
   // Prevent caching of the auth state check response on mobile browsers
   response.headers.set('x-middleware-cache', 'no-cache')
