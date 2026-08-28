@@ -2,6 +2,7 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Image from 'next/image';
 import Link from 'next/link';
+import SimilarItemsSlider from './SimilarItemsSlider';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -13,8 +14,6 @@ export default function ProductDetailsClient({ product }) {
     const [isInWishlist, setIsInWishlist] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
     const [loadingWishlist, setLoadingWishlist] = useState(false);
-    const [similarProducts, setSimilarProducts] = useState([]);
-    const [loadingSimilar, setLoadingSimilar] = useState(true);
     const [inlineError, setInlineError] = useState(null);
     const [shareFeedback, setShareFeedback] = useState(null);
 
@@ -88,36 +87,14 @@ export default function ProductDetailsClient({ product }) {
             if (active) setIsInWishlist(!!wishlistItem);
         };
 
-        const fetchSimilar = async () => {
-            if (!product?.category) {
-                if (active) setLoadingSimilar(false);
-                return;
-            }
-            const { data } = await supabase
-                .from('products')
-                .select('id, title, price, images, image_url, condition, seller:profiles(display_name, avatar_url)')
-                .eq('category', product.category)
-                .eq('status', 'Active')
-                .neq('id', product.id)
-                .limit(12);
-            if (active) {
-                if (data) {
-                    const shuffled = seededShuffle(data, product.id.charCodeAt(0) || 42);
-                    setSimilarProducts(shuffled.slice(0, 4));
-                }
-                setLoadingSimilar(false);
-            }
-        };
-
         const init = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (active && user) {
                 setIsOwner(user.id === product.seller_id);
             }
-            await Promise.all([
-                user ? checkWishlist(user.id) : Promise.resolve(),
-                fetchSimilar(),
-            ]);
+            if (user) {
+                await checkWishlist(user.id);
+            }
         };
 
         init();
@@ -558,56 +535,8 @@ export default function ProductDetailsClient({ product }) {
                     </div>
                 </div>
 
-                {/* Similar Items Section */}
-                {!loadingSimilar && similarProducts.length > 0 && (
-                    <section className="mt-8 md:mt-16 mb-2 md:mb-8 px-4 md:px-0" aria-label="Similar items">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-extrabold tracking-tight">Similar Items</h2>
-                            <Link
-                                href={`/marketplace?category=${encodeURIComponent(product.category)}`}
-                                className="text-primary text-sm font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg px-2 py-1"
-                            >
-                                See All
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {similarProducts.map((p) => (
-                                <Link
-                                    href={`/marketplace/${p.id}`}
-                                    key={p.id}
-                                    className="group flex flex-col gap-2 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
-                                    aria-label={`${toSentenceCase(p.title)} — ₵ ${formatPrice(p.price)}`}
-                                    onClick={() => {
-                                        if (typeof window !== 'undefined') {
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }
-                                    }}
-                                >
-                                    <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35] shadow-sm">
-                                        <Image
-                                            src={p.images?.[0] || p.image_url || '/placeholder.png'}
-                                            alt={toSentenceCase(p.title)}
-                                            fill
-                                            sizes="(max-width: 768px) 50vw, 260px"
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                        {p.condition && (
-                                            <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-[10px] font-bold text-white uppercase tracking-wider">
-                                                {p.condition}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-0.5 px-1">
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">
-                                            {toSentenceCase(p.title)}
-                                        </h3>
-                                        <p className="text-primary text-base font-extrabold">₵ {formatPrice(p.price)}</p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                {/* Similar Items Section with Horizontal Infinite Scroll */}
+                <SimilarItemsSlider category={product.category} currentProductId={product.id} />
             </main>
         </div>
     );
