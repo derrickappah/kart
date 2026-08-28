@@ -7,7 +7,7 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/client';
 import { toSentenceCase, formatPrice } from '@/utils/formatters';
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 export default function SimilarItemsSlider({ category, currentProductId }) {
     const [products, setProducts] = useState([]);
@@ -174,7 +174,7 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                     <div className="hidden md:flex items-center gap-1.5 mr-2">
                         <button
                             type="button"
-                            onClick={() => scrollByAmount(-320)}
+                            onClick={() => scrollByAmount(-360)}
                             disabled={!canScrollLeft}
                             aria-label="Scroll similar items left"
                             className={`p-1.5 rounded-full border transition-all ${
@@ -187,7 +187,7 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                         </button>
                         <button
                             type="button"
-                            onClick={() => scrollByAmount(320)}
+                            onClick={() => scrollByAmount(360)}
                             disabled={!canScrollRight && !hasMore}
                             aria-label="Scroll similar items right"
                             className={`p-1.5 rounded-full border transition-all ${
@@ -209,21 +209,21 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                 </div>
             </div>
 
-            {/* Horizontal Scroll Feed */}
+            {/* 2-Lane Horizontal Scroll Grid */}
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex w-full overflow-x-auto pb-4 gap-3.5 sm:gap-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
+                className="grid grid-rows-2 grid-flow-col auto-cols-[145px] sm:auto-cols-[165px] md:auto-cols-[185px] gap-3 sm:gap-3.5 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
                 style={{ WebkitOverflowScrolling: 'touch' }}
             >
                 {isLoadingInitial ? (
-                    Array.from({ length: 4 }).map((_, i) => (
+                    Array.from({ length: 6 }).map((_, i) => (
                         <div
                             key={`initial-skeleton-${i}`}
-                            className="min-w-[155px] w-[155px] sm:min-w-[180px] sm:w-[180px] md:min-w-[200px] md:w-[200px] shrink-0 flex flex-col gap-2 animate-pulse"
+                            className="flex flex-col gap-1.5 animate-pulse"
                         >
                             <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl" />
-                            <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-1" />
+                            <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-0.5" />
                             <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded" />
                         </div>
                     ))
@@ -233,7 +233,7 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                             <Link
                                 href={`/marketplace/${p.id}`}
                                 key={p.id}
-                                className="min-w-[155px] w-[155px] sm:min-w-[180px] sm:w-[180px] md:min-w-[200px] md:w-[200px] group flex flex-col gap-2 relative shrink-0 snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+                                className="group flex flex-col gap-1.5 relative shrink-0 snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl h-full"
                                 aria-label={`${toSentenceCase(p.title)} — ₵ ${formatPrice(p.price)}`}
                                 onClick={() => {
                                     if (typeof window !== 'undefined') {
@@ -246,25 +246,25 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                                         src={p.images?.[0] || p.image_url || '/placeholder.png'}
                                         alt={toSentenceCase(p.title)}
                                         fill
-                                        sizes="(max-width: 640px) 155px, (max-width: 768px) 180px, 200px"
+                                        sizes="(max-width: 640px) 145px, (max-width: 768px) 165px, 185px"
                                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                                     />
                                     {p.condition && (
-                                        <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[9px] font-bold text-white uppercase tracking-wider">
+                                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-md rounded text-[9px] font-bold text-white uppercase tracking-wider">
                                             {p.condition}
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex flex-col gap-0.5 px-1">
-                                    <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">
+                                <div className="flex flex-col gap-0.5 px-0.5">
+                                    <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug">
                                         {toSentenceCase(p.title)}
                                     </h3>
-                                    <p className="text-primary text-base font-extrabold">
+                                    <p className="text-primary text-sm sm:text-base font-extrabold">
                                         ₵ {formatPrice(p.price)}
                                     </p>
                                     {p.campus && (
                                         <div className="flex items-center gap-1 text-gray-400">
-                                            <DynamicLucideIcon name="location_on" size={13} className="text-[13px] shrink-0" aria-hidden="true" />
+                                            <DynamicLucideIcon name="location_on" size={12} className="text-[12px] shrink-0" aria-hidden="true" />
                                             <p className="text-[10px] font-bold truncate uppercase">{p.campus}</p>
                                         </div>
                                     )}
@@ -275,13 +275,13 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                         {/* Skeleton items while fetching next horizontal batch */}
                         {isLoadingMore && (
                             <>
-                                {Array.from({ length: 2 }).map((_, i) => (
+                                {Array.from({ length: 4 }).map((_, i) => (
                                     <div
                                         key={`more-skeleton-${i}`}
-                                        className="min-w-[155px] w-[155px] sm:min-w-[180px] sm:w-[180px] md:min-w-[200px] md:w-[200px] shrink-0 flex flex-col gap-2 animate-pulse"
+                                        className="flex flex-col gap-1.5 animate-pulse"
                                     >
                                         <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl" />
-                                        <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-1" />
+                                        <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-0.5" />
                                         <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded" />
                                     </div>
                                 ))}
@@ -292,7 +292,7 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                         {!hasMore && products.length >= 4 && (
                             <Link
                                 href={`/marketplace?category=${encodeURIComponent(category || '')}`}
-                                className="min-w-[130px] w-[130px] sm:min-w-[150px] sm:w-[150px] shrink-0 snap-start flex flex-col items-center justify-center gap-2 rounded-xl bg-gray-50 dark:bg-[#2a2a30] hover:bg-gray-100 dark:hover:bg-[#33333a] border border-dashed border-gray-300 dark:border-gray-700 text-center p-4 transition-all group"
+                                className="row-span-2 shrink-0 snap-start flex flex-col items-center justify-center gap-2 rounded-xl bg-gray-50 dark:bg-[#2a2a30] hover:bg-gray-100 dark:hover:bg-[#33333a] border border-dashed border-gray-300 dark:border-gray-700 text-center p-4 transition-all group my-auto min-h-[160px]"
                             >
                                 <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                                     <DynamicLucideIcon name="arrow_forward" size={20} />
