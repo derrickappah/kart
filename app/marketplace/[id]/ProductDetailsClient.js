@@ -29,11 +29,7 @@ export default function ProductDetailsClient({ product }) {
     const minSwipeDistance = 50;
 
     const handleBack = () => {
-        if (typeof window !== 'undefined' && window.history.length > 1) {
-            router.back();
-        } else {
-            router.push('/marketplace');
-        }
+        router.push('/marketplace');
     };
 
     const goToPrev = useCallback(() => {
