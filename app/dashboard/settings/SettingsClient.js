@@ -426,28 +426,28 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
               <button
                 type="button"
                 onClick={handleAndroidInstallClick}
-                className="group relative flex items-center justify-center h-12 w-full bg-black hover:bg-neutral-900 active:scale-95 rounded-xl border border-white/10 shadow-sm transition-all overflow-hidden p-1.5 cursor-pointer"
+                className="flex items-center justify-center h-10 sm:h-11 w-full hover:opacity-85 active:scale-98 transition-all cursor-pointer"
                 title="Install for Android"
                 aria-label="Install for Android (Google Play)"
               >
                 <img
                   src="/badges/google-play-badge.svg"
                   alt="Get it on Google Play"
-                  className="h-full w-auto max-w-full object-contain pointer-events-none"
+                  className="h-full w-auto max-w-full object-contain"
                 />
               </button>
 
               {/* App Store Badge / iOS Guide Page */}
               <Link
                 href="/install/ios"
-                className="group relative flex items-center justify-center h-12 w-full bg-black hover:bg-neutral-900 active:scale-95 rounded-xl border border-white/10 shadow-sm transition-all overflow-hidden p-1.5 cursor-pointer"
+                className="flex items-center justify-center h-10 sm:h-11 w-full hover:opacity-85 active:scale-98 transition-all cursor-pointer"
                 title="Install on iOS"
                 aria-label="Download on the App Store (iOS Setup Guide)"
               >
                 <img
                   src="/badges/app-store-badge.svg"
                   alt="Download on the App Store"
-                  className="h-full w-auto max-w-full object-contain pointer-events-none"
+                  className="h-full w-auto max-w-full object-contain"
                 />
               </Link>
             </div>
