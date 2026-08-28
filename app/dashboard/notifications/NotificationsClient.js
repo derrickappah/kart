@@ -9,16 +9,195 @@ const supabase = createClient();
 
 /** Map a notification type string to a Lucide icon name */
 function getIconForType(type) {
+  switch (type?.toLowerCase()) {
+    case 'order':
+    case 'orderplaced':
+    case 'order_placed':
+    case 'ordercancelled':
+    case 'order_cancelled':
+      return 'shopping_bag';
+    case 'message':
+    case 'newmessage':
+    case 'new_message':
+    case 'chat':
+      return 'chat';
+    case 'price_drop':
+      return 'trending_down';
+    case 'system':
+      return 'notifications';
+    case 'review':
+      return 'star';
+    case 'payment':
+    case 'paymentreceived':
+    case 'payment_received':
+    case 'walletdeposit':
+    case 'wallet_deposit':
+    case 'withdrawalapproved':
+    case 'withdrawal_approved':
+    case 'withdrawalrejected':
+    case 'withdrawal_rejected':
+    case 'escrowreleased':
+    case 'escrow_released':
+      return 'payments';
+    case 'shipping':
+    case 'itemshipped':
+    case 'item_shipped':
+    case 'deliveryconfirmed':
+    case 'delivery_confirmed':
+      return 'local_shipping';
+    case 'promotion':
+    case 'promotionactivated':
+    case 'promotion_activated':
+      return 'campaign';
+    case 'subscription':
+    case 'subscriptionactivated':
+    case 'subscription_activated':
+      return 'auto_awesome';
+    case 'verification':
+    case 'verificationapproved':
+    case 'verification_approved':
+    case 'verificationrejected':
+    case 'verification_rejected':
+      return 'verified';
+    case 'follow':
+      return 'person_add';
+    default:
+      return 'notifications';
+  }
+}
+
+/** Determine the target page URL to navigate to when a notification is clicked */
+function getNotificationUrl(notification) {
+  if (!notification) return '/dashboard';
+
+  // 1. Check explicit link/url properties
+  if (notification.link) return notification.link;
+  if (notification.url) return notification.url;
+  if (notification.href) return notification.href;
+  if (notification.data?.url) return notification.data.url;
+  if (notification.data?.link) return notification.data.link;
+  if (notification.data?.href) return notification.data.href;
+  if (notification.metadata?.url) return notification.metadata.url;
+  if (notification.metadata?.link) return notification.metadata.link;
+
+  // 2. Direct related IDs
+  const orderId =
+    notification.related_order_id ||
+    notification.order_id ||
+    notification.data?.order_id ||
+    notification.data?.related_order_id ||
+    notification.metadata?.order_id ||
+    notification.metadata?.related_order_id;
+
+  const conversationId =
+    notification.related_conversation_id ||
+    notification.conversation_id ||
+    notification.data?.conversation_id ||
+    notification.data?.related_conversation_id ||
+    notification.metadata?.conversation_id;
+
+  const productId =
+    notification.product_id ||
+    notification.related_product_id ||
+    notification.data?.product_id ||
+    notification.metadata?.product_id;
+
+  const followerId =
+    notification.follower_id ||
+    notification.actor_id ||
+    notification.sender_id ||
+    notification.related_user_id ||
+    notification.data?.follower_id ||
+    notification.data?.actor_id ||
+    notification.data?.sender_id;
+
+  if (orderId) {
+    return `/dashboard/orders/${orderId}`;
+  }
+  if (conversationId) {
+    return `/dashboard/messages/${conversationId}`;
+  }
+
+  // 3. Type-based routing
+  const type = (notification.type || '').toLowerCase();
   switch (type) {
-    case 'order':       return 'shopping_bag';
-    case 'message':     return 'chat';
-    case 'price_drop':  return 'trending_down';
-    case 'system':      return 'notifications';
-    case 'review':      return 'star';
-    case 'payment':     return 'payments';
-    case 'shipping':    return 'local_shipping';
-    case 'promotion':   return 'campaign';
-    default:            return 'notifications';
+    case 'order':
+    case 'orderplaced':
+    case 'order_placed':
+    case 'ordercancelled':
+    case 'order_cancelled':
+    case 'itemshipped':
+    case 'item_shipped':
+    case 'deliveryconfirmed':
+    case 'delivery_confirmed':
+    case 'refundapproved':
+    case 'refund_approved':
+    case 'refundrejected':
+    case 'refund_rejected':
+    case 'shipping':
+      return orderId ? `/dashboard/orders/${orderId}` : '/dashboard/orders';
+
+    case 'message':
+    case 'newmessage':
+    case 'new_message':
+    case 'chat':
+      return conversationId ? `/dashboard/messages/${conversationId}` : '/dashboard/messages';
+
+    case 'payment':
+    case 'paymentreceived':
+    case 'payment_received':
+    case 'walletdeposit':
+    case 'wallet_deposit':
+    case 'withdrawalapproved':
+    case 'withdrawal_approved':
+    case 'withdrawalrejected':
+    case 'withdrawal_rejected':
+    case 'escrowreleased':
+    case 'escrow_released':
+      return orderId ? `/dashboard/orders/${orderId}` : '/dashboard/wallet';
+
+    case 'promotion':
+    case 'promotionactivated':
+    case 'promotion_activated':
+      if (orderId) return `/dashboard/orders/${orderId}`;
+      if (productId) return `/dashboard/seller/listings/${productId}`;
+      return '/dashboard/seller/promotions';
+
+    case 'subscription':
+    case 'subscriptionactivated':
+    case 'subscription_activated':
+      return '/dashboard/seller/promotions';
+
+    case 'verification':
+    case 'verificationapproved':
+    case 'verification_approved':
+    case 'verificationrejected':
+    case 'verification_rejected':
+      return '/dashboard/seller/verify';
+
+    case 'follow':
+      if (followerId) return `/profile/${followerId}`;
+      return '/profile';
+
+    case 'review':
+      return orderId ? `/dashboard/orders/${orderId}` : '/dashboard/orders';
+
+    case 'price_drop':
+      return productId ? `/products/${productId}` : '/dashboard/wishlist';
+
+    case 'accountdeletionrejected':
+    case 'account_deletion_rejected':
+      return '/dashboard/settings';
+
+    default:
+      // Fallback: check if notification message contains a UUID
+      if (notification.message) {
+        const uuidMatch = notification.message.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+        if (uuidMatch) {
+          return `/dashboard/orders/${uuidMatch[0]}`;
+        }
+      }
+      return '/dashboard/orders';
   }
 }
 
@@ -96,30 +275,38 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
 
   /* ─── Mark one notification as read ─────────────────────────────────── */
   const markAsRead = useCallback(async (notificationId) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', notificationId)
-      .eq('user_id', user.id);
-
-    if (error) {
-      setError('Failed to mark notification as read. Please try again.');
-      return;
-    }
-
+    // Optimistic state update for instant UI feedback
     setNotifications((prev) =>
       prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Failed to mark notification as read in database:', error);
+      }
+    } catch (err) {
+      console.error('Error updating notification read status:', err);
+    }
   }, []);
 
   /* ─── Mark all notifications as read ────────────────────────────────── */
   const markAllAsRead = async () => {
     setLoading(true);
     setError(null);
+
+    // Optimistic update
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    setUnreadCount(0);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -135,9 +322,6 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
 
     if (error) {
       setError('Failed to mark all as read. Please try again.');
-    } else {
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      setUnreadCount(0);
     }
     setLoading(false);
   };
@@ -148,10 +332,9 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
       markAsRead(notification.id);
     }
 
-    if (notification.related_order_id) {
-      router.push(`/dashboard/orders/${notification.related_order_id}`);
-    } else if (notification.type === 'message' && notification.related_conversation_id) {
-      router.push(`/dashboard/messages/${notification.related_conversation_id}`);
+    const targetUrl = getNotificationUrl(notification);
+    if (targetUrl) {
+      router.push(targetUrl);
     }
   }, [markAsRead, router]);
 
@@ -277,7 +460,7 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
                   onClick={() => handleNotificationClick(notification)}
                   onKeyDown={(e) => handleKeyDown(e, notification)}
                   aria-label={`${notification.is_read ? '' : 'Unread: '}${notification.title}. ${notification.message}. ${getTimeAgo(notification.created_at)}`}
-                  className={`group relative flex w-full items-start gap-4 p-4 rounded-xl transition-all text-left active:scale-[0.99] border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#387d94] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#242428] ${
+                  className={`group relative flex w-full items-start gap-4 p-4 rounded-xl transition-all text-left active:scale-[0.99] cursor-pointer border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#387d94] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#242428] ${
                     !notification.is_read
                       ? 'bg-[#387d94]/5 dark:bg-[#387d94]/10 border-transparent dark:border-[#387d94]/10 shadow-[0_0_12px_rgba(56,125,148,0.15)]'
                       : 'bg-white dark:bg-[#2A3036] border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600'
@@ -287,13 +470,13 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
                   {!notification.is_read && (
                     <span
                       aria-hidden="true"
-                      className="absolute top-5 right-4 size-2.5 bg-[#387d94] rounded-full shadow-[0_0_8px_rgba(56,125,148,0.6)]"
+                      className="absolute top-4 right-4 size-2.5 bg-[#387d94] rounded-full shadow-[0_0_8px_rgba(56,125,148,0.6)]"
                     />
                   )}
 
                   {/* ── Icon / Avatar ────────────────────────────────────── */}
                   <span aria-hidden="true" className="shrink-0">
-                    <span className="size-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[#387d94]">
+                    <span className="size-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[#387d94] group-hover:scale-105 transition-transform">
                       <DynamicLucideIcon
                         name={getIconForType(notification.type)}
                         size={22}
@@ -302,7 +485,7 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
                   </span>
 
                   {/* ── Content ──────────────────────────────────────────── */}
-                  <span className="flex-1 pr-5 min-w-0">
+                  <span className="flex-1 pr-2 min-w-0">
                     <span
                       className={`block text-[15px] leading-snug font-semibold truncate ${
                         !notification.is_read
@@ -322,6 +505,11 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
                     >
                       {getTimeAgo(notification.created_at)}
                     </span>
+                  </span>
+
+                  {/* ── Right Chevron indicator ─────────────────────────── */}
+                  <span aria-hidden="true" className="shrink-0 self-center text-gray-400 dark:text-gray-500 group-hover:text-[#387d94] dark:group-hover:text-[#387d94] group-hover:translate-x-0.5 transition-all">
+                    <DynamicLucideIcon name="chevron_right" size={18} />
                   </span>
                 </button>
               </div>
