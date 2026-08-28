@@ -376,7 +376,7 @@ export default function CreateListingPage() {
     return (
         <main className="bg-white dark:bg-[#242428] font-display text-gray-900 dark:text-white min-h-screen flex flex-col pt-4">
             {/* Main Content Area */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden pb-32 relative max-w-[430px] mx-auto w-full">
+            <form onSubmit={handleSubmit} className="flex-1 pb-36 relative max-w-[430px] mx-auto w-full">
                 {error && (
                     <div className="mx-4 mt-4 p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium">
                         {error}

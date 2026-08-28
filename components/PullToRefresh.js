@@ -77,6 +77,10 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
         };
     }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 
+    if (disabled) {
+        return <>{children}</>;
+    }
+
     return (
         <div ref={containerRef} className="relative w-full h-full min-h-[50vh]">
             {/* Pull Indicator */}
@@ -84,7 +88,7 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
                 className="absolute left-0 right-0 flex justify-center pointer-events-none transition-transform duration-200 ease-out"
                 style={{ 
                     top: -50,
-                    transform: `translateY(${pullDelta}px)`,
+                    transform: pullDelta > 0 ? `translateY(${pullDelta}px)` : undefined,
                     opacity: pullDelta > 10 ? 1 : 0
                 }}
             >
@@ -103,9 +107,11 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
             {/* Content Container */}
             <div 
                 className="transition-transform duration-200 ease-out h-full"
-                style={{ 
-                    transform: `translateY(${isRefreshing ? 60 : pullDelta}px)` 
-                }}
+                style={
+                    pullDelta > 0 || isRefreshing
+                        ? { transform: `translateY(${isRefreshing ? 60 : pullDelta}px)` }
+                        : undefined
+                }
             >
                 {children}
             </div>
