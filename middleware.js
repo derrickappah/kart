@@ -54,68 +54,10 @@ export async function middleware(request) {
     }
   )
 
-  // Fetch Maintenance Mode Status from DB
-  let isMaintenance = false
-  try {
-    const { data: maintenanceSetting } = await supabase
-      .from('platform_settings')
-      .select('value')
-      .eq('key', 'maintenance_mode')
-      .single()
-    if (maintenanceSetting?.value === true || maintenanceSetting?.value === 'true') {
-      isMaintenance = true
-    }
-  } catch (err) {
-    console.error('Error fetching maintenance mode status in middleware:', err)
-  }
-
-  const { data: { user } } = await supabase.auth.getUser()
-  let isAdmin = false
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('banned, is_admin')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.banned) {
-      if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth/')) {
-        return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
-      }
-      if (!url.pathname.startsWith('/banned') && !url.pathname.startsWith('/auth/')) {
-        return NextResponse.redirect(new URL('/banned', request.url))
-      }
-    } else if (url.pathname.startsWith('/banned')) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-
-    if (profile?.is_admin) {
-      isAdmin = true
-    }
-  } else if (url.pathname.startsWith('/banned')) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
-  // Maintenance Mode Interception
-  if (isMaintenance && !isAdmin) {
-    const isExempt =
-      url.pathname.startsWith('/maintenance') ||
-      url.pathname.startsWith('/auth/') ||
-      url.pathname.startsWith('/api/auth/')
-
-    if (!isExempt) {
-      if (url.pathname.startsWith('/api/')) {
-        return NextResponse.json(
-          { error: 'Service Unavailable: Platform is under maintenance' },
-          { status: 503 }
-        )
-      }
-      return NextResponse.redirect(new URL('/maintenance', request.url))
-    }
-  } else if (!isMaintenance && url.pathname.startsWith('/maintenance')) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+  // Refresh the user's session — this is the core purpose of the middleware.
+  // This is the ONLY network call. Maintenance mode and banned checks are
+  // handled in the LayoutWrapper to avoid 504 Gateway Timeouts on Vercel.
+  await supabase.auth.getUser()
 
   // Prevent caching of the auth state check response on mobile browsers
   response.headers.set('x-middleware-cache', 'no-cache')

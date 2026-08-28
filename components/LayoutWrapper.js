@@ -19,13 +19,51 @@ const userFetcher = async () => {
     return user || null;
 };
 
+// Lightweight fetcher for maintenance mode — replaces the middleware DB query
+const maintenanceFetcher = async () => {
+    const { data } = await supabase
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'maintenance_mode')
+        .single();
+    return data?.value === true || data?.value === 'true';
+};
+
+// Lightweight fetcher for profile status (banned/admin) — replaces the middleware DB query
+const profileStatusFetcher = async ([key, userId]) => {
+    if (!userId) return null;
+    const { data } = await supabase
+        .from('profiles')
+        .select('banned, is_admin')
+        .eq('id', userId)
+        .single();
+    return data;
+};
+
 export default function LayoutWrapper({ children }) {
     const pathname = usePathname();
     const router = useRouter();
     const { data: user, mutate } = useSWR('layout-user', userFetcher, {
         revalidateOnFocus: true,
-        dedupingInterval: 5000, // Reduced from 60s to 5s
+        dedupingInterval: 5000,
     });
+
+    // Maintenance mode check (cached, revalidates every 60s)
+    const { data: isMaintenance } = useSWR('maintenance-mode', maintenanceFetcher, {
+        revalidateOnFocus: false,
+        dedupingInterval: 60000,
+        fallbackData: false,
+    });
+
+    // Profile banned/admin check (only when user exists)
+    const { data: profileStatus } = useSWR(
+        user ? ['profile-status', user.id] : null,
+        profileStatusFetcher,
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 30000,
+        }
+    );
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -46,12 +84,31 @@ export default function LayoutWrapper({ children }) {
         };
     }, [mutate, router]);
 
+    // Banned user redirect
+    useEffect(() => {
+        if (profileStatus?.banned && !pathname?.startsWith('/banned') && !pathname?.startsWith('/auth/')) {
+            router.replace('/banned');
+        }
+    }, [profileStatus?.banned, pathname, router]);
+
+    // Maintenance mode redirect (skip for admins and exempt paths)
+    useEffect(() => {
+        const isExempt =
+            pathname?.startsWith('/maintenance') ||
+            pathname?.startsWith('/auth/') ||
+            pathname?.startsWith('/login') ||
+            pathname?.startsWith('/signup');
+
+        if (isMaintenance && !profileStatus?.is_admin && !isExempt) {
+            router.replace('/maintenance');
+        } else if (!isMaintenance && pathname?.startsWith('/maintenance')) {
+            router.replace('/');
+        }
+    }, [isMaintenance, profileStatus?.is_admin, pathname, router]);
+
     const handleRefresh = async () => {
-        // Refresh the user data
         await mutate();
-        // Refresh all Server Components
         router.refresh();
-        // Add a small delay for better UX
         await new Promise(resolve => setTimeout(resolve, 800));
     };
 
