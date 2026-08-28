@@ -115,21 +115,35 @@ export default function ConversationList() {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         leftContent={
-                            <h1 className="text-2xl font-black text-gray-900 dark:text-white px-2">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2">
                                 Messages
-                            </h1>
+                            </h3>
                         }
                     />
                 ) : (
                     <div className="h-14 flex items-center px-2">
-                        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             Messages
-                        </h1>
+                        </h3>
                     </div>
                 )}
             </header>
 
             <main className="flex-1 px-4 pt-2 pb-4 md:pb-8 overflow-y-auto no-scrollbar">
+                {searchQuery.trim() && (
+                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-3">
+                        <span>
+                            Found <strong className="text-slate-800 dark:text-slate-200">{filteredConversations.length}</strong> {filteredConversations.length === 1 ? 'conversation' : 'conversations'}
+                        </span>
+                        <button
+                            onClick={() => setSearchQuery('')}
+                            className="text-primary font-bold hover:underline"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                )}
+
                 {isLoading ? (
                     <div className="flex flex-col gap-2 animate-pulse">
                         {[1, 2, 3, 4, 5].map(i => (
@@ -144,13 +158,29 @@ export default function ConversationList() {
                         ))}
                     </div>
                 ) : filteredConversations.length === 0 ? (
-                    <div className="text-center py-12 px-6">
-                        <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <DynamicLucideIcon name="inbox" className="text-slate-400 text-3xl" />
+                    searchQuery.trim() ? (
+                        <div className="text-center py-16 px-6">
+                            <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <DynamicLucideIcon name="search" className="text-slate-400 text-3xl" />
+                            </div>
+                            <h3 className="text-slate-900 dark:text-white font-bold mb-1">No matching messages</h3>
+                            <p className="text-slate-500 text-sm mb-4">No conversations match &quot;{searchQuery}&quot;</p>
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="h-10 px-6 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
+                            >
+                                Clear Search
+                            </button>
                         </div>
-                        <h3 className="text-slate-900 dark:text-white font-bold mb-1">No messages yet</h3>
-                        <p className="text-slate-500 text-sm">When you contact a seller, your conversation will appear here.</p>
-                    </div>
+                    ) : (
+                        <div className="text-center py-12 px-6">
+                            <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <DynamicLucideIcon name="inbox" className="text-slate-400 text-3xl" />
+                            </div>
+                            <h3 className="text-slate-900 dark:text-white font-bold mb-1">No messages yet</h3>
+                            <p className="text-slate-500 text-sm">When you contact a seller, your conversation will appear here.</p>
+                        </div>
+                    )
                 ) : (
                     filteredConversations.map(conv => {
                         const isActive = pathname === `/dashboard/messages/${conv.id}`;

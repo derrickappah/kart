@@ -5,6 +5,7 @@ import { createClient } from '../../../../utils/supabase/client';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ReportModal from '../../../../components/ReportModal';
+import { formatPrice } from '../../../../utils/formatters';
 
 export default function ChatPage() {
     const { id: conversationId } = useParams();
@@ -365,7 +366,7 @@ export default function ChatPage() {
                         ></div>
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate pr-2">{productContext.title}</h3>
-                            <p className="text-[#1daddd] font-bold text-sm">GHS {productContext.price} <span className="text-xs font-normal text-gray-400 dark:text-gray-500 ml-1">• {productContext.condition}</span></p>
+                            <p className="text-[#1daddd] font-bold text-sm">₵{formatPrice(productContext.price)} <span className="text-xs font-normal text-gray-400 dark:text-gray-500 ml-1">• {productContext.condition}</span></p>
                         </div>
                         <div className="shrink-0 pr-1">
                             <DynamicLucideIcon name="chevron_right" className="text-gray-300 dark:text-gray-600" />
