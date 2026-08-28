@@ -105,9 +105,8 @@ export async function POST(request) {
 
             if (process.env.NODE_ENV === 'development') {
                 return NextResponse.json({
-                    error: `SMS Error: ${errorMessage}`,
-                    otp: otp
-                }, { status: 200 });
+                    error: `SMS Error: ${errorMessage}`
+                }, { status: 400 });
             }
 
             return NextResponse.json({
@@ -117,8 +116,7 @@ export async function POST(request) {
 
         return NextResponse.json({
             success: true,
-            message: 'Verification code sent successfully to your phone',
-            ...(process.env.NODE_ENV === 'development' ? { otp } : {})
+            message: 'Verification code sent successfully to your phone'
         });
 
     } catch (error) {

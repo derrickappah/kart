@@ -5,8 +5,7 @@ const config: CapacitorConfig = {
   appName: 'KART',
   webDir: 'out',
   server: {
-    url: 'https://kart-murex.vercel.app',
-    cleartext: true
+    url: 'https://kart-murex.vercel.app'
   },
   plugins: {
     GoogleAuth: {

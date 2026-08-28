@@ -7,12 +7,22 @@ import { createClient } from '../../utils/supabase/server'
 export async function login(formData) {
     const supabase = await createClient()
 
-    const data = {
-        email: formData.get('email'),
-        password: formData.get('password'),
+    const email = String(formData.get('email') || '').trim().toLowerCase()
+    const password = String(formData.get('password') || '')
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
+        return { error: 'Please enter a valid email address.' }
     }
 
-    const { error } = await supabase.auth.signInWithPassword(data)
+    if (!password) {
+        return { error: 'Password is required.' }
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+    })
 
     if (error) {
         return { error: error.message }
@@ -25,10 +35,23 @@ export async function login(formData) {
 export async function signup(formData) {
     const supabase = await createClient()
 
-    const email = formData.get('email')
-    const password = formData.get('password')
-    const fullName = formData.get('full_name')
+    const email = String(formData.get('email') || '').trim().toLowerCase()
+    const password = String(formData.get('password') || '')
+    const fullName = String(formData.get('full_name') || '').trim()
     const referredBy = formData.get('referred_by')
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
+        return { error: 'Please enter a valid email address.' }
+    }
+
+    if (!password || password.length < 6) {
+        return { error: 'Password must be at least 6 characters long.' }
+    }
+
+    if (!fullName) {
+        return { error: 'Full name is required.' }
+    }
 
     const { data: signUpData, error } = await supabase.auth.signUp({
         email,

@@ -87,8 +87,7 @@ export async function POST(request) {
                     if (process.env.NODE_ENV === 'development') {
                         return NextResponse.json({
                             error: 'Resend Error: ' + emailError.message,
-                            details: emailError,
-                            otp: otp // Still return OTP for testing if email fails
+                            details: emailError
                         }, { status: 400 });
                     }
                 } else {
@@ -98,8 +97,7 @@ export async function POST(request) {
                 console.error('Failed to send email:', err);
                 if (process.env.NODE_ENV === 'development') {
                     return NextResponse.json({ 
-                        error: 'Mail Client Error: ' + err.message,
-                        otp: otp // Still return OTP for testing if email fails
+                        error: 'Mail Client Error: ' + err.message
                     }, { status: 500 });
                 }
             }
@@ -107,9 +105,8 @@ export async function POST(request) {
             console.warn('Resend instance is null. Check RESEND_API_KEY environment variable.');
             if (process.env.NODE_ENV === 'development') {
                 return NextResponse.json({ 
-                    error: 'RESEND_API_KEY is missing. Code generated for testing.',
-                    otp: otp 
-                }, { status: 200 });
+                    error: 'RESEND_API_KEY is missing. Please configure your email service provider.'
+                }, { status: 500 });
             }
         }
 
