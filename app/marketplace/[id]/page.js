@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/server';
 import ProductDetailsClient from './ProductDetailsClient';
+import ProductDetailsSkeleton from './ProductDetailsSkeleton';
 import Link from 'next/link';
 import { toSentenceCase, formatPrice } from '@/utils/formatters';
 
@@ -77,9 +79,7 @@ export async function generateMetadata({ params }) {
     };
 }
 
-export default async function ProductDetails({ params }) {
-    const resolvedParams = await params;
-    const id = decodeURIComponent(resolvedParams.id);
+async function ProductDetailsDataSection({ id }) {
     const supabase = await createClient();
 
     const { data: product, error } = await supabase
@@ -157,3 +157,15 @@ export default async function ProductDetails({ params }) {
         </>
     );
 }
+
+export default async function ProductDetails({ params }) {
+    const resolvedParams = await params;
+    const id = decodeURIComponent(resolvedParams.id);
+
+    return (
+        <Suspense fallback={<ProductDetailsSkeleton />}>
+            <ProductDetailsDataSection id={id} />
+        </Suspense>
+    );
+}
+
