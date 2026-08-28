@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signout } from '../../auth/actions';
 import DeleteAccountModal from '@/components/DeleteAccountModal';
-import AndroidInstallModal from '@/components/AndroidInstallModal';
 
 export default function SettingsClient({ initialProfile, initialUser, whatsappSupportNumber = '0500502158' }) {
   const router = useRouter();
@@ -32,45 +31,57 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
 
   // PWA Install state
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [showAndroidInstallModal, setShowAndroidInstallModal] = useState(false);
 
-  // Listen for PWA install prompt events and standalone state
+  // Listen for PWA install prompt events
   useEffect(() => {
+    // Check if prompt was already captured at window level
+    if (typeof window !== 'undefined' && window.deferredPWAInstallPrompt) {
+      setDeferredPrompt(window.deferredPWAInstallPrompt);
+    }
+
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      window.deferredPWAInstallPrompt = e;
+    };
+
+    const handlePromptAvailable = (e) => {
+      if (e.detail) {
+        setDeferredPrompt(e.detail);
+      } else if (window.deferredPWAInstallPrompt) {
+        setDeferredPrompt(window.deferredPWAInstallPrompt);
+      }
     };
 
     const handleAppInstalled = () => {
-      setIsInstalled(true);
       setDeferredPrompt(null);
-      setShowAndroidInstallModal(false);
+      if (typeof window !== 'undefined') window.deferredPWAInstallPrompt = null;
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('pwa-prompt-available', handlePromptAvailable);
     window.addEventListener('appinstalled', handleAppInstalled);
-
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-      setIsInstalled(true);
-    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('pwa-prompt-available', handlePromptAvailable);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
   const handleAndroidInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-        setShowAndroidInstallModal(false);
+    const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? window.deferredPWAInstallPrompt : null);
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          setDeferredPrompt(null);
+          if (typeof window !== 'undefined') window.deferredPWAInstallPrompt = null;
+        }
+      } catch (err) {
+        console.error('Error triggering PWA install prompt:', err);
       }
-    } else {
-      setShowAndroidInstallModal(true);
     }
   };
 
@@ -462,15 +473,6 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onSuccess={handleDeletionSuccess}
-      />
-
-      {/* Android PWA Install Modal */}
-      <AndroidInstallModal
-        isOpen={showAndroidInstallModal}
-        onClose={() => setShowAndroidInstallModal(false)}
-        isInstalled={isInstalled}
-        hasPrompt={Boolean(deferredPrompt)}
-        onTriggerPrompt={handleAndroidInstallClick}
       />
     </div>
   );

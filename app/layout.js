@@ -50,6 +50,22 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${jakarta.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.deferredPWAInstallPrompt = null;
+              window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                window.deferredPWAInstallPrompt = e;
+                window.dispatchEvent(new CustomEvent('pwa-prompt-available', { detail: e }));
+              });
+              window.addEventListener('appinstalled', function() {
+                window.deferredPWAInstallPrompt = null;
+                window.dispatchEvent(new CustomEvent('pwa-installed'));
+              });
+            `,
+          }}
+        />
       </head>
       <body className="antialiased">
         <LayoutWrapper>
