@@ -83,10 +83,10 @@ export default function MyListingsClient({ initialProducts }) {
 
     return (
         <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
-            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl overflow-hidden">
+            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl">
 
                 {/* Sticky Header with Home SearchBar & Tabs */}
-                <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 border-b border-gray-100/50 dark:border-gray-800/30">
+                <header className="sticky top-16 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 border-b border-gray-100/50 dark:border-gray-800/30">
                     <SearchBar
                         placeholder="Search your listings..."
                         showFilter={true}
@@ -110,7 +110,7 @@ export default function MyListingsClient({ initialProducts }) {
                 </header>
 
                 {/* Main Content */}
-                <main className="flex-1 px-4 py-6 space-y-6 pb-32 overflow-y-auto no-scrollbar">
+                <main className="flex-1 px-4 py-6 space-y-6 pb-32">
                     {/* Active search filter feedback */}
                     {searchQuery.trim() && (
                         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">

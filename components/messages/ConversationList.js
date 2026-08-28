@@ -105,8 +105,8 @@ export default function ConversationList() {
 
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-[#242428] font-display overflow-hidden">
-            <header className="flex-none sticky top-0 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 z-30 border-b border-gray-100/50 dark:border-gray-800/30">
+        <div className="flex flex-col h-full bg-white dark:bg-[#242428] font-display">
+            <header className="flex-none sticky top-16 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 z-40 border-b border-gray-100/50 dark:border-gray-800/30">
                 {conversations.length > 0 ? (
                     <SearchBar
                         placeholder="Search conversations..."
@@ -129,7 +129,7 @@ export default function ConversationList() {
                 )}
             </header>
 
-            <main className="flex-1 px-4 pt-2 pb-4 md:pb-8 overflow-y-auto no-scrollbar">
+            <main className="flex-1 px-4 pt-2 pb-32">
                 {searchQuery.trim() && (
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-3">
                         <span>

@@ -16,8 +16,8 @@ export default function Navbar({ user }) {
     if (isProductPage) return null;
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center bg-white/95 dark:bg-[#242428]/95 py-2 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
-            <div className="flex items-center justify-between w-full max-w-md px-3 h-14">
+        <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center bg-white/95 dark:bg-[#242428]/95 h-16 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between w-full max-w-md px-3 h-full">
                 {isMarketplacePage ? (
                     <div className="w-full">
                         <SearchBar placeholder="Search campus finds..." showFilter={true} />

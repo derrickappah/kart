@@ -49,7 +49,7 @@ export default function OrdersClient({ orders }) {
       <div className="max-w-[440px] mx-auto min-h-screen flex flex-col">
 
         {/* ── Sticky Header with Home SearchBar ── */}
-        <header className="sticky top-0 z-50 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
+        <header className="sticky top-16 z-40 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
           <SearchBar
             placeholder="Search your orders..."
             showFilter={true}
