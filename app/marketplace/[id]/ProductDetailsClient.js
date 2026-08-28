@@ -433,12 +433,14 @@ export default function ProductDetailsClient({ product }) {
                                         <time dateTime={product.created_at}>{timeAgo(product.created_at)}</time>
                                     </span>
                                 </div>
-                                <h1 className="text-[#0e181b] dark:text-white text-2xl md:text-3xl font-extrabold leading-tight tracking-tight mt-1">
-                                    {toSentenceCase(product.title)}
-                                </h1>
-                                <p className="text-[#0f7295] dark:text-primary-light text-3xl md:text-4xl font-black mt-1" aria-label={`Price: ₵ ${formatPrice(product.price)}`}>
-                                    ₵ {formatPrice(product.price)}
-                                </p>
+                                <div className="flex items-start justify-between gap-4 mt-1">
+                                    <h1 className="text-[#0e181b] dark:text-white text-2xl md:text-3xl font-extrabold leading-tight tracking-tight">
+                                        {toSentenceCase(product.title)}
+                                    </h1>
+                                    <p className="text-[#0f7295] dark:text-primary-light text-2xl md:text-3xl font-black shrink-0 whitespace-nowrap" aria-label={`Price: ₵ ${formatPrice(product.price)}`}>
+                                        ₵ {formatPrice(product.price)}
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Immediate Action CTAs (Above the fold for instant access) */}
