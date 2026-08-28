@@ -73,9 +73,9 @@ export default function WishlistClient({ initialItems }) {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         leftContent={
-                            <h1 className="text-xl font-black text-gray-900 dark:text-white px-2">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2">
                                 Saved Items
-                            </h1>
+                            </h3>
                         }
                     />
                 </header>
