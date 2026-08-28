@@ -41,21 +41,10 @@ export default async function PromotionsPage() {
         <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
             <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl overflow-hidden">
 
-                {/* Header Section */}
-                <header className="sticky top-0 z-[70] bg-white/80 dark:bg-[#242428]/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center p-4 justify-between w-full">
-                        <Link
-                            href="/dashboard/seller"
-                            aria-label="Back to Seller Dashboard"
-                            className="size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-                        >
-                            <DynamicLucideIcon name="arrow_back" className="text-xl" />
-                        </Link>
-                        <h1 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10 text-slate-900 dark:text-white">Promotions</h1>
+                <main className="flex-1 px-4 py-8 space-y-6 pb-32 overflow-y-auto no-scrollbar">
+                    <div className="space-y-1">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">Promotions</h3>
                     </div>
-                </header>
-
-                <main className="flex-1 px-4 py-6 space-y-6 pb-32 overflow-y-auto no-scrollbar">
 
                     {/* Activity Overview */}
                     <section className="grid grid-cols-2 gap-3">
