@@ -180,12 +180,43 @@ export async function forgotPassword(formData) {
     return { success: "Password reset link sent to your email." }
 }
 
+export async function sendMagicLink(formData) {
+    const supabase = await createClient()
+    const email = String(formData.get('email') || '').trim().toLowerCase()
+    const next = String(formData.get('next') || '').trim()
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
+        return { error: 'Please enter a valid email address.' }
+    }
+
+    const siteUrl = getSiteUrl()
+    const redirectUrl = next && next.startsWith('/') && !next.startsWith('//')
+        ? `${siteUrl}/api/auth/callback?next=${encodeURIComponent(next)}`
+        : `${siteUrl}/api/auth/callback`
+
+    const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+            emailRedirectTo: redirectUrl,
+            shouldCreateUser: true,
+        }
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    return { success: 'Magic link sent! Please check your inbox and click the link to log in instantly.' }
+}
+
 export async function signout() {
     const supabase = await createClient()
     await supabase.auth.signOut()
     revalidatePath('/', 'layout')
     redirect('/login')
 }
+
 
 
 
