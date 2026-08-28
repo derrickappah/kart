@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import MarketplaceFeed from './MarketplaceFeed';
+import MarketplaceSkeleton from './MarketplaceSkeleton';
 import { fetchMarketplaceProducts } from './actions';
 
 export const revalidate = 60;
@@ -26,6 +28,49 @@ function sanitizeTextParam(val) {
     return val.trim().slice(0, 200);
 }
 
+async function MarketplaceFeedSection({ filterParams, searchQuery, hasActiveFilters, clearFiltersHref }) {
+    const initialData = await fetchMarketplaceProducts({
+        page: 1,
+        limit: 12,
+        ...filterParams
+    });
+
+    const products = initialData.products || [];
+    const hasDbError = !!initialData.error;
+    const wishlistIds = initialData.wishlistIds || [];
+    const hasMore = initialData.hasMore || false;
+
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        'itemListElement': products.map((p, index) => ({
+            '@type': 'ListItem',
+            'position': index + 1,
+            'url': `https://www.kart.cx/marketplace/${p.id}`,
+            'name': p.title
+        }))
+    };
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
+            />
+            <MarketplaceFeed
+                initialProducts={products}
+                initialHasMore={hasMore}
+                initialWishlistIds={wishlistIds}
+                hasDbError={hasDbError}
+                filterParams={filterParams}
+                searchQuery={searchQuery}
+                hasActiveFilters={hasActiveFilters}
+                clearFiltersHref={clearFiltersHref}
+            />
+        </>
+    );
+}
+
 export default async function Marketplace({ searchParams }) {
     const params = await searchParams;
 
@@ -47,56 +92,25 @@ export default async function Marketplace({ searchParams }) {
         sort: sortOption
     };
 
-    // Initial page load fetches first batch (12 items) server-side
-    const initialData = await fetchMarketplaceProducts({
-        page: 1,
-        limit: 12,
-        ...filterParams
-    });
-
-    const products = initialData.products || [];
-    const hasDbError = !!initialData.error;
-    const wishlistIds = initialData.wishlistIds || [];
-    const hasMore = initialData.hasMore || false;
-
-    // Determine if any filters are active for better empty state messaging
     const hasActiveFilters = !!(params?.category || params?.condition || params?.minPrice || params?.maxPrice || params?.campus);
-    const hasActiveSearch = !!searchQuery;
 
     // Build intelligent reset URL that preserves active text search query
     const clearFiltersHref = searchQuery
         ? `/marketplace?search=${encodeURIComponent(searchQuery)}`
         : '/marketplace';
 
-    const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        'itemListElement': products.map((p, index) => ({
-            '@type': 'ListItem',
-            'position': index + 1,
-            'url': `https://www.kart.cx/marketplace/${p.id}`,
-            'name': p.title
-        }))
-    };
-
     return (
         <div className="bg-white dark:bg-[#242428] min-h-screen font-display antialiased">
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
-            />
             <div className="max-w-md mx-auto relative flex flex-col min-h-screen pb-4 md:pb-8 shadow-2xl bg-white dark:bg-[#242428]">
                 <main className="px-4 pt-3 flex-1">
-                    <MarketplaceFeed
-                        initialProducts={products}
-                        initialHasMore={hasMore}
-                        initialWishlistIds={wishlistIds}
-                        hasDbError={hasDbError}
-                        filterParams={filterParams}
-                        searchQuery={searchQuery}
-                        hasActiveFilters={hasActiveFilters}
-                        clearFiltersHref={clearFiltersHref}
-                    />
+                    <Suspense key={JSON.stringify(filterParams)} fallback={<MarketplaceSkeleton count={8} />}>
+                        <MarketplaceFeedSection
+                            filterParams={filterParams}
+                            searchQuery={searchQuery}
+                            hasActiveFilters={hasActiveFilters}
+                            clearFiltersHref={clearFiltersHref}
+                        />
+                    </Suspense>
                 </main>
             </div>
         </div>
