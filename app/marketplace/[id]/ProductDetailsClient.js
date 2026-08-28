@@ -362,14 +362,14 @@ export default function ProductDetailsClient({ product }) {
                                     <button
                                         onClick={goToPrev}
                                         aria-label="Previous image"
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white border border-white/20 hover:bg-black/60 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white z-10"
+                                        className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 size-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white border border-white/20 hover:bg-black/60 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white z-10"
                                     >
                                         <DynamicLucideIcon name="chevron_left" aria-hidden="true" />
                                     </button>
                                     <button
                                         onClick={goToNext}
                                         aria-label="Next image"
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white border border-white/20 hover:bg-black/60 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white z-10"
+                                        className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 size-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white border border-white/20 hover:bg-black/60 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white z-10"
                                     >
                                         <DynamicLucideIcon name="chevron_right" aria-hidden="true" />
                                     </button>
