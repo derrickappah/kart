@@ -14,10 +14,12 @@ const supabase = createClient();
 const profileFetcher = async () => {
     let { data: { user: authUser } } = await supabase.auth.getUser();
     
-    // If no user, wait a tiny bit and try getSession (sometimes faster during initial load)
+    // On initial page load after login, cookies may still be settling.
+    // Retry once after a short delay before giving up.
     if (!authUser) {
-        const { data: { session } } = await supabase.auth.getSession();
-        authUser = session?.user || null;
+        await new Promise(r => setTimeout(r, 500));
+        const retry = await supabase.auth.getUser();
+        authUser = retry.data?.user || null;
     }
 
     if (!authUser) return null;

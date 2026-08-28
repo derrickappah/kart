@@ -145,9 +145,10 @@ export async function GET(request) {
                 }
             });
 
-            // Copy all headers (including multiple Set-Cookie headers) to the HTML response
-            response.headers.forEach((value, name) => {
-                htmlResponse.headers.append(name, value);
+            // Copy all session cookies to the HTML response explicitly
+            // (headers.forEach doesn't reliably enumerate Set-Cookie from response.cookies.set)
+            response.cookies.getAll().forEach(cookie => {
+                htmlResponse.cookies.set(cookie.name, cookie.value, cookie);
             });
 
             return htmlResponse;
@@ -157,7 +158,4 @@ export async function GET(request) {
     } else {
         return NextResponse.redirect(`${origin}/auth/auth-code-error?error=missing_code`)
     }
-
-    // Default error fallback
-    return NextResponse.redirect(`${origin}/auth/auth-code-error?error=unknown_error`)
 }

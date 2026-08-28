@@ -29,9 +29,15 @@ export default function LayoutWrapper({ children }) {
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-                mutate(); // Update the layout-user SWR cache
-                router.refresh(); // Refresh server components
+            if (event === 'SIGNED_IN') {
+                // Brief delay to ensure cookies are fully committed before revalidating
+                setTimeout(() => {
+                    mutate();
+                    router.refresh();
+                }, 100);
+            } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+                mutate();
+                router.refresh();
             }
         });
 

@@ -19,7 +19,7 @@ export async function login(formData) {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/profile')
+    redirect('/')
 }
 
 export async function signup(formData) {
@@ -69,7 +69,7 @@ export async function signup(formData) {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/profile') // Or /verify-email if you enable that
+    redirect('/') // Or /verify-email if you enable that
 }
 
 export async function forgotPassword(formData) {

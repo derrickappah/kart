@@ -29,6 +29,9 @@ function SignupForm() {
             setError(result.error);
             setLoading(false);
         }
+        // If signup succeeded, redirect() was called server-side.
+        // Reset loading after a safety timeout in case the redirect stalls.
+        setTimeout(() => setLoading(false), 5000);
     }
 
     return (
