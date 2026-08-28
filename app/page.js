@@ -8,7 +8,7 @@ import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
 import AdTracker from "../components/AdTracker";
 import { toSentenceCase, seededShuffle, formatPrice } from '../utils/formatters';
-import { getFairRotatedPromotions, getFairTimeSeed } from '../utils/promotionAlgorithm';
+import { getFairRotatedPromotions, getDivergentFeaturedPromotions, getFairTimeSeed } from '../utils/promotionAlgorithm';
 import FeaturedSlider from "../components/FeaturedSlider";
 
 export const revalidate = 60;
@@ -207,10 +207,14 @@ export default async function Home() {
   const bannerProducts = getFairRotatedPromotions(
     bannerCandidateAds.length > 0 ? bannerCandidateAds : activeAds,
     { windowMinutes: 30, seedOffset: 0 }
-  );
+  ).slice(0, 5);
 
-  // Both Featured and Boost campaigns are included with fair multi-factor ranking
-  const featuredProducts = getFairRotatedPromotions(activeAds, { windowMinutes: 30, seedOffset: 1 });
+  // Both Featured and Boost campaigns are included with divergent ordering so they never mirror the banner order
+  const featuredProducts = getDivergentFeaturedPromotions(
+    activeAds,
+    bannerProducts,
+    { windowMinutes: 30, seedOffset: 1 }
+  );
   const latestProducts = seededShuffle(latestRes.data || [], getFairTimeSeed(30, 2));
 
   return (

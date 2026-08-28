@@ -141,3 +141,38 @@ export function getFairRotatedPromotions(ads = [], context = {}) {
         return scoreB - scoreA;
     });
 }
+
+/**
+ * Ensures the Featured slider never shows the same items in the same order as the Hero Banner.
+ * 
+ * Strategy:
+ * 1. Identify items already prioritized in the hero banner.
+ * 2. Prioritize active ads that are NOT in the hero banner top slots.
+ * 3. Append remaining ads with a circular shift / divergent seed so they never match the banner sequence.
+ * 
+ * @param {Array} activeAds - All active promoted listings
+ * @param {Array} bannerProducts - Selected banner products
+ * @param {Object} context - Optional context (windowMinutes, seedOffset)
+ * @returns {Array} Distinctly ordered promotions for Featured slider
+ */
+export function getDivergentFeaturedPromotions(activeAds = [], bannerProducts = [], context = {}) {
+    if (!activeAds || activeAds.length === 0) return [];
+    if (!bannerProducts || bannerProducts.length === 0) {
+        return getFairRotatedPromotions(activeAds, { ...context, seedOffset: (context.seedOffset || 0) + 1 });
+    }
+
+    const bannerIdSet = new Set(bannerProducts.map(p => p.id));
+    const nonBannerAds = activeAds.filter(p => !bannerIdSet.has(p.id));
+    const rotatedNonBanner = getFairRotatedPromotions(nonBannerAds, {
+        ...context,
+        seedOffset: (context.seedOffset || 0) + 2
+    });
+
+    // Circular shift banner items to guarantee position #0 is different and sequence never matches
+    const bannerItemsReordered = bannerProducts.length > 1
+        ? [...bannerProducts.slice(1), bannerProducts[0]]
+        : bannerProducts;
+
+    return [...rotatedNonBanner, ...bannerItemsReordered];
+}
+
