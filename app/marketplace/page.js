@@ -7,6 +7,7 @@ import WishlistButton from '../../components/WishlistButton';
 import AdTracker from '../../components/AdTracker';
 import { createClient } from '../../utils/supabase/server';
 import { toSentenceCase, seededShuffle, formatPrice } from '../../utils/formatters';
+import { interleavePromotedListings, getFairRotatedPromotions, getFairTimeSeed } from '../../utils/promotionAlgorithm';
 
 export const revalidate = 60;
 
@@ -33,26 +34,9 @@ function sanitizeTextParam(val) {
     return val.trim().slice(0, 200);
 }
 
-/**
- * Return a deterministic daily seed so the shuffle changes once per day
- * rather than being locked to a fixed constant forever.
- */
-function getDailySeed(offset = 0) {
-    const now = new Date();
-    // Format: YYYYMMDD as an integer, plus optional offset to vary groups
-    const dateInt = now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate();
-    return dateInt + offset;
-}
-
 export default async function Marketplace({ searchParams }) {
     const params = await searchParams;
     const supabase = await createClient();
-
-    // Expire completed promotions on load to ensure only active promotions affect sorting/ranking
-    const { error: expireError } = await supabase.rpc('expire_completed_promotions');
-    if (expireError) {
-        console.error('Error running expire_completed_promotions RPC:', expireError);
-    }
 
     // Sanitize inputs before using in queries
     const searchQuery = sanitizeTextParam(params?.search);
@@ -101,10 +85,18 @@ export default async function Marketplace({ searchParams }) {
 
     const sortOption = params?.sort || 'newest';
     switch (sortOption) {
-        case 'oldest':    query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('created_at', { ascending: true }); break;
-        case 'price-low': query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('price', { ascending: true }); break;
-        case 'price-high': query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('price', { ascending: false }); break;
-        default:           query = query.order('is_boosted', { ascending: false, nullsFirst: false }).order('is_featured', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }); break;
+        case 'oldest':    
+            query = query.order('created_at', { ascending: true }); 
+            break;
+        case 'price-low': 
+            query = query.order('price', { ascending: true }); 
+            break;
+        case 'price-high': 
+            query = query.order('price', { ascending: false }); 
+            break;
+        default:           
+            query = query.order('created_at', { ascending: false }); 
+            break;
     }
 
     // Run auth and product query in parallel
@@ -130,8 +122,8 @@ export default async function Marketplace({ searchParams }) {
     const rawProducts = productsRes.data || [];
 
     // Map products to extract active advertisement_id
+    const now = new Date();
     const rawProductsWithAdId = rawProducts.map(p => {
-        const now = new Date();
         const activeAd = p.advertisements?.find(ad =>
             ad.status === 'Active' &&
             new Date(ad.start_date) <= now &&
@@ -144,20 +136,26 @@ export default async function Marketplace({ searchParams }) {
         };
     });
 
-    // Apply daily-rotating seeded shuffle for the default "newest" view
-    // so boosted/featured items feel organic rather than algorithmically obvious
+    // Intelligent feed arrangement:
+    // When sorting explicitly (price-low, price-high, oldest), preserve user sort intent.
+    // In default browse mode, interleave fairly rotated promoted listings at natural intervals (1 ad per 4 organic items).
     let products = rawProductsWithAdId;
-    const isDefaultView = sortOption === 'newest' && !searchQuery && !params?.category;
-    if (isDefaultView) {
-        const boosted = rawProductsWithAdId.filter(p => p.is_boosted);
-        const featured = rawProductsWithAdId.filter(p => !p.is_boosted && p.is_featured);
-        const regular = rawProductsWithAdId.filter(p => !p.is_boosted && !p.is_featured);
+    const isExplicitSort = sortOption === 'price-low' || sortOption === 'price-high' || sortOption === 'oldest';
 
-        products = [
-            ...seededShuffle(boosted, getDailySeed(0)),
-            ...seededShuffle(featured, getDailySeed(1)),
-            ...seededShuffle(regular, Math.floor(Math.random() * 1000000))
-        ];
+    if (!isExplicitSort) {
+        const promoted = rawProductsWithAdId.filter(p => p.advertisement_id || p.is_boosted || p.is_featured);
+        const organic = rawProductsWithAdId.filter(p => !p.advertisement_id && !p.is_boosted && !p.is_featured);
+
+        const rotatedPromoted = getFairRotatedPromotions(promoted, {
+            userCampus: campusQuery,
+            windowMinutes: 30,
+            seedOffset: 10
+        });
+
+        products = interleavePromotedListings(organic, rotatedPromoted, {
+            firstAdIndex: 0,
+            interval: 4
+        });
     }
 
     // Determine if any filters are active for better empty state messaging

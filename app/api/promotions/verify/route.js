@@ -76,10 +76,37 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Invalid payment type' }, { status: 400 });
         }
 
+        // Calculate fresh duration from activation moment to protect seller's paid time
+        const durationHours = metadata.duration_hours 
+            ? Number(metadata.duration_hours) 
+            : (new Date(ad.end_date).getTime() - new Date(ad.start_date).getTime()) / (1000 * 60 * 60) || 24;
+
+        // Check if there is an existing active ad of the same type to extend
+        const { data: existingActiveAd } = await supabase
+            .from('advertisements')
+            .select('end_date')
+            .eq('product_id', ad.product_id)
+            .eq('ad_type', ad.ad_type)
+            .eq('status', 'Active')
+            .neq('id', adId)
+            .gte('end_date', new Date().toISOString())
+            .order('end_date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        const baseDate = existingActiveAd ? new Date(existingActiveAd.end_date) : new Date();
+        const newStartDate = baseDate;
+        const newEndDate = new Date(newStartDate.getTime() + durationHours * 60 * 60 * 1000);
+
         // --- Atomic update: only update if status is still Paused to prevent race conditions ---
         const { error: updateAdError, count } = await supabase
             .from('advertisements')
-            .update({ status: 'Active', updated_at: new Date().toISOString() })
+            .update({ 
+                status: 'Active',
+                start_date: newStartDate.toISOString(),
+                end_date: newEndDate.toISOString(),
+                updated_at: new Date().toISOString() 
+            })
             .eq('id', adId)
             .eq('status', 'Paused') // Atomic guard — will no-op if already activated by webhook
             .select('id');
@@ -92,7 +119,7 @@ export async function POST(request) {
             productUpdates.is_featured = true;
         } else if (ad.ad_type === 'Boost') {
             productUpdates.is_boosted = true;
-            productUpdates.boost_expires_at = ad.end_date;
+            productUpdates.boost_expires_at = newEndDate.toISOString();
         }
 
         if (Object.keys(productUpdates).length > 0) {

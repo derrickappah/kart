@@ -174,6 +174,11 @@ export async function POST(request) {
         // Initialize payment with Paystack
         const reference = `ad_${advertisement.id}_${Date.now()}`;
 
+        let durationHours = 24;
+        if (tierId === 'daily') durationHours = 24;
+        else if (tierId === 'weekly') durationHours = 7 * 24;
+        else if (tierId === 'featured') durationHours = 30 * 24;
+
         try {
             const paymentRequest = {
                 amount: amount,
@@ -188,6 +193,7 @@ export async function POST(request) {
                     product_id: productId,
                     user_id: user.id,
                     tier_id: tierId,
+                    duration_hours: durationHours,
                     type: 'promotion',
                 },
             };

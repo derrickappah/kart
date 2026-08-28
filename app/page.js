@@ -8,6 +8,7 @@ import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
 import AdTracker from "../components/AdTracker";
 import { toSentenceCase, seededShuffle, formatPrice } from '../utils/formatters';
+import { getFairRotatedPromotions, getFairTimeSeed } from '../utils/promotionAlgorithm';
 import FeaturedSlider from "../components/FeaturedSlider";
 
 export const revalidate = 60;
@@ -44,11 +45,12 @@ function ProductCardSkeleton() {
   );
 }
 
-async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts }) {
-  const displayFeatured = boostedProducts.length > 0 ? boostedProducts : latestProducts.slice(0, 10);
+async function FeaturedSection({ wishlistIds, featuredProducts, latestProducts }) {
+  const displayFeatured = featuredProducts.length > 0 ? featuredProducts : latestProducts.slice(0, 10);
   const displayRecommended = latestProducts.filter(p => !displayFeatured.some(f => f.id === p.id));
 
   const getRecReason = (product) => {
+    if (product.ad_type === 'Featured' || product.is_featured) return "Featured";
     if (product.is_boosted) return "Highest Priority";
     if (product.category === 'Textbooks') return "Highly requested in your level";
     if (product.campus) return `Trending at ${product.campus}`;
@@ -56,7 +58,13 @@ async function FeaturedSection({ wishlistIds, boostedProducts, latestProducts })
   };
 
   const getBadgeStyle = (recReason) => {
-    if (recReason === "Highest Priority") {
+    if (recReason === "Featured") {
+      return {
+        bg: "bg-blue-50/95 dark:bg-[#1a233a]/90 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/40",
+        dot: "bg-blue-500",
+        label: "Featured"
+      };
+    } else if (recReason === "Highest Priority") {
       return {
         bg: "bg-indigo-50/95 dark:bg-[#1a1c2e]/90 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40",
         dot: "bg-indigo-500",
@@ -150,11 +158,7 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Expire any completed promotions on page load (runs on ISR revalidation once every 60s)
-  const { error: expireError } = await supabase.rpc('expire_completed_promotions');
-  if (expireError) {
-    console.error('Error running expire_completed_promotions RPC:', expireError);
-  }
+  const nowIso = new Date().toISOString();
 
   const [wishlistRes, adsRes, latestRes] = await Promise.all([
     user
@@ -172,9 +176,9 @@ export default async function Home() {
       `)
       .eq('status', 'Active')
       .eq('product.status', 'Active')
-      .lte('start_date', new Date().toISOString())
-      .gte('end_date', new Date().toISOString())
-      .limit(30),
+      .lte('start_date', nowIso)
+      .gte('end_date', nowIso)
+      .limit(40),
     supabase
       .from('products')
       .select('*, seller:profiles(display_name, avatar_url, is_verified)')
@@ -192,9 +196,16 @@ export default async function Home() {
     ad_type: ad.ad_type
   }));
 
-  const bannerProducts = seededShuffle(activeAds, 42);
-  const boostedProducts = seededShuffle(activeAds.filter(ad => ad.ad_type === 'Boost'), 43);
-  const latestProducts = seededShuffle(latestRes.data || [], Math.floor(Math.random() * 1000000));
+  // Algorithmic fair rotation for Banner and Featured listings
+  const bannerCandidateAds = activeAds.filter(ad => ad.ad_type === 'Featured' || ad.ad_type === 'Campus Ad');
+  const bannerProducts = getFairRotatedPromotions(
+    bannerCandidateAds.length > 0 ? bannerCandidateAds : activeAds,
+    { windowMinutes: 30, seedOffset: 0 }
+  );
+
+  // Both Featured and Boost campaigns are included with fair multi-factor ranking
+  const featuredProducts = getFairRotatedPromotions(activeAds, { windowMinutes: 30, seedOffset: 1 });
+  const latestProducts = seededShuffle(latestRes.data || [], getFairTimeSeed(30, 2));
 
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">
@@ -230,7 +241,7 @@ export default async function Home() {
             </div>
           </div>
         }>
-          <FeaturedSection wishlistIds={wishlistIds} boostedProducts={boostedProducts} latestProducts={latestProducts} />
+          <FeaturedSection wishlistIds={wishlistIds} featuredProducts={featuredProducts} latestProducts={latestProducts} />
         </Suspense>
       </div>
     </div>
