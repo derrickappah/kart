@@ -5,12 +5,15 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
+import SearchBar from '@/components/SearchBar';
+import { formatPrice } from '@/utils/formatters';
 
 export default function WishlistClient({ initialItems }) {
     const router = useRouter();
     const supabase = createClient();
     const [items, setItems] = useState(initialItems || []);
     const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
+    const [searchQuery, setSearchQuery] = useState('');
 
     if (initialItems !== prevInitialItems) {
         setPrevInitialItems(initialItems);
@@ -41,18 +44,62 @@ export default function WishlistClient({ initialItems }) {
         }
     };
 
+    const filteredItems = items.filter((item) => {
+        const product = item.product;
+        if (!product) return false;
+        if (!searchQuery.trim()) return true;
+
+        const query = searchQuery.toLowerCase().trim();
+        const titleMatch = product.title?.toLowerCase().includes(query);
+        const descMatch = product.description?.toLowerCase().includes(query);
+        const categoryMatch = product.category?.toLowerCase().includes(query);
+        const campusMatch = product.campus?.toLowerCase().includes(query);
+        const priceMatch = product.price?.toString().includes(query);
+        const sellerMatch = product.seller?.display_name?.toLowerCase().includes(query);
+
+        return titleMatch || descMatch || categoryMatch || campusMatch || priceMatch || sellerMatch;
+    });
+
     return (
         <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen transition-colors duration-200">
             <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-white dark:bg-[#242428] shadow-2xl overflow-hidden">
 
-                {/* Main Content */}
-                <main className="flex-1 flex flex-col p-4 pb-32 overflow-y-auto no-scrollbar">
-                    {/* Section Title */}
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6 ml-2 mt-4">Saved Items</h3>
+                {/* Sticky Header with Home SearchBar */}
+                <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 border-b border-gray-100/50 dark:border-gray-800/30">
+                    <SearchBar
+                        placeholder="Search saved items..."
+                        showFilter={true}
+                        hideFilter={true}
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        leftContent={
+                            <h1 className="text-xl font-black text-gray-900 dark:text-white px-2">
+                                Saved Items
+                            </h1>
+                        }
+                    />
+                </header>
 
-                    {items.length > 0 ? (
+                {/* Main Content */}
+                <main className="flex-1 flex flex-col p-4 pb-32 overflow-y-auto no-scrollbar space-y-4">
+                    {/* Active search filter feedback */}
+                    {searchQuery.trim() && (
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+                            <span>
+                                Found <strong className="text-slate-800 dark:text-slate-200">{filteredItems.length}</strong> {filteredItems.length === 1 ? 'item' : 'items'}
+                            </span>
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="text-primary font-bold hover:underline"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    )}
+
+                    {filteredItems.length > 0 ? (
                         <div className="grid grid-cols-2 gap-4">
-                            {items.map((item) => {
+                            {filteredItems.map((item) => {
                                 const product = item.product;
                                 if (!product) return null;
 
@@ -110,9 +157,9 @@ export default function WishlistClient({ initialItems }) {
                                                     </h3>
                                                 </Link>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-base font-bold text-primary">₵{parseFloat(product.price).toFixed(0)}</span>
+                                                    <span className="text-base font-bold text-primary">₵{formatPrice(product.price)}</span>
                                                     {hasPriceDrop && (
-                                                        <span className="text-[10px] text-slate-400 font-medium line-through">₵{parseFloat(originalPrice).toFixed(0)}</span>
+                                                        <span className="text-[10px] text-slate-400 font-medium line-through">₵{formatPrice(originalPrice)}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -148,6 +195,22 @@ export default function WishlistClient({ initialItems }) {
                                 );
                             })}
                         </div>
+                    ) : searchQuery.trim() ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
+                            <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+                                <DynamicLucideIcon name="search" className="text-4xl opacity-50" />
+                            </div>
+                            <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No matching saved items</p>
+                            <p className="text-sm mb-6 text-center text-slate-500 dark:text-slate-400">
+                                No items in your wishlist match &quot;{searchQuery}&quot;
+                            </p>
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="h-11 flex items-center justify-center px-6 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
+                            >
+                                Clear Search
+                            </button>
+                        </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-slate-600">
                             <div className="size-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
@@ -161,7 +224,7 @@ export default function WishlistClient({ initialItems }) {
                         </div>
                     )}
 
-                    {items.length > 0 && (
+                    {filteredItems.length > 0 && (
                         <div className="py-12 flex items-center justify-center">
                             <div className="h-px bg-slate-100 dark:bg-white/5 flex-1"></div>
                             <p className="px-4 text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-wider">End of list</p>
