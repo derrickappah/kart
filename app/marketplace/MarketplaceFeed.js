@@ -217,11 +217,11 @@ export default function MarketplaceFeed({
                 {isLoadingMore && (
                     <>
                         {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={`skeleton-${i}`} className="flex flex-col gap-2 animate-pulse">
-                                <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl" />
-                                <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-1" />
-                                <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded" />
-                                <div className="h-3 w-1/3 bg-gray-100 dark:bg-[#2f2f35] rounded" />
+                            <div key={`skeleton-${i}`} className="flex flex-col gap-2">
+                                <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl shimmer" />
+                                <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-1 shimmer" />
+                                <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
+                                <div className="h-3 w-1/3 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                             </div>
                         ))}
                     </>

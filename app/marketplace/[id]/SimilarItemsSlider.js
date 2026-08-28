@@ -220,11 +220,11 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                     Array.from({ length: 6 }).map((_, i) => (
                         <div
                             key={`initial-skeleton-${i}`}
-                            className="flex flex-col gap-1.5 animate-pulse"
+                            className="flex flex-col gap-1.5"
                         >
-                            <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl" />
-                            <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-0.5" />
-                            <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded" />
+                            <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl shimmer" />
+                            <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-0.5 shimmer" />
+                            <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                         </div>
                     ))
                 ) : (
@@ -278,11 +278,11 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
                                 {Array.from({ length: 4 }).map((_, i) => (
                                     <div
                                         key={`more-skeleton-${i}`}
-                                        className="flex flex-col gap-1.5 animate-pulse"
+                                        className="flex flex-col gap-1.5"
                                     >
-                                        <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl" />
-                                        <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-0.5" />
-                                        <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded" />
+                                        <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-[#2f2f35] rounded-xl shimmer" />
+                                        <div className="h-3.5 w-3/4 bg-gray-100 dark:bg-[#2f2f35] rounded mt-0.5 shimmer" />
+                                        <div className="h-4 w-1/2 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                     </div>
                                 ))}
                             </>
