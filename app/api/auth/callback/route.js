@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server'
 export async function GET(request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
+    const token_hash = searchParams.get('token_hash')
+    const type = searchParams.get('type')
     const returnToApp = searchParams.get('return_to_app') === 'true'
     const next = searchParams.get('next') ?? '/'
 
@@ -13,7 +15,7 @@ export async function GET(request) {
     // Create redirect response for normal web flow
     const response = NextResponse.redirect(`${redirectBase}${next}`)
 
-    if (code) {
+    if (code || (token_hash && type)) {
         // Create custom server client that attaches cookies directly to redirect response
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -44,24 +46,33 @@ export async function GET(request) {
         )
 
         console.log('--- Auth Callback Diagnosing ---')
-        console.log('Auth Code:', code ? 'present' : 'missing')
-        const cookieStoreForLog = await cookies()
-        console.log('Available Cookies:', cookieStoreForLog.getAll().map(c => c.name))
+        console.log('Auth Code:', code ? 'present' : 'missing', 'Token Hash:', token_hash ? 'present' : 'missing')
 
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-        
-        if (error) {
-            console.error('exchangeCodeForSession API Error:', error.message, 'Status:', error.status)
-            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(error.message)}&status=${error.status}`)
-        } else {
-            console.log('exchangeCodeForSession Success!')
+        let sessionData = null
+        let sessionError = null
+
+        if (code) {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+            sessionData = data
+            sessionError = error
+        } else if (token_hash && type) {
+            const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
+            sessionData = data
+            sessionError = error
         }
         
-        if (data?.session) {
+        if (sessionError) {
+            console.error('Auth verification error:', sessionError.message, 'Status:', sessionError.status)
+            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(sessionError.message)}&status=${sessionError.status}`)
+        } else {
+            console.log('Auth verification Success!')
+        }
+        
+        if (sessionData?.session) {
             // Short-Token Handoff: only pass the refresh_token to avoid URL length issues
             if (returnToApp || next === 'app' || next.includes('payment-redirect')) {
                 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || origin
-                const { refresh_token } = data.session
+                const { refresh_token } = sessionData.session
                 
                 // Copy cookies to a new redirect response for the app redirect
                 const appRedirectUrl = `${siteUrl}/api/payment-redirect?path=auth-tokens&refresh_token=${refresh_token}`
@@ -153,9 +164,11 @@ export async function GET(request) {
 
             return htmlResponse;
         } else {
-            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=session_empty`)
+            // For token verifications that confirm email without a full session object returned
+            return NextResponse.redirect(`${redirectBase}${next}`)
         }
     } else {
         return NextResponse.redirect(`${origin}/auth/auth-code-error?error=missing_code`)
     }
 }
+

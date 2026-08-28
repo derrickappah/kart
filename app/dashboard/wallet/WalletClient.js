@@ -70,7 +70,9 @@ export default function WalletClient({ initialWallet, initialTransactions }) {
         // In a real app, this would get the user's specific referral link
         // For now, we'll use a generic link with their ID if available
         const baseUrl = window.location.origin;
-        const referralLink = `${baseUrl}/signup?ref=${wallet?.user_id?.substring(0, 8) || 'friend'}`;
+        const referralLink = wallet?.user_id 
+            ? `${baseUrl}/signup?ref=${wallet.user_id}`
+            : `${baseUrl}/signup`;
 
         navigator.clipboard.writeText(referralLink).then(() => {
             setToastMessage('Referral link copied to clipboard!');

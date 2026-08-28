@@ -2,31 +2,70 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Image from 'next/image';
 import Link from 'next/link';
-import { login } from '../auth/actions';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { login, resendConfirmationEmail } from '../auth/actions';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2, Mail, CheckCircle2 } from 'lucide-react';
 
-export default function Login() {
+function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const next = searchParams.get('next');
     const [error, setError] = useState(null);
+    const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
+    const [unconfirmedEmail, setUnconfirmedEmail] = useState('');
+    const [resendStatus, setResendStatus] = useState(null);
+    const [resendLoading, setResendLoading] = useState(false);
+    const [resendCooldown, setResendCooldown] = useState(0);
     const [loading, setLoading] = useState(false);
     const [creatingAccount, setCreatingAccount] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        if (resendCooldown <= 0) return;
+        const timer = setTimeout(() => {
+            setResendCooldown(resendCooldown - 1);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, [resendCooldown]);
 
     async function handleSubmit(e) {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setEmailNotConfirmed(false);
+        setResendStatus(null);
         const formData = new FormData(e.currentTarget);
+        if (next) {
+            formData.append('next', next);
+        }
         const result = await login(formData);
         if (result?.error) {
             setError(result.error);
             setLoading(false);
+            if (result?.emailNotConfirmed) {
+                setEmailNotConfirmed(true);
+                setUnconfirmedEmail(result.email || formData.get('email') || '');
+            }
         }
         // If login succeeded, redirect() was called server-side.
-        // Reset loading after a safety timeout in case the redirect stalls.
         setTimeout(() => setLoading(false), 5000);
+    }
+
+    async function handleResendConfirmation() {
+        if (resendCooldown > 0 || !unconfirmedEmail) return;
+        setResendLoading(true);
+        setResendStatus(null);
+        const formData = new FormData();
+        formData.append('email', unconfirmedEmail);
+        const result = await resendConfirmationEmail(formData);
+        setResendLoading(false);
+        if (result?.error) {
+            setResendStatus({ type: 'error', message: result.error });
+        } else {
+            setResendStatus({ type: 'success', message: 'A new confirmation email has been sent! Please check your inbox and spam folder.' });
+            setResendCooldown(60);
+        }
     }
 
     return (
@@ -56,8 +95,26 @@ export default function Login() {
                 <div className="flex flex-col space-y-5">
                     <form onSubmit={handleSubmit} className="flex flex-col space-y-5">
                         {error && (
-                            <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3 rounded-xl text-sm text-center font-medium">
-                                {error}
+                            <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3.5 rounded-xl text-sm text-center font-medium flex flex-col space-y-2">
+                                <span>{error}</span>
+                                {emailNotConfirmed && (
+                                    <div className="pt-1">
+                                        <button
+                                            type="button"
+                                            onClick={handleResendConfirmation}
+                                            disabled={resendLoading || resendCooldown > 0}
+                                            className="text-xs text-[#1daddd] underline font-semibold hover:text-[#1a9cc7] transition-colors disabled:opacity-50"
+                                        >
+                                            {resendLoading ? 'Sending...' : resendCooldown > 0 ? `Resend link in ${resendCooldown}s` : 'Resend confirmation link'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {resendStatus && (
+                            <div className={`p-3 rounded-xl text-xs text-center font-medium ${resendStatus.type === 'error' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'}`}>
+                                {resendStatus.message}
                             </div>
                         )}
 
@@ -121,7 +178,7 @@ export default function Login() {
                             </button>
 
                             <Link 
-                                href="/signup"
+                                href={next ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}
                                 onClick={() => setCreatingAccount(true)}
                                 className={`bg-[#24282D] dark:bg-white/10 hover:bg-[#24282D]/90 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] text-base flex items-center justify-center gap-2 ${creatingAccount || loading ? 'pointer-events-none opacity-50' : ''}`}
                             >
@@ -148,3 +205,12 @@ export default function Login() {
         </main>
     );
 }
+
+export default function Login() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <LoginForm />
+        </Suspense>
+    );
+}
+
