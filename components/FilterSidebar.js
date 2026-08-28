@@ -25,7 +25,7 @@ const categoryIcons = {
 };
 
 const categories = Object.keys(categoryIcons);
-const conditions = ['New', 'Like New', 'Good', 'Fair'];
+const conditions = ['New', 'Like New', 'Good', 'Fair', 'Acceptable'];
 
 const sortOptions = [
     { value: 'newest', label: 'Newest First', icon: 'schedule' },

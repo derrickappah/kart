@@ -48,7 +48,7 @@ export default function EditListingClient({ product }) {
         'Home Appliances'
     ];
 
-    const conditions = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
+    const conditions = ['New', 'Like New', 'Good', 'Fair', 'Acceptable'];
 
     const photosRef = useRef(photos);
     useEffect(() => {

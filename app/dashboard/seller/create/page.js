@@ -510,7 +510,7 @@ export default function CreateListingPage() {
                     <div className="space-y-2">
                         <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" id="condition-label">Condition</label>
                         <div role="radiogroup" aria-labelledby="condition-label" className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-                            {['New', 'Like New', 'Good', 'Fair', 'Poor'].map((cond) => (
+                            {['New', 'Like New', 'Good', 'Fair', 'Acceptable'].map((cond) => (
                                 <button
                                     key={cond}
                                     type="button"
