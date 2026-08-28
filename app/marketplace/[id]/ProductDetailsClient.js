@@ -511,7 +511,6 @@ export default function ProductDetailsClient({ product }) {
                                                     name="verified"
                                                     size={16}
                                                     className="text-[#1daddd] shrink-0"
-                                                    fill="currentColor"
                                                     aria-label="Verified Seller"
                                                 />
                                             )}
