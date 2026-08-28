@@ -551,7 +551,7 @@ export default function ProductDetailsClient({ product }) {
                                         </div>
                                         <div>
                                             <p className="font-bold text-sm text-[#0e181b] dark:text-white">{product.campus}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400">Coordinate via chat for a safe campus handover</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Coordinate with seller via chat for a safe handover</p>
                                         </div>
                                     </div>
                                 </div>
