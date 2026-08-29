@@ -4,7 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toSentenceCase, formatPrice } from '../utils/formatters';
 
-export default function PromotedBanner({ products }) {
+export default function PromotedBanner({ products = [] }) {
+    const validProducts = (products || []).filter(p => p && p.id && (p.image_url || p.images?.[0]));
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
     const [touchStart, setTouchStart] = useState(null);
@@ -14,27 +15,27 @@ export default function PromotedBanner({ products }) {
     const minSwipeDistance = 50;
 
     const nextSlide = useCallback(() => {
-        setCurrentIndex((prev) => (prev === products.length - 1 ? 0 : prev + 1));
-    }, [products.length]);
+        setCurrentIndex((prev) => (prev === validProducts.length - 1 ? 0 : prev + 1));
+    }, [validProducts.length]);
 
     const prevSlide = useCallback(() => {
-        setCurrentIndex((prev) => (prev === 0 ? products.length - 1 : prev - 1));
-    }, [products.length]);
+        setCurrentIndex((prev) => (prev === 0 ? validProducts.length - 1 : prev - 1));
+    }, [validProducts.length]);
 
     useEffect(() => {
-        if (!products || products.length <= 1 || isHovered) return;
+        if (!validProducts || validProducts.length <= 1 || isHovered) return;
 
         const interval = setInterval(() => {
             nextSlide();
         }, 4000); // 4 seconds
 
         return () => clearInterval(interval);
-    }, [nextSlide, products, isHovered]);
+    }, [nextSlide, validProducts, isHovered]);
 
     // Track views when active slide changes (with session cache to prevent rapid API inflation)
     useEffect(() => {
-        if (products && products[currentIndex] && products[currentIndex].advertisement_id) {
-            const adId = products[currentIndex].advertisement_id;
+        if (validProducts && validProducts[currentIndex] && validProducts[currentIndex].advertisement_id) {
+            const adId = validProducts[currentIndex].advertisement_id;
             const viewKey = `ad_view_${adId}`;
             
             // Check session cache first
@@ -47,7 +48,7 @@ export default function PromotedBanner({ products }) {
                 }).catch(err => console.error('Error tracking ad view:', err));
             }
         }
-    }, [currentIndex, products]);
+    }, [currentIndex, validProducts]);
 
     const handleAdClick = (adId) => {
         if (!adId) return;
@@ -87,7 +88,7 @@ export default function PromotedBanner({ products }) {
         }
     };
 
-    if (!products || products.length === 0) return null;
+    if (!validProducts || validProducts.length === 0) return null;
 
     return (
         <div className="px-5 pt-4 pb-2" role="region" aria-roledescription="carousel" aria-label="Promoted Listings">
@@ -102,7 +103,7 @@ export default function PromotedBanner({ products }) {
                 className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-lg group"
                 aria-live={isHovered ? 'off' : 'polite'}
             >
-                {products.map((p, idx) => {
+                {validProducts.map((p, idx) => {
                     // Only render the visible slide and immediate neighbors to avoid loading all images
                     if (Math.abs(idx - currentIndex) > 1) return null;
                     return (
@@ -110,7 +111,7 @@ export default function PromotedBanner({ products }) {
                         key={p.id}
                         role="group"
                         aria-roledescription="slide"
-                        aria-label={`${idx + 1} of ${products.length}`}
+                        aria-label={`${idx + 1} of ${validProducts.length}`}
                         className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                             }`}
                     >
@@ -140,9 +141,9 @@ export default function PromotedBanner({ products }) {
                 })}
 
                 {/* Indicators */}
-                {products.length > 1 && (
+                {validProducts.length > 1 && (
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20" role="group" aria-label="Slide indicators">
-                        {products.map((_, idx) => (
+                        {validProducts.map((_, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => setCurrentIndex(idx)}

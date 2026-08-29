@@ -202,16 +202,18 @@ export default async function Home() {
   const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
   
   // Format active promotions to match products shape with advertisement_id
-  const activeAds = (adsData || []).map(ad => ({
-    ...ad.product,
-    advertisement_id: ad.id,
-    ad_type: ad.ad_type
-  }));
+  const activeAds = (adsData || [])
+    .filter(ad => ad?.product && ad.product.id)
+    .map(ad => ({
+      ...ad.product,
+      advertisement_id: ad.id,
+      ad_type: ad.ad_type
+    }));
 
-  // Algorithmic fair rotation for Banner and Featured listings
+  // Algorithmic fair rotation for Banner and Featured listings (only genuine Featured or Campus Ads in hero banner)
   const bannerCandidateAds = activeAds.filter(ad => ad.ad_type === 'Featured' || ad.ad_type === 'Campus Ad');
   const bannerProducts = getFairRotatedPromotions(
-    bannerCandidateAds.length > 0 ? bannerCandidateAds : activeAds,
+    bannerCandidateAds,
     { windowMinutes: 30, seedOffset: 0 }
   ).slice(0, 5);
 
