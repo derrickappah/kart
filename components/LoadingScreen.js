@@ -15,47 +15,54 @@ export default function LoadingScreen({ message = "Loading KART...", fullScreen 
     return () => setMounted(false);
   }, []);
 
-  const isEditingPage = pathname && (
+  const isProductPage = pathname?.startsWith('/marketplace/') && pathname !== '/marketplace/categories';
+
+  const isEditingPage = (
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/forgot-password' ||
-    pathname.includes('/create') ||
-    pathname.includes('/edit') ||
-    pathname.includes('/promote/') ||
-    pathname.includes('/withdraw') ||
-    pathname.includes('/buy') ||
-    pathname.includes('/review') ||
-    pathname.includes('/verify') ||
-    pathname.includes('/success') ||
-    pathname.startsWith('/dashboard/admin') ||
-    (pathname.startsWith('/dashboard/messages/') && pathname !== '/dashboard/messages') ||
-    (pathname.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)
-  ) && !pathname.includes('/profile/edit');
+    pathname === '/reset-password' ||
+    pathname === '/maintenance' ||
+    pathname?.includes('/create') ||
+    pathname?.includes('/edit') ||
+    pathname?.includes('/promote/') ||
+    pathname?.includes('/withdraw') ||
+    pathname?.includes('/buy') ||
+    pathname?.includes('/review') ||
+    pathname?.includes('/verify') ||
+    pathname?.includes('/success') ||
+    pathname?.startsWith('/dashboard/admin') ||
+    (pathname?.startsWith('/dashboard/messages/') && pathname !== '/dashboard/messages') ||
+    (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)
+  ) && !pathname?.includes('/profile/edit');
 
-  const minHeightClass = isEditingPage ? "min-h-screen" : "min-h-[calc(100vh-160px)]";
+  const hasGlobalNavPadding = !isEditingPage && !isProductPage;
+  const minHeightClass = hasGlobalNavPadding 
+    ? "min-h-[calc(100dvh-130px)]" 
+    : "min-h-[100dvh]";
 
   const content = (
     <div 
       className={
         fullScreen
-          ? "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-[#242428] max-w-md mx-auto left-0 right-0 transition-colors duration-300 h-screen w-screen"
-          : `w-full ${minHeightClass} flex flex-col items-center justify-center bg-white dark:bg-[#242428] transition-colors duration-300`
+          ? "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-[#242428] w-full h-[100dvh] transition-colors duration-300"
+          : `w-full flex-1 ${minHeightClass} flex flex-col items-center justify-center bg-white dark:bg-[#242428] transition-colors duration-300`
       }
     >
-      <div className="w-36 h-36 flex items-center justify-center relative">
+      <div className="w-36 h-36 flex items-center justify-center relative select-none">
         {/* Subtle radial backing brand glow */}
-        <div className="absolute inset-4 bg-[#1daddd]/10 rounded-full blur-2xl animate-pulse"></div>
+        <div className="absolute inset-4 bg-[#1daddd]/10 rounded-full blur-2xl animate-pulse pointer-events-none"></div>
         <Lottie
           animationData={loadingAnimation}
           loop={true}
-          className="w-full h-full relative z-10"
+          className="w-full h-full relative z-10 flex items-center justify-center"
+          style={{ width: '100%', height: '100%' }}
         />
       </div>
     </div>
   );
 
-  if (fullScreen) {
-    if (!mounted) return null;
+  if (fullScreen && mounted) {
     return createPortal(content, document.body);
   }
 
