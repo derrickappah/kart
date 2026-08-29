@@ -231,12 +231,11 @@ export default function EditListingClient({ product }) {
                 throw new Error(result.error || 'Failed to update listing');
             }
 
-            router.push('/dashboard/seller/listings');
-            router.refresh();
+            window.location.href = '/dashboard/seller/listings';
+            return;
         } catch (err) {
             setError(err.message || 'Failed to update listing');
             isSubmittingRef.current = false;
-        } finally {
             setLoading(false);
         }
     };

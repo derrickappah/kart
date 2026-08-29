@@ -321,18 +321,18 @@ export default function CreateListingPage() {
             }
 
             // Show debug info in console even on success
-            if (result.debug) {
-                console.log('[CreateListing] Server debug log:\n' + result.debug);
-            }
+            // Step 3: Navigate directly to celebration success page
+            const targetUrl = result.productId 
+                ? `/dashboard/seller/create/success?id=${result.productId}`
+                : '/dashboard/seller/listings';
 
-            router.push(`/dashboard/seller/create/success?id=${result.productId}`);
-            router.refresh();
+            window.location.href = targetUrl;
+            return;
 
         } catch (err) {
             console.error('[CreateListing] Submit error:', err);
             setError(err.message || 'Failed to create listing. Please try again.');
             isSubmittingRef.current = false;
-        } finally {
             setLoading(false);
             setUploadProgress('');
         }
