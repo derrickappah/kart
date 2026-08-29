@@ -254,19 +254,39 @@ export default function CreateListingPage() {
 
             // Step 1: Collect compressed photo payloads
             const imagesPayload = [];
+            console.log('[CreateListing] imageFiles state:', imageFiles.length, 'items');
+            
             if (imageFiles.length > 0) {
                 for (let i = 0; i < imageFiles.length; i++) {
                     const item = imageFiles[i];
+                    console.log(`[CreateListing] imageFiles[${i}]:`, {
+                        hasDataUrl: !!item.dataUrl,
+                        dataUrlLength: item.dataUrl ? item.dataUrl.length : 0,
+                        dataUrlPrefix: item.dataUrl ? item.dataUrl.substring(0, 50) : 'NONE',
+                        hasFile: !!item.file,
+                        itemType: typeof item,
+                        itemKeys: typeof item === 'object' ? Object.keys(item) : 'N/A'
+                    });
+                    
                     if (item.dataUrl) {
                         imagesPayload.push(item.dataUrl);
                     } else {
                         setUploadProgress(`Processing photo ${i + 1} of ${imageFiles.length}...`);
                         const processed = await compressProductImage(item.file || item);
+                        console.log(`[CreateListing] Fallback compress result for [${i}]:`, {
+                            hasDataUrl: !!processed.dataUrl,
+                            dataUrlLength: processed.dataUrl ? processed.dataUrl.length : 0
+                        });
                         if (processed.dataUrl) {
                             imagesPayload.push(processed.dataUrl);
                         }
                     }
                 }
+            }
+
+            console.log('[CreateListing] Final imagesPayload:', imagesPayload.length, 'items');
+            for (let i = 0; i < imagesPayload.length; i++) {
+                console.log(`[CreateListing] imagesPayload[${i}]: length=${imagesPayload[i].length}, prefix="${imagesPayload[i].substring(0, 60)}"`);
             }
 
             if (imageFiles.length > 0 && imagesPayload.length === 0) {
@@ -276,6 +296,7 @@ export default function CreateListingPage() {
             setUploadProgress('Creating listing on server...');
 
             // Step 2: Call Server Action to handle atomic storage upload & database insert
+            console.log('[CreateListing] Calling createListingAction with', imagesPayload.length, 'images');
             const result = await createListingAction({
                 title: titleTrimmed,
                 price: priceNum,
@@ -286,14 +307,29 @@ export default function CreateListingPage() {
                 images: imagesPayload
             });
 
+            console.log('[CreateListing] Server action result:', {
+                success: result.success,
+                error: result.error,
+                productId: result.productId,
+                debug: result.debug
+            });
+
             if (!result.success) {
-                throw new Error(result.error || 'Failed to create listing');
+                // Include server debug info in error message
+                const debugInfo = result.debug ? `\n\n[Server Debug]\n${result.debug}` : '';
+                throw new Error((result.error || 'Failed to create listing') + debugInfo);
+            }
+
+            // Show debug info in console even on success
+            if (result.debug) {
+                console.log('[CreateListing] Server debug log:\n' + result.debug);
             }
 
             router.push(`/dashboard/seller/create/success?id=${result.productId}`);
             router.refresh();
 
         } catch (err) {
+            console.error('[CreateListing] Submit error:', err);
             setError(err.message || 'Failed to create listing. Please try again.');
             isSubmittingRef.current = false;
         } finally {
