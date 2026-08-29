@@ -3,9 +3,9 @@ import { createClient } from './supabase/client';
 
 /**
  * Resiliently upload a single image.
- * 1. Optimizes and compresses the image client-side to minimize payload and transmission time.
- * 2. Attempts direct client-side upload to Supabase Storage with auto-retry.
- * 3. Automatically falls back to /api/upload server proxy if client connection fails (e.g. adblocker, DNS, CORS, mobile WebKit).
+ * 1. Optimizes and compresses the image client-side to universal ~100KB JPEG.
+ * 2. Attempts direct client-side upload to Supabase Storage.
+ * 3. Automatically falls back to /api/upload server proxy if client connection fails (e.g. mobile WebKit CORS, adblocker, DNS).
  * 
  * @param {File|Blob} file - The file to upload
  * @param {string} userId - Current authenticated user ID
@@ -15,61 +15,54 @@ import { createClient } from './supabase/client';
 export async function uploadProductImage(file, userId, options = {}) {
     const {
         supabaseClient = null,
-        bucket = 'products',
-        maxRetries = 1
+        bucket = 'products'
     } = options;
 
     const supabase = supabaseClient || createClient();
 
-    // Step 1: Compress image on client via FileReader + Canvas
+    // Step 1: Fast, hardware-accelerated client-side compression (~80-150KB JPEG)
     const { blob, extension, contentType } = await compressProductImage(file);
     const fileName = `${userId || 'item'}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${extension}`;
     const filePath = fileName;
 
-    let lastError = null;
+    let directUploadError = null;
 
-    // Step 2: Attempt direct client upload
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-            if (attempt > 0) {
-                await new Promise((resolve) => setTimeout(resolve, 400));
-            }
+    // Step 2: Try direct upload to Supabase
+    try {
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(filePath, blob, {
+                contentType: contentType || 'image/jpeg',
+                upsert: true,
+                cacheControl: '31536000'
+            });
 
-            const { error: uploadError } = await supabase.storage
-                .from(bucket)
-                .upload(filePath, blob, {
-                    contentType: contentType || 'image/jpeg',
-                    upsert: true,
-                    cacheControl: '31536000'
-                });
-
-            if (uploadError) {
-                lastError = uploadError;
-                console.warn(`[Upload] Direct client upload attempt ${attempt + 1} failed:`, uploadError.message);
-                continue;
-            }
-
-            // Direct upload succeeded
+        if (!uploadError && uploadData) {
             const { data: { publicUrl } } = supabase.storage
                 .from(bucket)
                 .getPublicUrl(filePath);
 
-            return { publicUrl, filePath };
-        } catch (err) {
-            lastError = err;
-            console.warn(`[Upload] Direct client upload exception attempt ${attempt + 1}:`, err.message || err);
+            if (publicUrl) {
+                return { publicUrl, filePath };
+            }
         }
+
+        if (uploadError) {
+            directUploadError = uploadError;
+            console.warn('[Upload] Direct storage upload failed, using /api/upload fallback:', uploadError.message);
+        }
+    } catch (directErr) {
+        directUploadError = directErr;
+        console.warn('[Upload] Direct upload network exception, using /api/upload fallback:', directErr.message || directErr);
     }
 
-    // Step 3: Direct upload failed — Fallback to server-side /api/upload route with bearer token
+    // Step 3: Direct upload failed (often on mobile WebKit/Capacitor) — Use /api/upload server endpoint
     try {
-        console.log('[Upload] Attempting server-side fallback upload via /api/upload...');
-        
-        // Get active session token for Authorization header (crucial for mobile Safari & Capacitor)
+        console.log('[Upload] Executing server-side fallback upload via /api/upload...');
+
         const { data: { session } } = await supabase.auth.getSession();
 
         const formData = new FormData();
-        // Use standard (name, blob, filename) signature without new File() constructor for iOS compatibility
         formData.append('file', blob, fileName);
         formData.append('bucket', bucket);
         formData.append('filePath', filePath);
@@ -79,7 +72,18 @@ export async function uploadProductImage(file, userId, options = {}) {
             headers['Authorization'] = `Bearer ${session.access_token}`;
         }
 
-        const response = await fetch('/api/upload', {
+        let uploadUrl = '/api/upload';
+        // Handle Capacitor or isolated webview hosts
+        if (typeof window !== 'undefined' && window.location.origin) {
+            const isLocalhostApp = window.location.origin.includes('localhost') && !window.location.origin.includes(':3000');
+            const isCapacitorScheme = window.location.origin.startsWith('capacitor:') || window.location.origin.startsWith('ionic:');
+            if (isLocalhostApp || isCapacitorScheme) {
+                const appHost = process.env.NEXT_PUBLIC_APP_URL || 'https://kart-murex.vercel.app';
+                uploadUrl = `${appHost}/api/upload`;
+            }
+        }
+
+        const response = await fetch(uploadUrl, {
             method: 'POST',
             body: formData,
             headers,
@@ -98,10 +102,10 @@ export async function uploadProductImage(file, userId, options = {}) {
         }
 
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server upload failed with status ${response.status}`);
-    } catch (serverErr) {
-        console.error('[Upload] Both direct and fallback upload failed:', serverErr);
-        const detail = lastError?.message || serverErr.message || 'Network connection failed';
+        throw new Error(errorData.error || `Server upload failed (${response.status})`);
+    } catch (fallbackErr) {
+        console.error('[Upload] Fallback upload failed:', fallbackErr);
+        const detail = directUploadError?.message || fallbackErr.message || 'Connection failed';
         throw new Error(`Upload failed: ${detail}. Please check your connection and try again.`);
     }
 }
@@ -116,8 +120,7 @@ export async function uploadProductImage(file, userId, options = {}) {
 export async function uploadProductImages(files, userId, options = {}) {
     const {
         onProgress = null,
-        bucket = 'products',
-        concurrency = 1
+        bucket = 'products'
     } = options;
 
     if (!files || files.length === 0) {
@@ -129,27 +132,20 @@ export async function uploadProductImages(files, userId, options = {}) {
     let completedCount = 0;
     const total = files.length;
 
-    const processFile = async (file) => {
-        const result = await uploadProductImage(file, userId, { bucket });
-        completedCount++;
-        if (onProgress) {
-            onProgress({
-                completed: completedCount,
-                total,
-                percent: Math.round((completedCount / total) * 100)
-            });
-        }
-        return result;
-    };
-
     try {
-        // Upload sequentially on mobile for lower memory and socket stability
-        for (let i = 0; i < files.length; i += concurrency) {
-            const chunk = files.slice(i, i + concurrency);
-            const results = await Promise.all(chunk.map(file => processFile(file)));
-            for (const res of results) {
-                uploadedUrls.push(res.publicUrl);
-                uploadedPaths.push(res.filePath);
+        // Upload one by one sequentially for maximum mobile stability & low memory consumption
+        for (const file of files) {
+            const result = await uploadProductImage(file, userId, { bucket });
+            uploadedUrls.push(result.publicUrl);
+            uploadedPaths.push(result.filePath);
+
+            completedCount++;
+            if (onProgress) {
+                onProgress({
+                    completed: completedCount,
+                    total,
+                    percent: Math.round((completedCount / total) * 100)
+                });
             }
         }
 

@@ -66,7 +66,7 @@ export function validateImage(file) {
  * @returns {Promise<Blob>} - Compressed image blob
  */
 export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0.8) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const reader = new FileReader();
 
         reader.onload = (e) => {
@@ -77,7 +77,6 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
                 let width = img.width;
                 let height = img.height;
 
-                // Calculate new dimensions while maintaining aspect ratio
                 if (width > height) {
                     if (width > maxWidth) {
                         height = Math.round((height * maxWidth) / width);
@@ -125,118 +124,122 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
 
 /**
  * Compresses and optimizes a product image for marketplace listing.
- * Uses FileReader for 100% compatibility across Mobile Safari, Android, and WebViews.
- * Downscales to max 1280x1280 and encodes to WebP/JPEG blob (~100-250KB).
+ * Highly optimized for Mobile Safari, Android, and Capacitor WebViews.
+ * Downscales to max 1200x1200 and encodes to JPEG blob (~80-150KB).
  * 
  * @param {File|Blob} file - The image file to compress
  * @param {Object} options - Compression options
  * @returns {Promise<{ blob: Blob, extension: string, contentType: string }>}
  */
-export function compressProductImage(file, { maxWidth = 1280, maxHeight = 1280, quality = 0.8 } = {}) {
-    return new Promise((resolve) => {
-        if (!file) {
-            return resolve({ blob: file, extension: 'jpg', contentType: 'image/jpeg' });
+export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 1200, quality = 0.75 } = {}) {
+    if (!file) {
+        return { blob: file, extension: 'jpg', contentType: 'image/jpeg' };
+    }
+
+    if (typeof window === 'undefined') {
+        const ext = getFileExtension(file);
+        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+    }
+
+    // Try native createImageBitmap first (hardware accelerated, decodes HEIC & EXIF on modern mobile)
+    let sourceImage = null;
+    let isBitmap = false;
+
+    if (typeof createImageBitmap === 'function') {
+        try {
+            sourceImage = await createImageBitmap(file);
+            isBitmap = true;
+        } catch {
+            // Fallback to Image element
+        }
+    }
+
+    if (!sourceImage) {
+        sourceImage = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (!sourceImage) {
+        console.warn('[ImageUtils] Image decode failed, passing original file');
+        const ext = getFileExtension(file);
+        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+    }
+
+    try {
+        let width = sourceImage.width || sourceImage.naturalWidth;
+        let height = sourceImage.height || sourceImage.naturalHeight;
+
+        if (!width || !height || width <= 0 || height <= 0) {
+            if (isBitmap && sourceImage.close) sourceImage.close();
+            const ext = getFileExtension(file);
+            return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
         }
 
-        // If not running in browser environment, return original
-        if (typeof window === 'undefined' || typeof document === 'undefined') {
-            const ext = getFileExtension(file);
-            return resolve({ blob: file, extension: ext, contentType: file.type || 'image/jpeg' });
+        // Downscale bounds
+        if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.max(1, Math.round(width * ratio));
+            height = Math.max(1, Math.round(height * ratio));
         }
 
-        const reader = new FileReader();
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
 
-        reader.onload = (readerEvent) => {
-            const img = new Image();
-
-            img.onload = () => {
-                try {
-                    let width = img.naturalWidth || img.width;
-                    let height = img.naturalHeight || img.height;
-
-                    if (!width || !height || width <= 0 || height <= 0) {
-                        const ext = getFileExtension(file);
-                        return resolve({ blob: file, extension: ext, contentType: file.type || 'image/jpeg' });
-                    }
-
-                    // Calculate bounded aspect ratio
-                    if (width > maxWidth || height > maxHeight) {
-                        const ratio = Math.min(maxWidth / width, maxHeight / height);
-                        width = Math.max(1, Math.round(width * ratio));
-                        height = Math.max(1, Math.round(height * ratio));
-                    }
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d', { alpha: false });
-                    if (!ctx) {
-                        const ext = getFileExtension(file);
-                        return resolve({ blob: file, extension: ext, contentType: file.type || 'image/jpeg' });
-                    }
-
-                    // Fill white background for non-alpha rendering
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.fillRect(0, 0, width, height);
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Try exporting to WebP or JPEG using synchronous dataURL fallback for mobile webviews
-                    try {
-                        let dataUrl = null;
-                        let outputFormat = 'webp';
-                        let contentType = 'image/webp';
-
-                        // Test webp support via toDataURL
-                        const testWebp = canvas.toDataURL('image/webp', quality);
-                        if (testWebp && testWebp.startsWith('data:image/webp')) {
-                            dataUrl = testWebp;
-                            outputFormat = 'webp';
-                            contentType = 'image/webp';
-                        } else {
-                            dataUrl = canvas.toDataURL('image/jpeg', quality);
-                            outputFormat = 'jpg';
-                            contentType = 'image/jpeg';
-                        }
-
-                        const blob = dataURItoBlob(dataUrl);
-                        if (blob && blob.size > 0) {
-                            return resolve({
-                                blob,
-                                extension: outputFormat,
-                                contentType
-                            });
-                        }
-                    } catch (canvasErr) {
-                        console.warn('[ImageUtils] Canvas toDataURL failed, using original:', canvasErr);
-                    }
-
-                    const ext = getFileExtension(file);
-                    return resolve({ blob: file, extension: ext, contentType: file.type || 'image/jpeg' });
-                } catch (err) {
-                    console.warn('[ImageUtils] Compression error:', err);
-                    const ext = getFileExtension(file);
-                    return resolve({ blob: file, extension: ext, contentType: file.type || 'image/jpeg' });
-                }
-            };
-
-            img.onerror = () => {
-                console.warn('[ImageUtils] Image load error on dataURL, using original file');
-                const ext = getFileExtension(file);
-                return resolve({ blob: file, extension: ext, contentType: file.type || 'image/jpeg' });
-            };
-
-            img.src = readerEvent.target.result;
-        };
-
-        reader.onerror = () => {
-            console.warn('[ImageUtils] FileReader error on file, using original file');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        if (!ctx) {
+            if (isBitmap && sourceImage.close) sourceImage.close();
             const ext = getFileExtension(file);
-            return resolve({ blob: file, extension: ext, contentType: file.type || 'image/jpeg' });
-        };
+            return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+        }
 
-        reader.readAsDataURL(file);
-    });
+        // Fill clean white background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(sourceImage, 0, 0, width, height);
+
+        if (isBitmap && sourceImage.close) {
+            sourceImage.close();
+        }
+
+        // Export as universal JPEG (guaranteed ~80KB-150KB)
+        let blob = null;
+
+        if (typeof canvas.toBlob === 'function') {
+            blob = await new Promise((res) => {
+                canvas.toBlob((b) => res(b), 'image/jpeg', quality);
+            });
+        }
+
+        if (!blob || blob.size === 0) {
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            blob = dataURItoBlob(dataUrl);
+        }
+
+        if (blob && blob.size > 0) {
+            return {
+                blob,
+                extension: 'jpg',
+                contentType: 'image/jpeg'
+            };
+        }
+
+        const ext = getFileExtension(file);
+        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+    } catch (err) {
+        console.warn('[ImageUtils] Canvas processing exception, passing original file:', err);
+        const ext = getFileExtension(file);
+        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+    }
 }
 
 /**

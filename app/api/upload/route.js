@@ -4,6 +4,19 @@ import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+};
+
+export async function OPTIONS() {
+    return new NextResponse(null, {
+        status: 200,
+        headers: corsHeaders,
+    });
+}
+
 export async function POST(request) {
     try {
         let user = null;
@@ -35,7 +48,10 @@ export async function POST(request) {
         }
 
         if (!user) {
-            return NextResponse.json({ error: 'Unauthorized: Please log in to upload files' }, { status: 401 });
+            return NextResponse.json(
+                { error: 'Unauthorized: Please log in to upload files' },
+                { status: 401, headers: corsHeaders }
+            );
         }
 
         const formData = await request.formData();
@@ -44,12 +60,18 @@ export async function POST(request) {
         let customPath = formData.get('filePath');
 
         if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'No file provided' },
+                { status: 400, headers: corsHeaders }
+            );
         }
 
         const allowedBuckets = ['products', 'profiles', 'chat-attachments', 'verifications'];
         if (!allowedBuckets.includes(bucket)) {
-            return NextResponse.json({ error: 'Invalid storage bucket' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Invalid storage bucket' },
+                { status: 400, headers: corsHeaders }
+            );
         }
 
         const bytes = await file.arrayBuffer();
@@ -75,7 +97,10 @@ export async function POST(request) {
 
         if (uploadError) {
             console.error('[Upload API] Storage upload error:', uploadError);
-            return NextResponse.json({ error: uploadError.message || 'Storage upload failed' }, { status: 500 });
+            return NextResponse.json(
+                { error: uploadError.message || 'Storage upload failed' },
+                { status: 500, headers: corsHeaders }
+            );
         }
 
         const { data: { publicUrl } } = serviceClient.storage
@@ -86,9 +111,12 @@ export async function POST(request) {
             success: true,
             publicUrl,
             filePath
-        });
+        }, { headers: corsHeaders });
     } catch (error) {
         console.error('[Upload API] Unexpected error:', error);
-        return NextResponse.json({ error: error.message || 'Internal server error during upload' }, { status: 500 });
+        return NextResponse.json(
+            { error: error.message || 'Internal server error during upload' },
+            { status: 500, headers: corsHeaders }
+        );
     }
 }
