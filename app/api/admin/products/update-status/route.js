@@ -1,5 +1,6 @@
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { deleteCache } from '@/lib/cache';
 
 /**
  * POST /api/admin/products/update-status
@@ -46,6 +47,14 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Invalidate product details and public listings cache
+  await Promise.all([
+    deleteCache(`product:${productId}:details`),
+    deleteCache('home:products:latest'),
+    deleteCache('home:ads:active'),
+    deleteCache('marketplace:feed:*'),
+  ]);
+
   return NextResponse.json({ success: true });
 }
 
@@ -87,6 +96,14 @@ export async function DELETE(request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Invalidate product details and public listings cache
+  await Promise.all([
+    deleteCache(`product:${productId}:details`),
+    deleteCache('home:products:latest'),
+    deleteCache('home:ads:active'),
+    deleteCache('marketplace:feed:*'),
+  ]);
 
   return NextResponse.json({ success: true });
 }

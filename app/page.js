@@ -10,6 +10,7 @@ import AdTracker from "../components/AdTracker";
 import { toSentenceCase, seededShuffle, formatPrice } from '../utils/formatters';
 import { getFairRotatedPromotions, getDivergentFeaturedPromotions, getFairTimeSeed } from '../utils/promotionAlgorithm';
 import FeaturedSlider from "../components/FeaturedSlider";
+import { getOrSet } from '@/lib/cache';
 
 export const revalidate = 60;
 
@@ -164,39 +165,44 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const nowIso = new Date().toISOString();
-
-  const [wishlistRes, adsRes, latestRes] = await Promise.all([
+  const [wishlistRes, adsData, latestData] = await Promise.all([
     user
       ? supabase.from('wishlist').select('product_id').eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
-    supabase
-      .from('advertisements')
-      .select(`
-        id,
-        ad_type,
-        product:products!inner(
-          *,
-          seller:profiles(display_name, avatar_url, is_verified)
-        )
-      `)
-      .eq('status', 'Active')
-      .eq('product.status', 'Active')
-      .lte('start_date', nowIso)
-      .gte('end_date', nowIso)
-      .limit(40),
-    supabase
-      .from('products')
-      .select('*, seller:profiles(display_name, avatar_url, is_verified)')
-      .eq('status', 'Active')
-      .order('created_at', { ascending: false })
-      .limit(20),
+    getOrSet('home:ads:active', async () => {
+      const nowIso = new Date().toISOString();
+      const { data } = await supabase
+        .from('advertisements')
+        .select(`
+          id,
+          ad_type,
+          product:products!inner(
+            *,
+            seller:profiles(display_name, avatar_url, is_verified)
+          )
+        `)
+        .eq('status', 'Active')
+        .eq('product.status', 'Active')
+        .lte('start_date', nowIso)
+        .gte('end_date', nowIso)
+        .limit(40);
+      return data || [];
+    }, 60),
+    getOrSet('home:products:latest', async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('*, seller:profiles(display_name, avatar_url, is_verified)')
+        .eq('status', 'Active')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      return data || [];
+    }, 60),
   ]);
 
   const wishlistIds = wishlistRes.data?.map(item => item.product_id) || [];
   
   // Format active promotions to match products shape with advertisement_id
-  const activeAds = (adsRes.data || []).map(ad => ({
+  const activeAds = (adsData || []).map(ad => ({
     ...ad.product,
     advertisement_id: ad.id,
     ad_type: ad.ad_type
@@ -215,7 +221,7 @@ export default async function Home() {
     bannerProducts,
     { windowMinutes: 30, seedOffset: 1 }
   );
-  const latestProducts = seededShuffle(latestRes.data || [], getFairTimeSeed(30, 2));
+  const latestProducts = seededShuffle(latestData || [], getFairTimeSeed(30, 2));
 
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">

@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createServiceRoleClient } from '@/utils/supabase/server';
+import { getOrSet, deleteCache } from '@/lib/cache';
 
 export async function GET() {
     try {
         const supabase = await createClient();
 
-        const { data: plans, error } = await supabase
-            .from('subscription_plans')
-            .select('*')
-            .order('price', { ascending: true });
+        const plans = await getOrSet('plans:subscription', async () => {
+            const { data, error } = await supabase
+                .from('subscription_plans')
+                .select('*')
+                .order('price', { ascending: true });
 
-        if (error) {
-            console.error('[Plans API] Error fetching plans:', error);
-            return NextResponse.json({ error: 'Failed to fetch plans' }, { status: 500 });
-        }
+            if (error) {
+                console.error('[Plans API] Error fetching plans:', error);
+                throw error;
+            }
 
-        return NextResponse.json({ plans: plans || [] });
+            return data || [];
+        }, 300);
+
+        return NextResponse.json({ plans });
     } catch (error) {
         console.error('[Plans API] Unexpected error:', error);
         return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
@@ -75,6 +80,7 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Failed to create plan' }, { status: 500 });
         }
 
+        await deleteCache('plans:subscription');
         return NextResponse.json({ success: true, plan });
     } catch (error) {
         console.error('[Plans API] Unexpected error:', error);
@@ -127,6 +133,7 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Failed to update plan' }, { status: 500 });
         }
 
+        await deleteCache('plans:subscription');
         return NextResponse.json({ success: true, plan });
     } catch (error) {
         console.error('[Plans API] Unexpected error:', error);
@@ -185,6 +192,7 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Failed to delete plan' }, { status: 500 });
         }
 
+        await deleteCache('plans:subscription');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[Plans API] Unexpected error:', error);

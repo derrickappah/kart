@@ -4,6 +4,7 @@ import ProductDetailsClient from './ProductDetailsClient';
 import ProductDetailsSkeleton from './ProductDetailsSkeleton';
 import Link from 'next/link';
 import { toSentenceCase, formatPrice } from '@/utils/formatters';
+import { getOrSet } from '@/lib/cache';
 
 /**
  * ISR revalidation: 60 seconds keeps sold/removed listings from being
@@ -18,20 +19,43 @@ export const revalidate = 60;
 export const dynamicParams = true;
 
 /**
+ * Cached product details fetcher (120s TTL)
+ */
+async function getProductDetails(id) {
+    return getOrSet(`product:${id}:details`, async () => {
+        const supabase = await createClient();
+        const { data: product, error } = await supabase
+            .from('products')
+            .select(`
+                *,
+                seller:profiles (
+                    display_name,
+                    email,
+                    created_at,
+                    is_verified,
+                    average_rating,
+                    total_reviews,
+                    avatar_url
+                )
+            `)
+            .eq('id', id)
+            .maybeSingle();
+
+        if (error || !product) return null;
+        return product;
+    }, 120);
+}
+
+/**
  * generateMetadata — produces per-product SEO title, description, and OG tags
  * so that shared product links look rich in social previews.
  */
 export async function generateMetadata({ params }) {
     const resolvedParams = await params;
     const id = decodeURIComponent(resolvedParams.id);
-    const supabase = await createClient();
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.kart.cx';
 
-    const { data: product } = await supabase
-        .from('products')
-        .select('title, description, price, images, image_url, category, campus')
-        .eq('id', id)
-        .maybeSingle();
+    const product = await getProductDetails(id);
 
     if (!product) {
         return {
@@ -80,26 +104,9 @@ export async function generateMetadata({ params }) {
 }
 
 async function ProductDetailsDataSection({ id }) {
-    const supabase = await createClient();
+    const product = await getProductDetails(id);
 
-    const { data: product, error } = await supabase
-        .from('products')
-        .select(`
-            *,
-            seller:profiles (
-                display_name,
-                email,
-                created_at,
-                is_verified,
-                average_rating,
-                total_reviews,
-                avatar_url
-            )
-        `)
-        .eq('id', id)
-        .maybeSingle();
-
-    if (error || !product) {
+    if (!product) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-5 text-center">
                 <h1 className="text-2xl font-bold mb-2">Product Not Found</h1>

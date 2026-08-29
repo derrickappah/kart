@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { interleavePromotedListings, getFairRotatedPromotions } from '@/utils/promotionAlgorithm';
+import { getOrSet } from '@/lib/cache';
 
 /**
  * Sanitize a free-text search parameter: trim, cap at 200 chars,
@@ -96,10 +97,26 @@ export async function fetchMarketplaceProducts({
                 break;
         }
 
+        const filterKey = `marketplace:feed:${JSON.stringify({
+            page: pageNum,
+            limit: limitNum,
+            search: searchQuery,
+            campus: campusQuery,
+            category: category || '',
+            condition: condition || '',
+            minPrice: minPriceVal,
+            maxPrice: maxPriceVal,
+            sort: sortOption
+        })}`;
+
         // Request limitNum + 1 items to verify if next page exists
         const [authRes, productsRes] = await Promise.all([
             supabase.auth.getUser(),
-            query.range(from, to + 1)
+            getOrSet(filterKey, async () => {
+                const res = await query.range(from, to + 1);
+                if (res.error) throw new Error(res.error.message || 'Failed to retrieve listings');
+                return { data: res.data || [] };
+            }, 45).catch(err => ({ error: err.message, data: [] }))
         ]);
 
         if (productsRes.error) {
@@ -108,7 +125,7 @@ export async function fetchMarketplaceProducts({
                 products: [],
                 hasMore: false,
                 wishlistIds: [],
-                error: productsRes.error.message || 'Failed to retrieve listings'
+                error: productsRes.error || 'Failed to retrieve listings'
             };
         }
 

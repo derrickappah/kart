@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createServiceRoleClient } from '@/utils/supabase/server';
+import { getOrSet, deleteCache } from '@/lib/cache';
 
 export async function GET() {
     try {
@@ -22,25 +23,28 @@ export async function GET() {
             return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
         }
 
-        // Fetch all settings
-        const { data: settings, error } = await supabase
-            .from('platform_settings')
-            .select('*')
-            .order('category');
+        const settingsData = await getOrSet('settings:platform', async () => {
+            const { data: settings, error } = await supabase
+                .from('platform_settings')
+                .select('*')
+                .order('category');
 
-        if (error) {
-            console.error('[Settings API] Error fetching settings:', error);
-            return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
-        }
+            if (error) {
+                console.error('[Settings API] Error fetching settings:', error);
+                throw error;
+            }
 
-        // Group by category
-        const grouped = {};
-        (settings || []).forEach(s => {
-            if (!grouped[s.category]) grouped[s.category] = [];
-            grouped[s.category].push(s);
-        });
+            // Group by category
+            const grouped = {};
+            (settings || []).forEach(s => {
+                if (!grouped[s.category]) grouped[s.category] = [];
+                grouped[s.category].push(s);
+            });
 
-        return NextResponse.json({ settings: settings || [], grouped });
+            return { settings: settings || [], grouped };
+        }, 300);
+
+        return NextResponse.json(settingsData);
     } catch (error) {
         console.error('[Settings API] Unexpected error:', error);
         return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
@@ -106,6 +110,9 @@ export async function PUT(request) {
         if (errors.length > 0 && results.length === 0) {
             return NextResponse.json({ error: 'All updates failed', errors }, { status: 500 });
         }
+
+        // Invalidate cached platform settings
+        await deleteCache('settings:platform');
 
         return NextResponse.json({
             success: true,
