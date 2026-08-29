@@ -8,6 +8,7 @@ import { timeAgo } from '../../../utils/dateUtils';
 import LoadingScreen from '@/components/LoadingScreen';
 import FollowButton from '@/components/FollowButton';
 import FollowersListModal from '@/components/FollowersListModal';
+import { formatPrice } from '@/utils/formatters';
 
 export default function SellerProfilePage() {
     const router = useRouter();
@@ -366,7 +367,7 @@ export default function SellerProfilePage() {
                                         <div className="relative aspect-square bg-slate-100 dark:bg-slate-800">
                                             <img alt={p.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" src={p.images?.[0] || p.image_url} />
                                             <div className="absolute bottom-2 left-2 px-2 py-1 bg-slate-900/80 text-white text-sm font-bold rounded-lg backdrop-blur-md">
-                                                ₵ {p.price}
+                                                ₵ {formatPrice(p.price)}
                                             </div>
                                         </div>
                                         <div className="p-3">
