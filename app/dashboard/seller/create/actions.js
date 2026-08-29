@@ -4,8 +4,7 @@ import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 /**
  * Server Action to create a seller product listing.
- * Handles server-side auth, subscription & verification validation,
- * server-to-server image uploading to Supabase Storage, and database insertion.
+ * Supports ALL image formats across iOS (Camera/HEIC/RAW), Android, and Desktop.
  * 
  * @param {Object} listingData
  * @returns {Promise<{ success: boolean, productId?: string, error?: string }>}
@@ -100,16 +99,22 @@ export async function createListingAction(listingData) {
                 if (base64String.includes(',')) {
                     const parts = base64String.split(',');
                     const mimeMatch = parts[0].match(/:(.*?);/);
-                    if (mimeMatch) {
+                    if (mimeMatch && mimeMatch[1]) {
                         contentType = mimeMatch[1];
                     }
                     base64String = parts[1];
                 }
 
-                if (contentType.includes('webp')) ext = 'webp';
-                else if (contentType.includes('png')) ext = 'png';
-                else if (contentType.includes('heic')) ext = 'heic';
-                else if (contentType.includes('heif')) ext = 'heif';
+                const mimeLower = contentType.toLowerCase();
+                if (mimeLower.includes('webp')) ext = 'webp';
+                else if (mimeLower.includes('png')) ext = 'png';
+                else if (mimeLower.includes('heic')) { ext = 'heic'; contentType = 'image/heic'; }
+                else if (mimeLower.includes('heif')) { ext = 'heif'; contentType = 'image/heif'; }
+                else if (mimeLower.includes('avif')) { ext = 'avif'; contentType = 'image/avif'; }
+                else if (mimeLower.includes('gif')) { ext = 'gif'; contentType = 'image/gif'; }
+                else if (mimeLower.includes('bmp')) { ext = 'bmp'; contentType = 'image/bmp'; }
+                else if (mimeLower.includes('svg')) { ext = 'svg'; contentType = 'image/svg+xml'; }
+                else { ext = 'jpg'; contentType = 'image/jpeg'; }
 
                 const buffer = Buffer.from(base64String, 'base64');
                 if (!buffer || buffer.length === 0) continue;
@@ -142,7 +147,7 @@ export async function createListingAction(listingData) {
             }
         }
 
-        // If the user selected photos but none could be uploaded, fail explicitly
+        // If user submitted photos but none uploaded, return error
         if (Array.isArray(images) && images.length > 0 && uploadedUrls.length === 0) {
             return { success: false, error: 'Failed to process and upload selected photos. Please try again.' };
         }

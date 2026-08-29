@@ -137,8 +137,8 @@ export default function CreateListingPage() {
         setFormData({ ...formData, condition });
     };
 
-    // Unified handle for file changes with validation
-    const handleFileChange = (e, replaceIndex = null) => {
+    // Unified handle for file changes with instant compression
+    const handleFileChange = async (e, replaceIndex = null) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
 
@@ -152,41 +152,47 @@ export default function CreateListingPage() {
                 }
             }
 
-            if (replaceIndex !== null) {
-                // Replacing a specific image
-                const file = files[0];
-                const newFiles = [...imageFiles];
-                newFiles[replaceIndex] = file;
+            try {
+                if (replaceIndex !== null) {
+                    // Replacing a specific image
+                    const file = files[0];
+                    const processed = await compressProductImage(file);
+                    const previewUrl = processed.dataUrl || URL.createObjectURL(file);
 
-                // Cleanup old preview
-                if (imagePreviews[replaceIndex]) {
-                    URL.revokeObjectURL(imagePreviews[replaceIndex]);
+                    const newFiles = [...imageFiles];
+                    newFiles[replaceIndex] = { file, dataUrl: processed.dataUrl };
+
+                    const newPreviews = [...imagePreviews];
+                    newPreviews[replaceIndex] = previewUrl;
+
+                    setImageFiles(newFiles);
+                    setImagePreviews(newPreviews);
+                } else {
+                    // Adding new images
+                    const remainingSlots = 5 - imageFiles.length;
+                    if (files.length > remainingSlots) {
+                        setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
+                        e.target.value = '';
+                        return;
+                    }
+
+                    const processedList = await Promise.all(files.map(async (file) => {
+                        const res = await compressProductImage(file);
+                        return {
+                            file,
+                            dataUrl: res.dataUrl,
+                            previewUrl: res.dataUrl || URL.createObjectURL(file)
+                        };
+                    }));
+
+                    const nextFiles = [...imageFiles, ...processedList];
+                    const nextPreviews = [...imagePreviews, ...processedList.map(p => p.previewUrl)];
+
+                    setImageFiles(nextFiles);
+                    setImagePreviews(nextPreviews);
                 }
-
-                const newPreviews = [...imagePreviews];
-                newPreviews[replaceIndex] = URL.createObjectURL(file);
-
-                setImageFiles(newFiles);
-                setImagePreviews(newPreviews);
-            } else {
-                // Adding new images
-                const remainingSlots = 5 - imageFiles.length;
-                if (files.length > remainingSlots) {
-                    setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
-                    e.target.value = '';
-                    return;
-                }
-
-                const filesToAdd = files;
-                const nextFiles = [...imageFiles, ...filesToAdd];
-
-                const nextPreviews = [
-                    ...imagePreviews,
-                    ...filesToAdd.map(file => URL.createObjectURL(file))
-                ];
-
-                setImageFiles(nextFiles);
-                setImagePreviews(nextPreviews);
+            } catch (err) {
+                console.error('[CreateListing] Photo selection processing error:', err);
             }
         }
         // Reset input value so same file can be selected again
@@ -194,7 +200,7 @@ export default function CreateListingPage() {
     };
 
     const removeImage = (index) => {
-        if (imagePreviews[index]) {
+        if (imagePreviews[index] && imagePreviews[index].startsWith('blob:')) {
             URL.revokeObjectURL(imagePreviews[index]);
         }
 
@@ -208,7 +214,9 @@ export default function CreateListingPage() {
     // Clean up previews ONLY on unmount to prevent memory leaks
     useEffect(() => {
         return () => {
-            previewsRef.current.forEach(url => URL.revokeObjectURL(url));
+            previewsRef.current.forEach(url => {
+                if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+            });
         };
     }, []);
 
@@ -244,14 +252,19 @@ export default function CreateListingPage() {
                 throw new Error('Please select a category');
             }
 
-            // Step 1: Compress images client-side into lightweight base64 payloads
+            // Step 1: Collect compressed photo payloads
             const imagesPayload = [];
             if (imageFiles.length > 0) {
                 for (let i = 0; i < imageFiles.length; i++) {
-                    setUploadProgress(`Optimizing photo ${i + 1} of ${imageFiles.length}...`);
-                    const { dataUrl } = await compressProductImage(imageFiles[i]);
-                    if (dataUrl) {
-                        imagesPayload.push(dataUrl);
+                    const item = imageFiles[i];
+                    if (item.dataUrl) {
+                        imagesPayload.push(item.dataUrl);
+                    } else {
+                        setUploadProgress(`Processing photo ${i + 1} of ${imageFiles.length}...`);
+                        const processed = await compressProductImage(item.file || item);
+                        if (processed.dataUrl) {
+                            imagesPayload.push(processed.dataUrl);
+                        }
                     }
                 }
             }

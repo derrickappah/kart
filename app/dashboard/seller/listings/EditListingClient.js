@@ -115,7 +115,7 @@ export default function EditListingClient({ product }) {
     };
 
     // Unified handle for file changes
-    const handleFileChange = (e, replaceIndex = null) => {
+    const handleFileChange = async (e, replaceIndex = null) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
 
@@ -132,14 +132,16 @@ export default function EditListingClient({ product }) {
             if (replaceIndex !== null) {
                 // Replacing a specific photo
                 const file = files[0];
+                const processed = await compressProductImage(file);
                 const newPhotos = [...photos];
-                if (newPhotos[replaceIndex].type === 'local') {
+                if (newPhotos[replaceIndex].type === 'local' && newPhotos[replaceIndex].preview?.startsWith('blob:')) {
                     URL.revokeObjectURL(newPhotos[replaceIndex].preview);
                 }
                 newPhotos[replaceIndex] = {
                     type: 'local',
                     file,
-                    preview: URL.createObjectURL(file)
+                    dataUrl: processed.dataUrl,
+                    preview: processed.dataUrl || URL.createObjectURL(file)
                 };
                 setPhotos(newPhotos);
             } else {
@@ -150,10 +152,14 @@ export default function EditListingClient({ product }) {
                     e.target.value = '';
                     return;
                 }
-                const newPhotosToAdd = files.map(file => ({
-                    type: 'local',
-                    file,
-                    preview: URL.createObjectURL(file)
+                const newPhotosToAdd = await Promise.all(files.map(async (file) => {
+                    const processed = await compressProductImage(file);
+                    return {
+                        type: 'local',
+                        file,
+                        dataUrl: processed.dataUrl,
+                        preview: processed.dataUrl || URL.createObjectURL(file)
+                    };
                 }));
                 setPhotos([...photos, ...newPhotosToAdd]);
             }
@@ -203,7 +209,7 @@ export default function EditListingClient({ product }) {
                 if (photo.type === 'remote') {
                     photosPayload.push({ type: 'remote', url: photo.url });
                 } else if (photo.type === 'local') {
-                    const { dataUrl } = await compressProductImage(photo.file);
+                    const dataUrl = photo.dataUrl || (await compressProductImage(photo.file || photo)).dataUrl;
                     if (dataUrl) {
                         photosPayload.push({ type: 'local', dataUrl });
                     }

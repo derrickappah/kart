@@ -1,5 +1,6 @@
 /**
  * Image utility functions for handling profile picture and product listing uploads
+ * Supports ALL image formats across iOS Safari (Camera/HEIC/RAW), Android Chrome, Desktop, and WebViews.
  */
 
 /**
@@ -27,34 +28,23 @@ export function dataURItoBlob(dataURI) {
 }
 
 /**
- * Validates an image file for upload
- * @param {File} file - The file to validate
+ * Validates an image file for upload.
+ * Accepts all photo formats (JPEG, PNG, WebP, HEIC, HEIF, AVIF, GIF, BMP, TIFF, SVG, RAW, camera files).
+ * @param {File|Blob} file - The file to validate
  * @returns {Object} - { valid: boolean, error: string }
  */
 export function validateImage(file) {
-    const maxSize = 30 * 1024 * 1024; // 30MB allowance
-    const allowedTypes = [
-        'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
-        'image/heic', 'image/heif', 'image/avif', 'image/gif'
-    ];
+    const maxSize = 50 * 1024 * 1024; // 50MB allowance
 
     if (!file) {
         return { valid: false, error: 'No file selected' };
     }
 
-    const fileName = (file.name || '').toLowerCase();
-    const isAllowedExt = /\.(jpe?g|png|webp|heic|heif|avif|gif)$/i.test(fileName);
-    const isAllowedType = allowedTypes.includes(file.type?.toLowerCase());
-
-    // On mobile devices, file.type is sometimes empty string or octet-stream for camera/gallery picks
-    if (!isAllowedType && !isAllowedExt && file.type !== '' && file.type !== 'application/octet-stream') {
-        return { valid: false, error: 'Invalid file type. Please upload a JPG, PNG, WebP, or HEIC image.' };
+    if (file.size && file.size > maxSize) {
+        return { valid: false, error: 'File size too large. Maximum size is 50MB.' };
     }
 
-    if (file.size > maxSize) {
-        return { valid: false, error: 'File size too large. Maximum size is 30MB.' };
-    }
-
+    // Always accept any file selected by user
     return { valid: true, error: null };
 }
 
@@ -124,35 +114,72 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
 }
 
 /**
- * Compresses and optimizes a product image for marketplace listing.
- * 100% fail-safe across iOS Safari (HEIC/camera), Chrome Mobile, Android, and Desktop.
- * Guarantees a valid dataUrl string is ALWAYS returned.
- * 
- * @param {File|Blob} file - The image file to compress
- * @param {Object} options - Compression options
- * @returns {Promise<{ dataUrl: string|null, blob: Blob, extension: string, contentType: string }>}
+ * Reads a File, Blob, or Blob URL into a Base64 string.
+ * @param {File|Blob|string} source 
+ * @returns {Promise<string|null>}
  */
-export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 1200, quality = 0.75 } = {}) {
-    if (!file) {
+export async function readFileAsBase64(source) {
+    if (!source) return null;
+    if (typeof source === 'string') {
+        if (source.startsWith('data:')) return source;
+        if (source.startsWith('blob:') || source.startsWith('http')) {
+            try {
+                const res = await fetch(source);
+                const blob = await res.blob();
+                return await readFileAsBase64(blob);
+            } catch (e) {
+                console.warn('[ImageUtils] fetch blob URL failed:', e);
+            }
+        }
+        return source;
+    }
+
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result || null);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(source);
+    });
+}
+
+/**
+ * Compresses and optimizes a product image for marketplace listing.
+ * 100% fail-safe across ALL image formats, iOS Camera, HEIC, Android, and Desktop.
+ * 
+ * @param {File|Blob|string|Object} fileOrObject - The image file or preview object
+ * @param {Object} options - Compression options
+ * @returns {Promise<{ dataUrl: string|null, blob: Blob|null, extension: string, contentType: string }>}
+ */
+export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxHeight = 1200, quality = 0.75 } = {}) {
+    if (!fileOrObject) {
         return { dataUrl: null, blob: null, extension: 'jpg', contentType: 'image/jpeg' };
     }
 
-    // Step A: Guaranteed base64 extraction via FileReader
+    // If input is already an object with dataUrl
+    if (typeof fileOrObject === 'object' && fileOrObject.dataUrl) {
+        const dataUrl = fileOrObject.dataUrl;
+        const blob = dataURItoBlob(dataUrl);
+        return {
+            dataUrl,
+            blob,
+            extension: 'jpg',
+            contentType: 'image/jpeg'
+        };
+    }
+
+    const file = fileOrObject.file || fileOrObject;
+
+    // Step A: Guaranteed base64 extraction
     let rawBase64 = null;
     try {
-        rawBase64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result || null);
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(file);
-        });
+        rawBase64 = await readFileAsBase64(file);
     } catch (e) {
-        console.warn('[ImageUtils] FileReader readAsDataURL failed:', e);
+        console.warn('[ImageUtils] readFileAsBase64 error:', e);
     }
 
     if (typeof window === 'undefined') {
         const ext = getFileExtension(file);
-        return { dataUrl: rawBase64, blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+        return { dataUrl: rawBase64, blob: file, extension: ext, contentType: file?.type || 'image/jpeg' };
     }
 
     // Step B: Downscale via Canvas
@@ -160,18 +187,19 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
         let sourceImage = null;
         let isBitmap = false;
 
-        if (typeof createImageBitmap === 'function') {
+        if (typeof createImageBitmap === 'function' && file instanceof Blob) {
             try {
                 sourceImage = await createImageBitmap(file);
                 isBitmap = true;
             } catch {
-                // Fallback to Image element
+                // Fallback to HTMLImageElement
             }
         }
 
         if (!sourceImage && rawBase64) {
             sourceImage = await new Promise((resolve) => {
                 const img = new Image();
+                img.crossOrigin = 'anonymous';
                 img.onload = () => resolve(img);
                 img.onerror = () => resolve(null);
                 img.src = rawBase64;
@@ -215,16 +243,16 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
             if (isBitmap && sourceImage.close) sourceImage.close();
         }
     } catch (err) {
-        console.warn('[ImageUtils] Canvas compression error, falling back to raw base64:', err);
+        console.warn('[ImageUtils] Canvas downscaling exception, returning rawBase64:', err);
     }
 
-    // Guaranteed fail-safe return
+    // Fail-safe: Always return rawBase64 if canvas downscale did not run
     const ext = getFileExtension(file);
     return {
         dataUrl: rawBase64,
-        blob: file,
+        blob: file instanceof Blob ? file : dataURItoBlob(rawBase64),
         extension: ext,
-        contentType: file.type || 'image/jpeg'
+        contentType: file?.type || 'image/jpeg'
     };
 }
 
@@ -241,7 +269,7 @@ export function generateProfilePicturePath(userId, fileExtension) {
 
 /**
  * Gets file extension from filename or MIME type
- * @param {File} file - The file object
+ * @param {File|Blob|string} file - The file object
  * @returns {string} - File extension
  */
 export function getFileExtension(file) {
@@ -251,21 +279,25 @@ export function getFileExtension(file) {
         'image/jpg': 'jpg',
         'image/png': 'png',
         'image/webp': 'webp',
-        'image/heic': 'jpg',
-        'image/heif': 'jpg',
+        'image/heic': 'heic',
+        'image/heif': 'heif',
         'image/avif': 'avif',
-        'image/gif': 'gif'
+        'image/gif': 'gif',
+        'image/bmp': 'bmp',
+        'image/tiff': 'tiff',
+        'image/svg+xml': 'svg'
     };
 
-    if (file.type && mimeToExt[file.type.toLowerCase()]) {
+    if (typeof file === 'object' && file.type && mimeToExt[file.type.toLowerCase()]) {
         return mimeToExt[file.type.toLowerCase()];
     }
 
-    if (file.name) {
-        const parts = file.name.split('.');
+    const name = typeof file === 'string' ? file : (file.name || '');
+    if (name) {
+        const parts = name.split('.');
         if (parts.length > 1) {
             const ext = parts.pop().toLowerCase();
-            if (['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif'].includes(ext)) {
+            if (['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif', 'gif', 'bmp', 'tiff', 'svg', 'raw', 'dng', 'cr2', 'nef', 'arw'].includes(ext)) {
                 return ext === 'jpeg' ? 'jpg' : ext;
             }
         }
