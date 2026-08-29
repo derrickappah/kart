@@ -3,6 +3,8 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import SearchBar from '@/components/SearchBar';
+import { formatPrice } from '@/utils/formatters';
 
 // Stable Supabase client – created once per module, never re-created on render.
 const supabase = createClient();
@@ -224,6 +226,7 @@ const PAGE_SIZE = 20;
 export default function NotificationsClient({ initialNotifications, initialUnreadCount }) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [unreadCount, setUnreadCount]     = useState(initialUnreadCount);
+  const [searchQuery, setSearchQuery]     = useState('');
   const [loading, setLoading]             = useState(false);
   const [loadingMore, setLoadingMore]     = useState(false);
   const [hasMore, setHasMore]             = useState(initialNotifications.length >= PAGE_SIZE);
@@ -232,6 +235,15 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
   const router = useRouter();
   // Stable ref for the realtime channel so cleanup is reliable regardless of timing
   const channelRef = useRef(null);
+
+  const filteredNotifications = notifications.filter((notification) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase().trim();
+    const titleMatch = notification.title?.toLowerCase().includes(query);
+    const messageMatch = notification.message?.toLowerCase().includes(query);
+    const typeMatch = notification.type?.toLowerCase().includes(query);
+    return titleMatch || messageMatch || typeMatch;
+  });
 
   /* ─── Realtime subscription ─────────────────────────────────────────── */
   useEffect(() => {
@@ -383,37 +395,49 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
         {newArrivals > 0 && `${newArrivals} new notification${newArrivals > 1 ? 's' : ''} arrived`}
       </div>
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header className="w-full bg-white dark:bg-[#242428]">
-        <div className="flex items-end justify-between px-5 pb-3 pt-6 max-w-lg mx-auto w-full">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Notifications
-          </h1>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllAsRead}
-              disabled={loading}
-              aria-label="Mark all notifications as read"
-              className="flex items-center gap-1.5 text-[#387d94] hover:text-[#387d94]/80 active:scale-95 transition-all text-sm font-bold mb-1 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading && (
-                <DynamicLucideIcon
-                  name="progress_activity"
-                  size={14}
-                  className="animate-spin"
-                />
+      {/* ── Sticky Header with Home SearchBar ───────────────────────────── */}
+      <header className="sticky top-16 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md px-4 py-3 border-b border-gray-100/50 dark:border-gray-800/30">
+        <SearchBar
+          placeholder="Search notifications..."
+          showFilter={true}
+          hideFilter={true}
+          value={searchQuery}
+          onChange={setSearchQuery}
+          leftContent={
+            <div className="flex items-center justify-between w-full pr-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2">
+                Notifications
+              </h3>
+              {unreadCount > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    markAllAsRead();
+                  }}
+                  disabled={loading}
+                  aria-label="Mark all notifications as read"
+                  className="flex items-center gap-1 text-xs font-bold text-primary hover:underline transition-all disabled:opacity-50"
+                >
+                  {loading && (
+                    <DynamicLucideIcon
+                      name="progress_activity"
+                      size={12}
+                      className="animate-spin"
+                    />
+                  )}
+                  Mark all read
+                </button>
               )}
-              Mark all as read
-            </button>
-          )}
-        </div>
+            </div>
+          }
+        />
       </header>
 
       {/* ── Error Banner ─────────────────────────────────────────────────── */}
       {error && (
         <div
           role="alert"
-          className="mx-auto max-w-lg w-full px-4 mb-2"
+          className="mx-auto max-w-lg w-full px-4 mb-2 mt-3"
         >
           <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
             <DynamicLucideIcon name="error" size={16} className="shrink-0" />
@@ -431,26 +455,63 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
 
       {/* ── Main Content ─────────────────────────────────────────────────── */}
       <main
-        className="flex-1 w-full max-w-lg mx-auto px-4 pb-24 pt-4 overflow-y-auto no-scrollbar"
+        className="flex-1 w-full max-w-lg mx-auto px-4 pb-32 pt-4"
         aria-label="Notifications list"
       >
-        {notifications.length === 0 ? (
-          /* ── Empty state ─────────────────────────────────────────────── */
-          <div
-            className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500"
-            aria-label="No notifications"
-          >
-            <DynamicLucideIcon
-              name="notifications_off"
-              size={56}
-              className="mb-4 opacity-30"
-            />
-            <p className="font-semibold text-base">{"You're all caught up!"}</p>
-            <p className="text-sm mt-1 text-gray-400">No notifications yet.</p>
+        {/* Active search filter feedback */}
+        {searchQuery.trim() && (
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-3">
+            <span>
+              Found <strong className="text-slate-800 dark:text-slate-200">{filteredNotifications.length}</strong> {filteredNotifications.length === 1 ? 'notification' : 'notifications'}
+            </span>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-primary font-bold hover:underline"
+            >
+              Clear
+            </button>
           </div>
+        )}
+
+        {filteredNotifications.length === 0 ? (
+          searchQuery.trim() ? (
+            /* ── Empty search state ─────────────────────────────────────────── */
+            <div
+              className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500 text-center"
+              aria-label="No matching notifications"
+            >
+              <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                <DynamicLucideIcon name="search" className="text-slate-400 text-3xl" />
+              </div>
+              <p className="font-bold text-lg text-slate-900 dark:text-white mb-1">No matching notifications</p>
+              <p className="text-sm mb-6 text-slate-500 dark:text-slate-400">
+                No notifications match &quot;{searchQuery}&quot;
+              </p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="h-11 flex items-center justify-center px-6 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
+              >
+                Clear Search
+              </button>
+            </div>
+          ) : (
+            /* ── Empty state ─────────────────────────────────────────────── */
+            <div
+              className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500"
+              aria-label="No notifications"
+            >
+              <DynamicLucideIcon
+                name="notifications_off"
+                size={56}
+                className="mb-4 opacity-30"
+              />
+              <p className="font-semibold text-base">{"You're all caught up!"}</p>
+              <p className="text-sm mt-1 text-gray-400">No notifications yet.</p>
+            </div>
+          )
         ) : (
           <div className="space-y-3" role="list" aria-label="Notification items">
-            {notifications.map((notification) => (
+            {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
                 role="listitem"
@@ -518,7 +579,7 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
         )}
 
         {/* ── Load More button ─────────────────────────────────────────── */}
-        {hasMore && notifications.length > 0 && (
+        {!searchQuery.trim() && hasMore && notifications.length > 0 && (
           <div className="mt-6 flex justify-center">
             <button
               onClick={loadMore}
