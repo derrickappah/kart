@@ -5,29 +5,52 @@ import Link from 'next/link';
 import { login, sendMagicLink, resendConfirmationEmail } from '../auth/actions';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Mail, CheckCircle2, Sparkles, KeyRound } from 'lucide-react';
+import { Loader2, Mail, CheckCircle2, Sparkles, KeyRound, AlertTriangle, AlertCircle, Info } from 'lucide-react';
 
 function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const next = searchParams.get('next');
+    const next = searchParams.get('next') || searchParams.get('returnUrl');
+    const paramEmail = searchParams.get('email');
+    const paramError = searchParams.get('error');
+    const paramErrorDesc = searchParams.get('error_description');
+    const paramMessage = searchParams.get('message') || searchParams.get('info');
 
     // Auth mode: 'password' | 'magic-link'
     const [authMode, setAuthMode] = useState('password');
 
+    function getInitialError(paramError, paramErrorDesc) {
+        if (!paramError && !paramErrorDesc) return null;
+        const rawError = paramErrorDesc || paramError;
+        if (rawError === 'unauthorized' || rawError === 'Unauthorized') {
+            return 'Please log in to access this page.';
+        } else if (rawError === 'SessionExpired' || rawError === 'session_expired') {
+            return 'Your session has expired. Please log in again.';
+        } else if (rawError === 'missing_code') {
+            return 'The authentication link was invalid or has already been used. Please try logging in below.';
+        } else if (rawError === 'banned') {
+            return 'This account has been suspended. Please contact support.';
+        }
+        return rawError;
+    }
+
     // Password login state
-    const [error, setError] = useState(null);
+    const [email, setEmail] = useState(paramEmail || '');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState(() => getInitialError(paramError, paramErrorDesc));
+    const [infoMessage, setInfoMessage] = useState(() => paramMessage || null);
     const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
     const [unconfirmedEmail, setUnconfirmedEmail] = useState('');
     const [resendStatus, setResendStatus] = useState(null);
     const [resendLoading, setResendLoading] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [redirecting, setRedirecting] = useState(false);
     const [creatingAccount, setCreatingAccount] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     // Magic link state
-    const [magicEmail, setMagicEmail] = useState('');
+    const [magicEmail, setMagicEmail] = useState(paramEmail || '');
     const [magicLinkSent, setMagicLinkSent] = useState(false);
     const [magicCooldown, setMagicCooldown] = useState(0);
 
@@ -49,38 +72,82 @@ function LoginForm() {
 
     async function handlePasswordSubmit(e) {
         e.preventDefault();
-        setLoading(true);
         setError(null);
+        setInfoMessage(null);
         setEmailNotConfirmed(false);
         setResendStatus(null);
-        const formData = new FormData(e.currentTarget);
+
+        const cleanEmail = email.trim().toLowerCase();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!cleanEmail) {
+            setError('Please enter your email address.');
+            return;
+        }
+
+        if (!emailRegex.test(cleanEmail)) {
+            setError('Please enter a valid email address (e.g. student@campus.edu).');
+            return;
+        }
+
+        if (!password) {
+            setError('Please enter your password.');
+            return;
+        }
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('email', cleanEmail);
+        formData.append('password', password);
         if (next) {
             formData.append('next', next);
         }
+
         const result = await login(formData);
         if (result?.error) {
             setError(result.error);
             setLoading(false);
             if (result?.emailNotConfirmed) {
                 setEmailNotConfirmed(true);
-                setUnconfirmedEmail(result.email || formData.get('email') || '');
+                setUnconfirmedEmail(result.email || cleanEmail);
             }
+        } else {
+            // Login successful, redirecting
+            setRedirecting(true);
         }
-        // If login succeeded, redirect() was called server-side.
-        setTimeout(() => setLoading(false), 5000);
     }
 
     async function handleMagicLinkSubmit(e) {
         e.preventDefault();
         if (magicCooldown > 0) return;
-        setLoading(true);
         setError(null);
-        const formData = new FormData(e.currentTarget);
-        const email = String(formData.get('email') || '').trim();
-        setMagicEmail(email);
+        setInfoMessage(null);
+
+        const cleanEmail = magicEmail.trim().toLowerCase();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!cleanEmail) {
+            setError('Please enter your email address.');
+            return;
+        }
+
+        if (!emailRegex.test(cleanEmail)) {
+            setError('Please enter a valid email address (e.g. student@campus.edu).');
+            return;
+        }
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('email', cleanEmail);
         if (next) {
             formData.append('next', next);
         }
+
         const result = await sendMagicLink(formData);
         setLoading(false);
         if (result?.error) {
@@ -96,7 +163,7 @@ function LoginForm() {
         setLoading(true);
         setError(null);
         const formData = new FormData();
-        formData.append('email', magicEmail);
+        formData.append('email', magicEmail.trim().toLowerCase());
         if (next) {
             formData.append('next', next);
         }
@@ -114,7 +181,7 @@ function LoginForm() {
         setResendLoading(true);
         setResendStatus(null);
         const formData = new FormData();
-        formData.append('email', unconfirmedEmail);
+        formData.append('email', unconfirmedEmail.trim().toLowerCase());
         const result = await resendConfirmationEmail(formData);
         setResendLoading(false);
         if (result?.error) {
@@ -180,18 +247,28 @@ function LoginForm() {
 
                 {/* Form Section */}
                 <div className="flex flex-col space-y-5">
+                    {infoMessage && (
+                        <div className="bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800 text-sky-800 dark:text-sky-300 p-3.5 rounded-xl text-sm font-medium flex items-center gap-2.5 animate-in fade-in">
+                            <CheckCircle2 className="size-4 shrink-0 text-[#1daddd]" />
+                            <span>{infoMessage}</span>
+                        </div>
+                    )}
+
                     {error && (
-                        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3.5 rounded-xl text-sm text-center font-medium flex flex-col space-y-2">
-                            <span>{error}</span>
+                        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3.5 rounded-xl text-sm font-medium flex flex-col space-y-2 animate-in fade-in">
+                            <div className="flex items-start gap-2.5 text-left">
+                                <AlertCircle className="size-4 shrink-0 text-red-500 mt-0.5" />
+                                <span className="flex-1">{error}</span>
+                            </div>
                             {emailNotConfirmed && (
-                                <div className="pt-1">
+                                <div className="pt-1 pl-6 text-left">
                                     <button
                                         type="button"
                                         onClick={handleResendConfirmation}
                                         disabled={resendLoading || resendCooldown > 0}
                                         className="text-xs text-[#1daddd] underline font-semibold hover:text-[#1a9cc7] transition-colors disabled:opacity-50"
                                     >
-                                        {resendLoading ? 'Sending...' : resendCooldown > 0 ? `Resend link in ${resendCooldown}s` : 'Resend confirmation link'}
+                                        {resendLoading ? 'Sending link...' : resendCooldown > 0 ? `Resend link in ${resendCooldown}s` : 'Resend confirmation link'}
                                     </button>
                                 </div>
                             )}
@@ -256,7 +333,8 @@ function LoginForm() {
                                             name="email"
                                             autoComplete="email"
                                             required
-                                            defaultValue={magicEmail}
+                                            value={magicEmail}
+                                            onChange={(e) => setMagicEmail(e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -269,7 +347,7 @@ function LoginForm() {
                                     >
                                         {loading ? (
                                             <>
-                                                <Loader2 className="animate-spin h-5 w-5" />
+                                                 <Loader2 className="animate-spin h-5 w-5" />
                                                 Sending link...
                                             </>
                                         ) : magicCooldown > 0 ? (
@@ -312,6 +390,8 @@ function LoginForm() {
                                         name="email"
                                         autoComplete="email"
                                         required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -328,6 +408,8 @@ function LoginForm() {
                                         name="password"
                                         autoComplete="current-password"
                                         required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                     />
                                     <button 
                                         type="button"
@@ -346,10 +428,15 @@ function LoginForm() {
                             <div className="pt-4 flex flex-col space-y-4">
                                 <button 
                                     type="submit" 
-                                    disabled={loading || creatingAccount}
+                                    disabled={loading || redirecting || creatingAccount}
                                     className="w-full btn-primary h-14 text-lg flex items-center justify-center gap-2"
                                 >
-                                    {loading ? (
+                                    {redirecting ? (
+                                        <>
+                                            <Loader2 className="animate-spin h-5 w-5" />
+                                            Redirecting...
+                                        </>
+                                    ) : loading ? (
                                         <>
                                             <Loader2 className="animate-spin h-5 w-5" />
                                             Logging in...
