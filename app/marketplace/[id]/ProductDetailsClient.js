@@ -415,6 +415,19 @@ export default function ProductDetailsClient({ product }) {
                                         ₵ {formatPrice(product.price)}
                                     </p>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const el = document.getElementById('reviews-section');
+                                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer w-fit"
+                                >
+                                    <DynamicLucideIcon name="star" size={14} fill="currentColor" className="text-yellow-400" aria-hidden="true" />
+                                    <span className="text-primary hover:underline">
+                                        Customer Ratings & Reviews
+                                    </span>
+                                </button>
                             </div>
 
                             {/* Immediate Action CTAs (Above the fold for instant access) */}
