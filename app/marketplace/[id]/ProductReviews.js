@@ -38,12 +38,12 @@ function parseReviewComment(rawComment) {
     return { text: rawComment, tags: [] };
 }
 
-export default function ProductReviews({ productId, sellerId, productTitle, isOwner }) {
+export default function ProductReviews({ productId, sellerId, productTitle, isOwner, currentUser: propUser = null }) {
     const router = useRouter();
     const [reviews, setReviews] = useState([]);
     const [reviewers, setReviewers] = useState({});
     const [loading, setLoading] = useState(true);
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState(propUser || null);
     const [userReview, setUserReview] = useState(null);
 
     // Modal state
@@ -57,6 +57,13 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
     const [successFeedback, setSuccessFeedback] = useState(null);
 
     const supabase = createClient();
+
+    // Sync propUser if passed from parent
+    useEffect(() => {
+        if (propUser) {
+            setCurrentUser(propUser);
+        }
+    }, [propUser]);
 
     const fetchReviews = useCallback(async () => {
         try {
@@ -102,17 +109,28 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
         let active = true;
 
         const checkAuthAndFetch = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (active) {
-                setCurrentUser(user);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (active && user) {
+                    setCurrentUser(user);
+                }
+            } catch (authErr) {
+                console.error('Error fetching auth user in reviews:', authErr);
             }
             await fetchReviews();
         };
 
         checkAuthAndFetch();
 
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (active) {
+                setCurrentUser(session?.user || null);
+            }
+        });
+
         return () => {
             active = false;
+            subscription?.unsubscribe();
         };
     }, [fetchReviews, supabase]);
 
@@ -126,9 +144,25 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
         }
     }, [currentUser, reviews]);
 
-    const openReviewModal = (existing = null, initialRating = 0) => {
-        if (!currentUser) {
-            router.push(`/login?returnUrl=/marketplace/${productId}`);
+    const openReviewModal = async (existing = null, initialRating = 0) => {
+        let user = currentUser;
+
+        // If not in state yet, check with supabase directly before deciding to redirect
+        if (!user) {
+            try {
+                const { data: { user: freshUser } } = await supabase.auth.getUser();
+                if (freshUser) {
+                    user = freshUser;
+                    setCurrentUser(freshUser);
+                }
+            } catch (err) {
+                console.error('Error checking user session in openReviewModal:', err);
+            }
+        }
+
+        // Only redirect if genuinely unauthenticated
+        if (!user) {
+            router.push(`/login?next=/marketplace/${productId}`);
             return;
         }
 

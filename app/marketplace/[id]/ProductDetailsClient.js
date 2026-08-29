@@ -11,6 +11,7 @@ import { toSentenceCase, formatPrice, seededShuffle } from '@/utils/formatters';
 import { timeAgo } from '@/utils/dateUtils';
 
 export default function ProductDetailsClient({ product }) {
+    const [currentUser, setCurrentUser] = useState(null);
     const [loadingChat, setLoadingChat] = useState(false);
     const [isInWishlist, setIsInWishlist] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
@@ -91,6 +92,7 @@ export default function ProductDetailsClient({ product }) {
         const init = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (active && user) {
+                setCurrentUser(user);
                 setIsOwner(user.id === product.seller_id);
             }
             if (user) {
@@ -543,6 +545,7 @@ export default function ProductDetailsClient({ product }) {
                         sellerId={product.seller_id}
                         productTitle={toSentenceCase(product.title)}
                         isOwner={isOwner}
+                        currentUser={currentUser}
                     />
                 </div>
 
