@@ -3,6 +3,7 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Image from 'next/image';
 import Link from 'next/link';
 import SimilarItemsSlider from './SimilarItemsSlider';
+import ProductReviews from './ProductReviews';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -533,6 +534,16 @@ export default function ProductDetailsClient({ product }) {
                             )}
                         </div>
                     </div>
+                </div>
+
+                {/* Product Ratings & Reviews Section */}
+                <div className="px-4 md:px-0">
+                    <ProductReviews
+                        productId={product.id}
+                        sellerId={product.seller_id}
+                        productTitle={toSentenceCase(product.title)}
+                        isOwner={isOwner}
+                    />
                 </div>
 
                 {/* Similar Items Section with Horizontal Infinite Scroll */}
