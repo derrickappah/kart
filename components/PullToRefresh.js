@@ -9,52 +9,81 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     const [isDragging, setIsDragging] = useState(false);
     
     const startY = useRef(0);
+    const startX = useRef(0);
     const containerRef = useRef(null);
-    const threshold = 80;
-    const maxPull = 120;
+    const isGestureValid = useRef(false);
+    const threshold = 70;
+    const maxPull = 110;
 
     const handleTouchStart = useCallback((e) => {
-        if (disabled || isRefreshing || window.scrollY > 0) return;
+        if (disabled || isRefreshing) return;
+        if (window.scrollY > 5) return;
+        
         startY.current = e.touches[0].pageY;
-        setIsDragging(true);
+        startX.current = e.touches[0].pageX;
+        isGestureValid.current = false;
     }, [disabled, isRefreshing]);
 
     const handleTouchMove = useCallback((e) => {
-        if (!isDragging || disabled || isRefreshing || window.scrollY > 0) return;
+        if (disabled || isRefreshing) return;
+        if (window.scrollY > 5) {
+            if (isDragging) {
+                setIsDragging(false);
+                setPullDelta(0);
+            }
+            return;
+        }
         
         const currentY = e.touches[0].pageY;
-        const delta = currentY - startY.current;
-        
-        if (delta > 0) {
-            // Apply resistance
-            const resistedDelta = Math.min(delta * 0.4, maxPull);
+        const currentX = e.touches[0].pageX;
+        const deltaY = currentY - startY.current;
+        const deltaX = currentX - startX.current;
+
+        // If horizontal movement exceeds vertical, ignore (allow carousel / swipe navigation)
+        if (!isGestureValid.current) {
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 5) {
+                return;
+            }
+            if (deltaY > 5) {
+                isGestureValid.current = true;
+            }
+        }
+
+        if (isGestureValid.current && deltaY > 0) {
+            setIsDragging(true);
+            // Apply progressive resistance
+            const resistedDelta = Math.min(deltaY * 0.4, maxPull);
             setPullDelta(resistedDelta);
             
-            // Prevent default scrolling when pulling
-            if (delta > 10) {
-                if (e.cancelable) e.preventDefault();
+            if (e.cancelable) {
+                e.preventDefault();
             }
         } else {
             setPullDelta(0);
+            setIsDragging(false);
         }
     }, [isDragging, disabled, isRefreshing]);
 
     const handleTouchEnd = useCallback(async () => {
-        if (!isDragging) return;
+        isGestureValid.current = false;
+        if (!isDragging && pullDelta === 0) return;
         setIsDragging(false);
 
         if (pullDelta >= threshold) {
             setIsRefreshing(true);
-            setPullDelta(60); // Hold at a visible loading state
+            setPullDelta(60); // Hold at indicator state
             
             try {
-                await onRefresh();
+                if (onRefresh) {
+                    await onRefresh();
+                }
+            } catch (err) {
+                console.error('Refresh failed:', err);
             } finally {
-                // Smooth transition back
                 setTimeout(() => {
                     setIsRefreshing(false);
                     setPullDelta(0);
-                }, 500);
+                }, 400);
             }
         } else {
             setPullDelta(0);
@@ -66,14 +95,16 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
         if (!el) return;
 
         const options = { passive: false };
-        el.addEventListener('touchstart', handleTouchStart);
+        el.addEventListener('touchstart', handleTouchStart, { passive: true });
         el.addEventListener('touchmove', handleTouchMove, options);
-        el.addEventListener('touchend', handleTouchEnd);
+        el.addEventListener('touchend', handleTouchEnd, { passive: true });
+        el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
         return () => {
             el.removeEventListener('touchstart', handleTouchStart);
             el.removeEventListener('touchmove', handleTouchMove);
             el.removeEventListener('touchend', handleTouchEnd);
+            el.removeEventListener('touchcancel', handleTouchEnd);
         };
     }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 
@@ -83,36 +114,36 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
 
     return (
         <div ref={containerRef} className="relative w-full h-full min-h-[50vh]">
-            {/* Pull Indicator */}
+            {/* Pull Indicator (Floating Badge) */}
             <div 
-                className="absolute left-0 right-0 flex justify-center pointer-events-none transition-transform duration-200 ease-out"
+                className={`pointer-events-none fixed left-0 right-0 top-3 z-50 flex justify-center ${
+                    !isDragging ? 'transition-all duration-300 ease-out' : ''
+                }`}
                 style={{ 
-                    top: -50,
-                    transform: pullDelta > 0 ? `translateY(${pullDelta}px)` : undefined,
-                    opacity: pullDelta > 10 ? 1 : 0
+                    transform: `translate3d(0, ${isRefreshing ? 60 : pullDelta}px, 0)`,
+                    opacity: (pullDelta > 10 || isRefreshing) ? 1 : 0,
+                    visibility: (pullDelta > 5 || isRefreshing) ? 'visible' : 'hidden'
                 }}
             >
-                <div className="bg-white dark:bg-[#2d2d32] rounded-full p-2 shadow-lg border border-gray-100 dark:border-gray-700 flex items-center justify-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#2d2d32] shadow-md border border-gray-200/80 dark:border-gray-700/80 text-[#1daddd]">
                     {isRefreshing ? (
-                        <div className="w-6 h-6 border-2 border-[#1daddd] border-t-transparent rounded-full animate-spin" />
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#1daddd] border-t-transparent" />
                     ) : (
-                        <DynamicLucideIcon name="arrow_downward" style={{ 
-                                transform: `rotate(${Math.min(pullDelta * 2, 180)}deg)`,
-                                fontSize: '24px'
-                            }} className="text-[#1daddd] transition-transform duration-200" />
+                        <DynamicLucideIcon 
+                            name="arrow_downward" 
+                            size={20}
+                            style={{ 
+                                transform: `rotate(${Math.min((pullDelta / threshold) * 180, 180)}deg)`,
+                                transition: isDragging ? 'none' : 'transform 0.15s ease'
+                            }} 
+                            className="text-[#1daddd]"
+                        />
                     )}
                 </div>
             </div>
 
-            {/* Content Container */}
-            <div 
-                className="transition-transform duration-200 ease-out h-full"
-                style={
-                    pullDelta > 0 || isRefreshing
-                        ? { transform: `translateY(${isRefreshing ? 60 : pullDelta}px)` }
-                        : undefined
-                }
-            >
+            {/* Content Container remains stationary to prevent layout and sticky/fixed shifts */}
+            <div className="h-full w-full">
                 {children}
             </div>
         </div>
