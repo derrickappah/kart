@@ -107,9 +107,9 @@ export default function LayoutWrapper({ children }) {
     }, [isMaintenance, profileStatus?.is_admin, pathname, router]);
 
     const handleRefresh = async () => {
-        await mutate();
-        router.refresh();
-        await new Promise(resolve => setTimeout(resolve, 800));
+        if (typeof window !== 'undefined') {
+            window.location.reload();
+        }
     };
 
     // Check if we are on a product details page
