@@ -552,12 +552,12 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-                            <div>
-                                <h3 id="review-modal-title" className="text-lg font-bold text-[#0e181b] dark:text-white">
+                        <div className="flex items-center justify-between gap-3 p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                            <div className="min-w-0 flex-1">
+                                <h3 id="review-modal-title" className="text-lg font-bold text-[#0e181b] dark:text-white truncate">
                                     {userReview ? 'Edit Your Review' : 'Rate & Review Item'}
                                 </h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs mt-0.5">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5" title={productTitle}>
                                     {productTitle}
                                 </p>
                             </div>
@@ -566,7 +566,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                 onClick={closeReviewModal}
                                 disabled={submitting}
                                 aria-label="Close review dialog"
-                                className="size-9 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                                className="size-9 shrink-0 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
                             >
                                 <DynamicLucideIcon name="close" size={18} aria-hidden="true" />
                             </button>

@@ -221,7 +221,7 @@ export default function ProductDetailsClient({ product }) {
     const statusLabel = isAvailable ? null : (product.stock_quantity === 0 ? 'Out of Stock' : (product.status || 'Sold'));
 
     return (
-        <div className="bg-[#fafafa] dark:bg-[#22262a] text-[#0e181b] dark:text-white antialiased min-h-screen font-display product-details-page">
+        <div className="bg-[#fafafa] dark:bg-[#22262a] text-[#0e181b] dark:text-white antialiased min-h-screen font-display product-details-page relative">
             {/* Top Bar for Desktop Navigation */}
             <div className="max-w-6xl mx-auto px-4 pt-4 hidden md:flex items-center justify-between">
                 <button
@@ -260,8 +260,8 @@ export default function ProductDetailsClient({ product }) {
                 </div>
             </div>
 
-            {/* Mobile Top Floating Navigation Bar */}
-            <div className="fixed top-0 left-0 right-0 z-50 flex md:hidden items-center justify-between p-4 pointer-events-none">
+            {/* Mobile Top Navigation Bar (Absolute so it scrolls away naturally) */}
+            <div className="absolute top-0 left-0 right-0 z-20 flex md:hidden items-center justify-between p-4 pointer-events-none">
                 <button
                     onClick={handleBack}
                     aria-label="Go back"
