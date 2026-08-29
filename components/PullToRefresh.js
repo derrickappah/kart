@@ -10,61 +10,74 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     
     const startY = useRef(0);
     const startX = useRef(0);
-    const canPull = useRef(false);
-    const isPulling = useRef(false);
-    const containerRef = useRef(null);
+    const state = useRef({
+        isEligible: false,
+        isPulling: false,
+    });
+    
     const threshold = 70;
     const maxPull = 110;
 
     const getScrollTop = () => {
-        return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        if (typeof window === 'undefined') return 0;
+        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     };
 
     const handleTouchStart = useCallback((e) => {
-        if (disabled || isRefreshing) return;
-        
-        startY.current = e.touches[0].pageY;
-        startX.current = e.touches[0].pageX;
-        isPulling.current = false;
-        
-        // Can ONLY initiate pull-to-refresh if the page is at the very top
-        canPull.current = getScrollTop() <= 0;
+        if (disabled || isRefreshing) {
+            state.current.isEligible = false;
+            state.current.isPulling = false;
+            return;
+        }
+
+        // Only eligible if at the absolute top of the page
+        if (getScrollTop() > 0) {
+            state.current.isEligible = false;
+            state.current.isPulling = false;
+            return;
+        }
+
+        startY.current = e.touches[0].clientY;
+        startX.current = e.touches[0].clientX;
+        state.current.isEligible = true;
+        state.current.isPulling = false;
     }, [disabled, isRefreshing]);
 
     const handleTouchMove = useCallback((e) => {
-        if (disabled || isRefreshing || !canPull.current) return;
-        
-        const currentY = e.touches[0].pageY;
-        const currentX = e.touches[0].pageX;
+        if (!state.current.isEligible || disabled || isRefreshing) return;
+
+        const currentY = e.touches[0].clientY;
+        const currentX = e.touches[0].clientX;
         const deltaY = currentY - startY.current;
         const deltaX = currentX - startX.current;
 
-        // If the user swipes UP, they are scrolling down — disable pull immediately for this gesture
-        if (deltaY <= 0) {
-            canPull.current = false;
-            if (isPulling.current) {
-                isPulling.current = false;
+        // If the page has scrolled or finger is moving up, cancel immediately and allow normal scroll
+        if (getScrollTop() > 0 || deltaY <= 0) {
+            state.current.isEligible = false;
+            if (state.current.isPulling) {
+                state.current.isPulling = false;
                 setIsDragging(false);
                 setPullDelta(0);
             }
             return;
         }
 
-        // If horizontal movement dominates, disable pull to allow horizontal swiping/carousels
-        if (!isPulling.current && Math.abs(deltaX) > Math.abs(deltaY)) {
-            canPull.current = false;
+        // If horizontal movement is greater than vertical movement, cancel immediately
+        if (!state.current.isPulling && Math.abs(deltaX) >= deltaY) {
+            state.current.isEligible = false;
             return;
         }
 
-        // Only start pulling down if we are at the top and pulling downward
-        if (deltaY > 5 && getScrollTop() <= 0) {
-            isPulling.current = true;
+        // Only activate pull-to-refresh if deliberately pulled downward past 10px
+        if (deltaY > 10) {
+            state.current.isPulling = true;
             setIsDragging(true);
-            
-            // Apply progressive resistance
-            const resistedDelta = Math.min(deltaY * 0.4, maxPull);
-            setPullDelta(resistedDelta);
-            
+
+            // Progressive resistance
+            const pullAmount = Math.min((deltaY - 10) * 0.4, maxPull);
+            setPullDelta(pullAmount);
+
+            // Prevent native bounce only when actively pulling down to refresh
             if (e.cancelable) {
                 e.preventDefault();
             }
@@ -72,26 +85,26 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     }, [disabled, isRefreshing]);
 
     const handleTouchEnd = useCallback(async () => {
-        canPull.current = false;
-        const wasPulling = isPulling.current;
-        isPulling.current = false;
+        const wasPulling = state.current.isPulling;
+        state.current.isEligible = false;
+        state.current.isPulling = false;
         setIsDragging(false);
 
         if (wasPulling && pullDelta >= threshold) {
             setIsRefreshing(true);
-            setPullDelta(60); // Hold at indicator state
-            
+            setPullDelta(60);
+
             try {
                 if (onRefresh) {
                     await onRefresh();
                 }
             } catch (err) {
-                console.error('Refresh failed:', err);
+                console.error('Refresh error:', err);
             } finally {
                 setTimeout(() => {
                     setIsRefreshing(false);
                     setPullDelta(0);
-                }, 400);
+                }, 350);
             }
         } else {
             setPullDelta(0);
@@ -99,28 +112,23 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     }, [pullDelta, threshold, onRefresh]);
 
     useEffect(() => {
-        const el = containerRef.current;
-        if (!el) return;
+        if (disabled) return;
 
-        el.addEventListener('touchstart', handleTouchStart, { passive: true });
-        el.addEventListener('touchmove', handleTouchMove, { passive: false });
-        el.addEventListener('touchend', handleTouchEnd, { passive: true });
-        el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+        window.addEventListener('touchstart', handleTouchStart, { passive: true });
+        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+        window.addEventListener('touchend', handleTouchEnd, { passive: true });
+        window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
         return () => {
-            el.removeEventListener('touchstart', handleTouchStart);
-            el.removeEventListener('touchmove', handleTouchMove);
-            el.removeEventListener('touchend', handleTouchEnd);
-            el.removeEventListener('touchcancel', handleTouchEnd);
+            window.removeEventListener('touchstart', handleTouchStart);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleTouchEnd);
+            window.removeEventListener('touchcancel', handleTouchEnd);
         };
-    }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
-
-    if (disabled) {
-        return <>{children}</>;
-    }
+    }, [disabled, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-full min-h-[50vh]">
+        <div className="relative w-full h-full min-h-[50vh]">
             {/* Pull Indicator (Floating Badge) */}
             <div 
                 className={`pointer-events-none fixed left-0 right-0 top-3 z-50 flex justify-center ${
@@ -149,7 +157,7 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
                 </div>
             </div>
 
-            {/* Content Container remains stationary to prevent layout and sticky/fixed shifts */}
+            {/* Content Container */}
             <div className="h-full w-full">
                 {children}
             </div>
