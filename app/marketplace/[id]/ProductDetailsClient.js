@@ -415,19 +415,6 @@ export default function ProductDetailsClient({ product }) {
                                         ₵ {formatPrice(product.price)}
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const el = document.getElementById('reviews-section');
-                                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                    }}
-                                    className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer w-fit"
-                                >
-                                    <DynamicLucideIcon name="star" size={14} fill="currentColor" className="text-yellow-400" aria-hidden="true" />
-                                    <span className="text-primary hover:underline">
-                                        Customer Ratings & Reviews
-                                    </span>
-                                </button>
                             </div>
 
                             {/* Immediate Action CTAs (Above the fold for instant access) */}
@@ -533,7 +520,7 @@ export default function ProductDetailsClient({ product }) {
                             {/* Location Section */}
                             {product.campus && (
                                 <div>
-                                    <h2 className="text-lg font-bold mb-2">Pickup Location</h2>
+                                    <h2 className="text-lg font-bold mb-2">Location</h2>
                                     <div className="flex items-center gap-3 p-4 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/10">
                                         <div className="size-10 flex items-center justify-center bg-primary rounded-xl text-white shrink-0 shadow-sm">
                                             <DynamicLucideIcon name="location_on" aria-hidden="true" />
