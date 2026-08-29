@@ -92,7 +92,7 @@ export async function createListingAction(listingData) {
             for (let i = 0; i < images.length; i++) {
                 const item = images[i];
                 let base64String = typeof item === 'string' ? item : (item.dataUrl || item.rawBase64 || item.base64);
-                if (!base64String) continue;
+                if (!base64String || typeof base64String !== 'string') continue;
 
                 let contentType = 'image/jpeg';
                 let ext = 'jpg';
@@ -100,14 +100,20 @@ export async function createListingAction(listingData) {
                 if (base64String.includes(',')) {
                     const parts = base64String.split(',');
                     const mimeMatch = parts[0].match(/:(.*?);/);
-                    if (mimeMatch) contentType = mimeMatch[1];
+                    if (mimeMatch) {
+                        contentType = mimeMatch[1];
+                    }
                     base64String = parts[1];
                 }
 
                 if (contentType.includes('webp')) ext = 'webp';
                 else if (contentType.includes('png')) ext = 'png';
+                else if (contentType.includes('heic')) ext = 'heic';
+                else if (contentType.includes('heif')) ext = 'heif';
 
                 const buffer = Buffer.from(base64String, 'base64');
+                if (!buffer || buffer.length === 0) continue;
+
                 const fileName = `${user.id}-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 7)}.${ext}`;
 
                 const { error: uploadErr } = await serviceClient.storage
@@ -120,7 +126,6 @@ export async function createListingAction(listingData) {
 
                 if (uploadErr) {
                     console.error('[createListingAction] Image upload error:', uploadErr);
-                    // Clean up partially uploaded files
                     if (uploadedPaths.length > 0) {
                         await serviceClient.storage.from('products').remove(uploadedPaths).catch(() => {});
                     }
@@ -135,6 +140,11 @@ export async function createListingAction(listingData) {
 
                 uploadedUrls.push(publicUrl);
             }
+        }
+
+        // If the user selected photos but none could be uploaded, fail explicitly
+        if (Array.isArray(images) && images.length > 0 && uploadedUrls.length === 0) {
+            return { success: false, error: 'Failed to process and upload selected photos. Please try again.' };
         }
 
         let mainImageUrl = uploadedUrls.length > 0

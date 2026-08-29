@@ -256,7 +256,11 @@ export default function CreateListingPage() {
                 }
             }
 
-            setUploadProgress('Creating listing...');
+            if (imageFiles.length > 0 && imagesPayload.length === 0) {
+                throw new Error('Could not process selected photos. Please re-select your photos and try again.');
+            }
+
+            setUploadProgress('Creating listing on server...');
 
             // Step 2: Call Server Action to handle atomic storage upload & database insert
             const result = await createListingAction({
