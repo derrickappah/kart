@@ -228,9 +228,7 @@ export default async function Home() {
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">
       <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-4 md:pb-8 max-w-md mx-auto bg-white dark:bg-[#242428]">
-        <PromotedBanner products={bannerProducts} />
-
-        <div className="px-4 py-3 sticky top-16 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
+        <div className="px-4 py-2.5 sticky top-16 z-40 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
           <SearchBar
             placeholder="Search campus finds..."
             showFilter={true}
@@ -249,6 +247,8 @@ export default async function Home() {
             }
           />
         </div>
+
+        <PromotedBanner products={bannerProducts} />
 
         {/* Heavy products section is streamed separately — page renders above instantly */}
         <Suspense fallback={
