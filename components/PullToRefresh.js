@@ -10,47 +10,57 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     
     const startY = useRef(0);
     const startX = useRef(0);
+    const canPull = useRef(false);
+    const isPulling = useRef(false);
     const containerRef = useRef(null);
-    const isGestureValid = useRef(false);
     const threshold = 70;
     const maxPull = 110;
 
+    const getScrollTop = () => {
+        return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    };
+
     const handleTouchStart = useCallback((e) => {
         if (disabled || isRefreshing) return;
-        if (window.scrollY > 5) return;
         
         startY.current = e.touches[0].pageY;
         startX.current = e.touches[0].pageX;
-        isGestureValid.current = false;
+        isPulling.current = false;
+        
+        // Can ONLY initiate pull-to-refresh if the page is at the very top
+        canPull.current = getScrollTop() <= 0;
     }, [disabled, isRefreshing]);
 
     const handleTouchMove = useCallback((e) => {
-        if (disabled || isRefreshing) return;
-        if (window.scrollY > 5) {
-            if (isDragging) {
-                setIsDragging(false);
-                setPullDelta(0);
-            }
-            return;
-        }
+        if (disabled || isRefreshing || !canPull.current) return;
         
         const currentY = e.touches[0].pageY;
         const currentX = e.touches[0].pageX;
         const deltaY = currentY - startY.current;
         const deltaX = currentX - startX.current;
 
-        // If horizontal movement exceeds vertical, ignore (allow carousel / swipe navigation)
-        if (!isGestureValid.current) {
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 5) {
-                return;
+        // If the user swipes UP, they are scrolling down — disable pull immediately for this gesture
+        if (deltaY <= 0) {
+            canPull.current = false;
+            if (isPulling.current) {
+                isPulling.current = false;
+                setIsDragging(false);
+                setPullDelta(0);
             }
-            if (deltaY > 5) {
-                isGestureValid.current = true;
-            }
+            return;
         }
 
-        if (isGestureValid.current && deltaY > 0) {
+        // If horizontal movement dominates, disable pull to allow horizontal swiping/carousels
+        if (!isPulling.current && Math.abs(deltaX) > Math.abs(deltaY)) {
+            canPull.current = false;
+            return;
+        }
+
+        // Only start pulling down if we are at the top and pulling downward
+        if (deltaY > 5 && getScrollTop() <= 0) {
+            isPulling.current = true;
             setIsDragging(true);
+            
             // Apply progressive resistance
             const resistedDelta = Math.min(deltaY * 0.4, maxPull);
             setPullDelta(resistedDelta);
@@ -58,18 +68,16 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
             if (e.cancelable) {
                 e.preventDefault();
             }
-        } else {
-            setPullDelta(0);
-            setIsDragging(false);
         }
-    }, [isDragging, disabled, isRefreshing]);
+    }, [disabled, isRefreshing]);
 
     const handleTouchEnd = useCallback(async () => {
-        isGestureValid.current = false;
-        if (!isDragging && pullDelta === 0) return;
+        canPull.current = false;
+        const wasPulling = isPulling.current;
+        isPulling.current = false;
         setIsDragging(false);
 
-        if (pullDelta >= threshold) {
+        if (wasPulling && pullDelta >= threshold) {
             setIsRefreshing(true);
             setPullDelta(60); // Hold at indicator state
             
@@ -88,15 +96,14 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
         } else {
             setPullDelta(0);
         }
-    }, [isDragging, pullDelta, threshold, onRefresh]);
+    }, [pullDelta, threshold, onRefresh]);
 
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
 
-        const options = { passive: false };
         el.addEventListener('touchstart', handleTouchStart, { passive: true });
-        el.addEventListener('touchmove', handleTouchMove, options);
+        el.addEventListener('touchmove', handleTouchMove, { passive: false });
         el.addEventListener('touchend', handleTouchEnd, { passive: true });
         el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
