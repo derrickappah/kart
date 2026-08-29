@@ -268,7 +268,7 @@ export default function ChatPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col h-full bg-[#f6f7f8] dark:bg-[#111d21] animate-pulse">
+            <div className="flex flex-col h-[100dvh] max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#111d21] animate-pulse">
                 {/* Header skeleton */}
                 <div className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
                     <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
@@ -298,7 +298,7 @@ export default function ChatPage() {
     }
 
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] text-[#111618] dark:text-gray-100 font-display">
+        <div className="flex flex-col h-[100dvh] max-w-md mx-auto overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] text-[#111618] dark:text-gray-100 font-display">
             <header className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-30 shadow-sm relative">
                 <button
                     onClick={() => router.back()}
