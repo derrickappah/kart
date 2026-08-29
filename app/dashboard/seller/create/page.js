@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
-import { validateImage } from '@/utils/imageUtils';
-import { uploadProductImages } from '@/utils/uploadUtils';
+import { validateImage, compressProductImage } from '@/utils/imageUtils';
+import { createListingAction } from './actions';
 import LoadingScreen from '@/components/LoadingScreen';
 import CategorySelector from '@/components/CategorySelector';
 
@@ -219,19 +219,7 @@ export default function CreateListingPage() {
         setError(null);
         isSubmittingRef.current = true;
 
-        let uploadedPaths = [];
-
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
-
-            if (subscriptionStatus !== 'active') {
-                throw new Error('Active subscription required to create listings. Please subscribe first.');
-            }
-            if (verificationStatus !== 'approved') {
-                throw new Error('Seller verification required to create listings. Please get verified first.');
-            }
-
             // Client-side input validations
             const titleTrimmed = formData.title.trim();
             const descriptionTrimmed = formData.description.trim();
@@ -256,60 +244,39 @@ export default function CreateListingPage() {
                 throw new Error('Please select a category');
             }
 
-            let uploadedUrls = [];
-            let mainImageUrl = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000';
-
+            // Step 1: Compress images client-side into lightweight base64 payloads
+            const imagesPayload = [];
             if (imageFiles.length > 0) {
-                setUploadProgress(`Optimizing & uploading ${imageFiles.length} photo${imageFiles.length > 1 ? 's' : ''}...`);
-                const uploadResult = await uploadProductImages(imageFiles, user.id, {
-                    supabaseClient: supabase,
-                    onProgress: ({ completed, total }) => {
-                        setUploadProgress(`Uploading photo ${completed} of ${total}...`);
+                for (let i = 0; i < imageFiles.length; i++) {
+                    setUploadProgress(`Optimizing photo ${i + 1} of ${imageFiles.length}...`);
+                    const { dataUrl } = await compressProductImage(imageFiles[i]);
+                    if (dataUrl) {
+                        imagesPayload.push(dataUrl);
                     }
-                });
-                uploadedUrls = uploadResult.urls;
-                uploadedPaths = uploadResult.paths;
-
-                if (uploadedUrls.length > 0) {
-                    mainImageUrl = uploadedUrls[0];
                 }
             }
 
-            setUploadProgress('Saving listing...');
+            setUploadProgress('Creating listing...');
 
-            const { data: insertData, error: insertError } = await supabase
-                .from('products')
-                .insert([
-                    {
-                        seller_id: user.id,
-                        title: titleTrimmed,
-                        price: priceNum,
-                        category: formData.category,
-                        condition: formData.condition,
-                        description: descriptionTrimmed,
-                        campus: campusTrimmed || null,
-                        image_url: mainImageUrl,
-                        images: uploadedUrls,
-                        status: 'Active'
-                    }
-                ])
-                .select();
+            // Step 2: Call Server Action to handle atomic storage upload & database insert
+            const result = await createListingAction({
+                title: titleTrimmed,
+                price: priceNum,
+                category: formData.category,
+                condition: formData.condition,
+                description: descriptionTrimmed,
+                campus: campusTrimmed || null,
+                images: imagesPayload
+            });
 
-            if (insertError) throw insertError;
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to create listing');
+            }
 
-            const newProductId = insertData?.[0]?.id;
-            router.push(`/dashboard/seller/create/success?id=${newProductId}`);
+            router.push(`/dashboard/seller/create/success?id=${result.productId}`);
             router.refresh();
 
         } catch (err) {
-            // Clean up uploaded images if DB insert failed to prevent orphaned storage files
-            if (uploadedPaths.length > 0) {
-                try {
-                    await supabase.storage.from('products').remove(uploadedPaths);
-                } catch (cleanupErr) {
-                    console.error('Failed to clean up uploaded images:', cleanupErr);
-                }
-            }
             setError(err.message || 'Failed to create listing. Please try again.');
             isSubmittingRef.current = false;
         } finally {

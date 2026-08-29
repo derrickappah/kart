@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
-import { validateImage } from '@/utils/imageUtils';
-import { uploadProductImage } from '@/utils/uploadUtils';
+import { validateImage, compressProductImage } from '@/utils/imageUtils';
+import { updateListingAction } from './actions';
 
 export default function EditListingClient({ product }) {
     const router = useRouter();
@@ -197,61 +197,38 @@ export default function EditListingClient({ product }) {
                 throw new Error('Price cannot exceed ₵1,000,000');
             }
 
-            if (!formData.category) {
-                throw new Error('Please select a category');
-            }
-
-            // Upload any local files to storage
-            const updatedUrls = [];
-
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
-
+            // Step 1: Prepare photos payload with compressed local images
+            const photosPayload = [];
             for (const photo of photos) {
                 if (photo.type === 'remote') {
-                    updatedUrls.push(photo.url);
+                    photosPayload.push({ type: 'remote', url: photo.url });
                 } else if (photo.type === 'local') {
-                    const { publicUrl, filePath } = await uploadProductImage(photo.file, user.id, {
-                        supabaseClient: supabase
-                    });
-                    uploadedPaths.push(filePath);
-                    updatedUrls.push(publicUrl);
+                    const { dataUrl } = await compressProductImage(photo.file);
+                    if (dataUrl) {
+                        photosPayload.push({ type: 'local', dataUrl });
+                    }
                 }
             }
 
-            let mainImageUrl = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000';
-            if (updatedUrls.length > 0) {
-                mainImageUrl = updatedUrls[0];
+            // Step 2: Call Server Action
+            const result = await updateListingAction(product.id, {
+                title: titleTrimmed,
+                price: priceNum,
+                category: formData.category,
+                condition: formData.condition,
+                description: descriptionTrimmed,
+                campus: campusTrimmed || null,
+                photos: photosPayload
+            });
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update listing');
             }
-
-            const { error } = await supabase
-                .from('products')
-                .update({
-                    title: titleTrimmed,
-                    price: priceNum,
-                    category: formData.category,
-                    condition: formData.condition,
-                    description: descriptionTrimmed,
-                    campus: campusTrimmed || null,
-                    image_url: mainImageUrl,
-                    images: updatedUrls
-                })
-                .eq('id', product.id);
-
-            if (error) throw error;
 
             router.push('/dashboard/seller/listings');
             router.refresh();
         } catch (err) {
-            // Delete newly uploaded images if DB insert/update failed
-            if (uploadedPaths.length > 0) {
-                try {
-                    await supabase.storage.from('products').remove(uploadedPaths);
-                } catch (cleanupErr) {
-                    console.error('Failed to clean up uploaded images:', cleanupErr);
-                }
-            }
-            setError(err.message);
+            setError(err.message || 'Failed to update listing');
             isSubmittingRef.current = false;
         } finally {
             setLoading(false);
