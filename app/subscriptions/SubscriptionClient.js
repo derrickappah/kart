@@ -212,7 +212,7 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
                                         /{plan.duration_months === 12 ? 'yr' : 'mo'}
                                     </span>
                                 </div>
-                                <p className="text-slate-400 text-xs">{plan.description || `For ${plan.duration_months > 1 ? 'long-term' : 'regular'} campus sellers.`}</p>
+                                <p className="text-slate-400 text-xs">{plan.description || `For ${plan.duration_months > 1 ? 'long-term' : 'regular'} sellers.`}</p>
                             </div>
 
                             <div className="flex flex-col gap-3">

@@ -73,7 +73,7 @@ function SuccessContent() {
       <p className="text-gray-500 dark:text-gray-400 text-base font-normal leading-relaxed text-center max-w-xs mb-10">
         {error
           ? `There was an issue verifying your payment: ${error}. Please contact support if the amount was deducted.`
-          : "Welcome to the elite circle of campus sellers. Your journey to faster sales starts here."}
+          : "Welcome to the elite circle of sellers. Your journey to faster sales starts here."}
       </p>
 
       {/* Features Summary Card (Only show on success) */}

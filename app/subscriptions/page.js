@@ -31,8 +31,8 @@ export default async function SubscriptionPage() {
       <div className="relative flex h-auto min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden border-x border-slate-200 dark:border-slate-800 shadow-xl bg-white dark:bg-[#242428]">
 
         <div className="px-6 pt-6">
-          <h1 className="text-2xl font-extrabold tracking-tight mb-2">Scale your campus shop</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Choose the plan that fits your selling goals and reach more students across campus.</p>
+          <h1 className="text-2xl font-extrabold tracking-tight mb-2">Scale your shop</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Choose the plan that fits your selling goals and reach more students.</p>
         </div>
 
         {/* Subscription Content */}
