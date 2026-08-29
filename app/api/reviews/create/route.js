@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
 export async function POST(request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const authClient = await createClient();
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized. Please sign in to submit a review.' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -26,13 +26,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Review comment exceeds maximum length' }, { status: 400 });
     }
 
+    // Use service role client if available to ensure RLS doesn't block updates/stats
+    const db = process.env.SUPABASE_SERVICE_ROLE_KEY ? createServiceRoleClient() : authClient;
+
     let targetSellerId = null;
     let targetProductId = null;
     let createdOrUpdatedReview = null;
 
     if (orderId) {
       // Verify order belongs to user and is in a reviewable state, fetching seller_id and product_id
-      const { data: order, error: orderError } = await supabase
+      const { data: order, error: orderError } = await db
         .from('orders')
         .select('id, status, buyer_id, seller_id, product_id')
         .eq('id', orderId)
@@ -40,7 +43,7 @@ export async function POST(request) {
         .single();
 
       if (orderError || !order) {
-        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        return NextResponse.json({ error: 'Order not found or you do not have permission' }, { status: 404 });
       }
 
       if (order.status !== 'Delivered' && order.status !== 'Completed') {
@@ -51,7 +54,7 @@ export async function POST(request) {
       }
 
       // Check if review already exists for this order
-      const { data: existingReview } = await supabase
+      const { data: existingReview } = await db
         .from('reviews')
         .select('*')
         .eq('order_id', orderId)
@@ -65,7 +68,7 @@ export async function POST(request) {
       targetProductId = order.product_id;
 
       // Create review using verified database entity values
-      const { data: insertedReview, error: reviewError } = await supabase
+      const { data: insertedReview, error: reviewError } = await db
         .from('reviews')
         .insert({
           order_id: order.id,
@@ -79,14 +82,14 @@ export async function POST(request) {
         .single();
 
       if (reviewError) {
-        console.error('Error creating review:', reviewError);
-        return NextResponse.json({ error: 'Failed to create review' }, { status: 500 });
+        console.error('Error creating order review:', reviewError);
+        return NextResponse.json({ error: reviewError.message || 'Failed to create review' }, { status: 500 });
       }
 
       createdOrUpdatedReview = insertedReview;
     } else if (productId) {
       // Fetch product to verify and get seller_id
-      const { data: product, error: productError } = await supabase
+      const { data: product, error: productError } = await db
         .from('products')
         .select('id, seller_id, title')
         .eq('id', productId)
@@ -104,16 +107,16 @@ export async function POST(request) {
       targetProductId = product.id;
 
       // Check if user already reviewed this product
-      const { data: existingReview } = await supabase
+      const { data: existingReview } = await db
         .from('reviews')
-        .select('id')
+        .select('id, buyer_id')
         .eq('product_id', productId)
         .eq('buyer_id', user.id)
         .maybeSingle();
 
       if (existingReview) {
         // Update existing review
-        const { data: updatedReview, error: updateError } = await supabase
+        const { data: updatedReview, error: updateError } = await db
           .from('reviews')
           .update({
             rating,
@@ -125,13 +128,13 @@ export async function POST(request) {
 
         if (updateError) {
           console.error('Error updating review:', updateError);
-          return NextResponse.json({ error: 'Failed to update review' }, { status: 500 });
+          return NextResponse.json({ error: updateError.message || 'Failed to update review' }, { status: 500 });
         }
 
         createdOrUpdatedReview = updatedReview;
       } else {
         // Insert new review
-        const { data: insertedReview, error: insertError } = await supabase
+        const { data: insertedReview, error: insertError } = await db
           .from('reviews')
           .insert({
             product_id: product.id,
@@ -145,7 +148,7 @@ export async function POST(request) {
 
         if (insertError) {
           console.error('Error creating product review:', insertError);
-          return NextResponse.json({ error: 'Failed to create review' }, { status: 500 });
+          return NextResponse.json({ error: insertError.message || 'Failed to create review' }, { status: 500 });
         }
 
         createdOrUpdatedReview = insertedReview;
@@ -154,22 +157,26 @@ export async function POST(request) {
 
     // Sync seller aggregate stats in profiles
     if (targetSellerId) {
-      const { data: sellerReviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('seller_id', targetSellerId);
+      try {
+        const { data: sellerReviews } = await db
+          .from('reviews')
+          .select('rating')
+          .eq('seller_id', targetSellerId);
 
-      if (sellerReviews && sellerReviews.length > 0) {
-        const avgRating = sellerReviews.reduce((sum, r) => sum + r.rating, 0) / sellerReviews.length;
-        const totalReviews = sellerReviews.length;
+        if (sellerReviews && sellerReviews.length > 0) {
+          const avgRating = sellerReviews.reduce((sum, r) => sum + r.rating, 0) / sellerReviews.length;
+          const totalReviews = sellerReviews.length;
 
-        await supabase
-          .from('profiles')
-          .update({
-            average_rating: avgRating,
-            total_reviews: totalReviews,
-          })
-          .eq('id', targetSellerId);
+          await db
+            .from('profiles')
+            .update({
+              average_rating: avgRating,
+              total_reviews: totalReviews,
+            })
+            .eq('id', targetSellerId);
+        }
+      } catch (statsErr) {
+        console.error('Error syncing seller rating stats:', statsErr);
       }
     }
 
@@ -180,6 +187,6 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('Create review error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
 }
