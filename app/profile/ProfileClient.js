@@ -1,0 +1,132 @@
+'use client';
+import { useState } from 'react';
+import DynamicLucideIcon from '@/components/DynamicLucideIcon';
+import Link from 'next/link';
+import { timeAgo } from '../../utils/dateUtils';
+import FollowersListModal from '@/components/FollowersListModal';
+
+export default function ProfileClient({ initialData }) {
+    const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'followers' });
+
+    if (!initialData) return null;
+
+    const { user, profile, wallet, stats } = initialData;
+    const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+    const university = profile?.university || profile?.campus || "University Student";
+
+    return (
+        <div className="bg-white dark:bg-[#242428] font-display text-[#111618] dark:text-gray-100 min-h-screen pb-4 md:pb-8 overflow-x-hidden profile-page">
+            <main className="max-w-md mx-auto flex flex-col gap-8 px-4 pt-6">
+                {/* Profile Header Section */}
+                <section className="flex flex-col items-center animate-fade-in text-center">
+                    <div className="relative group cursor-pointer">
+                        <div className="w-32 h-32 rounded-full p-1 border-2 border-dashed border-[#1daddd]/30 group-hover:border-[#1daddd] transition-colors duration-300">
+                            <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden bg-cover bg-center shadow-sm"
+                                style={{ backgroundImage: profile?.avatar_url ? `url('${profile.avatar_url}')` : "url('https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y')" }}>
+                            </div>
+                        </div>
+                        <Link href="/profile/edit" className="absolute bottom-1 right-1 bg-[#1daddd] text-white rounded-full p-2 shadow-lg ring-4 ring-white dark:ring-[#242428] flex items-center justify-center hover:scale-105 transition-transform">
+                            <DynamicLucideIcon name="edit" className="text-[18px]" />
+                        </Link>
+                    </div>
+                    <div className="mt-4 space-y-1.5 flex flex-col items-center">
+                        <h1 className="text-[26px] font-bold leading-tight tracking-tight text-[#111618] dark:text-white">{displayName}</h1>
+                        <p className="text-[#5e7d87] dark:text-gray-400 text-sm font-medium">
+                            {university} • Joined {timeAgo(user?.created_at)}
+                        </p>
+                        {/* Rating Badge */}
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold shadow-sm">
+                            <DynamicLucideIcon name="star" className="text-sm filled text-amber-500" />
+                            <span>{parseFloat(stats.reviews || 0).toFixed(1)}</span>
+                            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Rating</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Stats Section */}
+                <section className="grid grid-cols-3 gap-3">
+                    <Link
+                        href="/dashboard/seller/listings"
+                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm"
+                    >
+                        <p className="text-xl font-bold text-[#111618] dark:text-white">{stats.listings}</p>
+                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Listings</p>
+                    </Link>
+                    <button
+                        type="button"
+                        onClick={() => setModalConfig({ isOpen: true, type: 'followers' })}
+                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                    >
+                        <p className="text-xl font-bold text-primary">{stats.followers}</p>
+                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Followers</p>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setModalConfig({ isOpen: true, type: 'following' })}
+                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                    >
+                        <p className="text-xl font-bold text-primary">{stats.following}</p>
+                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Following</p>
+                    </button>
+                </section>
+
+                {/* Menu List Section */}
+                <section className="flex flex-col space-y-1">
+                    <Link href="/dashboard/seller/listings" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
+                            <DynamicLucideIcon name="storefront" />
+                        </div>
+                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">My Listings</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
+                    </Link>
+                    <Link href="/dashboard/orders" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
+                            <DynamicLucideIcon name="shopping_bag" />
+                        </div>
+                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Purchased Items</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
+                    </Link>
+                    <Link href="/dashboard/wishlist" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
+                            <DynamicLucideIcon name="bookmark" />
+                        </div>
+                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Saved Items</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
+                    </Link>
+                    <Link href="/dashboard/wallet" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
+                            <DynamicLucideIcon name="account_balance_wallet" />
+                        </div>
+                        <div className="flex-1 flex flex-col text-left">
+                            <span className="text-base font-semibold text-[#111618] dark:text-white">KART Wallet</span>
+                            <span className="text-xs font-bold text-[#1daddd]">₵ {wallet?.balance ? parseFloat(wallet.balance).toFixed(2) : '0.00'}</span>
+                        </div>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
+                    </Link>
+                    <Link href="/dashboard/settings" className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#232628] hover:bg-gray-50 dark:hover:bg-[#232628]/80 active:scale-[0.99] transition-all group border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] group-hover:bg-[#1daddd] group-hover:text-white transition-colors duration-300">
+                            <DynamicLucideIcon name="settings" />
+                        </div>
+                        <span className="text-base font-semibold flex-1 text-left text-[#111618] dark:text-white">Account Settings</span>
+                        <DynamicLucideIcon name="chevron_right" className="text-gray-400 text-xl" />
+                    </Link>
+                </section>
+
+                <section className="mt-2 pb-6">
+                    <Link href="/dashboard/seller" className="w-full relative overflow-hidden rounded-xl h-14 bg-[#1daddd] text-white text-base font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-[#1daddd]/20 flex items-center justify-center gap-2">
+                        <DynamicLucideIcon name="store" />
+                        <span>Switch to Seller Dashboard</span>
+                    </Link>
+                </section>
+            </main>
+
+            <FollowersListModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                userId={user?.id}
+                type={modalConfig.type}
+                title={modalConfig.type === 'followers' ? 'My Followers' : 'Following'}
+            />
+        </div>
+    );
+}
