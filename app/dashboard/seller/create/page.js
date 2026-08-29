@@ -2,9 +2,10 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '../../../../utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { validateImage } from '@/utils/imageUtils';
+import { uploadProductImages } from '@/utils/uploadUtils';
 import LoadingScreen from '@/components/LoadingScreen';
 import CategorySelector from '@/components/CategorySelector';
 
@@ -12,6 +13,7 @@ export default function CreateListingPage() {
     const router = useRouter();
     const supabase = createClient();
     const [loading, setLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState('');
     const [error, setError] = useState(null);
     const [imageFiles, setImageFiles] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
@@ -213,10 +215,11 @@ export default function CreateListingPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setUploadProgress('');
         setError(null);
         isSubmittingRef.current = true;
 
-        const uploadedPaths = [];
+        let uploadedPaths = [];
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -253,39 +256,26 @@ export default function CreateListingPage() {
                 throw new Error('Please select a category');
             }
 
-            const uploadedUrls = [];
+            let uploadedUrls = [];
             let mainImageUrl = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1000';
 
             if (imageFiles.length > 0) {
-                const uploadPromises = imageFiles.map(async (file) => {
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${user.id}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-                    const filePath = `${fileName}`;
-
-                    const { error: uploadError } = await supabase.storage
-                        .from('products')
-                        .upload(filePath, file);
-
-                    if (uploadError) {
-                        throw new Error(`Upload failed: ${uploadError.message}`);
+                setUploadProgress(`Optimizing & uploading ${imageFiles.length} photo${imageFiles.length > 1 ? 's' : ''}...`);
+                const uploadResult = await uploadProductImages(imageFiles, user.id, {
+                    supabaseClient: supabase,
+                    onProgress: ({ completed, total }) => {
+                        setUploadProgress(`Uploading photo ${completed} of ${total}...`);
                     }
-
-                    uploadedPaths.push(filePath);
-
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('products')
-                        .getPublicUrl(filePath);
-
-                    return publicUrl;
                 });
+                uploadedUrls = uploadResult.urls;
+                uploadedPaths = uploadResult.paths;
 
-                const urls = await Promise.all(uploadPromises);
-                uploadedUrls.push(...urls);
-
-                if (urls.length > 0) {
-                    mainImageUrl = urls[0];
+                if (uploadedUrls.length > 0) {
+                    mainImageUrl = uploadedUrls[0];
                 }
             }
+
+            setUploadProgress('Saving listing...');
 
             const { data: insertData, error: insertError } = await supabase
                 .from('products')
@@ -312,7 +302,7 @@ export default function CreateListingPage() {
             router.refresh();
 
         } catch (err) {
-            // Delete uploaded images if DB insert failed to prevent orphaned files
+            // Clean up uploaded images if DB insert failed to prevent orphaned storage files
             if (uploadedPaths.length > 0) {
                 try {
                     await supabase.storage.from('products').remove(uploadedPaths);
@@ -320,10 +310,11 @@ export default function CreateListingPage() {
                     console.error('Failed to clean up uploaded images:', cleanupErr);
                 }
             }
-            setError(err.message);
+            setError(err.message || 'Failed to create listing. Please try again.');
             isSubmittingRef.current = false;
         } finally {
             setLoading(false);
+            setUploadProgress('');
         }
     };
 
@@ -609,7 +600,7 @@ export default function CreateListingPage() {
                             disabled={loading}
                             className="btn-primary w-full h-14 shadow-xl shadow-primary/20 disabled:opacity-50"
                         >
-                            <span>{loading ? 'Posting...' : 'Post Item'}</span>
+                            <span>{loading ? (uploadProgress || 'Posting...') : 'Post Item'}</span>
                             {!loading && <DynamicLucideIcon name="arrow_forward" className="text-xl" />}
                         </button>
                     </div>

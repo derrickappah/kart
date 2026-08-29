@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { validateImage } from '@/utils/imageUtils';
+import { uploadProductImage } from '@/utils/uploadUtils';
 
 export default function EditListingClient({ product }) {
     const router = useRouter();
@@ -203,31 +204,17 @@ export default function EditListingClient({ product }) {
             // Upload any local files to storage
             const updatedUrls = [];
 
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
             for (const photo of photos) {
                 if (photo.type === 'remote') {
                     updatedUrls.push(photo.url);
                 } else if (photo.type === 'local') {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (!user) throw new Error('Not authenticated');
-
-                    const fileExt = photo.file.name.split('.').pop();
-                    const fileName = `${user.id}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-                    const filePath = `${fileName}`;
-
-                    const { error: uploadError } = await supabase.storage
-                        .from('products')
-                        .upload(filePath, photo.file);
-
-                    if (uploadError) {
-                        throw new Error(`Upload failed: ${uploadError.message}`);
-                    }
-
+                    const { publicUrl, filePath } = await uploadProductImage(photo.file, user.id, {
+                        supabaseClient: supabase
+                    });
                     uploadedPaths.push(filePath);
-
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('products')
-                        .getPublicUrl(filePath);
-
                     updatedUrls.push(publicUrl);
                 }
             }
