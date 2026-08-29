@@ -3,9 +3,9 @@ import { createClient } from './supabase/client';
 
 /**
  * Resiliently upload a single image.
- * 1. Optimizes and compresses the image client-side to universal ~100KB JPEG.
- * 2. Attempts direct client-side upload to Supabase Storage.
- * 3. Automatically falls back to /api/upload server proxy if client connection fails (e.g. mobile WebKit CORS, adblocker, DNS).
+ * 1. Hardware-accelerated client-side compression to lightweight JPEG (~80-150KB).
+ * 2. Primary: JSON Base64 upload to /api/upload with Bearer authentication.
+ * 3. Secondary Fallback: Direct upload to Supabase Storage with binary blob.
  * 
  * @param {File|Blob} file - The file to upload
  * @param {string} userId - Current authenticated user ID
@@ -20,18 +20,74 @@ export async function uploadProductImage(file, userId, options = {}) {
 
     const supabase = supabaseClient || createClient();
 
-    // Step 1: Fast, hardware-accelerated client-side compression (~80-150KB JPEG)
-    const { blob, extension, contentType } = await compressProductImage(file);
+    // Step 1: Compress image on client to universal JPEG (~80-150KB)
+    const { dataUrl, blob, extension, contentType } = await compressProductImage(file);
     const fileName = `${userId || 'item'}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${extension}`;
     const filePath = fileName;
 
-    let directUploadError = null;
+    let apiError = null;
 
-    // Step 2: Try direct upload to Supabase
+    // Step 2: Primary Strategy — /api/upload with JSON payload (fastest, most reliable across mobile & Capacitor)
+    if (dataUrl) {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (session?.access_token) {
+                headers['Authorization'] = `Bearer ${session.access_token}`;
+            }
+
+            let uploadUrl = '/api/upload';
+            if (typeof window !== 'undefined' && window.location.origin) {
+                const isLocalhostApp = window.location.origin.includes('localhost') && !window.location.origin.includes(':3000');
+                const isCapacitorScheme = window.location.origin.startsWith('capacitor:') || window.location.origin.startsWith('ionic:');
+                if (isLocalhostApp || isCapacitorScheme) {
+                    const appHost = process.env.NEXT_PUBLIC_APP_URL || 'https://kart-murex.vercel.app';
+                    uploadUrl = `${appHost}/api/upload`;
+                }
+            }
+
+            const response = await fetch(uploadUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    imageBase64: dataUrl,
+                    bucket,
+                    filePath
+                }),
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.publicUrl) {
+                    return {
+                        publicUrl: data.publicUrl,
+                        filePath: data.filePath || filePath
+                    };
+                }
+                throw new Error(data.error || 'Upload API returned unsuccessful status');
+            }
+
+            const errorData = await response.json().catch(() => ({}));
+            apiError = new Error(errorData.error || `Upload API failed with status ${response.status}`);
+            console.warn('[Upload] Primary JSON API upload failed:', apiError.message);
+        } catch (err) {
+            apiError = err;
+            console.warn('[Upload] Primary JSON API upload exception, attempting direct fallback:', err.message || err);
+        }
+    }
+
+    // Step 3: Secondary Strategy — Direct Supabase Storage upload
     try {
+        console.log('[Upload] Attempting direct Supabase storage upload...');
+        const payloadToUpload = blob || file;
+
         const { data: uploadData, error: uploadError } = await supabase.storage
             .from(bucket)
-            .upload(filePath, blob, {
+            .upload(filePath, payloadToUpload, {
                 contentType: contentType || 'image/jpeg',
                 upsert: true,
                 cacheControl: '31536000'
@@ -48,64 +104,12 @@ export async function uploadProductImage(file, userId, options = {}) {
         }
 
         if (uploadError) {
-            directUploadError = uploadError;
-            console.warn('[Upload] Direct storage upload failed, using /api/upload fallback:', uploadError.message);
+            console.error('[Upload] Direct Supabase upload failed:', uploadError);
+            throw new Error(uploadError.message || 'Direct storage upload failed');
         }
     } catch (directErr) {
-        directUploadError = directErr;
-        console.warn('[Upload] Direct upload network exception, using /api/upload fallback:', directErr.message || directErr);
-    }
-
-    // Step 3: Direct upload failed (often on mobile WebKit/Capacitor) — Use /api/upload server endpoint
-    try {
-        console.log('[Upload] Executing server-side fallback upload via /api/upload...');
-
-        const { data: { session } } = await supabase.auth.getSession();
-
-        const formData = new FormData();
-        formData.append('file', blob, fileName);
-        formData.append('bucket', bucket);
-        formData.append('filePath', filePath);
-
-        const headers = {};
-        if (session?.access_token) {
-            headers['Authorization'] = `Bearer ${session.access_token}`;
-        }
-
-        let uploadUrl = '/api/upload';
-        // Handle Capacitor or isolated webview hosts
-        if (typeof window !== 'undefined' && window.location.origin) {
-            const isLocalhostApp = window.location.origin.includes('localhost') && !window.location.origin.includes(':3000');
-            const isCapacitorScheme = window.location.origin.startsWith('capacitor:') || window.location.origin.startsWith('ionic:');
-            if (isLocalhostApp || isCapacitorScheme) {
-                const appHost = process.env.NEXT_PUBLIC_APP_URL || 'https://kart-murex.vercel.app';
-                uploadUrl = `${appHost}/api/upload`;
-            }
-        }
-
-        const response = await fetch(uploadUrl, {
-            method: 'POST',
-            body: formData,
-            headers,
-            credentials: 'include'
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.publicUrl) {
-                return {
-                    publicUrl: data.publicUrl,
-                    filePath: data.filePath || filePath
-                };
-            }
-            throw new Error(data.error || 'Server upload returned unsuccessful status');
-        }
-
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server upload failed (${response.status})`);
-    } catch (fallbackErr) {
-        console.error('[Upload] Fallback upload failed:', fallbackErr);
-        const detail = directUploadError?.message || fallbackErr.message || 'Connection failed';
+        console.error('[Upload] Both API and direct storage upload failed:', directErr);
+        const detail = apiError?.message || directErr.message || 'Network connection failed';
         throw new Error(`Upload failed: ${detail}. Please check your connection and try again.`);
     }
 }
@@ -133,7 +137,6 @@ export async function uploadProductImages(files, userId, options = {}) {
     const total = files.length;
 
     try {
-        // Upload one by one sequentially for maximum mobile stability & low memory consumption
         for (const file of files) {
             const result = await uploadProductImage(file, userId, { bucket });
             uploadedUrls.push(result.publicUrl);
@@ -151,7 +154,6 @@ export async function uploadProductImages(files, userId, options = {}) {
 
         return { urls: uploadedUrls, paths: uploadedPaths };
     } catch (error) {
-        // Attempt cleanup of any files uploaded prior to the failure
         if (uploadedPaths.length > 0) {
             try {
                 const supabase = createClient();

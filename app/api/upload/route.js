@@ -54,31 +54,59 @@ export async function POST(request) {
             );
         }
 
-        const formData = await request.formData();
-        const file = formData.get('file');
-        const bucket = formData.get('bucket') || 'products';
-        let customPath = formData.get('filePath');
+        let buffer = null;
+        let bucket = 'products';
+        let customPath = null;
+        let contentType = 'image/jpeg';
+        let ext = 'jpg';
 
-        if (!file) {
-            return NextResponse.json(
-                { error: 'No file provided' },
-                { status: 400, headers: corsHeaders }
-            );
+        const contentTypeHeader = request.headers.get('content-type') || '';
+
+        if (contentTypeHeader.includes('application/json')) {
+            // Handle JSON Base64 Payload (fastest, most reliable on mobile)
+            const body = await request.json();
+            const { imageBase64, bucket: reqBucket, filePath } = body;
+
+            if (!imageBase64 || typeof imageBase64 !== 'string') {
+                return NextResponse.json({ error: 'No image data provided' }, { status: 400, headers: corsHeaders });
+            }
+
+            if (reqBucket) bucket = reqBucket;
+            if (filePath) customPath = filePath;
+
+            let rawBase64 = imageBase64;
+            if (imageBase64.includes(',')) {
+                const parts = imageBase64.split(',');
+                const mimeMatch = parts[0].match(/:(.*?);/);
+                if (mimeMatch) contentType = mimeMatch[1];
+                rawBase64 = parts[1];
+            }
+
+            buffer = Buffer.from(rawBase64, 'base64');
+        } else {
+            // Handle Multipart Form Data
+            const formData = await request.formData();
+            const file = formData.get('file');
+            const reqBucket = formData.get('bucket');
+            const reqPath = formData.get('filePath');
+
+            if (!file) {
+                return NextResponse.json({ error: 'No file provided' }, { status: 400, headers: corsHeaders });
+            }
+
+            if (reqBucket) bucket = reqBucket;
+            if (reqPath) customPath = reqPath;
+
+            contentType = file.type || 'image/jpeg';
+            const bytes = await file.arrayBuffer();
+            buffer = Buffer.from(bytes);
         }
 
         const allowedBuckets = ['products', 'profiles', 'chat-attachments', 'verifications'];
         if (!allowedBuckets.includes(bucket)) {
-            return NextResponse.json(
-                { error: 'Invalid storage bucket' },
-                { status: 400, headers: corsHeaders }
-            );
+            return NextResponse.json({ error: 'Invalid storage bucket' }, { status: 400, headers: corsHeaders });
         }
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
-        const contentType = file.type || 'image/jpeg';
-        let ext = 'jpg';
         if (contentType.includes('webp')) ext = 'webp';
         else if (contentType.includes('png')) ext = 'png';
         else if (contentType.includes('gif')) ext = 'gif';
@@ -86,7 +114,7 @@ export async function POST(request) {
         const fileName = customPath || `${user.id}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
         const filePath = fileName;
 
-        // Use service role client to upload with complete bypass of storage RLS quirks
+        // Use service role client to upload directly to Supabase storage
         const { error: uploadError } = await serviceClient.storage
             .from(bucket)
             .upload(filePath, buffer, {

@@ -11,8 +11,9 @@ export function dataURItoBlob(dataURI) {
     if (!dataURI || typeof dataURI !== 'string') return null;
     try {
         const parts = dataURI.split(',');
+        if (parts.length < 2) return null;
         const byteString = atob(parts[1]);
-        const mimeString = parts[0].split(':')[1].split(';')[0];
+        const mimeString = parts[0].split(':')[1]?.split(';')[0] || 'image/jpeg';
         const ab = new ArrayBuffer(byteString.length);
         const ia = new Uint8Array(ab);
         for (let i = 0; i < byteString.length; i++) {
@@ -31,7 +32,7 @@ export function dataURItoBlob(dataURI) {
  * @returns {Object} - { valid: boolean, error: string }
  */
 export function validateImage(file) {
-    const maxSize = 25 * 1024 * 1024; // 25MB allowance (modern phone camera friendly)
+    const maxSize = 30 * 1024 * 1024; // 30MB allowance
     const allowedTypes = [
         'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
         'image/heic', 'image/heif', 'image/avif', 'image/gif'
@@ -45,13 +46,13 @@ export function validateImage(file) {
     const isAllowedExt = /\.(jpe?g|png|webp|heic|heif|avif|gif)$/i.test(fileName);
     const isAllowedType = allowedTypes.includes(file.type?.toLowerCase());
 
-    // On mobile devices, file.type is sometimes empty string or octet-stream for gallery picks
+    // On mobile devices, file.type is sometimes empty string or octet-stream for camera/gallery picks
     if (!isAllowedType && !isAllowedExt && file.type !== '' && file.type !== 'application/octet-stream') {
         return { valid: false, error: 'Invalid file type. Please upload a JPG, PNG, WebP, or HEIC image.' };
     }
 
     if (file.size > maxSize) {
-        return { valid: false, error: 'File size too large. Maximum size is 25MB.' };
+        return { valid: false, error: 'File size too large. Maximum size is 30MB.' };
     }
 
     return { valid: true, error: null };
@@ -124,24 +125,24 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
 
 /**
  * Compresses and optimizes a product image for marketplace listing.
- * Highly optimized for Mobile Safari, Android, and Capacitor WebViews.
- * Downscales to max 1200x1200 and encodes to JPEG blob (~80-150KB).
+ * 100% resilient across iOS Safari, Chrome Mobile, Android, and WebViews.
+ * Generates both a base64 dataUrl and binary Blob at max 1200x1200px JPEG quality 0.75 (~80-150KB).
  * 
  * @param {File|Blob} file - The image file to compress
  * @param {Object} options - Compression options
- * @returns {Promise<{ blob: Blob, extension: string, contentType: string }>}
+ * @returns {Promise<{ dataUrl: string|null, blob: Blob, extension: string, contentType: string }>}
  */
 export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 1200, quality = 0.75 } = {}) {
     if (!file) {
-        return { blob: file, extension: 'jpg', contentType: 'image/jpeg' };
+        return { dataUrl: null, blob: file, extension: 'jpg', contentType: 'image/jpeg' };
     }
 
     if (typeof window === 'undefined') {
         const ext = getFileExtension(file);
-        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+        return { dataUrl: null, blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
     }
 
-    // Try native createImageBitmap first (hardware accelerated, decodes HEIC & EXIF on modern mobile)
+    // Step 1: Decode image
     let sourceImage = null;
     let isBitmap = false;
 
@@ -150,7 +151,7 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
             sourceImage = await createImageBitmap(file);
             isBitmap = true;
         } catch {
-            // Fallback to Image element
+            // Fallback to FileReader + Image
         }
     }
 
@@ -169,9 +170,9 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
     }
 
     if (!sourceImage) {
-        console.warn('[ImageUtils] Image decode failed, passing original file');
+        console.warn('[ImageUtils] Image decoding failed, using raw file');
         const ext = getFileExtension(file);
-        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+        return { dataUrl: null, blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
     }
 
     try {
@@ -181,10 +182,10 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
         if (!width || !height || width <= 0 || height <= 0) {
             if (isBitmap && sourceImage.close) sourceImage.close();
             const ext = getFileExtension(file);
-            return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+            return { dataUrl: null, blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
         }
 
-        // Downscale bounds
+        // Bounded aspect ratio
         if (width > maxWidth || height > maxHeight) {
             const ratio = Math.min(maxWidth / width, maxHeight / height);
             width = Math.max(1, Math.round(width * ratio));
@@ -199,10 +200,9 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
         if (!ctx) {
             if (isBitmap && sourceImage.close) sourceImage.close();
             const ext = getFileExtension(file);
-            return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+            return { dataUrl: null, blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
         }
 
-        // Fill clean white background
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(sourceImage, 0, 0, width, height);
@@ -211,22 +211,13 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
             sourceImage.close();
         }
 
-        // Export as universal JPEG (guaranteed ~80KB-150KB)
-        let blob = null;
-
-        if (typeof canvas.toBlob === 'function') {
-            blob = await new Promise((res) => {
-                canvas.toBlob((b) => res(b), 'image/jpeg', quality);
-            });
-        }
-
-        if (!blob || blob.size === 0) {
-            const dataUrl = canvas.toDataURL('image/jpeg', quality);
-            blob = dataURItoBlob(dataUrl);
-        }
+        // Synchronous, non-blocking JPEG dataURL (never hangs on WebKit/iOS)
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const blob = dataURItoBlob(dataUrl);
 
         if (blob && blob.size > 0) {
             return {
+                dataUrl,
                 blob,
                 extension: 'jpg',
                 contentType: 'image/jpeg'
@@ -234,11 +225,11 @@ export async function compressProductImage(file, { maxWidth = 1200, maxHeight = 
         }
 
         const ext = getFileExtension(file);
-        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+        return { dataUrl, blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
     } catch (err) {
-        console.warn('[ImageUtils] Canvas processing exception, passing original file:', err);
+        console.warn('[ImageUtils] Canvas processing exception, using original file:', err);
         const ext = getFileExtension(file);
-        return { blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
+        return { dataUrl: null, blob: file, extension: ext, contentType: file.type || 'image/jpeg' };
     }
 }
 
