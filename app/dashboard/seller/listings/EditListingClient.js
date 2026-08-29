@@ -439,9 +439,9 @@ export default function EditListingClient({ product }) {
                             </div>
                         </div>
 
-                        {/* Campus Location */}
+                        {/* Location */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-bold text-[#0e191b] dark:text-[#e0e6e8] ml-1" htmlFor="campus">Campus Location</label>
+                            <label className="block text-sm font-bold text-[#0e191b] dark:text-[#e0e6e8] ml-1" htmlFor="campus">Location</label>
                             <div className="relative">
                                 <input
                                     disabled={loading}

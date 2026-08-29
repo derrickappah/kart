@@ -503,9 +503,9 @@ export default function CreateListingPage() {
                         </div>
                     </div>
 
-                    {/* Campus Location */}
+                    {/* Location */}
                     <div className="space-y-2 relative">
-                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="campus">Campus Location</label>
+                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="campus">Location</label>
                         <div className="relative">
                             <input
                                 disabled={loading}
