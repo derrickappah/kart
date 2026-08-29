@@ -1,15 +1,40 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
     try {
-        const supabase = await createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        let user = null;
+        const serviceClient = createServiceRoleClient();
 
-        if (authError || !user) {
+        // 1. Check for Bearer token in Authorization header (essential for Mobile Safari, Android WebView, Capacitor)
+        const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+        if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+            const token = authHeader.substring(7).trim();
+            if (token) {
+                const { data: userData, error: tokenError } = await serviceClient.auth.getUser(token);
+                if (!tokenError && userData?.user) {
+                    user = userData.user;
+                }
+            }
+        }
+
+        // 2. If no Bearer token, check session cookies
+        if (!user) {
+            try {
+                const cookieSupabase = await createClient();
+                const { data: { user: cookieUser } } = await cookieSupabase.auth.getUser();
+                if (cookieUser) {
+                    user = cookieUser;
+                }
+            } catch (cookieErr) {
+                console.warn('[Upload API] Cookie auth check failed:', cookieErr?.message);
+            }
+        }
+
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized: Please log in to upload files' }, { status: 401 });
         }
 
@@ -22,7 +47,6 @@ export async function POST(request) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
-        // Validate allowed buckets
         const allowedBuckets = ['products', 'profiles', 'chat-attachments', 'verifications'];
         if (!allowedBuckets.includes(bucket)) {
             return NextResponse.json({ error: 'Invalid storage bucket' }, { status: 400 });
@@ -31,7 +55,6 @@ export async function POST(request) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Derive content type and filename extension
         const contentType = file.type || 'image/jpeg';
         let ext = 'jpg';
         if (contentType.includes('webp')) ext = 'webp';
@@ -41,13 +64,13 @@ export async function POST(request) {
         const fileName = customPath || `${user.id}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
         const filePath = fileName;
 
-        // Use service role client for guaranteed upload reliability without client-side RLS quirks
-        const serviceClient = createServiceRoleClient();
+        // Use service role client to upload with complete bypass of storage RLS quirks
         const { error: uploadError } = await serviceClient.storage
             .from(bucket)
             .upload(filePath, buffer, {
                 contentType,
-                upsert: true
+                upsert: true,
+                cacheControl: '31536000'
             });
 
         if (uploadError) {

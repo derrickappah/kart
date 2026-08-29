@@ -2,10 +2,10 @@ import { compressProductImage } from './imageUtils';
 import { createClient } from './supabase/client';
 
 /**
- * Resiliently upload a single image to Supabase storage.
+ * Resiliently upload a single image.
  * 1. Optimizes and compresses the image client-side to minimize payload and transmission time.
  * 2. Attempts direct client-side upload to Supabase Storage with auto-retry.
- * 3. Automatically falls back to /api/upload server proxy if client connection fails (e.g. adblocker, DNS, CORS).
+ * 3. Automatically falls back to /api/upload server proxy if client connection fails (e.g. adblocker, DNS, CORS, mobile WebKit).
  * 
  * @param {File|Blob} file - The file to upload
  * @param {string} userId - Current authenticated user ID
@@ -16,25 +16,23 @@ export async function uploadProductImage(file, userId, options = {}) {
     const {
         supabaseClient = null,
         bucket = 'products',
-        maxRetries = 2,
-        folder = userId || 'anonymous'
+        maxRetries = 1
     } = options;
 
     const supabase = supabaseClient || createClient();
 
-    // Step 1: Compress image on client
+    // Step 1: Compress image on client via FileReader + Canvas
     const { blob, extension, contentType } = await compressProductImage(file);
-    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${extension}`;
+    const fileName = `${userId || 'item'}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${extension}`;
     const filePath = fileName;
 
-    // Step 2: Attempt direct client upload with exponential backoff retries
     let lastError = null;
 
+    // Step 2: Attempt direct client upload
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             if (attempt > 0) {
-                // Wait before retrying (500ms, 1200ms)
-                await new Promise((resolve) => setTimeout(resolve, attempt * 600));
+                await new Promise((resolve) => setTimeout(resolve, 400));
             }
 
             const { error: uploadError } = await supabase.storage
@@ -47,7 +45,7 @@ export async function uploadProductImage(file, userId, options = {}) {
 
             if (uploadError) {
                 lastError = uploadError;
-                console.warn(`[Upload] Direct upload attempt ${attempt + 1} failed:`, uploadError.message);
+                console.warn(`[Upload] Direct client upload attempt ${attempt + 1} failed:`, uploadError.message);
                 continue;
             }
 
@@ -59,23 +57,33 @@ export async function uploadProductImage(file, userId, options = {}) {
             return { publicUrl, filePath };
         } catch (err) {
             lastError = err;
-            console.warn(`[Upload] Direct upload exception attempt ${attempt + 1}:`, err.message || err);
+            console.warn(`[Upload] Direct client upload exception attempt ${attempt + 1}:`, err.message || err);
         }
     }
 
-    // Step 3: Direct upload failed — Fallback to server-side /api/upload route
+    // Step 3: Direct upload failed — Fallback to server-side /api/upload route with bearer token
     try {
         console.log('[Upload] Attempting server-side fallback upload via /api/upload...');
+        
+        // Get active session token for Authorization header (crucial for mobile Safari & Capacitor)
+        const { data: { session } } = await supabase.auth.getSession();
+
         const formData = new FormData();
-        // Convert blob to File with proper name and MIME
-        const fileToUpload = new File([blob], fileName.split('/').pop(), { type: contentType });
-        formData.append('file', fileToUpload);
+        // Use standard (name, blob, filename) signature without new File() constructor for iOS compatibility
+        formData.append('file', blob, fileName);
         formData.append('bucket', bucket);
         formData.append('filePath', filePath);
 
+        const headers = {};
+        if (session?.access_token) {
+            headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
         const response = await fetch('/api/upload', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers,
+            credentials: 'include'
         });
 
         if (response.ok) {
@@ -99,7 +107,7 @@ export async function uploadProductImage(file, userId, options = {}) {
 }
 
 /**
- * Uploads multiple product images sequentially/in controlled batches
+ * Uploads multiple product images sequentially in controlled order
  * @param {Array<File|Blob>} files - Array of image files
  * @param {string} userId - Current authenticated user ID
  * @param {Object} options - Options including progress callback
@@ -109,7 +117,7 @@ export async function uploadProductImages(files, userId, options = {}) {
     const {
         onProgress = null,
         bucket = 'products',
-        concurrency = 2
+        concurrency = 1
     } = options;
 
     if (!files || files.length === 0) {
@@ -121,7 +129,6 @@ export async function uploadProductImages(files, userId, options = {}) {
     let completedCount = 0;
     const total = files.length;
 
-    // Helper to upload single file and notify progress
     const processFile = async (file) => {
         const result = await uploadProductImage(file, userId, { bucket });
         completedCount++;
@@ -136,7 +143,7 @@ export async function uploadProductImages(files, userId, options = {}) {
     };
 
     try {
-        // Process files in concurrency batches
+        // Upload sequentially on mobile for lower memory and socket stability
         for (let i = 0; i < files.length; i += concurrency) {
             const chunk = files.slice(i, i + concurrency);
             const results = await Promise.all(chunk.map(file => processFile(file)));
