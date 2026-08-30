@@ -140,7 +140,10 @@ import {
   Handshake,
   TrendingUp,
   Circle,
-  Gavel
+  Gavel,
+  FlipHorizontal,
+  Maximize2,
+  SlidersHorizontal
 } from 'lucide-react';
 
 const iconMap = {
@@ -333,6 +336,9 @@ const iconMap = {
   'flip_camera_ios': RotateCw,
   'person_off': UserX,
   'crop': Crop,
+  'flip': FlipHorizontal,
+  'maximize': Maximize2,
+  'tune': SlidersHorizontal,
 };
 
 export default function DynamicLucideIcon({ name, className = '', ...props }) {
