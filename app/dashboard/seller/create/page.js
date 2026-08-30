@@ -143,7 +143,7 @@ export default function CreateListingPage() {
         setFormData({ ...formData, condition });
     };
 
-    // Handle image file selection and trigger image cropping modal
+    // Handle image file selection with instant compression (user taps Crop on thumbnail to open crop modal)
     const handleFileChange = async (e, replaceIndex = null) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
@@ -158,32 +158,58 @@ export default function CreateListingPage() {
                 }
             }
 
-            if (replaceIndex === null) {
-                const remainingSlots = 5 - imageFiles.length;
-                if (files.length > remainingSlots) {
-                    setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
-                    e.target.value = '';
-                    return;
+            try {
+                if (replaceIndex !== null) {
+                    // Replacing a specific image
+                    const file = files[0];
+                    const processed = await compressProductImage(file);
+                    const originalUrl = URL.createObjectURL(file);
+                    const previewUrl = processed.dataUrl || originalUrl;
+
+                    const newFiles = [...imageFiles];
+                    newFiles[replaceIndex] = {
+                        file,
+                        dataUrl: processed.dataUrl,
+                        originalSrc: originalUrl,
+                    };
+
+                    const newPreviews = [...imagePreviews];
+                    newPreviews[replaceIndex] = previewUrl;
+
+                    setImageFiles(newFiles);
+                    setImagePreviews(newPreviews);
+                } else {
+                    // Adding new images directly to preview
+                    const remainingSlots = 5 - imageFiles.length;
+                    if (files.length > remainingSlots) {
+                        setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
+                        e.target.value = '';
+                        return;
+                    }
+
+                    const processedList = await Promise.all(
+                        files.map(async (file) => {
+                            const originalUrl = URL.createObjectURL(file);
+                            const res = await compressProductImage(file);
+                            return {
+                                file,
+                                dataUrl: res.dataUrl,
+                                previewUrl: res.dataUrl || originalUrl,
+                                originalSrc: originalUrl,
+                            };
+                        })
+                    );
+
+                    const nextFiles = [...imageFiles, ...processedList];
+                    const nextPreviews = [...imagePreviews, ...processedList.map((p) => p.previewUrl)];
+
+                    setImageFiles(nextFiles);
+                    setImagePreviews(nextPreviews);
                 }
+            } catch (err) {
+                console.error('[CreateListing] Photo selection processing error:', err);
+                setError('Failed to process selected photos. Please try again.');
             }
-
-            // Create objects for each file to pass to Crop Modal
-            const itemsToCrop = files.map((file) => {
-                const previewUrl = URL.createObjectURL(file);
-                return {
-                    src: previewUrl,
-                    originalSrc: previewUrl,
-                    rawFile: file,
-                    file: file,
-                };
-            });
-
-            // Open Crop Modal for selected photo(s)
-            setCropModal({
-                isOpen: true,
-                images: itemsToCrop,
-                replaceIndex: replaceIndex,
-            });
         }
         // Reset input value so same file can be selected again
         e.target.value = '';
@@ -473,25 +499,26 @@ export default function CreateListingPage() {
                                 </button>
 
                                 {/* Bottom-right actions: Crop & Replace */}
-                                <div className="absolute bottom-2 right-2 flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transform translate-y-0 sm:translate-y-1 sm:group-hover:translate-y-0 transition-all">
+                                <div className="absolute bottom-2 right-2 flex items-center gap-1.5 opacity-100 transition-all">
                                     <button
                                         type="button"
                                         disabled={loading}
                                         onClick={() => openReCrop(index)}
-                                        className="bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 hover:text-[#1daddd] dark:hover:text-[#1daddd] rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all cursor-pointer border border-gray-100 dark:border-gray-700 disabled:opacity-50"
+                                        className="bg-black/60 hover:bg-primary text-white backdrop-blur-md rounded-lg px-2 py-1 text-[10px] font-bold shadow-md transition-all flex items-center gap-1 border border-white/20 active:scale-95 disabled:opacity-50"
                                         title="Crop photo"
                                         aria-label="Crop photo"
                                     >
-                                        <DynamicLucideIcon name="crop" className="text-[14px]" />
+                                        <DynamicLucideIcon name="crop" className="text-[12px]" />
+                                        <span>Crop</span>
                                     </button>
 
                                     <label
-                                        className={`bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 hover:text-[#1daddd] dark:hover:text-[#1daddd] rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all cursor-pointer border border-gray-100 dark:border-gray-700 ${loading ? 'pointer-events-none opacity-50' : ''}`}
+                                        className={`bg-black/60 hover:bg-white/30 text-white backdrop-blur-md rounded-lg p-1 shadow-md transition-all cursor-pointer border border-white/20 active:scale-95 ${loading ? 'pointer-events-none opacity-50' : ''}`}
                                         title="Replace photo"
                                         aria-label="Replace photo"
                                     >
                                         <input type="file" accept="image/*" disabled={loading} className="sr-only" onChange={(e) => handleFileChange(e, index)} />
-                                        <DynamicLucideIcon name="sync" className="text-[14px]" />
+                                        <DynamicLucideIcon name="sync" className="text-[12px]" />
                                     </label>
                                 </div>
 
