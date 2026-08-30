@@ -21,6 +21,7 @@ import {
   X,
   Archive,
   Wallet,
+  Crop,
   ChevronLeft,
   ChevronRight,
   Settings,
@@ -331,6 +332,7 @@ const iconMap = {
   'user_check': UserCheck,
   'flip_camera_ios': RotateCw,
   'person_off': UserX,
+  'crop': Crop,
 };
 
 export default function DynamicLucideIcon({ name, className = '', ...props }) {

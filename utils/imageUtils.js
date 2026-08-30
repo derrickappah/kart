@@ -305,3 +305,149 @@ export function getFileExtension(file) {
 
     return 'jpg';
 }
+
+/**
+ * Creates an Image object from a source URL
+ * @param {string} url 
+ * @returns {Promise<HTMLImageElement>}
+ */
+export const createImage = (url) =>
+    new Promise((resolve, reject) => {
+        const image = new Image();
+        image.addEventListener('load', () => resolve(image));
+        image.addEventListener('error', (error) => reject(error));
+        image.setAttribute('crossOrigin', 'anonymous');
+        image.src = url;
+    });
+
+/**
+ * Converts degrees to radians
+ * @param {number} degreeValue 
+ * @returns {number}
+ */
+export function getRadianAngle(degreeValue) {
+    return (degreeValue * Math.PI) / 180;
+}
+
+/**
+ * Calculates new bounding box size after rotation
+ * @param {number} width 
+ * @param {number} height 
+ * @param {number} rotation 
+ * @returns {{ width: number, height: number }}
+ */
+export function rotateSize(width, height, rotation) {
+    const rotRad = getRadianAngle(rotation);
+    return {
+        width:
+            Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+        height:
+            Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+    };
+}
+
+/**
+ * Crops and rotates an image based on pixel crop coordinates and returns high quality dataUrl and Blob.
+ * 
+ * @param {string} imageSrc - Source dataUrl or blob URL
+ * @param {Object} pixelCrop - { x, y, width, height }
+ * @param {number} rotation - Rotation in degrees (0, 90, 180, 270)
+ * @param {Object} flip - { horizontal: boolean, vertical: boolean }
+ * @param {number} maxOutputWidth - Max export width
+ * @param {number} maxOutputHeight - Max export height
+ * @param {number} quality - JPEG compression quality
+ * @returns {Promise<{ dataUrl: string, blob: Blob, width: number, height: number }|null>}
+ */
+export async function getCroppedImg(
+    imageSrc,
+    pixelCrop,
+    rotation = 0,
+    flip = { horizontal: false, vertical: false },
+    maxOutputWidth = 1400,
+    maxOutputHeight = 1400,
+    quality = 0.85
+) {
+    if (!imageSrc || !pixelCrop) return null;
+
+    try {
+        const image = await createImage(imageSrc);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return null;
+
+        const rotRad = getRadianAngle(rotation);
+
+        // Calculate bounding box of the rotated image
+        const naturalWidth = image.naturalWidth || image.width;
+        const naturalHeight = image.naturalHeight || image.height;
+
+        const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
+            naturalWidth,
+            naturalHeight,
+            rotation
+        );
+
+        // Set canvas size to match the bounding box
+        canvas.width = Math.max(1, Math.round(bBoxWidth));
+        canvas.height = Math.max(1, Math.round(bBoxHeight));
+
+        // Center rotation around canvas center
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(rotRad);
+        ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1);
+        ctx.drawImage(
+            image,
+            -naturalWidth / 2,
+            -naturalHeight / 2
+        );
+
+        const croppedCanvas = document.createElement('canvas');
+        const croppedCtx = croppedCanvas.getContext('2d');
+
+        if (!croppedCtx) return null;
+
+        let outWidth = Math.max(1, Math.round(pixelCrop.width));
+        let outHeight = Math.max(1, Math.round(pixelCrop.height));
+
+        // Scale down gracefully if exceeding maximum limits
+        if (outWidth > maxOutputWidth || outHeight > maxOutputHeight) {
+            const ratio = Math.min(maxOutputWidth / outWidth, maxOutputHeight / outHeight);
+            outWidth = Math.max(1, Math.round(outWidth * ratio));
+            outHeight = Math.max(1, Math.round(outHeight * ratio));
+        }
+
+        croppedCanvas.width = outWidth;
+        croppedCanvas.height = outHeight;
+
+        // White background fallback for transparent images
+        croppedCtx.fillStyle = '#FFFFFF';
+        croppedCtx.fillRect(0, 0, outWidth, outHeight);
+
+        croppedCtx.drawImage(
+            canvas,
+            pixelCrop.x,
+            pixelCrop.y,
+            pixelCrop.width,
+            pixelCrop.height,
+            0,
+            0,
+            outWidth,
+            outHeight
+        );
+
+        const dataUrl = croppedCanvas.toDataURL('image/jpeg', quality);
+        const blob = dataURItoBlob(dataUrl);
+
+        return {
+            dataUrl,
+            blob,
+            width: outWidth,
+            height: outHeight,
+        };
+    } catch (err) {
+        console.error('[ImageUtils] getCroppedImg failed:', err);
+        return null;
+    }
+}
+

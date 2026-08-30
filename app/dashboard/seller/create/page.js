@@ -8,6 +8,7 @@ import { validateImage, compressProductImage } from '@/utils/imageUtils';
 import { createListingAction } from './actions';
 import LoadingScreen from '@/components/LoadingScreen';
 import CategorySelector from '@/components/CategorySelector';
+import ImageCropModal from '@/components/ImageCropModal';
 
 export default function CreateListingPage() {
     const router = useRouter();
@@ -20,6 +21,11 @@ export default function CreateListingPage() {
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [verificationStatus, setVerificationStatus] = useState(null);
     const [checkingSubscription, setCheckingSubscription] = useState(true);
+    const [cropModal, setCropModal] = useState({
+        isOpen: false,
+        images: [],
+        replaceIndex: null,
+    });
 
     const isSubmittingRef = useRef(false);
     const previewsRef = useRef(imagePreviews);
@@ -137,7 +143,7 @@ export default function CreateListingPage() {
         setFormData({ ...formData, condition });
     };
 
-    // Unified handle for file changes with instant compression
+    // Handle image file selection and trigger image cropping modal
     const handleFileChange = async (e, replaceIndex = null) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
@@ -152,51 +158,104 @@ export default function CreateListingPage() {
                 }
             }
 
-            try {
-                if (replaceIndex !== null) {
-                    // Replacing a specific image
-                    const file = files[0];
-                    const processed = await compressProductImage(file);
-                    const previewUrl = processed.dataUrl || URL.createObjectURL(file);
-
-                    const newFiles = [...imageFiles];
-                    newFiles[replaceIndex] = { file, dataUrl: processed.dataUrl };
-
-                    const newPreviews = [...imagePreviews];
-                    newPreviews[replaceIndex] = previewUrl;
-
-                    setImageFiles(newFiles);
-                    setImagePreviews(newPreviews);
-                } else {
-                    // Adding new images
-                    const remainingSlots = 5 - imageFiles.length;
-                    if (files.length > remainingSlots) {
-                        setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
-                        e.target.value = '';
-                        return;
-                    }
-
-                    const processedList = await Promise.all(files.map(async (file) => {
-                        const res = await compressProductImage(file);
-                        return {
-                            file,
-                            dataUrl: res.dataUrl,
-                            previewUrl: res.dataUrl || URL.createObjectURL(file)
-                        };
-                    }));
-
-                    const nextFiles = [...imageFiles, ...processedList];
-                    const nextPreviews = [...imagePreviews, ...processedList.map(p => p.previewUrl)];
-
-                    setImageFiles(nextFiles);
-                    setImagePreviews(nextPreviews);
+            if (replaceIndex === null) {
+                const remainingSlots = 5 - imageFiles.length;
+                if (files.length > remainingSlots) {
+                    setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
+                    e.target.value = '';
+                    return;
                 }
-            } catch (err) {
-                console.error('[CreateListing] Photo selection processing error:', err);
             }
+
+            // Create objects for each file to pass to Crop Modal
+            const itemsToCrop = files.map((file) => {
+                const previewUrl = URL.createObjectURL(file);
+                return {
+                    src: previewUrl,
+                    originalSrc: previewUrl,
+                    rawFile: file,
+                    file: file,
+                };
+            });
+
+            // Open Crop Modal for selected photo(s)
+            setCropModal({
+                isOpen: true,
+                images: itemsToCrop,
+                replaceIndex: replaceIndex,
+            });
         }
         // Reset input value so same file can be selected again
         e.target.value = '';
+    };
+
+    // Open crop modal to re-crop an existing uploaded thumbnail
+    const openReCrop = (index) => {
+        const item = imageFiles[index];
+        if (!item) return;
+
+        const src = item.originalSrc || item.dataUrl || imagePreviews[index];
+        setCropModal({
+            isOpen: true,
+            images: [
+                {
+                    src,
+                    originalSrc: item.originalSrc || src,
+                    file: item.file || null,
+                    rawFile: item.file || null,
+                },
+            ],
+            replaceIndex: index,
+        });
+    };
+
+    // Callback when cropping is completed in ImageCropModal
+    const handleCropDone = async (results) => {
+        const replaceIdx = cropModal.replaceIndex;
+        setCropModal({ isOpen: false, images: [], replaceIndex: null });
+
+        try {
+            if (replaceIdx !== null) {
+                // Replacing / re-cropping an image at a specific index
+                const item = results[0];
+                if (!item) return;
+
+                const processed = await compressProductImage(item.dataUrl || item.file || item.originalSrc);
+                const previewUrl = processed.dataUrl || item.previewUrl || item.originalSrc;
+
+                const newFiles = [...imageFiles];
+                newFiles[replaceIdx] = {
+                    file: item.file || item.blob || item.rawFile,
+                    dataUrl: processed.dataUrl || item.dataUrl,
+                    originalSrc: item.originalSrc,
+                };
+
+                const newPreviews = [...imagePreviews];
+                newPreviews[replaceIdx] = previewUrl;
+
+                setImageFiles(newFiles);
+                setImagePreviews(newPreviews);
+            } else {
+                // Adding newly selected cropped images
+                const processedList = await Promise.all(
+                    results.map(async (item) => {
+                        const res = await compressProductImage(item.dataUrl || item.file || item.originalSrc);
+                        return {
+                            file: item.file || item.blob || item.rawFile,
+                            dataUrl: res.dataUrl || item.dataUrl,
+                            previewUrl: res.dataUrl || item.previewUrl || item.originalSrc,
+                            originalSrc: item.originalSrc,
+                        };
+                    })
+                );
+
+                setImageFiles((prev) => [...prev, ...processedList]);
+                setImagePreviews((prev) => [...prev, ...processedList.map((p) => p.previewUrl)]);
+            }
+        } catch (err) {
+            console.error('[CreateListing] Error processing cropped images:', err);
+            setError('Failed to process cropped photos. Please try again.');
+        }
     };
 
     const removeImage = (index) => {
@@ -398,21 +457,44 @@ export default function CreateListingPage() {
                 <section className="p-4">
                     <div className="grid grid-cols-2 gap-3">
                         {imagePreviews.map((url, index) => (
-                            <div key={url} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in group">
+                            <div key={url + index} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in group bg-gray-100 dark:bg-[#1E1E22]">
                                 <img src={url} className="w-full h-full object-cover" alt={`Preview ${index + 1}`} />
+                                
+                                {/* Top-right remove button */}
                                 <button
                                     type="button"
                                     disabled={loading}
                                     onClick={() => removeImage(index)}
-                                    className="absolute top-2 right-2 bg-red-500/90 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 disabled:opacity-50"
+                                    className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white rounded-full p-1.5 shadow-md transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transform translate-y-0 sm:translate-y-1 sm:group-hover:translate-y-0 disabled:opacity-50"
+                                    title="Remove photo"
+                                    aria-label="Remove photo"
                                 >
-                                    <DynamicLucideIcon name="close" className="text-[16px]" />
+                                    <DynamicLucideIcon name="close" className="text-[14px]" />
                                 </button>
 
-                                <label className={`absolute bottom-2 right-2 bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 cursor-pointer border border-gray-100 dark:border-gray-700 ${loading ? 'pointer-events-none opacity-50' : ''}`}>
-                                    <input type="file" accept="image/*" disabled={loading} className="sr-only" onChange={(e) => handleFileChange(e, index)} />
-                                    <DynamicLucideIcon name="sync" className="text-[16px]" />
-                                </label>
+                                {/* Bottom-right actions: Crop & Replace */}
+                                <div className="absolute bottom-2 right-2 flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transform translate-y-0 sm:translate-y-1 sm:group-hover:translate-y-0 transition-all">
+                                    <button
+                                        type="button"
+                                        disabled={loading}
+                                        onClick={() => openReCrop(index)}
+                                        className="bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 hover:text-[#1daddd] dark:hover:text-[#1daddd] rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all cursor-pointer border border-gray-100 dark:border-gray-700 disabled:opacity-50"
+                                        title="Crop photo"
+                                        aria-label="Crop photo"
+                                    >
+                                        <DynamicLucideIcon name="crop" className="text-[14px]" />
+                                    </button>
+
+                                    <label
+                                        className={`bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 hover:text-[#1daddd] dark:hover:text-[#1daddd] rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all cursor-pointer border border-gray-100 dark:border-gray-700 ${loading ? 'pointer-events-none opacity-50' : ''}`}
+                                        title="Replace photo"
+                                        aria-label="Replace photo"
+                                    >
+                                        <input type="file" accept="image/*" disabled={loading} className="sr-only" onChange={(e) => handleFileChange(e, index)} />
+                                        <DynamicLucideIcon name="sync" className="text-[14px]" />
+                                    </label>
+                                </div>
+
                                 {index === 0 && (
                                     <div className="absolute bottom-2 left-2 bg-[#1daddd] text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-sm border border-white/20">
                                         Main Photo
@@ -626,6 +708,14 @@ export default function CreateListingPage() {
                     </div>
                 </footer>
             </form>
+
+            {/* Image Cropping Modal */}
+            <ImageCropModal
+                isOpen={cropModal.isOpen}
+                images={cropModal.images}
+                onCropDone={handleCropDone}
+                onCancel={() => setCropModal({ isOpen: false, images: [], replaceIndex: null })}
+            />
         </main>
     );
 }
