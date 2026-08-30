@@ -104,7 +104,11 @@ export async function generateMetadata({ params }) {
 }
 
 async function ProductDetailsDataSection({ id }) {
-    const product = await getProductDetails(id);
+    const supabase = await createClient();
+    const [{ data: { user } }, product] = await Promise.all([
+        supabase.auth.getUser().catch(() => ({ data: { user: null } })),
+        getProductDetails(id)
+    ]);
 
     if (!product) {
         return (
@@ -160,7 +164,7 @@ async function ProductDetailsDataSection({ id }) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
             />
-            <ProductDetailsClient key={product.id} product={product} />
+            <ProductDetailsClient key={product.id} product={product} initialUser={user || null} />
         </>
     );
 }

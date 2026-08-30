@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/client';
@@ -145,28 +146,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
         }
     }, [currentUser, reviews]);
 
-    const openReviewModal = async (existing = null, initialRating = 0) => {
-        let user = currentUser;
-
-        // If not in state yet, check with supabase directly before deciding to redirect
-        if (!user) {
-            try {
-                const { data: { user: freshUser } } = await supabase.auth.getUser();
-                if (freshUser) {
-                    user = freshUser;
-                    setCurrentUser(freshUser);
-                }
-            } catch (err) {
-                console.error('Error checking user session in openReviewModal:', err);
-            }
-        }
-
-        // Only redirect if genuinely unauthenticated
-        if (!user) {
-            router.push(`/login?next=/marketplace/${productId}`);
-            return;
-        }
-
+    const openReviewModal = (existing = null, initialRating = 0) => {
         const toEdit = existing || userReview;
         if (toEdit) {
             setRating(initialRating || toEdit.rating || 0);
@@ -181,6 +161,15 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
 
         setErrorMessage('');
         setIsModalOpen(true);
+
+        // Refresh user in background if not yet set
+        if (!currentUser) {
+            supabase.auth.getUser().then(({ data }) => {
+                if (data?.user) {
+                    setCurrentUser(data.user);
+                }
+            }).catch(() => {});
+        }
     };
 
     const closeReviewModal = () => {
@@ -628,9 +617,19 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                         {/* Modal Body / Form */}
                         <form onSubmit={handleSubmitReview} className="p-5 md:p-6 overflow-y-auto flex flex-col gap-5">
                             {errorMessage && (
-                                <div role="alert" className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-2">
-                                    <DynamicLucideIcon name="error" size={16} className="shrink-0" />
-                                    <span>{errorMessage}</span>
+                                <div role="alert" className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-xs font-bold flex flex-col gap-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <DynamicLucideIcon name="error" size={16} className="shrink-0" />
+                                        <span>{errorMessage}</span>
+                                    </div>
+                                    {(errorMessage.toLowerCase().includes('sign in') || errorMessage.toLowerCase().includes('unauthorized') || errorMessage.toLowerCase().includes('log in')) && (
+                                        <Link
+                                            href={`/login?next=/marketplace/${productId}`}
+                                            className="underline text-primary text-xs font-semibold pl-6"
+                                        >
+                                            Click here to log in and return
+                                        </Link>
+                                    )}
                                 </div>
                             )}
 

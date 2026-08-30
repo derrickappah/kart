@@ -10,11 +10,11 @@ import { createClient } from '@/utils/supabase/client';
 import { toSentenceCase, formatPrice, seededShuffle } from '@/utils/formatters';
 import { timeAgo } from '@/utils/dateUtils';
 
-export default function ProductDetailsClient({ product }) {
-    const [currentUser, setCurrentUser] = useState(null);
+export default function ProductDetailsClient({ product, initialUser = null }) {
+    const [currentUser, setCurrentUser] = useState(initialUser);
     const [loadingChat, setLoadingChat] = useState(false);
     const [isInWishlist, setIsInWishlist] = useState(false);
-    const [isOwner, setIsOwner] = useState(false);
+    const [isOwner, setIsOwner] = useState(initialUser ? initialUser.id === product.seller_id : false);
     const [loadingWishlist, setLoadingWishlist] = useState(false);
     const [inlineError, setInlineError] = useState(null);
     const [shareFeedback, setShareFeedback] = useState(null);
