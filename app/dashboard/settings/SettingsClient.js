@@ -82,6 +82,26 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
       } catch (err) {
         console.error('Error triggering PWA install prompt:', err);
       }
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) {
+        setSuccess('KART is already installed on your device.');
+        setTimeout(() => setSuccess(null), 4000);
+        return;
+      }
+
+      const ua = window.navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS) {
+        router.push('/install/ios');
+        return;
+      }
+
+      setSuccess('To install: tap the browser menu (⋮) and select "Install app" or "Add to Home screen"');
+      setTimeout(() => setSuccess(null), 5000);
     }
   };
 
@@ -474,6 +494,14 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
         onClose={() => setShowDeleteModal(false)}
         onSuccess={handleDeletionSuccess}
       />
+
+      {/* Feedback Toast */}
+      {success && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-3 rounded-2xl shadow-2xl text-xs font-semibold flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 border border-slate-700/50 dark:border-slate-200">
+          <DynamicLucideIcon name="info" className="text-[#247d8f] shrink-0" size={18} />
+          <span className="flex-1 leading-snug">{success}</span>
+        </div>
+      )}
     </div>
   );
 }

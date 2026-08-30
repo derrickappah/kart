@@ -63,6 +63,13 @@ export default function RootLayout({ children }) {
                 window.deferredPWAInstallPrompt = null;
                 window.dispatchEvent(new CustomEvent('pwa-installed'));
               });
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.error('SW registration error:', err);
+                  });
+                });
+              }
             `,
           }}
         />

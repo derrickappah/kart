@@ -6,6 +6,10 @@ self.addEventListener('activate', function (event) {
   event.waitUntil(clients.claim());
 });
 
+self.addEventListener('fetch', function (event) {
+  // Required for PWA installability criteria
+});
+
 self.addEventListener('push', function (event) {
   if (!event.data) return;
 
