@@ -158,7 +158,7 @@ export default function ImageCropModal({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-[#1E1E22] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-gray-100 dark:border-gray-800">
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800/80 flex items-center justify-between">
