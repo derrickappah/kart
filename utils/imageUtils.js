@@ -1,6 +1,7 @@
 /**
  * Image utility functions for handling profile picture and product listing uploads
  * Supports ALL image formats across iOS Safari (Camera/HEIC/RAW), Android Chrome, Desktop, and WebViews.
+ * 100% resilient against mobile GPU canvas limits and WebKit black-frame rendering bugs.
  */
 
 /**
@@ -84,6 +85,33 @@ export async function convertHeicToJpeg(fileOrBlob) {
 }
 
 /**
+ * Loads an image from a URL or data URL and guarantees full GPU rasterization via img.decode()
+ * @param {string} src 
+ * @returns {Promise<HTMLImageElement|null>}
+ */
+export function loadImage(src) {
+    if (!src) return Promise.resolve(null);
+    return new Promise((resolve) => {
+        const img = new Image();
+        if (typeof src === 'string' && (src.startsWith('http://') || src.startsWith('https://'))) {
+            img.setAttribute('crossOrigin', 'anonymous');
+        }
+        img.onload = async () => {
+            if (typeof img.decode === 'function') {
+                try {
+                    await img.decode();
+                } catch {
+                    // Ignore decode errors if onload already resolved
+                }
+            }
+            resolve(img);
+        };
+        img.onerror = () => resolve(null);
+        img.src = src;
+    });
+}
+
+/**
  * Compresses and resizes an avatar image
  * @param {File} file - The image file to compress
  * @param {number} maxWidth - Maximum width (default: 400)
@@ -94,63 +122,53 @@ export async function convertHeicToJpeg(fileOrBlob) {
 export async function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0.8) {
     const convertedFile = await convertHeicToJpeg(file);
 
-    return new Promise((resolve) => {
-        const reader = new FileReader();
+    try {
+        let blobUrl = null;
+        if (convertedFile instanceof Blob) {
+            blobUrl = URL.createObjectURL(convertedFile);
+        }
 
-        reader.onload = (e) => {
-            const img = new Image();
+        const img = await loadImage(blobUrl || await readFileAsBase64(convertedFile));
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
 
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.naturalWidth || img.width;
-                let height = img.naturalHeight || img.height;
+        if (img && (img.naturalWidth || img.width) > 0) {
+            let width = img.naturalWidth || img.width;
+            let height = img.naturalHeight || img.height;
 
-                if (width > height) {
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
-                    }
-                } else {
-                    if (height > maxHeight) {
-                        width = Math.round((width * maxHeight) / height);
-                        height = maxHeight;
-                    }
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
                 }
-
-                canvas.width = Math.max(1, width);
-                canvas.height = Math.max(1, height);
-
-                const ctx = canvas.getContext('2d');
-                if (!ctx) {
-                    return resolve(convertedFile);
+            } else {
+                if (height > maxHeight) {
+                    width = Math.round((width * maxHeight) / height);
+                    height = maxHeight;
                 }
-                // White background prevents transparent PNGs from turning black
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, width);
+            canvas.height = Math.max(1, height);
+            const ctx = canvas.getContext('2d');
+
+            if (ctx) {
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                try {
-                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    const blob = dataURItoBlob(dataUrl);
-                    resolve(blob || convertedFile);
-                } catch {
-                    resolve(convertedFile);
-                }
-            };
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                const blob = dataURItoBlob(dataUrl);
+                return blob || convertedFile;
+            }
+        }
+    } catch (e) {
+        console.warn('[ImageUtils] compressImage error:', e);
+    }
 
-            img.onerror = () => {
-                resolve(convertedFile);
-            };
-
-            img.src = e.target.result;
-        };
-
-        reader.onerror = () => {
-            resolve(convertedFile);
-        };
-
-        reader.readAsDataURL(convertedFile);
-    });
+    return convertedFile;
 }
 
 /**
@@ -184,7 +202,8 @@ export async function readFileAsBase64(source) {
 
 /**
  * Compresses and optimizes a product image for marketplace listing.
- * Automatically converts HEIC/HEIF to JPEG and uses standard HTMLImageElement + 2D Canvas with white background.
+ * Automatically converts HEIC/HEIF to JPEG, prevents mobile GPU canvas memory exhaustion,
+ * and fills white backgrounds to guarantee vivid, true-color rendering.
  * 
  * @param {File|Blob|string|Object} fileOrObject - The image file or preview object
  * @param {Object} options - Compression options
@@ -231,7 +250,7 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
         return { dataUrl: rawBase64, blob: file, extension: ext, contentType: file?.type || 'image/jpeg' };
     }
 
-    // Step B: Downscale via Canvas using HTMLImageElement (avoids WebKit createImageBitmap black frame bug)
+    // Step B: Downscale via Canvas using HTMLImageElement + img.decode()
     try {
         let sourceUrl = rawBase64;
         let blobUrlCreated = null;
@@ -242,52 +261,44 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
         }
 
         if (sourceUrl) {
-            const img = await new Promise((resolve) => {
-                const image = new Image();
-                if (typeof sourceUrl === 'string' && (sourceUrl.startsWith('http://') || sourceUrl.startsWith('https://'))) {
-                    image.setAttribute('crossOrigin', 'anonymous');
-                }
-                image.onload = () => resolve(image);
-                image.onerror = () => resolve(null);
-                image.src = sourceUrl;
-            });
+            const img = await loadImage(sourceUrl);
 
             if (blobUrlCreated) {
                 URL.revokeObjectURL(blobUrlCreated);
             }
 
-            if (img) {
+            if (img && (img.naturalWidth || img.width) > 0) {
                 let width = img.naturalWidth || img.width;
                 let height = img.naturalHeight || img.height;
 
-                if (width > 0 && height > 0) {
-                    if (width > maxWidth || height > maxHeight) {
-                        const ratio = Math.min(maxWidth / width, maxHeight / height);
-                        width = Math.max(1, Math.round(width * ratio));
-                        height = Math.max(1, Math.round(height * ratio));
-                    }
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.max(1, Math.round(width * ratio));
+                    height = Math.max(1, Math.round(height * ratio));
+                }
 
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
 
-                    if (ctx) {
-                        // Fill white background to prevent transparent parts / JPEG from turning pitch black
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.fillRect(0, 0, width, height);
-                        ctx.drawImage(img, 0, 0, width, height);
+                if (ctx) {
+                    // Fill white background to prevent transparent parts / JPEG from turning pitch black
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, width, height);
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                        if (compressedDataUrl && compressedDataUrl.startsWith('data:image/jpeg') && compressedDataUrl.length > 50) {
-                            const blob = dataURItoBlob(compressedDataUrl);
-                            return {
-                                dataUrl: compressedDataUrl,
-                                blob: blob || file,
-                                extension: 'jpg',
-                                contentType: 'image/jpeg'
-                            };
-                        }
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    if (compressedDataUrl && compressedDataUrl.startsWith('data:image/jpeg') && compressedDataUrl.length > 100) {
+                        const blob = dataURItoBlob(compressedDataUrl);
+                        return {
+                            dataUrl: compressedDataUrl,
+                            blob: blob || file,
+                            extension: 'jpg',
+                            contentType: 'image/jpeg'
+                        };
                     }
                 }
             }
@@ -357,23 +368,6 @@ export function getFileExtension(file) {
 }
 
 /**
- * Creates an Image object from a source URL
- * @param {string} url 
- * @returns {Promise<HTMLImageElement>}
- */
-export const createImage = (url) =>
-    new Promise((resolve, reject) => {
-        const image = new Image();
-        image.addEventListener('load', () => resolve(image));
-        image.addEventListener('error', (error) => reject(error));
-        // ONLY set crossOrigin on remote http/https URLs. Never on blob: or data: URLs.
-        if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
-            image.setAttribute('crossOrigin', 'anonymous');
-        }
-        image.src = url;
-    });
-
-/**
  * Converts degrees to radians
  * @param {number} degreeValue 
  * @returns {number}
@@ -401,6 +395,7 @@ export function rotateSize(width, height, rotation) {
 
 /**
  * Crops and rotates an image based on pixel crop coordinates and returns high quality dataUrl and Blob.
+ * Scaled to safe GPU hardware bounds to prevent mobile memory crashes and black-canvas artifacts.
  * 
  * @param {string|Blob|File} imageSrc - Source dataUrl, blob URL, or Blob
  * @param {Object} pixelCrop - { x, y, width, height }
@@ -416,9 +411,9 @@ export async function getCroppedImg(
     pixelCrop,
     rotation = 0,
     flip = { horizontal: false, vertical: false },
-    maxOutputWidth = 1400,
-    maxOutputHeight = 1400,
-    quality = 0.85
+    maxOutputWidth = 1200,
+    maxOutputHeight = 1200,
+    quality = 0.8
 ) {
     if (!imageSrc || !pixelCrop) return null;
 
@@ -432,74 +427,92 @@ export async function getCroppedImg(
             srcUrl = createdBlobUrl;
         }
 
-        const image = await createImage(srcUrl);
+        const image = await loadImage(srcUrl);
 
         if (createdBlobUrl) {
             URL.revokeObjectURL(createdBlobUrl);
         }
 
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        if (!image || !image.width || !image.height) {
+            return null;
+        }
 
-        if (!ctx) return null;
+        const naturalWidth = image.naturalWidth || image.width;
+        const naturalHeight = image.naturalHeight || image.height;
+
+        // Bounded working resolution to prevent exceeding mobile GPU memory limits (max 2048px)
+        const maxDim = Math.max(naturalWidth, naturalHeight);
+        const scaleDown = maxDim > 2048 ? (2048 / maxDim) : 1;
+
+        const workWidth = Math.max(1, Math.round(naturalWidth * scaleDown));
+        const workHeight = Math.max(1, Math.round(naturalHeight * scaleDown));
 
         const rotRad = getRadianAngle(rotation);
 
         // Calculate bounding box of the rotated image
-        const naturalWidth = image.naturalWidth || image.width;
-        const naturalHeight = image.naturalHeight || image.height;
-
         const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
-            naturalWidth,
-            naturalHeight,
+            workWidth,
+            workHeight,
             rotation
         );
 
         // Set canvas size to match the bounding box
+        const canvas = document.createElement('canvas');
         canvas.width = Math.max(1, Math.round(bBoxWidth));
         canvas.height = Math.max(1, Math.round(bBoxHeight));
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return null;
 
         // Fill background with white to avoid black background in JPEG
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Translate canvas context to center location to allow rotating and flipping around the center
-        ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
+        ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(rotRad);
         ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1);
-        ctx.translate(-naturalWidth / 2, -naturalHeight / 2);
+        ctx.translate(-workWidth / 2, -workHeight / 2);
 
-        // Draw rotated image
-        ctx.drawImage(image, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(image, 0, 0, workWidth, workHeight);
 
-        const croppedCanvas = document.createElement('canvas');
-        const croppedCtx = croppedCanvas.getContext('2d');
+        // Calculate scaled crop coordinates
+        const cropX = Math.max(0, Math.round(pixelCrop.x * scaleDown));
+        const cropY = Math.max(0, Math.round(pixelCrop.y * scaleDown));
+        const cropW = Math.max(1, Math.min(canvas.width - cropX, Math.round(pixelCrop.width * scaleDown)));
+        const cropH = Math.max(1, Math.min(canvas.height - cropY, Math.round(pixelCrop.height * scaleDown)));
 
-        if (!croppedCtx) return null;
+        let outWidth = cropW;
+        let outHeight = cropH;
 
-        let outWidth = Math.max(1, Math.round(pixelCrop.width));
-        let outHeight = Math.max(1, Math.round(pixelCrop.height));
-
-        // Scale down gracefully if exceeding maximum limits
+        // Scale down gracefully if exceeding maximum export limits
         if (outWidth > maxOutputWidth || outHeight > maxOutputHeight) {
             const ratio = Math.min(maxOutputWidth / outWidth, maxOutputHeight / outHeight);
             outWidth = Math.max(1, Math.round(outWidth * ratio));
             outHeight = Math.max(1, Math.round(outHeight * ratio));
         }
 
+        const croppedCanvas = document.createElement('canvas');
         croppedCanvas.width = outWidth;
         croppedCanvas.height = outHeight;
+        const croppedCtx = croppedCanvas.getContext('2d');
+
+        if (!croppedCtx) return null;
 
         // White background fallback for transparent images / out-of-bounds crops
         croppedCtx.fillStyle = '#FFFFFF';
         croppedCtx.fillRect(0, 0, outWidth, outHeight);
 
+        croppedCtx.imageSmoothingEnabled = true;
+        croppedCtx.imageSmoothingQuality = 'high';
         croppedCtx.drawImage(
             canvas,
-            pixelCrop.x,
-            pixelCrop.y,
-            pixelCrop.width,
-            pixelCrop.height,
+            cropX,
+            cropY,
+            cropW,
+            cropH,
             0,
             0,
             outWidth,

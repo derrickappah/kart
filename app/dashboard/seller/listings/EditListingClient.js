@@ -290,11 +290,17 @@ export default function EditListingClient({ product }) {
                                 const url = photo.type === 'remote' ? photo.url : photo.preview;
                                 return (
                                     <div key={index} className="relative shrink-0 w-28 h-36 rounded-2xl overflow-visible group">
-                                        <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-md">
+                                        <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-md bg-white dark:bg-gray-800">
                                             <img
                                                 src={url}
                                                 alt={`Listing photo ${index + 1}`}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover bg-white dark:bg-gray-800"
+                                                onError={(e) => {
+                                                    const orig = photo.originalSrc || (photo.file && URL.createObjectURL(photo.file));
+                                                    if (orig && e.currentTarget.src !== orig) {
+                                                        e.currentTarget.src = orig;
+                                                    }
+                                                }}
                                             />
                                         </div>
                                         <button

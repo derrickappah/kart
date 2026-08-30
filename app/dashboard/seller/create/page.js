@@ -485,8 +485,18 @@ export default function CreateListingPage() {
                 <section className="p-4">
                     <div className="grid grid-cols-2 gap-3">
                         {imagePreviews.map((url, index) => (
-                            <div key={url + index} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in group bg-gray-100 dark:bg-[#1E1E22]">
-                                <img src={url} className="w-full h-full object-cover" alt={`Preview ${index + 1}`} />
+                            <div key={url + index} className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in group bg-white dark:bg-gray-800">
+                                <img 
+                                    src={url} 
+                                    className="w-full h-full object-cover bg-white dark:bg-gray-800" 
+                                    alt={`Preview ${index + 1}`}
+                                    onError={(e) => {
+                                        const orig = imageFiles[index]?.originalSrc;
+                                        if (orig && e.currentTarget.src !== orig) {
+                                            e.currentTarget.src = orig;
+                                        }
+                                    }}
+                                />
                                 
                                 {/* Top-right remove button */}
                                 <button
