@@ -65,8 +65,8 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
 
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
+                let width = img.naturalWidth || img.width;
+                let height = img.naturalHeight || img.height;
 
                 if (width > height) {
                     if (width > maxWidth) {
@@ -87,7 +87,10 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
                 if (!ctx) {
                     return resolve(file);
                 }
-                ctx.drawImage(img, 0, 0, width, height);
+                // White background prevents transparent PNGs from turning black
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                 try {
                     const dataUrl = canvas.toDataURL('image/jpeg', quality);
@@ -144,7 +147,7 @@ export async function readFileAsBase64(source) {
 
 /**
  * Compresses and optimizes a product image for marketplace listing.
- * 100% fail-safe across ALL image formats, iOS Camera, HEIC, Android, and Desktop.
+ * Uses standard HTMLImageElement + 2D Canvas with white background to eliminate black-frame rendering bugs.
  * 
  * @param {File|Blob|string|Object} fileOrObject - The image file or preview object
  * @param {Object} options - Compression options
@@ -182,65 +185,66 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
         return { dataUrl: rawBase64, blob: file, extension: ext, contentType: file?.type || 'image/jpeg' };
     }
 
-    // Step B: Downscale via Canvas
+    // Step B: Downscale via Canvas using HTMLImageElement (avoids WebKit createImageBitmap black frame bug)
     try {
-        let sourceImage = null;
-        let isBitmap = false;
+        let sourceUrl = rawBase64;
+        let blobUrlCreated = null;
 
-        if (typeof createImageBitmap === 'function' && file instanceof Blob) {
-            try {
-                sourceImage = await createImageBitmap(file);
-                isBitmap = true;
-            } catch {
-                // Fallback to HTMLImageElement
-            }
+        if (!sourceUrl && file instanceof Blob) {
+            blobUrlCreated = URL.createObjectURL(file);
+            sourceUrl = blobUrlCreated;
         }
 
-        if (!sourceImage && rawBase64) {
-            sourceImage = await new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => resolve(img);
-                img.onerror = () => resolve(null);
-                img.src = rawBase64;
-            });
-        }
-
-        if (sourceImage) {
-            let width = sourceImage.width || sourceImage.naturalWidth;
-            let height = sourceImage.height || sourceImage.naturalHeight;
-
-            if (width > 0 && height > 0) {
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width = Math.max(1, Math.round(width * ratio));
-                    height = Math.max(1, Math.round(height * ratio));
+        if (sourceUrl) {
+            const img = await new Promise((resolve) => {
+                const image = new Image();
+                if (typeof sourceUrl === 'string' && (sourceUrl.startsWith('http://') || sourceUrl.startsWith('https://'))) {
+                    image.setAttribute('crossOrigin', 'anonymous');
                 }
+                image.onload = () => resolve(image);
+                image.onerror = () => resolve(null);
+                image.src = sourceUrl;
+            });
 
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d', { alpha: false });
+            if (blobUrlCreated) {
+                URL.revokeObjectURL(blobUrlCreated);
+            }
 
-                if (ctx) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.fillRect(0, 0, width, height);
-                    ctx.drawImage(sourceImage, 0, 0, width, height);
+            if (img) {
+                let width = img.naturalWidth || img.width;
+                let height = img.naturalHeight || img.height;
 
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                    if (compressedDataUrl && compressedDataUrl.startsWith('data:image/jpeg')) {
-                        const blob = dataURItoBlob(compressedDataUrl);
-                        if (isBitmap && sourceImage.close) sourceImage.close();
-                        return {
-                            dataUrl: compressedDataUrl,
-                            blob: blob || file,
-                            extension: 'jpg',
-                            contentType: 'image/jpeg'
-                        };
+                if (width > 0 && height > 0) {
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width = Math.max(1, Math.round(width * ratio));
+                        height = Math.max(1, Math.round(height * ratio));
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+
+                    if (ctx) {
+                        // Fill white background to prevent transparent parts / JPEG from turning pitch black
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        if (compressedDataUrl && compressedDataUrl.startsWith('data:image/jpeg') && compressedDataUrl.length > 50) {
+                            const blob = dataURItoBlob(compressedDataUrl);
+                            return {
+                                dataUrl: compressedDataUrl,
+                                blob: blob || file,
+                                extension: 'jpg',
+                                contentType: 'image/jpeg'
+                            };
+                        }
                     }
                 }
             }
-            if (isBitmap && sourceImage.close) sourceImage.close();
         }
     } catch (err) {
         console.warn('[ImageUtils] Canvas downscaling exception, returning rawBase64:', err);
@@ -316,7 +320,10 @@ export const createImage = (url) =>
         const image = new Image();
         image.addEventListener('load', () => resolve(image));
         image.addEventListener('error', (error) => reject(error));
-        image.setAttribute('crossOrigin', 'anonymous');
+        // ONLY set crossOrigin on remote http/https URLs. Never on blob: or data: URLs.
+        if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+            image.setAttribute('crossOrigin', 'anonymous');
+        }
         image.src = url;
     });
 
@@ -392,15 +399,18 @@ export async function getCroppedImg(
         canvas.width = Math.max(1, Math.round(bBoxWidth));
         canvas.height = Math.max(1, Math.round(bBoxHeight));
 
-        // Center rotation around canvas center
-        ctx.translate(canvas.width / 2, canvas.height / 2);
+        // Fill background with white to avoid black background in JPEG
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Translate canvas context to center location to allow rotating and flipping around the center
+        ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
         ctx.rotate(rotRad);
         ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1);
-        ctx.drawImage(
-            image,
-            -naturalWidth / 2,
-            -naturalHeight / 2
-        );
+        ctx.translate(-naturalWidth / 2, -naturalHeight / 2);
+
+        // Draw rotated image
+        ctx.drawImage(image, 0, 0);
 
         const croppedCanvas = document.createElement('canvas');
         const croppedCtx = croppedCanvas.getContext('2d');
@@ -420,7 +430,7 @@ export async function getCroppedImg(
         croppedCanvas.width = outWidth;
         croppedCanvas.height = outHeight;
 
-        // White background fallback for transparent images
+        // White background fallback for transparent images / out-of-bounds crops
         croppedCtx.fillStyle = '#FFFFFF';
         croppedCtx.fillRect(0, 0, outWidth, outHeight);
 
@@ -450,4 +460,3 @@ export async function getCroppedImg(
         return null;
     }
 }
-
