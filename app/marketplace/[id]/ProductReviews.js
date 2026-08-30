@@ -50,6 +50,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
+    const [quickHoverRating, setQuickHoverRating] = useState(0);
     const [selectedTags, setSelectedTags] = useState([]);
     const [reviewText, setReviewText] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -420,18 +421,36 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                     {/* Interactive 5-star quick launch row */}
                                     <div className="flex items-center gap-2 mt-4 pt-3 border-t border-primary/10 dark:border-gray-700/50">
                                         <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tap to rate:</span>
-                                        <div className="flex items-center gap-1">
-                                            {[1, 2, 3, 4, 5].map(star => (
-                                                <button
-                                                    key={star}
-                                                    type="button"
-                                                    onClick={() => openReviewModal(null, star)}
-                                                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                                                    className="p-1 hover:scale-125 transition-transform text-gray-300 dark:text-gray-600 hover:text-yellow-400 focus:outline-none"
-                                                >
-                                                    <DynamicLucideIcon name="star" size={20} fill="currentColor" />
-                                                </button>
-                                            ))}
+                                        <div
+                                            className="flex items-center gap-1"
+                                            onMouseLeave={() => setQuickHoverRating(0)}
+                                            role="group"
+                                            aria-label="Quick rating selector"
+                                        >
+                                            {[1, 2, 3, 4, 5].map(star => {
+                                                const isFilled = star <= quickHoverRating;
+                                                return (
+                                                    <button
+                                                        key={star}
+                                                        type="button"
+                                                        onClick={() => openReviewModal(null, star)}
+                                                        onMouseEnter={() => setQuickHoverRating(star)}
+                                                        onTouchStart={() => setQuickHoverRating(star)}
+                                                        aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                                                        className="p-1 hover:scale-125 active:scale-95 transition-transform focus:outline-none rounded"
+                                                    >
+                                                        <DynamicLucideIcon
+                                                            name="star"
+                                                            size={22}
+                                                            fill={isFilled ? 'currentColor' : 'none'}
+                                                            className={`transition-colors ${
+                                                                isFilled ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+                                                            }`}
+                                                            aria-hidden="true"
+                                                        />
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
