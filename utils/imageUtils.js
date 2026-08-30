@@ -49,6 +49,41 @@ export function validateImage(file) {
 }
 
 /**
+ * Converts a HEIC/HEIF File or Blob to a standard JPEG Blob in browser environments.
+ * If the input is not HEIC/HEIF or in SSR, returns original file/blob as-is.
+ * @param {File|Blob} fileOrBlob 
+ * @returns {Promise<Blob|File>}
+ */
+export async function convertHeicToJpeg(fileOrBlob) {
+    if (!fileOrBlob || typeof window === 'undefined') return fileOrBlob;
+
+    const fileName = fileOrBlob.name || '';
+    const fileType = fileOrBlob.type || '';
+    const isHeic = (
+        fileType.toLowerCase().includes('heic') ||
+        fileType.toLowerCase().includes('heif') ||
+        fileName.toLowerCase().endsWith('.heic') ||
+        fileName.toLowerCase().endsWith('.heif')
+    );
+
+    if (!isHeic) return fileOrBlob;
+
+    try {
+        const heic2any = (await import('heic2any')).default;
+        const converted = await heic2any({
+            blob: fileOrBlob,
+            toType: 'image/jpeg',
+            quality: 0.85
+        });
+        const finalBlob = Array.isArray(converted) ? converted[0] : converted;
+        return finalBlob || fileOrBlob;
+    } catch (e) {
+        console.warn('[ImageUtils] heic2any conversion fallback:', e);
+        return fileOrBlob;
+    }
+}
+
+/**
  * Compresses and resizes an avatar image
  * @param {File} file - The image file to compress
  * @param {number} maxWidth - Maximum width (default: 400)
@@ -56,7 +91,9 @@ export function validateImage(file) {
  * @param {number} quality - Compression quality 0-1 (default: 0.8)
  * @returns {Promise<Blob>} - Compressed image blob
  */
-export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0.8) {
+export async function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0.8) {
+    const convertedFile = await convertHeicToJpeg(file);
+
     return new Promise((resolve) => {
         const reader = new FileReader();
 
@@ -85,7 +122,7 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
 
                 const ctx = canvas.getContext('2d');
                 if (!ctx) {
-                    return resolve(file);
+                    return resolve(convertedFile);
                 }
                 // White background prevents transparent PNGs from turning black
                 ctx.fillStyle = '#FFFFFF';
@@ -95,24 +132,24 @@ export function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0
                 try {
                     const dataUrl = canvas.toDataURL('image/jpeg', quality);
                     const blob = dataURItoBlob(dataUrl);
-                    resolve(blob || file);
+                    resolve(blob || convertedFile);
                 } catch {
-                    resolve(file);
+                    resolve(convertedFile);
                 }
             };
 
             img.onerror = () => {
-                resolve(file);
+                resolve(convertedFile);
             };
 
             img.src = e.target.result;
         };
 
         reader.onerror = () => {
-            resolve(file);
+            resolve(convertedFile);
         };
 
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(convertedFile);
     });
 }
 
@@ -147,7 +184,7 @@ export async function readFileAsBase64(source) {
 
 /**
  * Compresses and optimizes a product image for marketplace listing.
- * Uses standard HTMLImageElement + 2D Canvas with white background to eliminate black-frame rendering bugs.
+ * Automatically converts HEIC/HEIF to JPEG and uses standard HTMLImageElement + 2D Canvas with white background.
  * 
  * @param {File|Blob|string|Object} fileOrObject - The image file or preview object
  * @param {Object} options - Compression options
@@ -170,7 +207,16 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
         };
     }
 
-    const file = fileOrObject.file || fileOrObject;
+    let file = fileOrObject.file || fileOrObject;
+
+    // Convert HEIC/HEIF to JPEG in browser
+    if (file instanceof Blob || (typeof File !== 'undefined' && file instanceof File)) {
+        try {
+            file = await convertHeicToJpeg(file);
+        } catch (e) {
+            console.warn('[ImageUtils] convertHeicToJpeg error:', e);
+        }
+    }
 
     // Step A: Guaranteed base64 extraction
     let rawBase64 = null;
@@ -356,7 +402,7 @@ export function rotateSize(width, height, rotation) {
 /**
  * Crops and rotates an image based on pixel crop coordinates and returns high quality dataUrl and Blob.
  * 
- * @param {string} imageSrc - Source dataUrl or blob URL
+ * @param {string|Blob|File} imageSrc - Source dataUrl, blob URL, or Blob
  * @param {Object} pixelCrop - { x, y, width, height }
  * @param {number} rotation - Rotation in degrees (0, 90, 180, 270)
  * @param {Object} flip - { horizontal: boolean, vertical: boolean }
@@ -377,7 +423,21 @@ export async function getCroppedImg(
     if (!imageSrc || !pixelCrop) return null;
 
     try {
-        const image = await createImage(imageSrc);
+        let srcUrl = imageSrc;
+        let createdBlobUrl = null;
+
+        if (imageSrc instanceof Blob || (typeof File !== 'undefined' && imageSrc instanceof File)) {
+            const converted = await convertHeicToJpeg(imageSrc);
+            createdBlobUrl = URL.createObjectURL(converted);
+            srcUrl = createdBlobUrl;
+        }
+
+        const image = await createImage(srcUrl);
+
+        if (createdBlobUrl) {
+            URL.revokeObjectURL(createdBlobUrl);
+        }
+
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 

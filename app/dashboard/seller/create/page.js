@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
-import { validateImage, compressProductImage } from '@/utils/imageUtils';
+import { validateImage, compressProductImage, convertHeicToJpeg } from '@/utils/imageUtils';
 import { createListingAction } from './actions';
 import LoadingScreen from '@/components/LoadingScreen';
 import CategorySelector from '@/components/CategorySelector';
@@ -162,13 +162,14 @@ export default function CreateListingPage() {
                 if (replaceIndex !== null) {
                     // Replacing a specific image
                     const file = files[0];
-                    const processed = await compressProductImage(file);
-                    const originalUrl = URL.createObjectURL(file);
+                    const convertedFile = await convertHeicToJpeg(file);
+                    const processed = await compressProductImage(convertedFile);
+                    const originalUrl = URL.createObjectURL(convertedFile);
                     const previewUrl = processed.dataUrl || originalUrl;
 
                     const newFiles = [...imageFiles];
                     newFiles[replaceIndex] = {
-                        file,
+                        file: convertedFile,
                         dataUrl: processed.dataUrl,
                         originalSrc: originalUrl,
                     };
@@ -189,10 +190,11 @@ export default function CreateListingPage() {
 
                     const processedList = await Promise.all(
                         files.map(async (file) => {
-                            const originalUrl = URL.createObjectURL(file);
-                            const res = await compressProductImage(file);
+                            const convertedFile = await convertHeicToJpeg(file);
+                            const originalUrl = URL.createObjectURL(convertedFile);
+                            const res = await compressProductImage(convertedFile);
                             return {
-                                file,
+                                file: convertedFile,
                                 dataUrl: res.dataUrl,
                                 previewUrl: res.dataUrl || originalUrl,
                                 originalSrc: originalUrl,

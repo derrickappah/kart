@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
-import { validateImage, compressProductImage } from '@/utils/imageUtils';
+import { validateImage, compressProductImage, convertHeicToJpeg } from '@/utils/imageUtils';
 import { updateListingAction } from './actions';
 
 export default function EditListingClient({ product }) {
@@ -132,16 +132,17 @@ export default function EditListingClient({ product }) {
             if (replaceIndex !== null) {
                 // Replacing a specific photo
                 const file = files[0];
-                const processed = await compressProductImage(file);
+                const convertedFile = await convertHeicToJpeg(file);
+                const processed = await compressProductImage(convertedFile);
                 const newPhotos = [...photos];
                 if (newPhotos[replaceIndex].type === 'local' && newPhotos[replaceIndex].preview?.startsWith('blob:')) {
                     URL.revokeObjectURL(newPhotos[replaceIndex].preview);
                 }
                 newPhotos[replaceIndex] = {
                     type: 'local',
-                    file,
+                    file: convertedFile,
                     dataUrl: processed.dataUrl,
-                    preview: processed.dataUrl || URL.createObjectURL(file)
+                    preview: processed.dataUrl || URL.createObjectURL(convertedFile)
                 };
                 setPhotos(newPhotos);
             } else {
@@ -153,12 +154,13 @@ export default function EditListingClient({ product }) {
                     return;
                 }
                 const newPhotosToAdd = await Promise.all(files.map(async (file) => {
-                    const processed = await compressProductImage(file);
+                    const convertedFile = await convertHeicToJpeg(file);
+                    const processed = await compressProductImage(convertedFile);
                     return {
                         type: 'local',
-                        file,
+                        file: convertedFile,
                         dataUrl: processed.dataUrl,
-                        preview: processed.dataUrl || URL.createObjectURL(file)
+                        preview: processed.dataUrl || URL.createObjectURL(convertedFile)
                     };
                 }));
                 setPhotos([...photos, ...newPhotosToAdd]);
