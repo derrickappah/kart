@@ -9,6 +9,12 @@ export async function createClient() {
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         {
+            cookieOptions: {
+                maxAge: 400 * 24 * 60 * 60,
+                sameSite: 'lax',
+                path: '/',
+                secure: process.env.NODE_ENV === 'production',
+            },
             cookies: {
                 getAll() {
                     return cookieStore.getAll()
@@ -18,6 +24,9 @@ export async function createClient() {
                         cookiesToSet.forEach(({ name, value, options }) =>
                             cookieStore.set(name, value, {
                                 ...options,
+                                maxAge: options?.maxAge === 0 ? 0 : (options?.maxAge ?? 400 * 24 * 60 * 60),
+                                sameSite: options?.sameSite || 'lax',
+                                path: options?.path || '/',
                                 secure: process.env.NODE_ENV === 'production',
                             })
                         )

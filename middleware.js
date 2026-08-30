@@ -32,6 +32,12 @@ export async function middleware(request) {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      cookieOptions: {
+        maxAge: 400 * 24 * 60 * 60,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -46,6 +52,9 @@ export async function middleware(request) {
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, {
               ...options,
+              maxAge: options?.maxAge === 0 ? 0 : (options?.maxAge ?? 400 * 24 * 60 * 60),
+              sameSite: options?.sameSite || 'lax',
+              path: options?.path || '/',
               secure: process.env.NODE_ENV === 'production',
             })
           )

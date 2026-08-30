@@ -15,8 +15,34 @@ import { Suspense, useEffect } from 'react';
 const supabase = createClient();
 
 const userFetcher = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user || null;
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (user) return user;
+
+        // If getUser had a network/transient error, fall back to local session so user stays logged in
+        if (error) {
+            const isNetworkError =
+                error.message?.toLowerCase().includes('fetch') ||
+                error.message?.toLowerCase().includes('network') ||
+                error.name === 'AuthRetryableFetchError' ||
+                error.status === 0;
+
+            if (isNetworkError) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    return session.user;
+                }
+            }
+        }
+        return null;
+    } catch {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            return session?.user || null;
+        } catch {
+            return null;
+        }
+    }
 };
 
 // Lightweight fetcher for maintenance mode — replaces the middleware DB query
@@ -67,14 +93,15 @@ export default function LayoutWrapper({ children }) {
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN') {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
                 // Brief delay to ensure cookies are fully committed before revalidating
                 setTimeout(() => {
+                    mutate(session?.user || null, false);
                     mutate();
                     router.refresh();
                 }, 100);
-            } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-                mutate();
+            } else if (event === 'SIGNED_OUT') {
+                mutate(null, false);
                 router.refresh();
             }
         });
