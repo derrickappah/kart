@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { formatPhoneDisplay } from '@/utils/phoneUtils';
 
 export default function UserManagementClient({ initialUsers, stats = {} }) {
     const [users, setUsers] = useState(initialUsers);
@@ -154,7 +155,7 @@ export default function UserManagementClient({ initialUsers, stats = {} }) {
                                 </td>
                                 <td className="px-6 py-4">
                                     <p className="text-sm font-bold text-[#111618] dark:text-gray-200">{user.campus || 'N/A'}</p>
-                                    <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">{user.phone || 'No Phone'}</p>
+                                    <p className="text-[10px] text-[#4b636c] font-black uppercase tracking-widest">{user.phone ? formatPhoneDisplay(user.phone) : 'No Phone'}</p>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col gap-1">

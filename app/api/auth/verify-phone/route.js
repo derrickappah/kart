@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import { formatToInternationalPhone } from '@/utils/phoneUtils';
 
 export async function POST(request) {
     try {
@@ -93,11 +94,13 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
+        const standardizedPhone = formatToInternationalPhone(verification.phone);
+
         // Update profile with new verified phone number
         const { error: profileError } = await adminSupabase
             .from('profiles')
             .update({
-                phone: verification.phone,
+                phone: standardizedPhone,
                 phone_verified: true,
                 updated_at: new Date().toISOString()
             })
@@ -119,7 +122,7 @@ export async function POST(request) {
         return NextResponse.json({
             success: true,
             message: 'Phone number verified and updated successfully',
-            phone: verification.phone
+            phone: standardizedPhone
         });
 
     } catch (error) {

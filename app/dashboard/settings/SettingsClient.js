@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signout } from '../../auth/actions';
 import DeleteAccountModal from '@/components/DeleteAccountModal';
+import { formatPhoneDisplay, getWhatsAppUrl } from '@/utils/phoneUtils';
 
 export default function SettingsClient({ initialProfile, initialUser, whatsappSupportNumber = '0500502158' }) {
   const router = useRouter();
@@ -178,7 +179,7 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
                 <div className="flex flex-col truncate">
                   <span className="text-base font-semibold text-slate-900 dark:text-white">Phone</span>
                   <span className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                    {profileData.phone || 'Add phone number'}
+                    {profileData.phone ? formatPhoneDisplay(profileData.phone) : 'Add phone number'}
                   </span>
                 </div>
               </div>
@@ -333,7 +334,7 @@ export default function SettingsClient({ initialProfile, initialUser, whatsappSu
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 ml-2">Support</h3>
           <div className="bg-white dark:bg-[#1E292B] rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
             <Link
-              href={`https://wa.me/${String(whatsappSupportNumber).replace(/[^0-9]/g, '')}`}
+              href={getWhatsAppUrl(whatsappSupportNumber || '0500502158')}
               target="_blank"
               rel="noopener noreferrer"
               className="group relative flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-inherit no-underline"

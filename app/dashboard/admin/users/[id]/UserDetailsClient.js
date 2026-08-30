@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/client';
+import { formatPhoneDisplay, formatToInternationalPhone } from '@/utils/phoneUtils';
 
 export default function UserDetailsClient({
     profile,
@@ -305,10 +306,10 @@ export default function UserDetailsClient({
                         <div className="space-y-1 bg-background-light dark:bg-[#212b30]/30 p-3 rounded-xl">
                             <p className="text-[9px] font-black uppercase text-[#4b636c] tracking-widest">Phone Number</p>
                             <p className="font-black flex items-center justify-between gap-2">
-                                <span>{profileState.phone || 'N/A'}</span>
+                                <span>{profileState.phone ? formatPhoneDisplay(profileState.phone) : 'N/A'}</span>
                                 {profileState.phone && (
                                     <button
-                                        onClick={() => handleCopy(profileState.phone, 'phone')}
+                                        onClick={() => handleCopy(formatToInternationalPhone(profileState.phone), 'phone')}
                                         className="hover:text-primary transition-colors"
                                     >
                                         <DynamicLucideIcon name={copiedField === 'phone' ? 'check' : 'content_copy'} className="text-[12px]" />

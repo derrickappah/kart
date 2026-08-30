@@ -9,6 +9,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import FollowButton from '@/components/FollowButton';
 import FollowersListModal from '@/components/FollowersListModal';
 import { formatPrice } from '@/utils/formatters';
+import { formatPhoneDisplay, getWhatsAppUrl } from '@/utils/phoneUtils';
 
 export default function SellerProfilePage() {
     const router = useRouter();
@@ -282,7 +283,7 @@ export default function SellerProfilePage() {
                                         <div className="relative group/btn-container">
                                             <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur opacity-25 group-hover/btn-container:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                                             <a
-                                                href={`https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}`}
+                                                href={getWhatsAppUrl(profile.phone)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="relative flex items-center gap-4 p-4 sm:p-5 rounded-[1.5rem] bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white shadow-xl active:scale-[0.98] transition-all duration-300 group/btn overflow-hidden"
@@ -293,7 +294,7 @@ export default function SellerProfilePage() {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-[11px] font-black uppercase tracking-wider opacity-90">Send WhatsApp Message</p>
-                                                    <p className="text-lg font-black tracking-tight truncate">{profile.phone}</p>
+                                                    <p className="text-lg font-black tracking-tight truncate">{formatPhoneDisplay(profile.phone)}</p>
                                                 </div>
                                             </a>
                                         </div>

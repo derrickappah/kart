@@ -5,6 +5,7 @@ import { createClient } from '../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { validateImage, compressImage, generateProfilePicturePath, getFileExtension } from '../../../utils/imageUtils';
+import { formatToInternationalPhone, isValidInternationalPhone } from '../../../utils/phoneUtils';
 
 export default function EditProfilePage() {
     const router = useRouter();
@@ -149,6 +150,13 @@ export default function EditProfilePage() {
             }
         }
 
+        if (formData.phone && formData.phone.trim()) {
+            const standardized = formatToInternationalPhone(formData.phone);
+            if (!isValidInternationalPhone(standardized)) {
+                newErrors.phone = 'Please enter a valid phone number (e.g. 024XXXXXXX or +233...)';
+            }
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -175,19 +183,31 @@ export default function EditProfilePage() {
                 }
             }
 
+            const standardizedPhone = formData.phone?.trim()
+                ? formatToInternationalPhone(formData.phone)
+                : null;
+            const phoneChanged = standardizedPhone !== (profile?.phone || null);
+
+            const updatePayload = {
+                display_name: formData.display_name,
+                username: formData.username,
+                bio: formData.bio,
+                instagram: formData.instagram,
+                snapchat: formData.snapchat,
+                phone: standardizedPhone,
+                campus: formData.campus,
+                avatar_url: avatarUrl,
+                updated_at: new Date().toISOString()
+            };
+
+            // If phone was changed to a different number, reset verification status
+            if (phoneChanged && profile?.phone_verified) {
+                updatePayload.phone_verified = false;
+            }
+
             const { error } = await supabase
                 .from('profiles')
-                .update({
-                    display_name: formData.display_name,
-                    username: formData.username,
-                    bio: formData.bio,
-                    instagram: formData.instagram,
-                    snapchat: formData.snapchat,
-                    phone: formData.phone,
-                    campus: formData.campus,
-                    avatar_url: avatarUrl,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updatePayload)
                 .eq('id', user.id);
 
             if (error) throw error;
@@ -388,13 +408,20 @@ export default function EditProfilePage() {
                                             <DynamicLucideIcon name="call" className="text-[22px]" />
                                         </div>
                                         <input
-                                            className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
-                                            placeholder="e.g. 0500865092"
+                                            className={`w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200 ${errors.phone ? 'border-red-400 focus:border-red-400' : ''}`}
+                                            placeholder="e.g. 024 395 3094 or +233..."
                                             type="tel"
                                             value={formData.phone}
                                             onChange={(e) => handleInputChange('phone', e.target.value)}
                                         />
                                     </div>
+                                    {errors.phone ? (
+                                        <p className="mt-1 text-xs text-red-500 font-medium ml-1">{errors.phone}</p>
+                                    ) : (
+                                        <p className="text-[10px] text-slate-400 ml-1">
+                                            Saved in standard international format (+233...) for WhatsApp and SMS delivery
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

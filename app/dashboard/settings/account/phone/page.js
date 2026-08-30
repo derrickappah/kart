@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { formatToInternationalPhone, formatPhoneDisplay } from '@/utils/phoneUtils';
 
 export default function PhoneUpdatePage() {
     const router = useRouter();
@@ -37,9 +38,10 @@ export default function PhoneUpdatePage() {
                     if (error) throw error;
 
                     if (mounted && data) {
-                        setCurrentPhone(data.phone || '');
+                        const std = data.phone ? formatToInternationalPhone(data.phone) : '';
+                        setCurrentPhone(std);
                         setIsVerified(Boolean(data.phone_verified));
-                        setNewPhone(data.phone || '');
+                        setNewPhone(std);
                     }
                 }
             } catch (error) {
@@ -77,7 +79,8 @@ export default function PhoneUpdatePage() {
             return;
         }
 
-        if (!isValidPhoneNumber(newPhone)) {
+        const standardPhone = formatToInternationalPhone(newPhone);
+        if (!standardPhone || !isValidPhoneNumber(standardPhone)) {
             setMessage({ type: 'error', text: 'Please enter a valid international phone format.' });
             return;
         }
@@ -88,7 +91,7 @@ export default function PhoneUpdatePage() {
             const response = await fetch('/api/auth/send-phone-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: newPhone }),
+                body: JSON.stringify({ phone: standardPhone }),
             });
 
             const data = await response.json();
@@ -174,7 +177,8 @@ export default function PhoneUpdatePage() {
             if (!response.ok) {
                 setMessage({ type: 'error', text: data.error || 'Invalid verification code' });
             } else {
-                setCurrentPhone(newPhone);
+                const verifiedNumber = formatToInternationalPhone(data.phone || newPhone);
+                setCurrentPhone(verifiedNumber);
                 setIsVerified(true);
                 setMessage({ type: 'success', text: 'Phone number verified successfully!' });
                 setTimeout(() => {
@@ -228,7 +232,7 @@ export default function PhoneUpdatePage() {
                                             Current Number
                                         </span>
                                         <span className="text-base font-semibold font-mono text-slate-900 dark:text-white mt-0.5">
-                                            {currentPhone}
+                                            {formatPhoneDisplay(currentPhone) || currentPhone}
                                         </span>
                                     </div>
                                     <div>

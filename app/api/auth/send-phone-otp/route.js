@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
-import { sendMoolreSMS, normalizePhoneNumber } from '@/lib/moolre';
+import { sendMoolreSMS } from '@/lib/moolre';
+import { formatToInternationalPhone, isValidInternationalPhone } from '@/utils/phoneUtils';
 import crypto from 'crypto';
 
 export async function POST(request) {
@@ -19,8 +20,8 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Valid phone number is required' }, { status: 400 });
         }
 
-        const cleanPhone = normalizePhoneNumber(rawPhone);
-        if (cleanPhone.length < 9 || cleanPhone.length > 15) {
+        const standardizedPhone = formatToInternationalPhone(rawPhone);
+        if (!standardizedPhone || !isValidInternationalPhone(standardizedPhone)) {
             return NextResponse.json({ error: 'Please enter a valid phone number' }, { status: 400 });
         }
 
@@ -68,7 +69,7 @@ export async function POST(request) {
             .from('phone_verifications')
             .insert({
                 user_id: user.id,
-                phone: rawPhone,
+                phone: standardizedPhone,
                 otp: otp,
                 attempts: 0,
                 expires_at: expiresAt
@@ -85,7 +86,7 @@ export async function POST(request) {
         try {
             const smsMessage = `Your Kart verification code is ${otp}. Valid for 10 minutes.`;
             await sendMoolreSMS({
-                recipient: rawPhone,
+                recipient: standardizedPhone,
                 message: smsMessage,
             });
         } catch (smsError) {
