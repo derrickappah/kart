@@ -11,64 +11,79 @@ import SearchBar from '../SearchBar';
 const supabase = createClient();
 
 const fetchConversations = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { user: null, conversations: [] };
+    try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) return { user: null, conversations: [] };
 
-    const { data: convs, error } = await supabase
-        .from('conversations')
-        .select('*')
-        .contains('participants', [user.id])
-        .order('updated_at', { ascending: false });
+        const { data: convs, error } = await supabase
+            .from('conversations')
+            .select('*')
+            .contains('participants', [user.id])
+            .order('updated_at', { ascending: false });
 
-    const convsToProcess = error
-        ? (await supabase.from('conversations').select('*').order('updated_at', { ascending: false })).data?.filter(c => c.participants?.includes(user.id)) || []
-        : convs || [];
+        let convsToProcess = [];
+        if (error || !convs) {
+            const { data: fallbackConvs } = await supabase.from('conversations').select('*').order('updated_at', { ascending: false });
+            convsToProcess = (fallbackConvs || []).filter(c => Array.isArray(c.participants) && c.participants.includes(user.id));
+        } else {
+            convsToProcess = convs;
+        }
 
-    if (convsToProcess.length === 0) return { user, conversations: [] };
+        if (!convsToProcess || convsToProcess.length === 0) return { user, conversations: [] };
 
-    const otherUserIds = [...new Set(convsToProcess.map(c => c.participants?.find(p => p !== user.id)).filter(Boolean))];
-    const productIds = [...new Set(convsToProcess.map(c => c.product_id).filter(Boolean))];
+        const otherUserIds = [...new Set(convsToProcess.map(c => c.participants?.find(p => p !== user.id)).filter(Boolean))];
+        const productIds = [...new Set(convsToProcess.map(c => c.product_id).filter(Boolean))];
 
-    const [profilesResult, productsResult] = await Promise.all([
-        otherUserIds.length > 0
-            ? supabase.from('profiles').select('id, display_name, email, avatar_url').in('id', otherUserIds)
-            : Promise.resolve({ data: [] }),
-        productIds.length > 0
-            ? supabase.from('products').select('id, title, image_url').in('id', productIds)
-            : Promise.resolve({ data: [] })
-    ]);
-
-    const profilesMap = (profilesResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
-    const productsMap = (productsResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
-
-    const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
-        const otherUserId = c.participants?.find(p => p !== user.id);
-        const [lastMsgResult, unreadCountResult] = await Promise.all([
-            supabase
-                .from('messages')
-                .select('content, created_at, sender_id, is_read')
-                .eq('conversation_id', c.id)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle(),
-            supabase
-                .from('messages')
-                .select('*', { count: 'exact', head: true })
-                .eq('conversation_id', c.id)
-                .neq('sender_id', user.id)
-                .or('is_read.eq.false,is_read.is.null')
+        const [profilesResult, productsResult] = await Promise.all([
+            otherUserIds.length > 0
+                ? supabase.from('profiles').select('id, display_name, email, avatar_url').in('id', otherUserIds)
+                : Promise.resolve({ data: [] }),
+            productIds.length > 0
+                ? supabase.from('products').select('id, title, image_url').in('id', productIds)
+                : Promise.resolve({ data: [] })
         ]);
 
-        return {
-            ...c,
-            otherUser: profilesMap[otherUserId] || { display_name: 'Unknown User', email: '', avatar_url: null },
-            product: productsMap[c.product_id] || null,
-            lastMessage: lastMsgResult.data,
-            unreadCount: unreadCountResult.count || 0
-        };
-    }));
+        const profilesMap = (profilesResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+        const productsMap = (productsResult.data || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
 
-    return { user, conversations: enrichedConvs };
+        const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
+            const otherUserId = c.participants?.find(p => p !== user.id);
+            try {
+                const { data: msgs } = await supabase
+                    .from('messages')
+                    .select('content, created_at, sender_id, is_read')
+                    .eq('conversation_id', c.id)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                const messageList = msgs || [];
+                const lastMsg = messageList[0] || null;
+                const unreadCount = messageList.filter(m => m.sender_id !== user.id && m.is_read !== true).length;
+
+                return {
+                    ...c,
+                    otherUser: profilesMap[otherUserId] || { display_name: 'Unknown User', email: '', avatar_url: null },
+                    product: productsMap[c.product_id] || null,
+                    lastMessage: lastMsg,
+                    unreadCount: unreadCount
+                };
+            } catch (err) {
+                console.error('Error fetching messages for conversation', c.id, err);
+                return {
+                    ...c,
+                    otherUser: profilesMap[otherUserId] || { display_name: 'Unknown User', email: '', avatar_url: null },
+                    product: productsMap[c.product_id] || null,
+                    lastMessage: null,
+                    unreadCount: 0
+                };
+            }
+        }));
+
+        return { user, conversations: enrichedConvs };
+    } catch (err) {
+        console.error('fetchConversations error:', err);
+        return { user: null, conversations: [] };
+    }
 };
 
 export default function ConversationList() {

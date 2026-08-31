@@ -20,7 +20,6 @@ export async function GET() {
       .contains('participants', [user.id]);
 
     if (convError || !directConvs || directConvs.length === 0) {
-      // Fallback: fetch conversations and filter in JS
       const { data: allConvs } = await adminClient
         .from('conversations')
         .select('id, participants');
@@ -35,22 +34,19 @@ export async function GET() {
 
     const convIds = convs.map(c => c.id);
 
-    // Find unread messages in these conversations sent by other users
-    // Matches messages where is_read is false OR is_read IS NULL
-    const { data: unreadMsgs, error: msgError } = await adminClient
+    // Fetch messages for these conversations to check unread status
+    const { data: allMsgs, error: msgError } = await adminClient
       .from('messages')
       .select('conversation_id, sender_id, is_read')
-      .in('conversation_id', convIds)
-      .neq('sender_id', user.id)
-      .or('is_read.eq.false,is_read.is.null');
+      .in('conversation_id', convIds);
 
-    if (msgError || !unreadMsgs || unreadMsgs.length === 0) {
+    if (msgError || !allMsgs || allMsgs.length === 0) {
       return NextResponse.json({ unreadCount: 0, unreadConversations: [] });
     }
 
-    // Filter to ensure sender_id is not current user and message is unread
-    const filteredUnread = unreadMsgs.filter(m => m.sender_id !== user.id && m.is_read !== true);
-    const unreadConversationIds = new Set(filteredUnread.map(m => m.conversation_id));
+    // Filter unread messages sent by others
+    const unreadMsgs = allMsgs.filter(m => m.sender_id !== user.id && m.is_read !== true);
+    const unreadConversationIds = new Set(unreadMsgs.map(m => m.conversation_id));
 
     return NextResponse.json({
       unreadCount: unreadConversationIds.size,

@@ -18,6 +18,7 @@ export default function ChatPage() {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
+    const currentUserRef = useRef(null);
     const [otherUser, setOtherUser] = useState(null);
     const [productContext, setProductContext] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -34,22 +35,22 @@ export default function ChatPage() {
     const markConversationAsRead = useCallback(async (convId, userId) => {
         if (!convId || convId === 'new') return;
         
-        // 1. Immediately broadcast locally to clear badges in UI
         broadcastMessagesRead(convId);
 
-        // 2. Direct client-side Supabase update for immediate latency-free DB write
-        if (userId) {
+        const targetUserId = userId || currentUserRef.current?.id;
+        if (targetUserId) {
             try {
                 supabase
                     .from('messages')
                     .update({ is_read: true })
                     .eq('conversation_id', convId)
-                    .neq('sender_id', userId)
+                    .neq('sender_id', targetUserId)
                     .then();
-            } catch {}
+            } catch (err) {
+                console.warn('[ChatPage] Direct client update non-critical:', err);
+            }
         }
 
-        // 3. Authoritative server API call (bypasses RLS, handles notifications)
         try {
             await fetch('/api/messages/mark-read', {
                 method: 'POST',
@@ -60,7 +61,6 @@ export default function ChatPage() {
             console.error('[ChatPage] mark-as-read API error:', e);
         }
 
-        // 4. Invalidate global SWR caches
         globalMutate('/api/messages/unread-count');
         globalMutate('conversations');
     }, [supabase]);
@@ -89,12 +89,13 @@ export default function ChatPage() {
 
         const init = async () => {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                    router.push('/login');
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError || !user) {
+                    if (isMounted) router.push('/login');
                     return;
                 }
                 if (!isMounted) return;
+                currentUserRef.current = user;
                 setCurrentUser(user);
 
                 if (conversationId === 'new') {
@@ -128,24 +129,22 @@ export default function ChatPage() {
                     return;
                 }
 
-                // Fetch conversation details to get other participant and potential product context
+                // Fetch conversation details
                 const { data: conversation } = await supabase
                     .from('conversations')
                     .select('*')
                     .eq('id', conversationId)
-                    .contains('participants', [user.id])
                     .maybeSingle();
 
                 if (conversation && isMounted) {
-                    const otherParticipantId = conversation.participants.find(p => p !== user.id);
+                    const otherParticipantId = conversation.participants?.find(p => p !== user.id);
 
-                    // Fetch profile and product in parallel
                     const [profileResult, productResult] = await Promise.all([
-                        supabase
+                        otherParticipantId ? supabase
                             .from('profiles')
                             .select('*')
                             .eq('id', otherParticipantId)
-                            .maybeSingle(),
+                            .maybeSingle() : Promise.resolve({ data: null }),
                         conversation.product_id ? supabase
                             .from('products')
                             .select('*')
@@ -153,8 +152,8 @@ export default function ChatPage() {
                             .maybeSingle() : Promise.resolve({ data: null })
                     ]);
 
-                    if (profileResult.data && isMounted) setOtherUser(profileResult.data);
-                    if (productResult.data && isMounted) setProductContext(productResult.data);
+                    if (profileResult?.data && isMounted) setOtherUser(profileResult.data);
+                    if (productResult?.data && isMounted) setProductContext(productResult.data);
                 }
 
                 // Fetch initial messages
@@ -164,11 +163,9 @@ export default function ChatPage() {
                     .eq('conversation_id', conversationId)
                     .order('created_at', { ascending: true });
 
-                if (initialMessages && isMounted) setMessages(initialMessages);
-
                 if (isMounted) {
+                    if (initialMessages) setMessages(initialMessages);
                     setLoading(false);
-                    // Mark messages as read immediately
                     markConversationAsRead(conversationId, user.id);
                 }
             } catch (error) {
@@ -194,9 +191,9 @@ export default function ChatPage() {
                         return [...prev, payload.new];
                     });
 
-                    // If new incoming message from the other user, mark as read
-                    if (currentUser && payload.new.sender_id !== currentUser.id) {
-                        markConversationAsRead(conversationId, currentUser.id);
+                    const currentUserId = currentUserRef.current?.id;
+                    if (currentUserId && payload.new.sender_id !== currentUserId) {
+                        markConversationAsRead(conversationId, currentUserId);
                     }
                 })
                 .subscribe();
@@ -204,8 +201,11 @@ export default function ChatPage() {
 
         // Window focus and visibility listener to clear badges on app switch/focus
         const handleFocusOrVisible = () => {
-            if (document.visibilityState === 'visible' && currentUser && conversationId && conversationId !== 'new') {
-                markConversationAsRead(conversationId, currentUser.id);
+            if (document.visibilityState === 'visible' && conversationId && conversationId !== 'new') {
+                const currentUserId = currentUserRef.current?.id;
+                if (currentUserId) {
+                    markConversationAsRead(conversationId, currentUserId);
+                }
             }
         };
 
@@ -218,7 +218,7 @@ export default function ChatPage() {
             document.removeEventListener('visibilitychange', handleFocusOrVisible);
             if (channel) supabase.removeChannel(channel);
         };
-    }, [conversationId, router, supabase, sellerId, markConversationAsRead, currentUser]);
+    }, [conversationId, sellerId, router, supabase, markConversationAsRead]);
 
     useEffect(() => {
         scrollToBottom();
@@ -254,7 +254,6 @@ export default function ChatPage() {
                 .from('chat-attachments')
                 .getPublicUrl(filePath);
 
-            // Automatically send the public URL as a message
             await sendMessage(publicUrl);
         } catch (error) {
             console.error("Error uploading file:", error);
@@ -265,7 +264,6 @@ export default function ChatPage() {
         }
     };
 
-    // Shared send message logic to be used by both text and file uploads
     const sendMessage = async (content) => {
         if (!content.trim() || !currentUser || sending) return;
 
