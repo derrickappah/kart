@@ -252,6 +252,18 @@ export default function ChatPage() {
                 .update({ updated_at: new Date().toISOString() })
                 .eq('id', activeConversationId);
 
+            // Dispatch push notification to recipient
+            fetch('/api/messages/notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversationId: activeConversationId,
+                    messageContent: content
+                })
+            }).catch(err => {
+                console.warn('[Chat] Push dispatch error:', err);
+            });
+
             setNewMessage('');
         } catch (error) {
             console.error("Error sending message:", error);
