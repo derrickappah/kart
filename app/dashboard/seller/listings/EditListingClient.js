@@ -7,12 +7,17 @@ import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { validateImage, compressProductImage, convertHeicToJpeg } from '@/utils/imageUtils';
 import { updateListingAction } from './actions';
+import PhotoSourceModal from '@/components/PhotoSourceModal';
 
 export default function EditListingClient({ product }) {
     const router = useRouter();
     const supabase = createClient();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [sourceModal, setSourceModal] = useState({
+        isOpen: false,
+        replaceIndex: null,
+    });
     const isSubmittingRef = useRef(false);
 
     // Photos state setup: can contain remote or local image references
@@ -115,20 +120,19 @@ export default function EditListingClient({ product }) {
     };
 
     // Unified handle for file changes
-    const handleFileChange = async (e, replaceIndex = null) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const files = Array.from(e.target.files);
+    const handleFilesSelected = async (files, replaceIndex = null) => {
+        if (!files || files.length === 0) return;
 
-            // Validate file types and sizes
-            for (const file of files) {
-                const validation = validateImage(file);
-                if (!validation.valid) {
-                    setError(validation.error);
-                    e.target.value = '';
-                    return;
-                }
+        // Validate file types and sizes
+        for (const file of files) {
+            const validation = validateImage(file);
+            if (!validation.valid) {
+                setError(validation.error);
+                return;
             }
+        }
 
+        try {
             if (replaceIndex !== null) {
                 // Replacing a specific photo
                 const file = files[0];
@@ -142,7 +146,8 @@ export default function EditListingClient({ product }) {
                     type: 'local',
                     file: convertedFile,
                     dataUrl: processed.dataUrl,
-                    preview: processed.dataUrl || URL.createObjectURL(convertedFile)
+                    preview: processed.dataUrl || URL.createObjectURL(convertedFile),
+                    originalSrc: URL.createObjectURL(convertedFile)
                 };
                 setPhotos(newPhotos);
             } else {
@@ -150,7 +155,6 @@ export default function EditListingClient({ product }) {
                 const remainingSlots = 5 - photos.length;
                 if (files.length > remainingSlots) {
                     setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
-                    e.target.value = '';
                     return;
                 }
                 const newPhotosToAdd = await Promise.all(files.map(async (file) => {
@@ -160,11 +164,21 @@ export default function EditListingClient({ product }) {
                         type: 'local',
                         file: convertedFile,
                         dataUrl: processed.dataUrl,
-                        preview: processed.dataUrl || URL.createObjectURL(convertedFile)
+                        preview: processed.dataUrl || URL.createObjectURL(convertedFile),
+                        originalSrc: URL.createObjectURL(convertedFile)
                     };
                 }));
                 setPhotos([...photos, ...newPhotosToAdd]);
             }
+        } catch (err) {
+            console.error('[EditListing] Photo processing error:', err);
+            setError('Failed to process selected photos. Please try again.');
+        }
+    };
+
+    const handleFileChange = async (e, replaceIndex = null) => {
+        if (e.target.files && e.target.files.length > 0) {
+            await handleFilesSelected(Array.from(e.target.files), replaceIndex);
         }
         e.target.value = '';
     };
@@ -277,13 +291,17 @@ export default function EditListingClient({ product }) {
                         </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 -mx-5 px-5 no-scrollbar">
                             {photos.length < 5 && (
-                                <label className={`shrink-0 w-28 h-36 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#22262a] flex flex-col items-center justify-center gap-2 text-[#4e8b97] dark:text-[#94aab0] hover:border-[#149cb8] hover:text-[#149cb8] hover:bg-[#149cb8]/5 transition-all group cursor-pointer ${loading ? 'pointer-events-none opacity-50' : ''}`}>
-                                    <input type="file" accept="image/*" multiple disabled={loading} onChange={handleFileChange} className="sr-only" />
+                                <button
+                                    type="button"
+                                    disabled={loading}
+                                    onClick={() => setSourceModal({ isOpen: true, replaceIndex: null })}
+                                    className={`shrink-0 w-28 h-36 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#22262a] flex flex-col items-center justify-center gap-2 text-[#4e8b97] dark:text-[#94aab0] hover:border-[#149cb8] hover:text-[#149cb8] hover:bg-[#149cb8]/5 transition-all group cursor-pointer ${loading ? 'pointer-events-none opacity-50' : ''}`}
+                                >
                                     <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <DynamicLucideIcon name="add" className="text-2xl" />
                                     </div>
                                     <span className="text-xs font-bold">Add Photo</span>
-                                </label>
+                                </button>
                             )}
 
                             {photos.map((photo, index) => {
@@ -311,10 +329,16 @@ export default function EditListingClient({ product }) {
                                         >
                                             <DynamicLucideIcon name="close" className="text-base" />
                                         </button>
-                                        <label className={`absolute bottom-2 right-2 bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 cursor-pointer border border-gray-100 dark:border-gray-700 ${loading ? 'pointer-events-none opacity-50' : ''}`}>
-                                            <input type="file" accept="image/*" disabled={loading} className="sr-only" onChange={(e) => handleFileChange(e, index)} />
+                                        <button
+                                            type="button"
+                                            disabled={loading}
+                                            onClick={() => setSourceModal({ isOpen: true, replaceIndex: index })}
+                                            className={`absolute bottom-2 right-2 bg-white/90 dark:bg-[#2E2E32]/90 text-[#111618] dark:text-gray-200 rounded-full p-1.5 shadow-md hover:bg-white dark:hover:bg-[#2E2E32] transition-all opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 cursor-pointer border border-gray-100 dark:border-gray-700 ${loading ? 'pointer-events-none opacity-50' : ''}`}
+                                            title="Replace photo"
+                                            aria-label="Replace photo"
+                                        >
                                             <DynamicLucideIcon name="sync" className="text-[14px]" />
-                                        </label>
+                                        </button>
                                         {index === 0 && (
                                             <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-white z-10">Main</div>
                                         )}
@@ -481,6 +505,15 @@ export default function EditListingClient({ product }) {
                         )}
                     </button>
                 </div>
+
+                {/* Photo Source Selector Modal */}
+                <PhotoSourceModal
+                    isOpen={sourceModal.isOpen}
+                    onClose={() => setSourceModal({ isOpen: false, replaceIndex: null })}
+                    onFilesSelected={handleFilesSelected}
+                    replaceIndex={sourceModal.replaceIndex}
+                    remainingSlots={5 - photos.length}
+                />
             </div>
         </div>
     );

@@ -9,6 +9,7 @@ import { createListingAction } from './actions';
 import LoadingScreen from '@/components/LoadingScreen';
 import CategorySelector from '@/components/CategorySelector';
 import ImageCropModal from '@/components/ImageCropModal';
+import PhotoSourceModal from '@/components/PhotoSourceModal';
 
 export default function CreateListingPage() {
     const router = useRouter();
@@ -21,6 +22,10 @@ export default function CreateListingPage() {
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [verificationStatus, setVerificationStatus] = useState(null);
     const [checkingSubscription, setCheckingSubscription] = useState(true);
+    const [sourceModal, setSourceModal] = useState({
+        isOpen: false,
+        replaceIndex: null,
+    });
     const [cropModal, setCropModal] = useState({
         isOpen: false,
         images: [],
@@ -143,77 +148,79 @@ export default function CreateListingPage() {
         setFormData({ ...formData, condition });
     };
 
-    // Handle image file selection with instant compression (user taps Crop on thumbnail to open crop modal)
-    const handleFileChange = async (e, replaceIndex = null) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const files = Array.from(e.target.files);
+    // Process selected files from camera or gallery
+    const handleFilesSelected = async (files, replaceIndex = null) => {
+        if (!files || files.length === 0) return;
 
-            // Validate each file
-            for (const file of files) {
-                const validation = validateImage(file);
-                if (!validation.valid) {
-                    setError(validation.error);
-                    e.target.value = '';
-                    return;
-                }
-            }
-
-            try {
-                if (replaceIndex !== null) {
-                    // Replacing a specific image
-                    const file = files[0];
-                    const convertedFile = await convertHeicToJpeg(file);
-                    const processed = await compressProductImage(convertedFile);
-                    const originalUrl = URL.createObjectURL(convertedFile);
-                    const previewUrl = processed.dataUrl || originalUrl;
-
-                    const newFiles = [...imageFiles];
-                    newFiles[replaceIndex] = {
-                        file: convertedFile,
-                        dataUrl: processed.dataUrl,
-                        originalSrc: originalUrl,
-                    };
-
-                    const newPreviews = [...imagePreviews];
-                    newPreviews[replaceIndex] = previewUrl;
-
-                    setImageFiles(newFiles);
-                    setImagePreviews(newPreviews);
-                } else {
-                    // Adding new images directly to preview
-                    const remainingSlots = 5 - imageFiles.length;
-                    if (files.length > remainingSlots) {
-                        setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
-                        e.target.value = '';
-                        return;
-                    }
-
-                    const processedList = await Promise.all(
-                        files.map(async (file) => {
-                            const convertedFile = await convertHeicToJpeg(file);
-                            const originalUrl = URL.createObjectURL(convertedFile);
-                            const res = await compressProductImage(convertedFile);
-                            return {
-                                file: convertedFile,
-                                dataUrl: res.dataUrl,
-                                previewUrl: res.dataUrl || originalUrl,
-                                originalSrc: originalUrl,
-                            };
-                        })
-                    );
-
-                    const nextFiles = [...imageFiles, ...processedList];
-                    const nextPreviews = [...imagePreviews, ...processedList.map((p) => p.previewUrl)];
-
-                    setImageFiles(nextFiles);
-                    setImagePreviews(nextPreviews);
-                }
-            } catch (err) {
-                console.error('[CreateListing] Photo selection processing error:', err);
-                setError('Failed to process selected photos. Please try again.');
+        // Validate each file
+        for (const file of files) {
+            const validation = validateImage(file);
+            if (!validation.valid) {
+                setError(validation.error);
+                return;
             }
         }
-        // Reset input value so same file can be selected again
+
+        try {
+            if (replaceIndex !== null) {
+                // Replacing a specific image
+                const file = files[0];
+                const convertedFile = await convertHeicToJpeg(file);
+                const processed = await compressProductImage(convertedFile);
+                const originalUrl = URL.createObjectURL(convertedFile);
+                const previewUrl = processed.dataUrl || originalUrl;
+
+                const newFiles = [...imageFiles];
+                newFiles[replaceIndex] = {
+                    file: convertedFile,
+                    dataUrl: processed.dataUrl,
+                    originalSrc: originalUrl,
+                };
+
+                const newPreviews = [...imagePreviews];
+                newPreviews[replaceIndex] = previewUrl;
+
+                setImageFiles(newFiles);
+                setImagePreviews(newPreviews);
+            } else {
+                // Adding new images directly to preview
+                const remainingSlots = 5 - imageFiles.length;
+                if (files.length > remainingSlots) {
+                    setError(`You can only add up to 5 photos. ${remainingSlots} slot(s) remaining.`);
+                    return;
+                }
+
+                const processedList = await Promise.all(
+                    files.map(async (file) => {
+                        const convertedFile = await convertHeicToJpeg(file);
+                        const originalUrl = URL.createObjectURL(convertedFile);
+                        const res = await compressProductImage(convertedFile);
+                        return {
+                            file: convertedFile,
+                            dataUrl: res.dataUrl,
+                            previewUrl: res.dataUrl || originalUrl,
+                            originalSrc: originalUrl,
+                        };
+                    })
+                );
+
+                const nextFiles = [...imageFiles, ...processedList];
+                const nextPreviews = [...imagePreviews, ...processedList.map((p) => p.previewUrl)];
+
+                setImageFiles(nextFiles);
+                setImagePreviews(nextPreviews);
+            }
+        } catch (err) {
+            console.error('[CreateListing] Photo selection processing error:', err);
+            setError('Failed to process selected photos. Please try again.');
+        }
+    };
+
+    // Fallback file input change handler
+    const handleFileChange = async (e, replaceIndex = null) => {
+        if (e.target.files && e.target.files.length > 0) {
+            await handleFilesSelected(Array.from(e.target.files), replaceIndex);
+        }
         e.target.value = '';
     };
 
@@ -524,14 +531,16 @@ export default function CreateListingPage() {
                                         <span>Crop</span>
                                     </button>
 
-                                    <label
+                                    <button
+                                        type="button"
+                                        disabled={loading}
+                                        onClick={() => setSourceModal({ isOpen: true, replaceIndex: index })}
                                         className={`bg-black/60 hover:bg-white/30 text-white backdrop-blur-md rounded-lg p-1 shadow-md transition-all cursor-pointer border border-white/20 active:scale-95 ${loading ? 'pointer-events-none opacity-50' : ''}`}
                                         title="Replace photo"
                                         aria-label="Replace photo"
                                     >
-                                        <input type="file" accept="image/*" disabled={loading} className="sr-only" onChange={(e) => handleFileChange(e, index)} />
                                         <DynamicLucideIcon name="sync" className="text-[12px]" />
-                                    </label>
+                                    </button>
                                 </div>
 
                                 {index === 0 && (
@@ -543,8 +552,12 @@ export default function CreateListingPage() {
                         ))}
 
                         {imageFiles.length < 5 && (
-                            <label className={`cursor-pointer block ${loading ? 'pointer-events-none opacity-50' : ''}`}>
-                                <input type="file" accept="image/*" multiple disabled={loading} onChange={handleFileChange} className="sr-only" />
+                            <button
+                                type="button"
+                                disabled={loading}
+                                onClick={() => setSourceModal({ isOpen: true, replaceIndex: null })}
+                                className={`cursor-pointer block text-left ${loading ? 'pointer-events-none opacity-50' : ''}`}
+                            >
                                 <div className="aspect-[4/3] w-full rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#2E2E32] flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:border-[#1daddd] hover:bg-[#1daddd]/5 active:scale-[0.98]">
                                     <div className="size-10 rounded-full bg-[#1daddd]/10 flex items-center justify-center text-[#1daddd]">
                                         <DynamicLucideIcon name="add_a_photo" />
@@ -554,11 +567,11 @@ export default function CreateListingPage() {
                                             {imageFiles.length === 0 ? 'Add Photo' : 'Add More'}
                                         </p>
                                         <p className="text-gray-400 text-[9px] font-medium mt-0.5">
-                                            {imageFiles.length}/5 Limit
+                                            Camera & Gallery
                                         </p>
                                     </div>
                                 </div>
-                            </label>
+                            </button>
                         )}
                     </div>
                 </section>
@@ -747,6 +760,15 @@ export default function CreateListingPage() {
                     </div>
                 </footer>
             </form>
+
+            {/* Photo Source Selector Modal (Camera vs Gallery) */}
+            <PhotoSourceModal
+                isOpen={sourceModal.isOpen}
+                onClose={() => setSourceModal({ isOpen: false, replaceIndex: null })}
+                onFilesSelected={handleFilesSelected}
+                replaceIndex={sourceModal.replaceIndex}
+                remainingSlots={5 - imageFiles.length}
+            />
 
             {/* Image Cropping Modal */}
             <ImageCropModal
