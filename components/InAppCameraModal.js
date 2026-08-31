@@ -318,7 +318,7 @@ export default function InAppCameraModal({
         <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-[10000] bg-white dark:bg-[#121619] font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none flex flex-col p-3 sm:p-4 max-w-lg mx-auto transition-colors"
+            className="fixed inset-0 z-[10000] bg-white dark:bg-[#121619] font-display antialiased w-screen h-[100dvh] max-h-[100dvh] overflow-hidden select-none flex flex-col pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] px-3 sm:px-4 max-w-lg mx-auto transition-colors"
         >
             {/* Hidden Canvas for High-Res Capture */}
             <canvas ref={canvasRef} className="hidden" />
