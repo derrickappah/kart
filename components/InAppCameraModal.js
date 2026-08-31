@@ -441,47 +441,53 @@ export default function InAppCameraModal({
                 <div className="relative z-10 p-2 pointer-events-none" />
 
                 {/* 3. BOTTOM FLOATING ACTION CONTROLS: [ ✕ Close ] [ ⚪ Shutter ] [ 🔄 Flip ] */}
-                <div className="relative z-20 pb-6 sm:pb-8 pt-8 px-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-around">
+                <div className="absolute bottom-0 inset-x-0 pb-8 sm:pb-10 pt-8 px-8 flex items-center justify-between z-20 pointer-events-auto">
                     
-                    {/* Left: Circular Translucent Close (✕) Button */}
+                    {/* Left: Circular Frosted Glass Close (✕) Button */}
                     <button
                         type="button"
                         onClick={onClose}
-                        className="size-14 sm:size-15 rounded-full bg-white/20 hover:bg-white/30 active:scale-90 text-white backdrop-blur-md flex items-center justify-center border border-white/30 shadow-xl transition-all cursor-pointer"
+                        className="size-[56px] sm:size-[62px] rounded-full bg-white/30 hover:bg-white/40 active:scale-90 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all cursor-pointer border-none"
                         title="Cancel"
                         aria-label="Cancel camera"
                     >
-                        <DynamicLucideIcon name="close" className="text-2xl text-white font-bold" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="size-6 sm:size-7 text-white">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                     </button>
 
-                    {/* Center: Large Iconic Shutter Button */}
+                    {/* Center: Iconic Shutter Button (Frosted outer rim + Solid white inner disk) */}
                     <button
                         type="button"
                         disabled={!cameraReady || isLimitReached || isCapturing}
                         onClick={takePhoto}
-                        className={`size-19 sm:size-21 rounded-full border-[5px] border-white p-1 flex items-center justify-center transition-all shadow-2xl active:scale-90 hover:scale-105 cursor-pointer ${
-                            isLimitReached
-                                ? 'opacity-40 cursor-not-allowed border-gray-500'
-                                : ''
+                        className={`size-[76px] sm:size-[82px] rounded-full p-[6px] sm:p-[7px] bg-white/35 backdrop-blur-md flex items-center justify-center transition-all shadow-xl active:scale-90 hover:scale-105 cursor-pointer border-none ${
+                            isLimitReached ? 'opacity-40 cursor-not-allowed' : ''
                         }`}
                         aria-label="Take photo"
                     >
                         <div
-                            className={`size-full rounded-full transition-all shadow-md ${
-                                isLimitReached ? 'bg-gray-500' : 'bg-white active:scale-95'
+                            className={`size-full rounded-full transition-all shadow-sm ${
+                                isLimitReached ? 'bg-gray-400' : 'bg-white active:scale-95'
                             }`}
                         />
                     </button>
 
-                    {/* Right: Circular Translucent Flip (🔄) Button */}
+                    {/* Right: Circular Frosted Glass Flip (🔄) Button */}
                     <button
                         type="button"
                         onClick={toggleFacingMode}
-                        className="size-14 sm:size-15 rounded-full bg-white/20 hover:bg-white/30 active:scale-90 text-white backdrop-blur-md flex items-center justify-center border border-white/30 shadow-xl transition-all cursor-pointer"
+                        className="size-[56px] sm:size-[62px] rounded-full bg-white/30 hover:bg-white/40 active:scale-90 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all cursor-pointer border-none"
                         title="Flip camera"
                         aria-label="Flip camera"
                     >
-                        <DynamicLucideIcon name="flip_camera_ios" className="text-2xl text-white font-bold" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="size-6 sm:size-7 text-white">
+                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                            <path d="M16 21h5v-5"/>
+                        </svg>
                     </button>
                 </div>
 
