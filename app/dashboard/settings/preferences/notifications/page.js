@@ -16,42 +16,60 @@ import {
 const supabase = createClient();
 
 const Toggle = ({ active, onToggle, label, description, icon, disabled = false }) => (
-  <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1E292B] rounded-2xl shadow-sm border border-transparent dark:border-slate-800 transition-all duration-200">
-    <div className="flex items-center gap-4">
+  <div
+    onClick={() => !disabled && onToggle()}
+    className={`flex items-center justify-between p-4 bg-white dark:bg-[#1E292B] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800/80 transition-all duration-200 cursor-pointer hover:border-slate-200 dark:hover:border-slate-700/80 select-none ${
+      disabled ? 'opacity-50 cursor-not-allowed' : ''
+    }`}
+  >
+    <div className="flex items-center gap-3.5 min-w-0 pr-3">
       <div
         aria-hidden="true"
-        className={`size-10 rounded-full flex items-center justify-center transition-colors ${active ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}
+        className={`size-10 rounded-2xl shrink-0 flex items-center justify-center transition-colors ${
+          active ? 'bg-[#1daddd]/10 text-[#1daddd]' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+        }`}
       >
-        <DynamicLucideIcon name={icon} />
+        <DynamicLucideIcon name={icon} size={20} />
       </div>
-      <div>
-        <p id={`toggle-label-${label.replace(/\s+/g,'-').toLowerCase()}`} className="font-bold text-slate-900 dark:text-white text-sm">{label}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
+      <div className="min-w-0">
+        <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{label}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">{description}</p>
       </div>
     </div>
     <button
+      type="button"
       role="switch"
       disabled={disabled}
       aria-checked={active}
-      aria-labelledby={`toggle-label-${label.replace(/\s+/g,'-').toLowerCase()}`}
-      onClick={onToggle}
-      className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${active ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      aria-label={label}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#1E292B] ${
+        active ? 'bg-[#1daddd]' : 'bg-slate-200 dark:bg-slate-700'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
-      <div className={`absolute top-1 left-1 size-4 bg-white rounded-full transition-transform duration-200 shadow-sm ${active ? 'translate-x-6' : 'translate-x-0'}`} />
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+          active ? 'translate-x-5' : 'translate-x-0'
+        }`}
+      />
     </button>
   </div>
 );
 
 const SkeletonToggle = () => (
-  <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1E292B] rounded-2xl border border-transparent dark:border-slate-800 animate-pulse">
-    <div className="flex items-center gap-4">
-      <div className="size-10 rounded-full bg-slate-200 dark:bg-slate-800" />
+  <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1E292B] rounded-2xl border border-slate-100 dark:border-slate-800/80 animate-pulse">
+    <div className="flex items-center gap-3.5">
+      <div className="size-10 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
       <div className="space-y-2">
-        <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded" />
-        <div className="h-3 w-48 bg-slate-200 dark:bg-slate-800 rounded" />
+        <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
+        <div className="h-3 w-44 bg-slate-200 dark:bg-slate-800 rounded" />
       </div>
     </div>
-    <div className="w-12 h-6 bg-slate-200 dark:bg-slate-800 rounded-full" />
+    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full shrink-0" />
   </div>
 );
 
