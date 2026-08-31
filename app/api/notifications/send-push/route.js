@@ -15,7 +15,7 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { user_id, title, message, related_order_id, type, url, data } = body;
+    const { user_id, title, message, related_order_id, type, url, data, force } = body;
 
     if (!user_id || !title || !message) {
       return NextResponse.json({ error: 'Missing required parameters: user_id, title, message' }, { status: 400 });
@@ -37,15 +37,28 @@ export async function POST(req) {
     }
 
     // Trigger push notification delivery
-    await triggerPushNotification(user_id, title, message, related_order_id, {
+    const result = await triggerPushNotification(user_id, title, message, related_order_id, {
       type: type || 'order',
       url: url || null,
-      data: data || {}
+      data: data || {},
+      force: force || (user && user.id === user_id) // Allow test pushes to same user to bypass category toggles
     });
 
-    return NextResponse.json({ success: true, message: 'Push notification triggered successfully' });
+    if (!result.success) {
+      return NextResponse.json({
+        success: false,
+        message: result.message || 'Push delivery failed',
+        result
+      }, { status: result.total === 0 ? 400 : 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: result.message || 'Push notification triggered successfully',
+      result
+    });
   } catch (err) {
     console.error('[Push API] Request error:', err.message);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
   }
 }

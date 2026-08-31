@@ -81,7 +81,7 @@ export default function NotificationSettingsPage() {
     setToast({ show: true, message, type });
     setTimeout(() => {
       setToast({ show: false, message: '', type: 'success' });
-    }, 4000);
+    }, 5000);
   };
 
   useEffect(() => {
@@ -167,7 +167,7 @@ export default function NotificationSettingsPage() {
   const handleSubscribe = async () => {
     if (!pushSupported || !profile) return;
     setRegisteringPush(true);
-    showToast('Enabling push notifications...', 'info');
+    showToast('Enrolling device for push notifications...', 'info');
 
     try {
       const result = await registerForPushNotifications({
@@ -186,7 +186,7 @@ export default function NotificationSettingsPage() {
       setIsSubscribed(true);
       const perm = await getPushPermissionStatus();
       setPushPermission(perm);
-      showToast('Push notifications enabled successfully!', 'success');
+      showToast('Push notifications successfully enabled on this device! You can now send a test notification.', 'success');
     } catch (err) {
       console.error('Error subscribing to push:', err);
       showToast(err.message || 'Push registration failed', 'error');
@@ -230,18 +230,20 @@ export default function NotificationSettingsPage() {
           title: 'Hello from KART! 🚀',
           message: 'Your push notifications are configured and active!',
           type: 'order',
-          url: '/dashboard/notifications'
+          url: '/dashboard/notifications',
+          force: true
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send test push notification');
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || data.error || 'Failed to send test push notification');
       }
 
-      showToast('Test push notification triggered!', 'success');
+      showToast(data.message || 'Test push notification delivered!', 'success');
     } catch (err) {
-      console.error(err);
+      console.error('[TestPush] Error:', err);
       showToast(err.message || 'Failed to trigger test push', 'error');
     } finally {
       setSendingTest(false);
@@ -335,7 +337,7 @@ export default function NotificationSettingsPage() {
                   <div>
                     <h4 className="text-amber-600 dark:text-amber-500 text-xs font-bold uppercase tracking-wider mb-0.5">Notification Permission Blocked</h4>
                     <p className="text-amber-700 dark:text-amber-500/80 text-xs font-medium leading-relaxed">
-                      Push notifications are blocked in your device/browser settings. Please allow notifications in your site settings, then reload.
+                      Push notifications are blocked in your browser permissions. Click the lock/site settings icon in your browser address bar to allow notifications, then reload.
                     </p>
                   </div>
                 </div>
@@ -413,7 +415,7 @@ export default function NotificationSettingsPage() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed top-6 left-1/2 -translate-x-1/2 z-[11000] animate-in slide-in-from-top-5 fade-in duration-300 px-4 w-full max-w-xs"
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-[11000] animate-in slide-in-from-top-5 fade-in duration-300 px-4 w-full max-w-sm"
         >
           <div className={`p-4 rounded-2xl flex items-center gap-3 shadow-xl border ${
             toast.type === 'success' 
