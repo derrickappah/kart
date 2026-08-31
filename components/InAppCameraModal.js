@@ -353,18 +353,8 @@ export default function InAppCameraModal({
                             </span>
                         </div>
 
-                        {/* Top Action: Done / Gallery Shortcut */}
+                        {/* Top Action: Done Button */}
                         <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => fileInputFallbackRef.current?.click()}
-                                className="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md text-white font-bold text-xs flex items-center gap-1.5 border border-white/15 transition-all shadow-md"
-                                title="Pick from gallery"
-                            >
-                                <DynamicLucideIcon name="image" className="text-sm" />
-                                <span>Gallery</span>
-                            </button>
-
                             {capturedPhotos.length > 0 && (
                                 <button
                                     type="button"
@@ -378,13 +368,13 @@ export default function InAppCameraModal({
                         </div>
                     </div>
 
-                    {/* Horizontal Scrolling Thumbnails Reel (Arranged at TOP) */}
+                    {/* Horizontal Scrolling Thumbnails Reel (Arranged at TOP with Squircle styling) */}
                     {capturedPhotos.length > 0 && (
-                        <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-2.5 py-1 animate-in slide-in-from-top-2 duration-200">
+                        <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-3 py-1.5 animate-in slide-in-from-top-2 duration-200">
                             {capturedPhotos.map((photo, idx) => (
                                 <div
                                     key={photo.id}
-                                    className="relative shrink-0 size-14 sm:size-16 rounded-2xl overflow-hidden border-2 border-white shadow-xl group animate-in zoom-in-90 duration-150"
+                                    className="relative shrink-0 size-15 sm:size-16 aspect-square rounded-[18px] sm:rounded-[20px] overflow-hidden border-2 border-white shadow-2xl group animate-in zoom-in-90 duration-150 ring-1 ring-black/20"
                                 >
                                     <img
                                         src={photo.previewUrl}
@@ -394,13 +384,13 @@ export default function InAppCameraModal({
                                     <button
                                         type="button"
                                         onClick={() => removeCapturedPhoto(idx)}
-                                        className="absolute top-1 right-1 size-5 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all z-10"
+                                        className="absolute top-1 right-1 size-5 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all z-10 border border-white/40"
                                         title="Delete photo"
                                         aria-label="Delete photo"
                                     >
                                         <DynamicLucideIcon name="close" className="text-[10px]" />
                                     </button>
-                                    <div className="absolute bottom-0.5 left-1 text-[9px] font-black text-white drop-shadow-md">
+                                    <div className="absolute bottom-1 left-1.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-md rounded-md text-[9px] font-black text-white drop-shadow-md">
                                         #{idx + 1}
                                     </div>
                                 </div>
