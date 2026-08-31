@@ -341,7 +341,7 @@ export default function ChatPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col h-[100dvh] max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#111d21] animate-pulse">
+            <div className="flex flex-col h-full w-full max-w-md mx-auto overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] animate-pulse">
                 {/* Header skeleton */}
                 <div className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
                     <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
@@ -361,7 +361,7 @@ export default function ChatPage() {
                     <div className="flex justify-end"><div className="h-20 w-52 bg-[#1daddd]/30 dark:bg-[#1daddd]/20 rounded-2xl" /></div>
                 </main>
                 {/* Footer skeleton */}
-                <div className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 flex items-center gap-3">
+                <div className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] flex items-center gap-3">
                     <div className="size-11 rounded-full bg-gray-100 dark:bg-gray-800" />
                     <div className="flex-1 h-11 bg-gray-100 dark:bg-gray-800 rounded-2xl" />
                     <div className="size-11 rounded-full bg-[#1daddd]/30 dark:bg-[#1daddd]/20" />
@@ -371,7 +371,7 @@ export default function ChatPage() {
     }
 
     return (
-        <div className="flex flex-col h-[100dvh] max-w-md mx-auto overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] text-[#111618] dark:text-gray-100 font-display">
+        <div className="flex flex-col h-full w-full max-w-md mx-auto overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] text-[#111618] dark:text-gray-100 font-display">
             <header className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-30 shadow-sm relative">
                 <button
                     onClick={() => router.back()}
@@ -570,7 +570,7 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
+            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] z-30 relative">
                 {/* Emoji Picker Popover */}
                 {showEmojiPicker && (
                     <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">

@@ -33,8 +33,8 @@ export default function PageTransition({ children }) {
   return (
     <div
       key={pathname}
-      className={isAnimating ? "page-slide-in" : ""}
-      style={{ minHeight: "100%", width: "100%" }}
+      className={isAnimating ? "page-slide-in h-full" : "h-full"}
+      style={{ height: "100%", minHeight: "100%", width: "100%" }}
     >
       {displayChildren}
     </div>
