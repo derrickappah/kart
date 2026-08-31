@@ -143,9 +143,9 @@ export async function createListingAction(listingData) {
                 else if (mimeLower.includes('gif')) { ext = 'gif'; contentType = 'image/gif'; }
                 else if (mimeLower.includes('bmp')) { ext = 'bmp'; contentType = 'image/bmp'; }
                 else if (mimeLower.includes('svg')) { ext = 'svg'; contentType = 'image/svg+xml'; }
-                else { ext = 'jpg'; contentType = 'image/jpeg'; }
-
-                const buffer = Buffer.from(base64String, 'base64');
+                // Sanitize base64 string from whitespace/newlines
+                const sanitizedBase64 = base64String.replace(/\s+/g, '');
+                const buffer = Buffer.from(sanitizedBase64, 'base64');
                 debugLog.push(`Image[${i}]: buffer size=${buffer.length} bytes`);
                 
                 if (!buffer || buffer.length === 0) {

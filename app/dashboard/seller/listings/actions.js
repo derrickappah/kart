@@ -76,7 +76,8 @@ export async function updateListingAction(productId, listingData) {
                     base64String = parts[1];
                 }
 
-                const buffer = Buffer.from(base64String, 'base64');
+                const sanitizedBase64 = base64String.replace(/\s+/g, '');
+                const buffer = Buffer.from(sanitizedBase64, 'base64');
                 const fileName = `${user.id}-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 7)}.${ext}`;
 
                 const { error: uploadErr } = await serviceClient.storage

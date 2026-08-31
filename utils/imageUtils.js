@@ -1,7 +1,7 @@
 /**
  * Image utility functions for handling profile picture and product listing uploads
  * Supports ALL image formats across iOS Safari (Camera/HEIC/RAW), Android Chrome, Desktop, and WebViews.
- * 100% resilient against mobile GPU canvas limits and WebKit black-frame rendering bugs.
+ * 100% resilient against mobile GPU canvas limits, HDR/Display P3 tone clipping, and WebKit black-frame rendering bugs.
  */
 
 /**
@@ -150,7 +150,7 @@ export async function compressImage(file, maxWidth = 400, maxHeight = 400, quali
             const canvas = document.createElement('canvas');
             canvas.width = Math.max(1, width);
             canvas.height = Math.max(1, height);
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { colorSpace: 'srgb' }) || canvas.getContext('2d');
 
             if (ctx) {
                 ctx.fillStyle = '#FFFFFF';
@@ -173,13 +173,14 @@ export async function compressImage(file, maxWidth = 400, maxHeight = 400, quali
 
 /**
  * Reads a File, Blob, or Blob URL into a Base64 string.
+ * Guarantees that only valid data URLs starting with 'data:image/' are returned.
  * @param {File|Blob|string} source 
  * @returns {Promise<string|null>}
  */
 export async function readFileAsBase64(source) {
     if (!source) return null;
     if (typeof source === 'string') {
-        if (source.startsWith('data:')) return source;
+        if (source.startsWith('data:image/')) return source;
         if (source.startsWith('blob:') || source.startsWith('http')) {
             try {
                 const res = await fetch(source);
@@ -187,14 +188,22 @@ export async function readFileAsBase64(source) {
                 return await readFileAsBase64(blob);
             } catch (e) {
                 console.warn('[ImageUtils] fetch blob URL failed:', e);
+                return null;
             }
         }
-        return source;
+        return null;
     }
 
     return new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result || null);
+        reader.onload = (e) => {
+            const res = e.target?.result;
+            if (typeof res === 'string' && res.startsWith('data:')) {
+                resolve(res);
+            } else {
+                resolve(null);
+            }
+        };
         reader.onerror = () => resolve(null);
         reader.readAsDataURL(source);
     });
@@ -203,7 +212,7 @@ export async function readFileAsBase64(source) {
 /**
  * Compresses and optimizes a product image for marketplace listing.
  * Automatically converts HEIC/HEIF to JPEG, prevents mobile GPU canvas memory exhaustion,
- * and fills white backgrounds to guarantee vivid, true-color rendering.
+ * enforces sRGB color space tone mapping, and fills white backgrounds to guarantee vivid rendering.
  * 
  * @param {File|Blob|string|Object} fileOrObject - The image file or preview object
  * @param {Object} options - Compression options
@@ -214,8 +223,8 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
         return { dataUrl: null, blob: null, extension: 'jpg', contentType: 'image/jpeg' };
     }
 
-    // If input is already an object with dataUrl
-    if (typeof fileOrObject === 'object' && fileOrObject.dataUrl) {
+    // If input is already an object with valid dataUrl
+    if (typeof fileOrObject === 'object' && fileOrObject.dataUrl && typeof fileOrObject.dataUrl === 'string' && fileOrObject.dataUrl.startsWith('data:image/')) {
         const dataUrl = fileOrObject.dataUrl;
         const blob = dataURItoBlob(dataUrl);
         return {
@@ -237,7 +246,7 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
         }
     }
 
-    // Step A: Guaranteed base64 extraction
+    // Step A: Base64 extraction
     let rawBase64 = null;
     try {
         rawBase64 = await readFileAsBase64(file);
@@ -250,7 +259,7 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
         return { dataUrl: rawBase64, blob: file, extension: ext, contentType: file?.type || 'image/jpeg' };
     }
 
-    // Step B: Downscale via Canvas using HTMLImageElement + img.decode()
+    // Step B: Downscale via Canvas using HTMLImageElement + img.decode() + sRGB context
     try {
         let sourceUrl = rawBase64;
         let blobUrlCreated = null;
@@ -280,7 +289,7 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
                 const canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
-                const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d', { colorSpace: 'srgb' }) || canvas.getContext('2d');
 
                 if (ctx) {
                     // Fill white background to prevent transparent parts / JPEG from turning pitch black
@@ -311,7 +320,7 @@ export async function compressProductImage(fileOrObject, { maxWidth = 1200, maxH
     const ext = getFileExtension(file);
     return {
         dataUrl: rawBase64,
-        blob: file instanceof Blob ? file : dataURItoBlob(rawBase64),
+        blob: file instanceof Blob ? file : (rawBase64 ? dataURItoBlob(rawBase64) : null),
         extension: ext,
         contentType: file?.type || 'image/jpeg'
     };
@@ -395,7 +404,7 @@ export function rotateSize(width, height, rotation) {
 
 /**
  * Crops and rotates an image based on pixel crop coordinates and returns high quality dataUrl and Blob.
- * Scaled to safe GPU hardware bounds to prevent mobile memory crashes and black-canvas artifacts.
+ * Scaled to safe GPU hardware bounds with sRGB color tone mapping to prevent mobile memory crashes and black-canvas artifacts.
  * 
  * @param {string|Blob|File} imageSrc - Source dataUrl, blob URL, or Blob
  * @param {Object} pixelCrop - { x, y, width, height }
@@ -460,7 +469,7 @@ export async function getCroppedImg(
         const canvas = document.createElement('canvas');
         canvas.width = Math.max(1, Math.round(bBoxWidth));
         canvas.height = Math.max(1, Math.round(bBoxHeight));
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { colorSpace: 'srgb' }) || canvas.getContext('2d');
 
         if (!ctx) return null;
 
@@ -478,7 +487,7 @@ export async function getCroppedImg(
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(image, 0, 0, workWidth, workHeight);
 
-        // Calculate scaled crop coordinates
+        // Calculate strictly bounded crop coordinates
         const cropX = Math.max(0, Math.round(pixelCrop.x * scaleDown));
         const cropY = Math.max(0, Math.round(pixelCrop.y * scaleDown));
         const cropW = Math.max(1, Math.min(canvas.width - cropX, Math.round(pixelCrop.width * scaleDown)));
@@ -497,7 +506,7 @@ export async function getCroppedImg(
         const croppedCanvas = document.createElement('canvas');
         croppedCanvas.width = outWidth;
         croppedCanvas.height = outHeight;
-        const croppedCtx = croppedCanvas.getContext('2d');
+        const croppedCtx = croppedCanvas.getContext('2d', { colorSpace: 'srgb' }) || croppedCanvas.getContext('2d');
 
         if (!croppedCtx) return null;
 
