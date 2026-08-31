@@ -264,7 +264,14 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            setNotifications((prev) => [payload.new, ...prev]);
+            if (!payload.new) return;
+            setNotifications((prev) => {
+              // Avoid replacing or duplicating if notification with same ID arrives
+              if (prev.some((n) => n.id === payload.new.id)) {
+                return prev.map((n) => (n.id === payload.new.id ? payload.new : n));
+              }
+              return [payload.new, ...prev];
+            });
             setUnreadCount((prev) => prev + 1);
             setNewArrivals((prev) => prev + 1);
           }

@@ -388,7 +388,7 @@ export default function ChatPage() {
             )}
 
             {/* Chat Area */}
-            <main className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 scroll-smooth flex flex-col">
+            <main className="flex-1 overflow-y-auto overscroll-contain no-scrollbar px-4 pb-4 scroll-smooth flex flex-col">
                 {[...messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).map((msg, index, sortedMessages) => {
                     const isMe = msg.sender_id === currentUser?.id;
                     const prevMsg = index > 0 ? sortedMessages[index - 1] : null;
@@ -520,7 +520,7 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
+            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-30 relative">
                 {/* Emoji Picker Popover */}
                 {showEmojiPicker && (
                     <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">

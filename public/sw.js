@@ -24,12 +24,13 @@ self.addEventListener('push', function (event) {
     const title = data.title || 'KART Notification';
     const notificationIcon = data.icon || data.data?.avatarUrl || data.data?.avatar_url || '/icon.png';
 
+    // Stacking Configuration:
+    // Omit 'tag' and 'renotify' so the browser does NOT replace, overwrite, or dismiss older notifications.
+    // Every notification will stack independently in the system notification center / tray.
     const options = {
       body: data.body || '',
       icon: notificationIcon,
       badge: data.badge || '/icon.png',
-      tag: data.tag || data.data?.tag || `kart-notif-${Date.now()}`,
-      renotify: true,
       vibrate: [100, 50, 100],
       data: {
         url: data.data?.url || data.url || '/dashboard/notifications',

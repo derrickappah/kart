@@ -105,9 +105,12 @@ export default function ConversationList() {
 
 
     return (
-        <div className="bg-white dark:bg-[#242428] font-display antialiased min-h-screen">
-            <div className="max-w-[440px] mx-auto min-h-screen flex flex-col">
-                <header className="sticky top-16 z-40 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
+        <div
+            className="bg-white dark:bg-[#242428] font-display antialiased flex flex-col overflow-hidden w-full"
+            style={{ height: 'calc(100dvh - 4rem - max(66px, calc(50px + env(safe-area-inset-bottom, 0px))))' }}
+        >
+            <div className="max-w-[440px] w-full mx-auto flex flex-col h-full overflow-hidden">
+                <header className="flex-none z-40 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
                     {conversations.length > 0 ? (
                         <SearchBar
                             placeholder="Search conversations..."
@@ -130,7 +133,7 @@ export default function ConversationList() {
                     )}
                 </header>
 
-                <main className="flex-1 px-4 pt-2 pb-32">
+                <main className="flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-6">
                 {searchQuery.trim() && (
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-3">
                         <span>

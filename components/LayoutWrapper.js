@@ -183,7 +183,7 @@ export default function LayoutWrapper({ children }) {
             <AppDeepLinkHandler />
             {!isEditingPage && <Navbar user={user} />}
             <main className={`overflow-x-clip bg-white dark:bg-[#242428] ${paddingClass}`}>
-                <PullToRefresh onRefresh={handleRefresh} disabled={isEditingPage}>
+                <PullToRefresh onRefresh={handleRefresh} disabled={isEditingPage || pathname === '/dashboard/messages'}>
                     <PageTransition>
                         {children}
                     </PageTransition>
