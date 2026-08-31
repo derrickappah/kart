@@ -392,18 +392,33 @@ export default function InAppCameraModal({
 
                 {/* 2. Shutter & Action Bar */}
                 <div className="flex items-center justify-between px-3 sm:px-6">
-                    {/* Left: Gallery Shortcut */}
-                    <button
-                        type="button"
-                        onClick={() => fileInputFallbackRef.current?.click()}
-                        className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition-all"
-                        title="Upload from gallery"
-                    >
-                        <div className="size-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
-                            <DynamicLucideIcon name="image" className="text-xl" />
-                        </div>
-                        <span className="text-[10px] font-bold">Gallery</span>
-                    </button>
+                    {/* Left: Gallery Shortcut & Flip Camera */}
+                    <div className="flex items-center gap-2.5">
+                        <button
+                            type="button"
+                            onClick={() => fileInputFallbackRef.current?.click()}
+                            className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition-all"
+                            title="Upload from gallery"
+                        >
+                            <div className="size-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
+                                <DynamicLucideIcon name="image" className="text-xl" />
+                            </div>
+                            <span className="text-[10px] font-bold">Gallery</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={toggleFacingMode}
+                            className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition-all"
+                            title="Switch front/back camera"
+                            aria-label="Switch camera"
+                        >
+                            <div className="size-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
+                                <DynamicLucideIcon name="flip_camera_ios" className="text-xl" />
+                            </div>
+                            <span className="text-[10px] font-bold">Flip</span>
+                        </button>
+                    </div>
 
                     {/* Center: Camera Shutter Button */}
                     <div className="flex flex-col items-center gap-1">
