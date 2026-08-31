@@ -7,10 +7,11 @@ import { dataURItoBlob } from '@/utils/imageUtils';
 /**
  * In-App Live Camera Viewfinder Modal
  * 
- * Features:
+ * Styled with a clean, system-matching white theme:
+ * - Pure white system modal background (dark mode adaptive)
  * - Top space dedicated to the squircle photo strip and progress
- * - Camera viewfinder frame starts immediately below the top reel and fills available height
- * - Sleek circular action buttons: [ ✕ Close ] [ ⚪ Shutter ] [ 🔄 Flip ]
+ * - Camera viewfinder frame starts immediately below the top reel
+ * - Sleek circular floating action buttons: [ ✕ Close ] [ ⚪ Shutter ] [ 🔄 Flip ]
  * 
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether the camera viewfinder is visible
@@ -317,7 +318,7 @@ export default function InAppCameraModal({
         <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-[10000] bg-neutral-950 font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none flex flex-col p-3 sm:p-4 max-w-lg mx-auto"
+            className="fixed inset-0 z-[10000] bg-white dark:bg-[#121619] font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none flex flex-col p-3 sm:p-4 max-w-lg mx-auto transition-colors"
         >
             {/* Hidden Canvas for High-Res Capture */}
             <canvas ref={canvasRef} className="hidden" />
@@ -343,9 +344,9 @@ export default function InAppCameraModal({
             <div className="shrink-0 w-full flex flex-col gap-2.5 pt-1 pb-2 z-50">
                 {/* Top Controls: Photo Count Pill + Done Button */}
                 <div className="flex items-center justify-between px-1">
-                    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 shadow-md">
+                    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 shadow-xs">
                         <span className="size-2 rounded-full bg-[#1daddd] animate-pulse" />
-                        <span className="text-xs font-black tracking-wide text-white">
+                        <span className="text-xs font-black tracking-wide text-gray-800 dark:text-white">
                             {capturedPhotos.length} / {effectiveLimit} Photos
                         </span>
                     </div>
@@ -368,7 +369,7 @@ export default function InAppCameraModal({
                         {capturedPhotos.map((photo, idx) => (
                             <div
                                 key={photo.id}
-                                className="relative shrink-0 size-14 sm:size-15 aspect-square rounded-[18px] overflow-hidden border-2 border-white shadow-xl group animate-in zoom-in-90 duration-150 ring-1 ring-black/30"
+                                className="relative shrink-0 size-14 sm:size-15 aspect-square rounded-[18px] overflow-hidden border-2 border-white dark:border-white/80 shadow-md group animate-in zoom-in-90 duration-150 ring-1 ring-black/10 dark:ring-black/30"
                             >
                                 <img
                                     src={photo.previewUrl}
@@ -394,7 +395,7 @@ export default function InAppCameraModal({
             </div>
 
             {/* 2. CAMERA FRAME (Starts immediately under the top reel and fills height) */}
-            <div className="flex-1 min-h-0 w-full rounded-[32px] sm:rounded-[38px] overflow-hidden bg-neutral-900 border border-white/15 shadow-2xl relative flex flex-col justify-between">
+            <div className="flex-1 min-h-0 w-full rounded-[32px] sm:rounded-[38px] overflow-hidden bg-neutral-900 border border-gray-200/60 dark:border-white/15 shadow-2xl relative flex flex-col justify-between">
                 
                 {/* Live Video Stream Viewport */}
                 <div className="absolute inset-0 z-0 flex items-center justify-center bg-neutral-950 overflow-hidden">
