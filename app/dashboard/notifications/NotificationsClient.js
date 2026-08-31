@@ -537,12 +537,20 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
 
                   {/* ── Icon / Avatar ────────────────────────────────────── */}
                   <span aria-hidden="true" className="shrink-0">
-                    <span className="size-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[#387d94] group-hover:scale-105 transition-transform">
-                      <DynamicLucideIcon
-                        name={getIconForType(notification.type)}
-                        size={22}
+                    {notification.data?.avatar_url || notification.avatar_url || notification.data?.avatarUrl ? (
+                      <img
+                        src={notification.data?.avatar_url || notification.avatar_url || notification.data?.avatarUrl}
+                        alt=""
+                        className="size-12 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm group-hover:scale-105 transition-transform"
                       />
-                    </span>
+                    ) : (
+                      <span className="size-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[#387d94] group-hover:scale-105 transition-transform">
+                        <DynamicLucideIcon
+                          name={getIconForType(notification.type)}
+                          size={22}
+                        />
+                      </span>
+                    )}
                   </span>
 
                   {/* ── Content ──────────────────────────────────────────── */}

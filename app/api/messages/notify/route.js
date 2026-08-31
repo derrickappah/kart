@@ -41,21 +41,23 @@ export async function POST(req) {
       return NextResponse.json({ success: true, message: 'No other participant to notify' });
     }
 
-    // 2. Fetch sender profile display name
+    // 2. Fetch sender profile display name and avatar photo
     const { data: senderProfile } = await adminClient
       .from('profiles')
-      .select('display_name, full_name')
+      .select('display_name, full_name, avatar_url')
       .eq('id', user.id)
       .maybeSingle();
 
     const senderName = senderProfile?.display_name || senderProfile?.full_name || 'Someone on KART';
+    const senderAvatar = senderProfile?.avatar_url || null;
+
     const cleanContent = messageContent.startsWith('http') && (messageContent.includes('storage') || messageContent.includes('chat-attachments'))
       ? '📷 Sent an attachment'
       : messageContent.length > 100 ? `${messageContent.slice(0, 97)}...` : messageContent;
 
     const title = `Message from ${senderName}`;
 
-    // 3. Create in-app notification & dispatch push notification
+    // 3. Create in-app notification & dispatch push notification with profile photo
     try {
       await createNotification(adminClient, {
         userId: recipientId,
@@ -63,17 +65,33 @@ export async function POST(req) {
         title: title,
         message: cleanContent,
         relatedOrderId: null,
+        options: {
+          icon: senderAvatar || '/icon.png',
+          avatarUrl: senderAvatar,
+          url: `/dashboard/messages/${conversationId}`,
+          data: {
+            conversation_id: conversationId,
+            avatar_url: senderAvatar,
+            sender_id: user.id
+          }
+        }
       });
     } catch (notifErr) {
       console.warn('[Message Notify] createNotification error, falling back to direct push:', notifErr.message);
       await triggerPushNotification(recipientId, title, cleanContent, null, {
         type: 'message',
+        icon: senderAvatar || '/icon.png',
+        avatarUrl: senderAvatar,
         url: `/dashboard/messages/${conversationId}`,
-        data: { conversationId }
+        data: {
+          conversation_id: conversationId,
+          avatar_url: senderAvatar,
+          sender_id: user.id
+        }
       });
     }
 
-    return NextResponse.json({ success: true, message: 'Push notification triggered for recipient' });
+    return NextResponse.json({ success: true, message: 'Push notification triggered with sender profile photo' });
   } catch (err) {
     console.error('[Message Notify] Error:', err.message);
     return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });

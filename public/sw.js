@@ -22,18 +22,25 @@ self.addEventListener('push', function (event) {
     }
 
     const title = data.title || 'KART Notification';
+    const notificationIcon = data.icon || data.data?.avatarUrl || data.data?.avatar_url || '/icon.png';
+
     const options = {
       body: data.body || '',
-      icon: data.icon || '/icon-192x192.png',
-      badge: data.badge || '/icon-192x192.png',
-      tag: data.tag || data.data?.tag || 'kart-notification',
+      icon: notificationIcon,
+      badge: data.badge || '/icon.png',
+      tag: data.tag || data.data?.tag || `kart-notif-${Date.now()}`,
       renotify: true,
       vibrate: [100, 50, 100],
       data: {
         url: data.data?.url || data.url || '/dashboard/notifications',
+        avatarUrl: notificationIcon,
         ...(data.data || {})
       }
     };
+
+    if (data.image) {
+      options.image = data.image;
+    }
 
     if (data.actions && Array.isArray(data.actions)) {
       options.actions = data.actions;
