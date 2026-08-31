@@ -2,9 +2,11 @@
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useUnreadMessagesCount } from '@/app/hooks/useUnreadMessagesCount';
 
 export default function MobileBottomNav({ user }) {
     const pathname = usePathname();
+    const { unreadCount } = useUnreadMessagesCount(user);
     const isAdminPage = pathname?.startsWith('/dashboard/admin');
 
     if (isAdminPage) return null;
@@ -52,9 +54,22 @@ export default function MobileBottomNav({ user }) {
                 </div>
 
                 {/* Messages */}
-                <Link href="/dashboard/messages" prefetch={true} className="group flex flex-col items-center -ml-8">
-                    <div className={`w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                <Link 
+                    href="/dashboard/messages" 
+                    prefetch={true} 
+                    className="group flex flex-col items-center -ml-8"
+                    aria-label={unreadCount > 0 ? `Messages (${unreadCount > 99 ? '99+' : unreadCount} unread)` : 'Messages'}
+                >
+                    <div className={`relative w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
                         <DynamicLucideIcon name="chat_bubble" size={26} strokeWidth={isActive('/dashboard/messages') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/dashboard/messages') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                        {unreadCount > 0 && (
+                            <span
+                                aria-hidden="true"
+                                className="absolute top-0.5 right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#242428] shadow-sm animate-in fade-in zoom-in duration-200"
+                            >
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
                     </div>
                 </Link>
 

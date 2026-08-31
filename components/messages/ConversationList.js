@@ -42,18 +42,28 @@ const fetchConversations = async () => {
 
     const enrichedConvs = await Promise.all(convsToProcess.map(async (c) => {
         const otherUserId = c.participants?.find(p => p !== user.id);
-        const lastMsgResult = await supabase
-            .from('messages')
-            .select('content, created_at')
-            .eq('conversation_id', c.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+        const [lastMsgResult, unreadCountResult] = await Promise.all([
+            supabase
+                .from('messages')
+                .select('content, created_at, sender_id, is_read')
+                .eq('conversation_id', c.id)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle(),
+            supabase
+                .from('messages')
+                .select('*', { count: 'exact', head: true })
+                .eq('conversation_id', c.id)
+                .neq('sender_id', user.id)
+                .eq('is_read', false)
+        ]);
+
         return {
             ...c,
             otherUser: profilesMap[otherUserId] || { display_name: 'Unknown User', email: '', avatar_url: null },
             product: productsMap[c.product_id] || null,
-            lastMessage: lastMsgResult.data
+            lastMessage: lastMsgResult.data,
+            unreadCount: unreadCountResult.count || 0
         };
     }));
 
@@ -66,17 +76,17 @@ export default function ConversationList() {
 
     const { data, isLoading, mutate } = useSWR('conversations', fetchConversations, {
         revalidateOnFocus: true,
-        dedupingInterval: 5000,
+        dedupingInterval: 4000,
     });
 
     const conversations = data?.conversations || [];
 
-    // Real-time subscription that invalidates the SWR cache on new messages/conversations
+    // Real-time subscription that invalidates the SWR cache on new messages/conversations/read status changes
     useEffect(() => {
         const channel = supabase
             .channel('public:conversations')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => mutate())
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => mutate())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => mutate())
             .subscribe();
         return () => { supabase.removeChannel(channel); };
     }, [mutate]);
@@ -188,31 +198,40 @@ export default function ConversationList() {
                 ) : (
                     filteredConversations.map(conv => {
                         const isActive = pathname === `/dashboard/messages/${conv.id}`;
+                        const isUnread = (conv.unreadCount || 0) > 0;
+
                         return (
                             <Link key={conv.id} href={`/dashboard/messages/${conv.id}`} className="block no-underline">
-                                <div className={`group relative flex items-center gap-4 p-4 mb-2 rounded-xl transition-all active:scale-[0.98] border border-gray-100 dark:border-gray-800 cursor-pointer ${isActive ? 'bg-gray-50 dark:bg-[#232628] shadow-sm' : 'bg-white dark:bg-[#232628] shadow-sm hover:border-gray-200 dark:hover:border-gray-700'}`}>
+                                <div className={`group relative flex items-center gap-4 p-4 mb-2 rounded-xl transition-all active:scale-[0.98] border border-gray-100 dark:border-gray-800 cursor-pointer ${isActive ? 'bg-gray-50 dark:bg-[#232628] shadow-sm' : isUnread ? 'bg-sky-50/40 dark:bg-sky-950/20 shadow-sm border-sky-100 dark:border-sky-900/30' : 'bg-white dark:bg-[#232628] shadow-sm hover:border-gray-200 dark:hover:border-gray-700'}`}>
                                     <div className="relative shrink-0">
                                         <div className="size-14 rounded-full bg-center bg-cover border-2 border-white dark:border-[#242428] shadow-sm overflow-hidden flex items-center justify-center bg-slate-200 dark:bg-slate-700">
                                             {conv.otherUser.avatar_url ? (
-                                                <img src={conv.otherUser.avatar_url} alt={conv.otherUser.display_name} className="w-full h-full object-cover" />
+                                                 <img src={conv.otherUser.avatar_url} alt={conv.otherUser.display_name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <span className="text-lg font-bold text-slate-500 uppercase">{conv.otherUser.display_name?.[0]}</span>
+                                                 <span className="text-lg font-bold text-slate-500 uppercase">{conv.otherUser.display_name?.[0]}</span>
                                             )}
                                         </div>
                                         <div className="absolute bottom-0 right-0 size-3.5 bg-green-500 border-2 border-white dark:border-[#242428] rounded-full"></div>
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-0.5">
-                                            <span className="text-base font-semibold text-[#111618] dark:text-white truncate">{conv.otherUser.display_name}</span>
-                                            <span className={`text-[12px] ${isActive ? 'font-semibold text-[#1daddd]' : 'font-normal text-[#5e7d87] dark:text-gray-500'}`}>
+                                            <span className={`text-base truncate ${isUnread ? 'font-bold text-gray-900 dark:text-white' : 'font-semibold text-[#111618] dark:text-white'}`}>
+                                                {conv.otherUser.display_name}
+                                            </span>
+                                            <span className={`text-[12px] ${isActive || isUnread ? 'font-semibold text-[#1daddd]' : 'font-normal text-[#5e7d87] dark:text-gray-500'}`}>
                                                 {timeAgo(conv.updated_at)}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
-                                            <p className={`text-sm line-clamp-1 ${isActive ? 'font-medium text-[#111618] dark:text-gray-300' : 'text-[#5e7d87] dark:text-gray-400'}`}>
+                                            <p className={`text-sm line-clamp-1 ${isUnread ? 'font-semibold text-gray-900 dark:text-gray-100' : isActive ? 'font-medium text-[#111618] dark:text-gray-300' : 'text-[#5e7d87] dark:text-gray-400'}`}>
                                                 {conv.lastMessage?.content || 'No messages yet'}
                                             </p>
-                                            {isActive && (
+                                            {isUnread && (
+                                                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm shrink-0">
+                                                    {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
+                                                </span>
+                                            )}
+                                            {!isUnread && isActive && (
                                                 <div className="size-2.5 bg-[#1daddd] rounded-full shrink-0 animate-pulse"></div>
                                             )}
                                         </div>
