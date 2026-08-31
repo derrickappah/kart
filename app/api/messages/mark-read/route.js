@@ -17,7 +17,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Missing conversationId' }, { status: 400 });
     }
 
-    const adminClient = createServiceRoleClient ? await createServiceRoleClient() : supabase;
+    const adminClient = createServiceRoleClient ? createServiceRoleClient() : supabase;
 
     // Verify conversation exists and user is a participant
     const { data: conversation, error: convError } = await adminClient
@@ -35,17 +35,28 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Mark unread messages sent by others in this conversation as read
+    // Mark ALL messages from other senders in this conversation as read (handles is_read = false and is_read IS NULL)
     const { error: updateError, count } = await adminClient
       .from('messages')
       .update({ is_read: true })
       .eq('conversation_id', conversationId)
-      .neq('sender_id', user.id)
-      .eq('is_read', false);
+      .neq('sender_id', user.id);
 
     if (updateError) {
       console.error('[Mark Read] DB Error:', updateError);
       return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    // Also mark any message-related in-app notifications for this conversation as read
+    try {
+      await adminClient
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('type', 'message')
+        .eq('is_read', false);
+    } catch (notifErr) {
+      console.warn('[Mark Read] Non-critical notification update warning:', notifErr.message);
     }
 
     return NextResponse.json({ success: true, count: count ?? 0 });

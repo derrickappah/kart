@@ -1,8 +1,9 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { mutate } from 'swr';
+import { mutate as globalMutate } from 'swr';
 import { createClient } from '../../../../utils/supabase/client';
+import { broadcastMessagesRead } from '@/app/hooks/useUnreadMessagesCount';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ReportModal from '../../../../components/ReportModal';
@@ -30,20 +31,39 @@ export default function ChatPage() {
     const fileInputRef = useRef(null);
     const textareaRef = useRef(null);
 
-    const markConversationAsRead = useCallback(async (convId) => {
+    const markConversationAsRead = useCallback(async (convId, userId) => {
         if (!convId || convId === 'new') return;
+        
+        // 1. Immediately broadcast locally to clear badges in UI
+        broadcastMessagesRead(convId);
+
+        // 2. Direct client-side Supabase update for immediate latency-free DB write
+        if (userId) {
+            try {
+                supabase
+                    .from('messages')
+                    .update({ is_read: true })
+                    .eq('conversation_id', convId)
+                    .neq('sender_id', userId)
+                    .then();
+            } catch {}
+        }
+
+        // 3. Authoritative server API call (bypasses RLS, handles notifications)
         try {
             await fetch('/api/messages/mark-read', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ conversationId: convId }),
             });
-            mutate('/api/messages/unread-count');
-            mutate('conversations');
         } catch (e) {
-            console.error('[ChatPage] mark-as-read error:', e);
+            console.error('[ChatPage] mark-as-read API error:', e);
         }
-    }, []);
+
+        // 4. Invalidate global SWR caches
+        globalMutate('/api/messages/unread-count');
+        globalMutate('conversations');
+    }, [supabase]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -148,8 +168,8 @@ export default function ChatPage() {
 
                 if (isMounted) {
                     setLoading(false);
-                    // Mark messages as read
-                    markConversationAsRead(conversationId);
+                    // Mark messages as read immediately
+                    markConversationAsRead(conversationId, user.id);
                 }
             } catch (error) {
                 console.error("DEBUG: ChatPage init error:", error);
@@ -176,14 +196,26 @@ export default function ChatPage() {
 
                     // If new incoming message from the other user, mark as read
                     if (currentUser && payload.new.sender_id !== currentUser.id) {
-                        markConversationAsRead(conversationId);
+                        markConversationAsRead(conversationId, currentUser.id);
                     }
                 })
                 .subscribe();
         }
 
+        // Window focus and visibility listener to clear badges on app switch/focus
+        const handleFocusOrVisible = () => {
+            if (document.visibilityState === 'visible' && currentUser && conversationId && conversationId !== 'new') {
+                markConversationAsRead(conversationId, currentUser.id);
+            }
+        };
+
+        window.addEventListener('focus', handleFocusOrVisible);
+        document.addEventListener('visibilitychange', handleFocusOrVisible);
+
         return () => {
             isMounted = false;
+            window.removeEventListener('focus', handleFocusOrVisible);
+            document.removeEventListener('visibilitychange', handleFocusOrVisible);
             if (channel) supabase.removeChannel(channel);
         };
     }, [conversationId, router, supabase, sellerId, markConversationAsRead, currentUser]);
@@ -261,7 +293,8 @@ export default function ChatPage() {
                     {
                         conversation_id: activeConversationId,
                         sender_id: currentUser.id,
-                        content: content
+                        content: content,
+                        is_read: false
                     }
                 ])
                 .select()
@@ -439,16 +472,14 @@ export default function ChatPage() {
 
                     // Border Radius Logic
                     const topRadiusClass = isMe
-                        ? (isContinuedFromPrev ? 'rounded-tr-sm' : 'rounded-tr-2xl') // Right side (Me)
-                        : (isContinuedFromPrev ? 'rounded-tl-sm' : 'rounded-tl-2xl'); // Left side (Other)
+                        ? (isContinuedFromPrev ? 'rounded-tr-sm' : 'rounded-tr-2xl')
+                        : (isContinuedFromPrev ? 'rounded-tl-sm' : 'rounded-tl-2xl');
 
                     const bottomRadiusClass = isMe
                         ? (isContinuedToNext ? 'rounded-br-sm' : 'rounded-br-none')
                         : (isContinuedToNext ? 'rounded-bl-sm' : 'rounded-bl-none');
 
                     const bubbleShapeClass = `rounded-2xl ${topRadiusClass} ${bottomRadiusClass}`;
-
-                    // Margin Logic: Tight if continued from prev, else wide
                     const marginTopClass = isContinuedFromPrev ? 'mt-[2px]' : 'mt-3';
 
                     // Time Divider Logic
@@ -470,7 +501,6 @@ export default function ChatPage() {
                             <div className={`flex items-end gap-1.5 group ${isMe ? 'justify-end' : 'justify-start'} ${marginTopClass}`}>
                                 {!isMe && (
                                     <div className="w-8 shrink-0 flex flex-col justify-end">
-                                        {/* Show avatar only at the BOTTOM of the group (visually aligned with last message) */}
                                         {!isContinuedToNext ? (
                                             <div
                                                 className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center shadow-sm"

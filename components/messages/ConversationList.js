@@ -1,8 +1,9 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import useSWR from 'swr';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '../../utils/supabase/client';
+import { broadcastMessagesRead } from '@/app/hooks/useUnreadMessagesCount';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SearchBar from '../SearchBar';
@@ -55,7 +56,7 @@ const fetchConversations = async () => {
                 .select('*', { count: 'exact', head: true })
                 .eq('conversation_id', c.id)
                 .neq('sender_id', user.id)
-                .eq('is_read', false)
+                .or('is_read.eq.false,is_read.is.null')
         ]);
 
         return {
@@ -76,10 +77,34 @@ export default function ConversationList() {
 
     const { data, isLoading, mutate } = useSWR('conversations', fetchConversations, {
         revalidateOnFocus: true,
-        dedupingInterval: 4000,
+        revalidateOnMount: true,
+        revalidateOnReconnect: true,
+        dedupingInterval: 500,
     });
 
     const conversations = data?.conversations || [];
+
+    // Handle local read broadcast from any opened chat
+    useEffect(() => {
+        const handleLocalRead = (event) => {
+            const convId = event.detail?.conversationId;
+            if (convId) {
+                mutate((prev) => {
+                    if (!prev) return prev;
+                    return {
+                        ...prev,
+                        conversations: (prev.conversations || []).map(c => 
+                            c.id === convId ? { ...c, unreadCount: 0 } : c
+                        )
+                    };
+                }, false);
+            }
+            mutate();
+        };
+
+        window.addEventListener('kart:messages-read', handleLocalRead);
+        return () => window.removeEventListener('kart:messages-read', handleLocalRead);
+    }, [mutate]);
 
     // Real-time subscription that invalidates the SWR cache on new messages/conversations/read status changes
     useEffect(() => {
@@ -89,6 +114,19 @@ export default function ConversationList() {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => mutate())
             .subscribe();
         return () => { supabase.removeChannel(channel); };
+    }, [mutate]);
+
+    const handleSelectConversation = useCallback((convId) => {
+        broadcastMessagesRead(convId);
+        mutate((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                conversations: (prev.conversations || []).map(c => 
+                    c.id === convId ? { ...c, unreadCount: 0 } : c
+                )
+            };
+        }, false);
     }, [mutate]);
 
     const timeAgo = (date) => {
@@ -111,8 +149,6 @@ export default function ConversationList() {
         conv.otherUser.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         conv.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-
 
     return (
         <div
@@ -201,7 +237,12 @@ export default function ConversationList() {
                         const isUnread = (conv.unreadCount || 0) > 0;
 
                         return (
-                            <Link key={conv.id} href={`/dashboard/messages/${conv.id}`} className="block no-underline">
+                            <Link 
+                                key={conv.id} 
+                                href={`/dashboard/messages/${conv.id}`} 
+                                className="block no-underline"
+                                onClick={() => handleSelectConversation(conv.id)}
+                            >
                                 <div className={`group relative flex items-center gap-4 p-4 mb-2 rounded-xl transition-all active:scale-[0.98] border border-gray-100 dark:border-gray-800 cursor-pointer ${isActive ? 'bg-gray-50 dark:bg-[#232628] shadow-sm' : isUnread ? 'bg-sky-50/40 dark:bg-sky-950/20 shadow-sm border-sky-100 dark:border-sky-900/30' : 'bg-white dark:bg-[#232628] shadow-sm hover:border-gray-200 dark:hover:border-gray-700'}`}>
                                     <div className="relative shrink-0">
                                         <div className="size-14 rounded-full bg-center bg-cover border-2 border-white dark:border-[#242428] shadow-sm overflow-hidden flex items-center justify-center bg-slate-200 dark:bg-slate-700">
@@ -254,4 +295,3 @@ export default function ConversationList() {
         </div>
     );
 }
-
