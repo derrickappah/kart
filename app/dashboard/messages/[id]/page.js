@@ -1,6 +1,7 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { mutate } from 'swr';
 import { createClient } from '../../../../utils/supabase/client';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -29,6 +30,21 @@ export default function ChatPage() {
     const fileInputRef = useRef(null);
     const textareaRef = useRef(null);
 
+    const markConversationAsRead = useCallback(async (convId) => {
+        if (!convId || convId === 'new') return;
+        try {
+            await fetch('/api/messages/mark-read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ conversationId: convId }),
+            });
+            mutate('/api/messages/unread-count');
+            mutate('conversations');
+        } catch (e) {
+            console.error('[ChatPage] mark-as-read error:', e);
+        }
+    }, []);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -48,6 +64,9 @@ export default function ChatPage() {
     }, []);
 
     useEffect(() => {
+        let isMounted = true;
+        let channel = null;
+
         const init = async () => {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
@@ -55,6 +74,7 @@ export default function ChatPage() {
                     router.push('/login');
                     return;
                 }
+                if (!isMounted) return;
                 setCurrentUser(user);
 
                 if (conversationId === 'new') {
@@ -81,8 +101,10 @@ export default function ChatPage() {
                         .select('*')
                         .eq('id', sellerId)
                         .maybeSingle();
-                    setOtherUser(profile);
-                    setLoading(false);
+                    if (isMounted) {
+                        setOtherUser(profile);
+                        setLoading(false);
+                    }
                     return;
                 }
 
@@ -94,7 +116,7 @@ export default function ChatPage() {
                     .contains('participants', [user.id])
                     .maybeSingle();
 
-                if (conversation) {
+                if (conversation && isMounted) {
                     const otherParticipantId = conversation.participants.find(p => p !== user.id);
 
                     // Fetch profile and product in parallel
@@ -111,8 +133,8 @@ export default function ChatPage() {
                             .maybeSingle() : Promise.resolve({ data: null })
                     ]);
 
-                    if (profileResult.data) setOtherUser(profileResult.data);
-                    if (productResult.data) setProductContext(productResult.data);
+                    if (profileResult.data && isMounted) setOtherUser(profileResult.data);
+                    if (productResult.data && isMounted) setProductContext(productResult.data);
                 }
 
                 // Fetch initial messages
@@ -122,41 +144,49 @@ export default function ChatPage() {
                     .eq('conversation_id', conversationId)
                     .order('created_at', { ascending: true });
 
-                if (initialMessages) setMessages(initialMessages);
+                if (initialMessages && isMounted) setMessages(initialMessages);
 
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                    // Mark messages as read
+                    markConversationAsRead(conversationId);
+                }
             } catch (error) {
                 console.error("DEBUG: ChatPage init error:", error);
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
 
         init();
 
-        if (conversationId === 'new') return;
+        if (conversationId !== 'new') {
+            channel = supabase
+                .channel(`room:${conversationId}`)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `conversation_id=eq.${conversationId}`
+                }, (payload) => {
+                    setMessages(prev => {
+                        const exists = prev.some(m => m.id === payload.new.id);
+                        if (exists) return prev;
+                        return [...prev, payload.new];
+                    });
 
-        // Proper Real-time Subscription Setup
-        const channel = supabase
-            .channel(`room:${conversationId}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'messages',
-                filter: `conversation_id=eq.${conversationId}`
-            }, (payload) => {
-                setMessages(prev => {
-                    // Prevent duplicate messages if they were added locally first
-                    const exists = prev.some(m => m.id === payload.new.id);
-                    if (exists) return prev;
-                    return [...prev, payload.new];
-                });
-            })
-            .subscribe();
+                    // If new incoming message from the other user, mark as read
+                    if (currentUser && payload.new.sender_id !== currentUser.id) {
+                        markConversationAsRead(conversationId);
+                    }
+                })
+                .subscribe();
+        }
 
         return () => {
-            supabase.removeChannel(channel);
+            isMounted = false;
+            if (channel) supabase.removeChannel(channel);
         };
-    }, [conversationId, router, supabase, sellerId]);
+    }, [conversationId, router, supabase, sellerId, markConversationAsRead, currentUser]);
 
     useEffect(() => {
         scrollToBottom();
@@ -408,15 +438,10 @@ export default function ChatPage() {
                     const isContinuedToNext = isSameSenderNext && timeGapNext <= 2;
 
                     // Border Radius Logic
-                    // Top corners: If continued from prev, small radius. Else big (start of group).
                     const topRadiusClass = isMe
                         ? (isContinuedFromPrev ? 'rounded-tr-sm' : 'rounded-tr-2xl') // Right side (Me)
                         : (isContinuedFromPrev ? 'rounded-tl-sm' : 'rounded-tl-2xl'); // Left side (Other)
 
-                    // Bottom corners: If continued to next, small radius. Else big/tail (end of group).
-                    // Actually, "tail" usually means sharp corner or specific shape. 
-                    // Let's use 'rounded-br-none' for tail on Me, 'rounded-bl-none' for Other.
-                    // But ONLY if it is the LAST in the group.
                     const bottomRadiusClass = isMe
                         ? (isContinuedToNext ? 'rounded-br-sm' : 'rounded-br-none')
                         : (isContinuedToNext ? 'rounded-bl-sm' : 'rounded-bl-none');
@@ -486,9 +511,6 @@ export default function ChatPage() {
                                                         Attachment
                                                     </a>
                                                 ) : (
-                                                    // Check for emoji-only messages (1-3 emojis) to render them large
-                                                    // Regex checks for start/end of string with emojis, ignoring whitespace
-                                                    // This is a basic approximation for common emojis
                                                     /^[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{200D}]+$/u.test(msg.content.trim()) && [...msg.content.trim()].length <= 6 ? (
                                                         <span className={`block leading-normal ${[...new Intl.Segmenter().segment(msg.content.trim())].length === 1 ? 'text-[40px]' : 'text-[28px]'
                                                             }`}>
@@ -520,7 +542,7 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-30 relative">
+            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
                 {/* Emoji Picker Popover */}
                 {showEmojiPicker && (
                     <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">

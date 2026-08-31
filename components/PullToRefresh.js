@@ -10,6 +10,7 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     
     const startY = useRef(0);
     const startX = useRef(0);
+    const touchTarget = useRef(null);
     const state = useRef({
         isEligible: false,
         isPulling: false,
@@ -18,7 +19,14 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
     const threshold = 70;
     const maxPull = 110;
 
-    const getScrollTop = () => {
+    const getScrollTop = (target) => {
+        let el = target;
+        while (el && el !== document.body && el !== document.documentElement) {
+            if (el.scrollTop !== undefined && el.scrollTop > 0) {
+                return el.scrollTop;
+            }
+            el = el.parentElement;
+        }
         if (typeof window === 'undefined') return 0;
         return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     };
@@ -30,8 +38,10 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
             return;
         }
 
-        // Only eligible if at the absolute top of the page
-        if (getScrollTop() > 0) {
+        touchTarget.current = e.target;
+
+        // Only eligible if at the absolute top of the page or scrollable container
+        if (getScrollTop(e.target) > 0) {
             state.current.isEligible = false;
             state.current.isPulling = false;
             return;
@@ -51,8 +61,8 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
         const deltaY = currentY - startY.current;
         const deltaX = currentX - startX.current;
 
-        // If the page has scrolled or finger is moving up, cancel immediately and allow normal scroll
-        if (getScrollTop() > 0 || deltaY <= 0) {
+        // If the page or container has scrolled or finger is moving up, cancel immediately and allow normal scroll
+        if (getScrollTop(touchTarget.current) > 0 || deltaY <= 0) {
             state.current.isEligible = false;
             if (state.current.isPulling) {
                 state.current.isPulling = false;
@@ -88,6 +98,7 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
         const wasPulling = state.current.isPulling;
         state.current.isEligible = false;
         state.current.isPulling = false;
+        touchTarget.current = null;
         setIsDragging(false);
 
         if (wasPulling && pullDelta >= threshold) {
