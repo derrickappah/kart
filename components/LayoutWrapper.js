@@ -163,8 +163,12 @@ export default function LayoutWrapper({ children }) {
         (pathname?.startsWith('/dashboard/seller/listings/') && pathname.split('/').length > 4)) &&
         !pathname?.includes('/profile/edit');
 
+    const isMessagesPage = pathname === '/dashboard/messages';
+
     const paddingClass = isProductPage
         ? "" 
+        : isMessagesPage
+        ? "fixed inset-x-0 top-0 bottom-0 pt-16 pb-[max(66px,calc(50px+env(safe-area-inset-bottom,0px)))] overflow-hidden"
         : (isEditingPage ? "" : "pt-16 pb-[66px]");
 
     const isFullViewportPage = pathname === '/dashboard/settings/verify/id-capture' || pathname === '/dashboard/settings/verify/face-capture';
@@ -183,7 +187,7 @@ export default function LayoutWrapper({ children }) {
             <AppDeepLinkHandler />
             {!isEditingPage && <Navbar user={user} />}
             <main className={`overflow-x-clip bg-white dark:bg-[#242428] ${paddingClass}`}>
-                <PullToRefresh onRefresh={handleRefresh} disabled={isEditingPage}>
+                <PullToRefresh onRefresh={handleRefresh} disabled={isEditingPage || isMessagesPage}>
                     <PageTransition>
                         {children}
                     </PageTransition>

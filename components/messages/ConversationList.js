@@ -1,7 +1,7 @@
 'use client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import useSWR from 'swr';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '../../utils/supabase/client';
 import { broadcastMessagesRead } from '@/app/hooks/useUnreadMessagesCount';
 import Link from 'next/link';
@@ -165,11 +165,60 @@ export default function ConversationList() {
         conv.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const [pullDelta, setPullDelta] = useState(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isPulling, setIsPulling] = useState(false);
+    const startY = useRef(0);
+    const mainRef = useRef(null);
+
+    const handleTouchStart = (e) => {
+        if (isRefreshing || !mainRef.current) return;
+        if (mainRef.current.scrollTop <= 0) {
+            startY.current = e.touches[0].clientY;
+            setIsPulling(true);
+        } else {
+            setIsPulling(false);
+        }
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isPulling || isRefreshing || !mainRef.current) return;
+        if (mainRef.current.scrollTop > 0) {
+            setIsPulling(false);
+            setPullDelta(0);
+            return;
+        }
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - startY.current;
+        if (diff > 0) {
+            const delta = Math.min(diff * 0.4, 65);
+            setPullDelta(delta);
+        } else {
+            setPullDelta(0);
+        }
+    };
+
+    const handleTouchEnd = async () => {
+        if (!isPulling) return;
+        setIsPulling(false);
+        if (pullDelta >= 45 && !isRefreshing) {
+            setIsRefreshing(true);
+            setPullDelta(45);
+            try {
+                await mutate();
+            } finally {
+                setTimeout(() => {
+                    setIsRefreshing(false);
+                    setPullDelta(0);
+                }, 300);
+            }
+        } else {
+            setPullDelta(0);
+        }
+    };
+
     return (
-        <div
-            className="bg-white dark:bg-[#242428] font-display antialiased flex flex-col overflow-hidden w-full"
-            style={{ height: 'calc(100dvh - 4rem - max(66px, calc(50px + env(safe-area-inset-bottom, 0px))))' }}
-        >
+        <div className="bg-white dark:bg-[#242428] font-display antialiased flex flex-col h-full w-full overflow-hidden">
             <div className="max-w-[440px] w-full mx-auto flex flex-col h-full overflow-hidden">
                 <header className="flex-none z-40 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
                     {conversations.length > 0 ? (
@@ -194,7 +243,37 @@ export default function ConversationList() {
                     )}
                 </header>
 
-                <main className="flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-6">
+                <main 
+                    ref={mainRef}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchCancel={handleTouchEnd}
+                    className="flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-6 relative"
+                >
+                    {/* Inline Pull To Refresh Indicator */}
+                    {(pullDelta > 0 || isRefreshing) && (
+                        <div 
+                            className="flex justify-center items-center py-2 transition-all duration-200"
+                            style={{ height: `${pullDelta}px`, opacity: pullDelta > 15 || isRefreshing ? 1 : 0 }}
+                        >
+                            <div className="size-8 rounded-full bg-white dark:bg-[#2d2d32] shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[#1daddd]">
+                                {isRefreshing ? (
+                                    <div className="size-4 border-2 border-[#1daddd] border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <DynamicLucideIcon 
+                                        name="arrow_downward" 
+                                        size={18}
+                                        style={{ 
+                                            transform: `rotate(${Math.min((pullDelta / 45) * 180, 180)}deg)`,
+                                            transition: 'transform 0.15s ease'
+                                        }} 
+                                        className="text-[#1daddd]"
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    )}
                 {searchQuery.trim() && (
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-3">
                         <span>
