@@ -1,5 +1,5 @@
 import { triggerPushNotification } from '@/lib/notifications';
-import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
@@ -15,10 +15,10 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { user_id, title, message, related_order_id } = body;
+    const { user_id, title, message, related_order_id, type, url, data } = body;
 
     if (!user_id || !title || !message) {
-      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required parameters: user_id, title, message' }, { status: 400 });
     }
 
     // If calling as normal user, check if they are admin or sending to themselves
@@ -31,22 +31,21 @@ export async function POST(req) {
           .single();
 
         if (!profile?.is_admin) {
-          return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+          return NextResponse.json({ error: 'Forbidden: Admin access required to notify other users' }, { status: 403 });
         }
       }
     }
 
     // Trigger push notification delivery
-    try {
-      await triggerPushNotification(user_id, title, message, related_order_id);
-    } catch (err) {
-      console.error('[Push Webhook] Delivery failed:', err.message);
-    }
+    await triggerPushNotification(user_id, title, message, related_order_id, {
+      type: type || 'order',
+      url: url || null,
+      data: data || {}
+    });
 
-    return NextResponse.json({ success: true, message: 'Push notification triggered' });
+    return NextResponse.json({ success: true, message: 'Push notification triggered successfully' });
   } catch (err) {
-    console.error('[Push Webhook] Request error:', err.message);
+    console.error('[Push API] Request error:', err.message);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-

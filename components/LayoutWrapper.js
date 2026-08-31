@@ -9,6 +9,7 @@ import AppDeepLinkHandler from './AppDeepLinkHandler';
 import PageTransition from './PageTransition';
 import PullToRefresh from './PullToRefresh';
 import FilterSidebar from './FilterSidebar';
+import PushNotificationPrompt from './PushNotificationPrompt';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 
@@ -189,6 +190,7 @@ export default function LayoutWrapper({ children }) {
                 </PullToRefresh>
             </main>
             {!isEditingPage && <MobileBottomNav user={user} />}
+            <PushNotificationPrompt />
             <Suspense fallback={null}>
                 <FilterSidebar />
             </Suspense>

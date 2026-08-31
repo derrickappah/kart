@@ -1,25 +1,19 @@
 'use client';
+
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import {
+  isPushSupported,
+  getPushPlatform,
+  getPushPermissionStatus,
+  registerForPushNotifications,
+  unregisterFromPushNotifications,
+  checkDevicePushSubscription
+} from '@/lib/pushClient';
 
-// Module-scoped stable client — avoids re-creation on every render
 const supabase = createClient();
-
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BN_Can8H6Pp8fuaw3F26G3argkqh6ytLU2ShaHb65onYYeWkUoB2gFoq3ow0IlfCEp1g4ZrRbdfg-PvYDyB6hfY';
-
-// Helper to convert base64 VAPID key to Uint8Array
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
 
 const Toggle = ({ active, onToggle, label, description, icon, disabled = false }) => (
   <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1E292B] rounded-2xl shadow-sm border border-transparent dark:border-slate-800 transition-all duration-200">
@@ -74,6 +68,7 @@ export default function NotificationSettingsPage() {
 
   // Push notification state variables
   const [pushSupported, setPushSupported] = useState(false);
+  const [pushPlatform, setPushPlatform] = useState('web');
   const [pushPermission, setPushPermission] = useState('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [registeringPush, setRegisteringPush] = useState(false);
@@ -90,18 +85,16 @@ export default function NotificationSettingsPage() {
   };
 
   useEffect(() => {
-    const checkPushSupport = async () => {
-      if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
-        setPushSupported(true);
-        setPushPermission(Notification.permission);
+    const initPushStatus = async () => {
+      const supported = isPushSupported();
+      setPushSupported(supported);
+      setPushPlatform(getPushPlatform());
 
-        try {
-          const registration = await navigator.serviceWorker.ready;
-          const subscription = await registration.pushManager.getSubscription();
-          setIsSubscribed(!!subscription);
-        } catch (err) {
-          console.error('Error checking push subscription:', err);
-        }
+      if (supported) {
+        const perm = await getPushPermissionStatus();
+        setPushPermission(perm);
+        const subscribed = await checkDevicePushSubscription();
+        setIsSubscribed(subscribed);
       }
     };
 
@@ -118,10 +111,10 @@ export default function NotificationSettingsPage() {
           if (error) {
             showToast('Failed to fetch user settings', 'error');
           } else if (data?.notification_prefs) {
-            setSettings({
-              ...settings,
+            setSettings(prev => ({
+              ...prev,
               ...data.notification_prefs
-            });
+            }));
           }
           setProfile(user);
         }
@@ -135,10 +128,13 @@ export default function NotificationSettingsPage() {
     // Register service worker if supported
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then(() => {
-        checkPushSupport();
+        initPushStatus();
       }).catch(err => {
         console.error('Service worker registration failed:', err);
+        initPushStatus();
       });
+    } else {
+      initPushStatus();
     }
 
     getProfile();
@@ -168,71 +164,51 @@ export default function NotificationSettingsPage() {
   };
 
   // Push Subscription Enable/Disable logic
-  const subscribeToPush = async () => {
+  const handleSubscribe = async () => {
     if (!pushSupported || !profile) return;
     setRegisteringPush(true);
-    showToast('Requesting push permissions...', 'info');
+    showToast('Enabling push notifications...', 'info');
 
     try {
-      const permission = await Notification.requestPermission();
-      setPushPermission(permission);
-
-      if (permission !== 'granted') {
-        throw new Error('Push permission denied');
-      }
-
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      const result = await registerForPushNotifications({
+        onNotificationReceived: (notification) => {
+          showToast(`🔔 ${notification.title || 'New Notification'}: ${notification.body || ''}`, 'info');
+        },
+        onNotificationClicked: (data) => {
+          if (data?.url) router.push(data.url);
+        }
       });
 
-      const response = await fetch('/api/notifications/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to register subscription on server');
+      if (!result.success) {
+        throw new Error(result.error || 'Push registration failed');
       }
 
       setIsSubscribed(true);
-      showToast('Push notifications enabled!', 'success');
+      const perm = await getPushPermissionStatus();
+      setPushPermission(perm);
+      showToast('Push notifications enabled successfully!', 'success');
     } catch (err) {
       console.error('Error subscribing to push:', err);
       showToast(err.message || 'Push registration failed', 'error');
+      const perm = await getPushPermissionStatus();
+      setPushPermission(perm);
     } finally {
       setRegisteringPush(false);
     }
   };
 
-  const unsubscribeFromPush = async () => {
+  const handleUnsubscribe = async () => {
     if (!pushSupported || !profile) return;
     setRegisteringPush(true);
 
     try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-
-      if (subscription) {
-        // Call backend to delete
-        const response = await fetch('/api/notifications/subscribe', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: subscription.endpoint })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to remove subscription from server');
-        }
-
-        await subscription.unsubscribe();
+      const result = await unregisterFromPushNotifications();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to unsubscribe');
       }
 
       setIsSubscribed(false);
-      showToast('Push notifications disabled.', 'success');
+      showToast('Push notifications disabled for this device.', 'success');
     } catch (err) {
       console.error('Error unsubscribing from push:', err);
       showToast('Unsubscription failed', 'error');
@@ -252,12 +228,15 @@ export default function NotificationSettingsPage() {
         body: JSON.stringify({
           user_id: profile.id,
           title: 'Hello from KART! 🚀',
-          message: 'Your push notifications are successfully configured and working!'
+          message: 'Your push notifications are configured and active!',
+          type: 'order',
+          url: '/dashboard/notifications'
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send test push notification');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send test push notification');
       }
 
       showToast('Test push notification triggered!', 'success');
@@ -295,13 +274,13 @@ export default function NotificationSettingsPage() {
           </div>
         ) : (
           <>
-            {/* Push Notifications Section */}
+            {/* Push Notifications Categories Section */}
             <div className="space-y-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-2">Push Notifications</h2>
 
               <Toggle
                 label="Orders & Sales"
-                description="Get notified when someone buys your item"
+                description="Get notified when someone buys or updates your order"
                 icon="shopping_bag"
                 active={settings.push_orders}
                 onToggle={() => toggleSetting('push_orders')}
@@ -309,7 +288,7 @@ export default function NotificationSettingsPage() {
 
               <Toggle
                 label="Messages"
-                description="Alerts for new chat messages"
+                description="Alerts for new buyer/seller chat messages"
                 icon="chat"
                 active={settings.push_messages}
                 onToggle={() => toggleSetting('push_messages')}
@@ -317,23 +296,28 @@ export default function NotificationSettingsPage() {
 
               <Toggle
                 label="Promotions"
-                description="Updates on sales and special offers"
+                description="Updates on featured listings and special offers"
                 icon="campaign"
                 active={settings.push_promotions}
                 onToggle={() => toggleSetting('push_promotions')}
               />
             </div>
 
-            {/* Push System Enrollment Integration */}
+            {/* Device Push Enrollment Panel */}
             <div className="bg-white dark:bg-[#1E292B] rounded-3xl p-5 shadow-sm border border-transparent dark:border-slate-800 space-y-4">
               <div className="flex gap-3">
                 <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                   <DynamicLucideIcon name="notifications" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm leading-tight text-slate-900 dark:text-white">Device Web Push Delivery</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm leading-tight text-slate-900 dark:text-white">Device Delivery Status</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                      {pushPlatform}
+                    </span>
+                  </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-                    Enroll your current web browser to receive live alert popups even when you are not using the app.
+                    Enroll this device to receive instant alert popups for orders and chats even when the app is in the background.
                   </p>
                 </div>
               </div>
@@ -342,7 +326,7 @@ export default function NotificationSettingsPage() {
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex gap-2">
                   <DynamicLucideIcon name="error" className="text-red-500 text-sm shrink-0 mt-0.5" />
                   <p className="text-red-500 text-xs font-medium leading-relaxed">
-                    Your web browser does not support Web Push. Try on a mobile device or modern desktop browser.
+                    Push notifications are not supported by this browser or environment.
                   </p>
                 </div>
               ) : pushPermission === 'denied' ? (
@@ -351,18 +335,18 @@ export default function NotificationSettingsPage() {
                   <div>
                     <h4 className="text-amber-600 dark:text-amber-500 text-xs font-bold uppercase tracking-wider mb-0.5">Notification Permission Blocked</h4>
                     <p className="text-amber-700 dark:text-amber-500/80 text-xs font-medium leading-relaxed">
-                      Push permissions are currently blocked in your browser settings. Please click the lock/settings icon in your browser address bar to allow notifications, then reload.
+                      Push notifications are blocked in your device/browser settings. Please allow notifications in your site settings, then reload.
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-3 pt-2">
                   <div className="flex justify-between items-center bg-slate-50 dark:bg-white/5 rounded-xl px-4 py-3 text-xs font-semibold">
-                    <span className="text-slate-500">Status</span>
-                    <span className={`px-2 py-0.5 rounded-full capitalize font-bold ${
+                    <span className="text-slate-500">Device Status</span>
+                    <span className={`px-2.5 py-1 rounded-full capitalize font-bold ${
                       isSubscribed ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
                     }`}>
-                      {isSubscribed ? 'Subscribed' : 'Not Subscribed'}
+                      {isSubscribed ? 'Active & Subscribed' : 'Not Enrolled'}
                     </span>
                   </div>
 
@@ -370,28 +354,28 @@ export default function NotificationSettingsPage() {
                     {isSubscribed ? (
                       <>
                         <button
-                          onClick={unsubscribeFromPush}
+                          onClick={handleUnsubscribe}
                           disabled={registeringPush}
                           className="flex-1 py-3 px-4 rounded-xl border border-red-500/20 text-red-500 text-xs font-bold hover:bg-red-500/5 transition-colors disabled:opacity-50"
                         >
-                          Disable Push
+                          Disable on Device
                         </button>
                         <button
                           onClick={sendTestNotification}
                           disabled={sendingTest}
                           className="flex-1 py-3 px-4 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
                         >
-                          {sendingTest ? 'Sending...' : 'Test Push'}
+                          {sendingTest ? 'Sending...' : 'Test Notification'}
                           {!sendingTest && <DynamicLucideIcon name="send" size={14} />}
                         </button>
                       </>
                     ) : (
                       <button
-                        onClick={subscribeToPush}
+                        onClick={handleSubscribe}
                         disabled={registeringPush}
                         className="w-full py-3.5 px-4 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:bg-primary/95 transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-[0.98] disabled:opacity-50"
                       >
-                        {registeringPush ? 'Enrolling...' : 'Enable Push Notifications'}
+                        {registeringPush ? 'Enrolling...' : 'Enable Device Push Notifications'}
                         {!registeringPush && <DynamicLucideIcon name="check_circle" size={14} />}
                       </button>
                     )}
@@ -406,7 +390,7 @@ export default function NotificationSettingsPage() {
 
               <Toggle
                 label="Weekly Digest"
-                description="Summary of your activity and trends"
+                description="Summary of your sales activity and marketplace trends"
                 icon="mail"
                 active={settings.email_weekly}
                 onToggle={() => toggleSetting('email_weekly')}
@@ -417,7 +401,7 @@ export default function NotificationSettingsPage() {
             <div className="p-4 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center gap-2">
               <DynamicLucideIcon name="lock" className="text-slate-400 text-sm" />
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-tight">
-                Preferences are synced across all your devices
+                Notification preferences are synced to your account
               </span>
             </div>
           </>
