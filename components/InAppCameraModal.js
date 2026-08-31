@@ -9,6 +9,7 @@ import { dataURItoBlob } from '@/utils/imageUtils';
  * 
  * Allows taking multiple photos sequentially directly inside the web application
  * without switching out to the device's native camera app.
+ * Supports smooth, reliable toggling back and forth between front and rear cameras.
  * Displays real-time captured thumbnails in a bottom horizontal tray.
  * 
  * @param {Object} props
@@ -29,6 +30,7 @@ export default function InAppCameraModal({
     const canvasRef = useRef(null);
     const streamRef = useRef(null);
     const fileInputFallbackRef = useRef(null);
+    const facingModeRef = useRef('environment');
 
     const [facingMode, setFacingMode] = useState('environment'); // 'environment' (back) or 'user' (front)
     const [cameraReady, setCameraReady] = useState(false);
@@ -36,6 +38,8 @@ export default function InAppCameraModal({
     const [capturedPhotos, setCapturedPhotos] = useState([]);
     const [isFlashActive, setIsFlashActive] = useState(false);
     const [isCapturing, setIsCapturing] = useState(false);
+    const [videoDevices, setVideoDevices] = useState([]);
+    const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(0);
 
     const isReplacing = replaceIndex !== null;
     const effectiveLimit = isReplacing ? 1 : Math.max(1, maxPhotos);
@@ -58,8 +62,8 @@ export default function InAppCameraModal({
         setCameraReady(false);
     }, []);
 
-    // Start camera stream with progressive resolution constraints
-    const startCamera = useCallback(async (mode = facingMode) => {
+    // Start camera stream with exact and fallback constraints
+    const startCamera = useCallback(async (targetMode = facingModeRef.current, targetDeviceId = null) => {
         stopStream();
         setCameraError(null);
         setCameraReady(false);
@@ -69,13 +73,55 @@ export default function InAppCameraModal({
             return;
         }
 
-        const constraintSets = [
-            { video: { facingMode: { ideal: mode }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
-            { video: { facingMode: { ideal: mode }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-            { video: { facingMode: { ideal: mode } }, audio: false },
-            { video: { facingMode: mode }, audio: false },
-            { video: true, audio: false }
-        ];
+        // Ordered constraint sets: try exact hardware request first to force camera switch
+        const constraintSets = [];
+
+        // 1. If explicit deviceId is known
+        if (targetDeviceId) {
+            constraintSets.push({
+                video: { deviceId: { exact: targetDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                audio: false
+            });
+            constraintSets.push({
+                video: { deviceId: { exact: targetDeviceId } },
+                audio: false
+            });
+        }
+
+        // 2. Exact facing mode (forces hardware switch on iOS / Android)
+        constraintSets.push({
+            video: { facingMode: { exact: targetMode }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: false
+        });
+        constraintSets.push({
+            video: { facingMode: { exact: targetMode }, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+        });
+        constraintSets.push({
+            video: { facingMode: { exact: targetMode } },
+            audio: false
+        });
+
+        // 3. Ideal facing mode fallback
+        constraintSets.push({
+            video: { facingMode: { ideal: targetMode }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: false
+        });
+        constraintSets.push({
+            video: { facingMode: { ideal: targetMode }, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+        });
+        constraintSets.push({
+            video: { facingMode: { ideal: targetMode } },
+            audio: false
+        });
+        constraintSets.push({
+            video: { facingMode: targetMode },
+            audio: false
+        });
+
+        // 4. Ultimate fallback
+        constraintSets.push({ video: true, audio: false });
 
         let stream = null;
         let lastError = null;
@@ -86,7 +132,7 @@ export default function InAppCameraModal({
                 if (stream) break;
             } catch (err) {
                 lastError = err;
-                console.warn('[InAppCamera] Constraint attempt failed:', err);
+                console.warn('[InAppCamera] Constraint attempt failed:', constraints, err);
             }
         }
 
@@ -100,11 +146,19 @@ export default function InAppCameraModal({
                 // Ignore autoplay policies
             }
 
-            const track = stream.getVideoTracks()[0];
-            const actualFacing = track?.getSettings()?.facingMode;
-            if (actualFacing) {
-                setFacingMode(actualFacing);
+            // Refresh available video device list after permission is granted
+            try {
+                const allDevices = await navigator.mediaDevices.enumerateDevices();
+                const vInputs = allDevices.filter((d) => d.kind === 'videoinput');
+                if (vInputs.length > 0) {
+                    setVideoDevices(vInputs);
+                }
+            } catch {
+                // Ignore enumerate devices errors
             }
+
+            facingModeRef.current = targetMode;
+            setFacingMode(targetMode);
             setCameraReady(true);
             setCameraError(null);
         } else if (lastError) {
@@ -119,12 +173,14 @@ export default function InAppCameraModal({
                 setCameraError('Unable to access camera stream. Please try uploading from your gallery.');
             }
         }
-    }, [facingMode, stopStream]);
+    }, [stopStream]);
 
     // Handle modal lifecycle
     useEffect(() => {
         if (isOpen) {
             setCapturedPhotos([]);
+            facingModeRef.current = 'environment';
+            setFacingMode('environment');
             startCamera('environment');
         } else {
             stopStream();
@@ -136,10 +192,20 @@ export default function InAppCameraModal({
     }, [isOpen, startCamera, stopStream]);
 
     // Switch between front and rear cameras
-    const toggleFacingMode = () => {
+    const toggleFacingMode = async () => {
         const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+        facingModeRef.current = nextMode;
         setFacingMode(nextMode);
-        startCamera(nextMode);
+
+        // If multiple devices are detected, also calculate next deviceId
+        let nextDeviceId = null;
+        if (videoDevices.length > 1) {
+            const nextIdx = (selectedDeviceIndex + 1) % videoDevices.length;
+            setSelectedDeviceIndex(nextIdx);
+            nextDeviceId = videoDevices[nextIdx]?.deviceId;
+        }
+
+        await startCamera(nextMode, nextDeviceId);
     };
 
     // Shutter capture action
