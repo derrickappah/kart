@@ -345,7 +345,7 @@ export default function EditListingClient({ product }) {
                                             <DynamicLucideIcon name="sync" className="text-[14px]" />
                                         </button>
                                         {index === 0 && (
-                                            <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-white z-10">Main</div>
+                                            <div className="absolute top-2 left-2 bg-[#1daddd] text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg shadow-sm border border-white/20 z-10">Main</div>
                                         )}
                                     </div>
                                 );

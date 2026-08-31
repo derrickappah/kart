@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 
 /**
@@ -22,11 +22,10 @@ export default function PhotoSourceModal({
     replaceIndex = null,
     remainingSlots = 5,
 }) {
-    const galleryInputRef = useRef(null);
-
     if (!isOpen) return null;
 
     const isReplacing = replaceIndex !== null;
+    const inputId = `gallery-picker-input-${isReplacing ? replaceIndex : 'new'}`;
 
     const handleCameraClick = () => {
         onClose();
@@ -36,8 +35,9 @@ export default function PhotoSourceModal({
     };
 
     const handleGalleryChange = (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const files = Array.from(e.target.files);
+        const fileList = e.target.files;
+        if (fileList && fileList.length > 0) {
+            const files = Array.from(fileList);
             onFilesSelected(files, replaceIndex);
             onClose();
         }
@@ -51,16 +51,6 @@ export default function PhotoSourceModal({
             className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-fade-in"
             onClick={onClose}
         >
-            {/* Hidden Input for Gallery Selection */}
-            <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                multiple={!isReplacing}
-                onChange={handleGalleryChange}
-                className="hidden"
-            />
-
             {/* Modal Body */}
             <div
                 className="bg-white dark:bg-[#1E2428] w-full max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-6 shadow-2xl border border-gray-100 dark:border-white/10 flex flex-col gap-4 animate-in slide-in-from-bottom duration-200"
@@ -94,7 +84,7 @@ export default function PhotoSourceModal({
                     <button
                         type="button"
                         onClick={handleCameraClick}
-                        className="flex flex-row sm:flex-col items-center gap-3.5 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-[#1daddd]/10 dark:hover:bg-[#1daddd]/15 border-2 border-transparent hover:border-[#1daddd] text-left sm:text-center transition-all group active:scale-[0.98]"
+                        className="flex flex-row sm:flex-col items-center gap-3.5 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-[#1daddd]/10 dark:hover:bg-[#1daddd]/15 border-2 border-transparent hover:border-[#1daddd] text-left sm:text-center transition-all group active:scale-[0.98] cursor-pointer"
                     >
                         <div className="size-12 rounded-xl bg-[#1daddd]/10 dark:bg-[#1daddd]/20 text-[#1daddd] flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                             <DynamicLucideIcon name="camera" className="text-2xl" />
@@ -109,12 +99,19 @@ export default function PhotoSourceModal({
                         </div>
                     </button>
 
-                    {/* Option 2: Choose from Library / Gallery */}
-                    <button
-                        type="button"
-                        onClick={() => galleryInputRef.current?.click()}
-                        className="flex flex-row sm:flex-col items-center gap-3.5 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-[#1daddd]/10 dark:hover:bg-[#1daddd]/15 border-2 border-transparent hover:border-[#1daddd] text-left sm:text-center transition-all group active:scale-[0.98]"
+                    {/* Option 2: Choose from Library / Gallery (Native HTML Label binding) */}
+                    <label
+                        htmlFor={inputId}
+                        className="flex flex-row sm:flex-col items-center gap-3.5 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-purple-500/10 dark:hover:bg-purple-500/15 border-2 border-transparent hover:border-purple-500 text-left sm:text-center transition-all group active:scale-[0.98] cursor-pointer"
                     >
+                        <input
+                            id={inputId}
+                            type="file"
+                            accept="image/*"
+                            multiple={!isReplacing}
+                            onChange={handleGalleryChange}
+                            className="sr-only"
+                        />
                         <div className="size-12 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                             <DynamicLucideIcon name="image" className="text-2xl" />
                         </div>
@@ -126,14 +123,14 @@ export default function PhotoSourceModal({
                                 Upload from gallery
                             </span>
                         </div>
-                    </button>
+                    </label>
                 </div>
 
                 {/* Cancel Button */}
                 <button
                     type="button"
                     onClick={onClose}
-                    className="w-full py-3.5 mt-1 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+                    className="w-full py-3.5 mt-1 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
                     Cancel
                 </button>

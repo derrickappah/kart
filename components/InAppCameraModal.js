@@ -385,8 +385,10 @@ export default function InAppCameraModal({
                                 >
                                     <DynamicLucideIcon name="close" className="text-[10px]" />
                                 </button>
-                                <div className="absolute bottom-1 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur-md rounded-md text-[9px] font-black text-white drop-shadow-md">
-                                    #{idx + 1}
+                                <div className={`absolute top-1 left-1.5 px-1.5 py-0.5 backdrop-blur-md rounded-md text-[8px] font-black uppercase tracking-wider drop-shadow-md z-10 ${
+                                    idx === 0 ? 'bg-[#1daddd] text-white' : 'bg-black/70 text-white'
+                                }`}>
+                                    {idx === 0 ? 'Main' : `#${idx + 1}`}
                                 </div>
                             </div>
                         ))}
