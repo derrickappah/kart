@@ -7,10 +7,10 @@ import { dataURItoBlob } from '@/utils/imageUtils';
 /**
  * In-App Live Camera Viewfinder Modal
  * 
- * Allows taking multiple photos sequentially directly inside the web application
- * without switching out to the device's native camera app.
- * Supports smooth, reliable toggling back and forth between front and rear cameras.
- * Displays real-time captured thumbnails in a bottom horizontal tray.
+ * Beautifully styled matching modern camera design with:
+ * - Rounded live video viewport
+ * - Captured photos arranged in a top floating thumbnail tray
+ * - Bottom floating circular controls: [ Close ✕ ]  [ Shutter ⚪ ]  [ Flip 🔄 ]
  * 
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether the camera viewfinder is visible
@@ -282,7 +282,7 @@ export default function InAppCameraModal({
         }
     };
 
-    // Remove photo from bottom tray
+    // Remove photo from top tray
     const removeCapturedPhoto = (index) => {
         setCapturedPhotos((prev) => prev.filter((_, i) => i !== index));
     };
@@ -317,7 +317,7 @@ export default function InAppCameraModal({
         <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-[10000] bg-black font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none flex flex-col justify-between"
+            className="fixed inset-0 z-[10000] bg-neutral-950/95 font-display antialiased w-screen h-screen h-[100dvh] overflow-hidden select-none flex flex-col p-2 sm:p-4"
         >
             {/* Hidden Canvas for High-Res Capture */}
             <canvas ref={canvasRef} className="hidden" />
@@ -334,211 +334,175 @@ export default function InAppCameraModal({
 
             {/* Flash Screen Overlay */}
             <div
-                className={`absolute inset-0 bg-white pointer-events-none z-[60] transition-opacity duration-100 ${
+                className={`absolute inset-0 bg-white pointer-events-none z-[80] transition-opacity duration-100 ${
                     isFlashActive ? 'opacity-100' : 'opacity-0'
                 }`}
             />
 
-            {/* Top Navigation Bar */}
-            <header className="relative z-50 px-4 pt-4 sm:pt-6 pb-3 flex items-center justify-between text-white bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-                {/* Close Button */}
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="size-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/25 active:scale-95 transition-all shadow-md"
-                    aria-label="Close camera"
-                >
-                    <DynamicLucideIcon name="close" className="text-xl" />
-                </button>
-
-                {/* Photo Counter Pill */}
-                <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/10 shadow-md">
-                    <div className="size-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-xs font-black tracking-wide text-white">
-                        {capturedPhotos.length} / {effectiveLimit} Photos
-                    </span>
-                </div>
-
-                {/* Flip Camera Button */}
-                <button
-                    type="button"
-                    onClick={toggleFacingMode}
-                    className="size-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/25 active:scale-95 transition-all shadow-md"
-                    title="Flip camera"
-                    aria-label="Flip camera"
-                >
-                    <DynamicLucideIcon name="flip_camera_ios" className="text-xl" />
-                </button>
-            </header>
-
-            {/* Viewfinder Video Area */}
-            <main className="relative flex-1 flex items-center justify-center overflow-hidden bg-neutral-950">
-                {cameraError ? (
-                    <div className="p-6 text-center max-w-sm mx-auto space-y-4">
-                        <div className="size-16 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto">
-                            <DynamicLucideIcon name="camera_off" className="text-3xl" />
+            {/* Main Rounded Camera Container Card */}
+            <div className="relative w-full h-full rounded-[32px] sm:rounded-[40px] overflow-hidden bg-neutral-900 border border-white/10 shadow-2xl flex flex-col justify-between">
+                
+                {/* 1. TOP SECTION: Photo Thumbnails Tray & Progress */}
+                <div className="relative z-50 p-4 pt-4 sm:pt-5 bg-gradient-to-b from-black/80 via-black/40 to-transparent flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                        {/* Photo Limit Badge */}
+                        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 shadow-md">
+                            <span className="size-2 rounded-full bg-primary animate-pulse" />
+                            <span className="text-xs font-black tracking-wide text-white">
+                                {capturedPhotos.length} / {effectiveLimit} Photos
+                            </span>
                         </div>
-                        <h4 className="text-lg font-bold text-white tracking-tight">Camera Unavailable</h4>
-                        <p className="text-xs text-gray-300 leading-relaxed">{cameraError}</p>
-                        <div className="pt-2 flex flex-col gap-2">
-                            <button
-                                type="button"
-                                onClick={() => startCamera()}
-                                className="w-full py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs active:scale-98 transition-all"
-                            >
-                                Try Again
-                            </button>
+
+                        {/* Top Action: Done / Gallery Shortcut */}
+                        <div className="flex items-center gap-2">
                             <button
                                 type="button"
                                 onClick={() => fileInputFallbackRef.current?.click()}
-                                className="w-full py-3 rounded-xl bg-primary hover:bg-[#179ecb] text-white font-bold text-xs active:scale-98 transition-all shadow-lg shadow-primary/30"
+                                className="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md text-white font-bold text-xs flex items-center gap-1.5 border border-white/15 transition-all shadow-md"
+                                title="Pick from gallery"
                             >
-                                Choose from Gallery Instead
+                                <DynamicLucideIcon name="image" className="text-sm" />
+                                <span>Gallery</span>
                             </button>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            className={`w-full h-full object-cover ${
-                                facingMode === 'user' ? 'scale-x-[-1]' : ''
-                            }`}
-                        />
 
-                        {/* Subtle Center Target Framing Box */}
-                        <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
-                            <div className="w-full max-w-[340px] aspect-[4/3] rounded-3xl border border-white/20 shadow-[0_0_0_9999px_rgba(0,0,0,0.3)] transition-all" />
-                        </div>
-
-                        {!cameraReady && (
-                            <div className="absolute inset-0 bg-black flex flex-col items-center justify-center text-white gap-3 z-30">
-                                <div className="size-10 border-3 border-white/20 border-t-primary rounded-full animate-spin" />
-                                <span className="text-xs font-bold tracking-wide text-gray-300">Starting Camera...</span>
-                            </div>
-                        )}
-                    </>
-                )}
-            </main>
-
-            {/* Bottom Tray & Controls */}
-            <footer className="relative z-50 bg-gradient-to-t from-black via-black/90 to-transparent pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 px-4 flex flex-col gap-4">
-                {/* 1. Horizontal Captured Photos Tray */}
-                {capturedPhotos.length > 0 && (
-                    <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-2.5 px-2 py-1">
-                        {capturedPhotos.map((photo, idx) => (
-                            <div
-                                key={photo.id}
-                                className="relative shrink-0 size-16 rounded-2xl overflow-hidden border-2 border-white/40 shadow-lg group animate-in zoom-in-90 duration-150"
-                            >
-                                <img
-                                    src={photo.previewUrl}
-                                    alt={`Captured shot ${idx + 1}`}
-                                    className="w-full h-full object-cover"
-                                />
+                            {capturedPhotos.length > 0 && (
                                 <button
                                     type="button"
-                                    onClick={() => removeCapturedPhoto(idx)}
-                                    className="absolute top-1 right-1 size-5 bg-red-600/90 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-700 active:scale-90 transition-all"
-                                    title="Delete photo"
-                                    aria-label="Delete photo"
+                                    onClick={handleDone}
+                                    className="px-4 py-1.5 rounded-full bg-primary hover:bg-[#159ac6] active:scale-95 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-primary/30 transition-all animate-in zoom-in-95 duration-150"
                                 >
-                                    <DynamicLucideIcon name="close" className="text-[10px]" />
+                                    <DynamicLucideIcon name="check" className="text-sm font-bold" />
+                                    <span>Done ({capturedPhotos.length})</span>
                                 </button>
-                                <div className="absolute bottom-0.5 left-1 text-[9px] font-black text-white drop-shadow-md">
-                                    #{idx + 1}
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Horizontal Scrolling Thumbnails Reel (Arranged at TOP) */}
+                    {capturedPhotos.length > 0 && (
+                        <div className="w-full overflow-x-auto no-scrollbar flex items-center gap-2.5 py-1 animate-in slide-in-from-top-2 duration-200">
+                            {capturedPhotos.map((photo, idx) => (
+                                <div
+                                    key={photo.id}
+                                    className="relative shrink-0 size-14 sm:size-16 rounded-2xl overflow-hidden border-2 border-white shadow-xl group animate-in zoom-in-90 duration-150"
+                                >
+                                    <img
+                                        src={photo.previewUrl}
+                                        alt={`Captured shot ${idx + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeCapturedPhoto(idx)}
+                                        className="absolute top-1 right-1 size-5 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all z-10"
+                                        title="Delete photo"
+                                        aria-label="Delete photo"
+                                    >
+                                        <DynamicLucideIcon name="close" className="text-[10px]" />
+                                    </button>
+                                    <div className="absolute bottom-0.5 left-1 text-[9px] font-black text-white drop-shadow-md">
+                                        #{idx + 1}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                {/* 2. Shutter & Action Bar */}
-                <div className="flex items-center justify-between px-3 sm:px-6">
-                    {/* Left: Gallery Shortcut & Flip Camera */}
-                    <div className="flex items-center gap-2.5">
-                        <button
-                            type="button"
-                            onClick={() => fileInputFallbackRef.current?.click()}
-                            className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition-all"
-                            title="Upload from gallery"
-                        >
-                            <div className="size-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
-                                <DynamicLucideIcon name="image" className="text-xl" />
+                {/* 2. CENTER: Live Camera Video Stream */}
+                <div className="absolute inset-0 z-0 flex items-center justify-center bg-neutral-950 overflow-hidden">
+                    {cameraError ? (
+                        <div className="p-6 text-center max-w-sm mx-auto space-y-4 z-20">
+                            <div className="size-16 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto">
+                                <DynamicLucideIcon name="camera_off" className="text-3xl" />
                             </div>
-                            <span className="text-[10px] font-bold">Gallery</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={toggleFacingMode}
-                            className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition-all"
-                            title="Switch front/back camera"
-                            aria-label="Switch camera"
-                        >
-                            <div className="size-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
-                                <DynamicLucideIcon name="flip_camera_ios" className="text-xl" />
+                            <h4 className="text-lg font-bold text-white tracking-tight">Camera Unavailable</h4>
+                            <p className="text-xs text-gray-300 leading-relaxed">{cameraError}</p>
+                            <div className="pt-2 flex flex-col gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => startCamera()}
+                                    className="w-full py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs active:scale-98 transition-all"
+                                >
+                                    Try Again
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputFallbackRef.current?.click()}
+                                    className="w-full py-3 rounded-xl bg-primary hover:bg-[#179ecb] text-white font-bold text-xs active:scale-98 transition-all shadow-lg shadow-primary/30"
+                                >
+                                    Choose from Gallery
+                                </button>
                             </div>
-                            <span className="text-[10px] font-bold">Flip</span>
-                        </button>
-                    </div>
-
-                    {/* Center: Camera Shutter Button */}
-                    <div className="flex flex-col items-center gap-1">
-                        <button
-                            type="button"
-                            disabled={!cameraReady || isLimitReached || isCapturing}
-                            onClick={takePhoto}
-                            className={`size-20 rounded-full border-4 border-white p-1 flex items-center justify-center transition-all shadow-2xl active:scale-90 ${
-                                isLimitReached
-                                    ? 'opacity-40 cursor-not-allowed border-gray-500'
-                                    : 'hover:border-primary cursor-pointer'
-                            }`}
-                            aria-label="Capture photo"
-                        >
-                            <div
-                                className={`size-full rounded-full transition-all ${
-                                    isLimitReached ? 'bg-gray-500' : 'bg-white hover:bg-primary'
+                        </div>
+                    ) : (
+                        <>
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className={`w-full h-full object-cover ${
+                                    facingMode === 'user' ? 'scale-x-[-1]' : ''
                                 }`}
                             />
-                        </button>
-                        {isLimitReached && (
-                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider">
-                                Max Limit
-                            </span>
-                        )}
-                    </div>
 
-                    {/* Right: Done / Add to Listing Button */}
+                            {!cameraReady && (
+                                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center text-white gap-3 z-30">
+                                    <div className="size-10 border-3 border-white/20 border-t-primary rounded-full animate-spin" />
+                                    <span className="text-xs font-bold tracking-wide text-gray-300">Starting Camera...</span>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                {/* 3. BOTTOM SECTION: 3 Floating Circular Buttons [ ✕ ] [ ⚪ Shutter ] [ 🔄 Flip ] */}
+                <div className="relative z-50 pb-8 sm:pb-10 pt-6 px-6 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex items-center justify-around">
+                    
+                    {/* Left: Circular Translucent Cancel (✕) Button */}
                     <button
                         type="button"
-                        onClick={handleDone}
-                        disabled={capturedPhotos.length === 0}
-                        className={`flex flex-col items-center gap-1 transition-all ${
-                            capturedPhotos.length > 0
-                                ? 'text-primary hover:text-white active:scale-95'
-                                : 'opacity-40 cursor-not-allowed text-white/50'
+                        onClick={onClose}
+                        className="size-14 sm:size-16 rounded-full bg-white/20 hover:bg-white/30 active:scale-90 text-white backdrop-blur-md flex items-center justify-center border border-white/25 shadow-xl transition-all"
+                        title="Cancel"
+                        aria-label="Cancel camera"
+                    >
+                        <DynamicLucideIcon name="close" className="text-2xl sm:text-3xl" />
+                    </button>
+
+                    {/* Center: Large Iconic Shutter Button */}
+                    <button
+                        type="button"
+                        disabled={!cameraReady || isLimitReached || isCapturing}
+                        onClick={takePhoto}
+                        className={`size-20 sm:size-22 rounded-full border-[5px] border-white/90 p-1 flex items-center justify-center transition-all shadow-2xl active:scale-90 hover:scale-105 ${
+                            isLimitReached
+                                ? 'opacity-40 cursor-not-allowed border-gray-500'
+                                : 'cursor-pointer'
                         }`}
-                        title="Add captured photos to listing"
+                        aria-label="Take photo"
                     >
                         <div
-                            className={`size-11 rounded-2xl flex items-center justify-center font-bold text-sm shadow-lg transition-all ${
-                                capturedPhotos.length > 0
-                                    ? 'bg-primary text-white shadow-primary/30'
-                                    : 'bg-white/15 backdrop-blur-md text-white'
+                            className={`size-full rounded-full transition-transform ${
+                                isLimitReached ? 'bg-gray-500' : 'bg-white active:scale-95'
                             }`}
-                        >
-                            <DynamicLucideIcon name="check" className="text-xl font-bold" />
-                        </div>
-                        <span className="text-[10px] font-bold">
-                            {capturedPhotos.length > 0 ? `Done (${capturedPhotos.length})` : 'Done'}
-                        </span>
+                        />
+                    </button>
+
+                    {/* Right: Circular Translucent Flip (🔄) Button */}
+                    <button
+                        type="button"
+                        onClick={toggleFacingMode}
+                        className="size-14 sm:size-16 rounded-full bg-white/20 hover:bg-white/30 active:scale-90 text-white backdrop-blur-md flex items-center justify-center border border-white/25 shadow-xl transition-all"
+                        title="Flip camera"
+                        aria-label="Flip camera"
+                    >
+                        <DynamicLucideIcon name="flip_camera_ios" className="text-2xl sm:text-3xl" />
                     </button>
                 </div>
-            </footer>
+
+            </div>
         </div>
     );
 }
