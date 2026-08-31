@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client';
 import { validateImage, compressProductImage, convertHeicToJpeg } from '@/utils/imageUtils';
 import { updateListingAction } from './actions';
 import PhotoSourceModal from '@/components/PhotoSourceModal';
+import InAppCameraModal from '@/components/InAppCameraModal';
 
 export default function EditListingClient({ product }) {
     const router = useRouter();
@@ -15,6 +16,10 @@ export default function EditListingClient({ product }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [sourceModal, setSourceModal] = useState({
+        isOpen: false,
+        replaceIndex: null,
+    });
+    const [cameraModal, setCameraModal] = useState({
         isOpen: false,
         replaceIndex: null,
     });
@@ -510,9 +515,19 @@ export default function EditListingClient({ product }) {
                 <PhotoSourceModal
                     isOpen={sourceModal.isOpen}
                     onClose={() => setSourceModal({ isOpen: false, replaceIndex: null })}
+                    onOpenInAppCamera={(replaceIndex) => setCameraModal({ isOpen: true, replaceIndex })}
                     onFilesSelected={handleFilesSelected}
                     replaceIndex={sourceModal.replaceIndex}
                     remainingSlots={5 - photos.length}
+                />
+
+                {/* In-App Live Camera Viewfinder Modal */}
+                <InAppCameraModal
+                    isOpen={cameraModal.isOpen}
+                    onClose={() => setCameraModal({ isOpen: false, replaceIndex: null })}
+                    onPhotosCaptured={handleFilesSelected}
+                    maxPhotos={5 - photos.length}
+                    replaceIndex={cameraModal.replaceIndex}
                 />
             </div>
         </div>

@@ -10,6 +10,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import CategorySelector from '@/components/CategorySelector';
 import ImageCropModal from '@/components/ImageCropModal';
 import PhotoSourceModal from '@/components/PhotoSourceModal';
+import InAppCameraModal from '@/components/InAppCameraModal';
 
 export default function CreateListingPage() {
     const router = useRouter();
@@ -23,6 +24,10 @@ export default function CreateListingPage() {
     const [verificationStatus, setVerificationStatus] = useState(null);
     const [checkingSubscription, setCheckingSubscription] = useState(true);
     const [sourceModal, setSourceModal] = useState({
+        isOpen: false,
+        replaceIndex: null,
+    });
+    const [cameraModal, setCameraModal] = useState({
         isOpen: false,
         replaceIndex: null,
     });
@@ -765,9 +770,19 @@ export default function CreateListingPage() {
             <PhotoSourceModal
                 isOpen={sourceModal.isOpen}
                 onClose={() => setSourceModal({ isOpen: false, replaceIndex: null })}
+                onOpenInAppCamera={(replaceIndex) => setCameraModal({ isOpen: true, replaceIndex })}
                 onFilesSelected={handleFilesSelected}
                 replaceIndex={sourceModal.replaceIndex}
                 remainingSlots={5 - imageFiles.length}
+            />
+
+            {/* In-App Live Camera Viewfinder Modal */}
+            <InAppCameraModal
+                isOpen={cameraModal.isOpen}
+                onClose={() => setCameraModal({ isOpen: false, replaceIndex: null })}
+                onPhotosCaptured={handleFilesSelected}
+                maxPhotos={5 - imageFiles.length}
+                replaceIndex={cameraModal.replaceIndex}
             />
 
             {/* Image Cropping Modal */}

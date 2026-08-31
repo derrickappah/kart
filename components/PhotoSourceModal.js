@@ -4,11 +4,12 @@ import React, { useRef } from 'react';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 
 /**
- * Modal / Action sheet providing options to either take a photo with camera or choose from gallery/files.
+ * Modal / Action sheet providing options to either take a photo with the in-app camera or choose from gallery/files.
  * 
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether the modal is visible
  * @param {Function} props.onClose - Function to close modal
+ * @param {Function} props.onOpenInAppCamera - Function to trigger in-app live camera screen
  * @param {Function} props.onFilesSelected - Callback with (files: File[], replaceIndex: number | null)
  * @param {number|null} props.replaceIndex - Index if replacing an existing photo
  * @param {number} props.remainingSlots - How many photo slots remain
@@ -16,24 +17,22 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 export default function PhotoSourceModal({
     isOpen,
     onClose,
+    onOpenInAppCamera,
     onFilesSelected,
     replaceIndex = null,
     remainingSlots = 5,
 }) {
-    const cameraInputRef = useRef(null);
     const galleryInputRef = useRef(null);
 
     if (!isOpen) return null;
 
     const isReplacing = replaceIndex !== null;
 
-    const handleCameraChange = (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const files = Array.from(e.target.files);
-            onFilesSelected(files, replaceIndex);
-            onClose();
+    const handleCameraClick = () => {
+        onClose();
+        if (onOpenInAppCamera) {
+            onOpenInAppCamera(replaceIndex);
         }
-        e.target.value = '';
     };
 
     const handleGalleryChange = (e) => {
@@ -52,15 +51,7 @@ export default function PhotoSourceModal({
             className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-fade-in"
             onClick={onClose}
         >
-            {/* Hidden Inputs */}
-            <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleCameraChange}
-                className="hidden"
-            />
+            {/* Hidden Input for Gallery Selection */}
             <input
                 ref={galleryInputRef}
                 type="file"
@@ -99,10 +90,10 @@ export default function PhotoSourceModal({
 
                 {/* Option Buttons */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    {/* Option 1: Take Photo (Camera) */}
+                    {/* Option 1: In-App Live Camera */}
                     <button
                         type="button"
-                        onClick={() => cameraInputRef.current?.click()}
+                        onClick={handleCameraClick}
                         className="flex flex-row sm:flex-col items-center gap-3.5 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-[#1daddd]/10 dark:hover:bg-[#1daddd]/15 border-2 border-transparent hover:border-[#1daddd] text-left sm:text-center transition-all group active:scale-[0.98]"
                     >
                         <div className="size-12 rounded-xl bg-[#1daddd]/10 dark:bg-[#1daddd]/20 text-[#1daddd] flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
@@ -113,7 +104,7 @@ export default function PhotoSourceModal({
                                 Take Photo
                             </span>
                             <span className="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                                Snap directly with camera
+                                Live in-app camera
                             </span>
                         </div>
                     </button>
@@ -132,7 +123,7 @@ export default function PhotoSourceModal({
                                 Photo Library
                             </span>
                             <span className="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                                Upload from your gallery
+                                Upload from gallery
                             </span>
                         </div>
                     </button>
