@@ -167,50 +167,71 @@ export default function ConversationList() {
 
     const [pullDelta, setPullDelta] = useState(0);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [isPulling, setIsPulling] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const startY = useRef(0);
+    const startX = useRef(0);
+    const isEligible = useRef(false);
     const mainRef = useRef(null);
 
     const handleTouchStart = (e) => {
         if (isRefreshing || !mainRef.current) return;
         if (mainRef.current.scrollTop <= 0) {
             startY.current = e.touches[0].clientY;
-            setIsPulling(true);
+            startX.current = e.touches[0].clientX;
+            isEligible.current = true;
         } else {
-            setIsPulling(false);
+            isEligible.current = false;
         }
     };
 
     const handleTouchMove = (e) => {
-        if (!isPulling || isRefreshing || !mainRef.current) return;
+        if (!isEligible.current || isRefreshing || !mainRef.current) return;
         if (mainRef.current.scrollTop > 0) {
-            setIsPulling(false);
+            isEligible.current = false;
+            setIsDragging(false);
             setPullDelta(0);
             return;
         }
+
         const currentY = e.touches[0].clientY;
-        const diff = currentY - startY.current;
-        if (diff > 0) {
-            const delta = Math.min(diff * 0.4, 65);
+        const currentX = e.touches[0].clientX;
+        const diffY = currentY - startY.current;
+        const diffX = currentX - startX.current;
+
+        // Cancel if moving horizontally more than vertically
+        if (Math.abs(diffX) > diffY) {
+            isEligible.current = false;
+            setIsDragging(false);
+            setPullDelta(0);
+            return;
+        }
+
+        if (diffY > 8) {
+            setIsDragging(true);
+            const delta = Math.min((diffY - 8) * 0.45, 75);
             setPullDelta(delta);
         } else {
             setPullDelta(0);
+            setIsDragging(false);
         }
     };
 
     const handleTouchEnd = async () => {
-        if (!isPulling) return;
-        setIsPulling(false);
-        if (pullDelta >= 45 && !isRefreshing) {
+        if (!isEligible.current && !isDragging) return;
+        const wasDragging = isDragging;
+        isEligible.current = false;
+        setIsDragging(false);
+
+        if (wasDragging && pullDelta >= 45 && !isRefreshing) {
             setIsRefreshing(true);
-            setPullDelta(45);
+            setPullDelta(50);
             try {
                 await mutate();
             } finally {
                 setTimeout(() => {
                     setIsRefreshing(false);
                     setPullDelta(0);
-                }, 300);
+                }, 350);
             }
         } else {
             setPullDelta(0);
@@ -218,8 +239,8 @@ export default function ConversationList() {
     };
 
     return (
-        <div className="bg-white dark:bg-[#242428] font-display antialiased flex flex-col h-full w-full overflow-hidden">
-            <div className="max-w-[440px] w-full mx-auto flex flex-col h-full overflow-hidden">
+        <div className="bg-white dark:bg-[#242428] font-display antialiased flex flex-col h-full w-full overflow-hidden relative">
+            <div className="max-w-[440px] w-full mx-auto flex flex-col h-full overflow-hidden relative">
                 <header className="flex-none z-40 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
                     {conversations.length > 0 ? (
                         <SearchBar
@@ -243,6 +264,35 @@ export default function ConversationList() {
                     )}
                 </header>
 
+                {/* Floating Pull To Refresh Indicator */}
+                <div 
+                    className={`pointer-events-none absolute left-1/2 z-50 flex items-center justify-center -translate-x-1/2 ${
+                        !isDragging ? 'transition-all duration-300 ease-out' : ''
+                    }`}
+                    style={{ 
+                        top: '72px',
+                        transform: `translate3d(-50%, ${isRefreshing ? 12 : Math.max(pullDelta - 35, -45)}px, 0)`,
+                        opacity: pullDelta > 15 || isRefreshing ? 1 : 0,
+                        visibility: pullDelta > 5 || isRefreshing ? 'visible' : 'hidden'
+                    }}
+                >
+                    <div className="size-9 rounded-full bg-white dark:bg-[#2d2d32] shadow-lg border border-gray-200/90 dark:border-gray-700/90 flex items-center justify-center text-[#1daddd]">
+                        {isRefreshing ? (
+                            <div className="size-4 border-2 border-[#1daddd] border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <DynamicLucideIcon 
+                                name="arrow_downward" 
+                                size={18}
+                                style={{ 
+                                    transform: `rotate(${Math.min((pullDelta / 45) * 180, 180)}deg)`,
+                                    transition: isDragging ? 'none' : 'transform 0.15s ease'
+                                }} 
+                                className="text-[#1daddd]"
+                            />
+                        )}
+                    </div>
+                </div>
+
                 <main 
                     ref={mainRef}
                     onTouchStart={handleTouchStart}
@@ -251,29 +301,6 @@ export default function ConversationList() {
                     onTouchCancel={handleTouchEnd}
                     className="flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-6 relative"
                 >
-                    {/* Inline Pull To Refresh Indicator */}
-                    {(pullDelta > 0 || isRefreshing) && (
-                        <div 
-                            className="flex justify-center items-center py-2 transition-all duration-200"
-                            style={{ height: `${pullDelta}px`, opacity: pullDelta > 15 || isRefreshing ? 1 : 0 }}
-                        >
-                            <div className="size-8 rounded-full bg-white dark:bg-[#2d2d32] shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[#1daddd]">
-                                {isRefreshing ? (
-                                    <div className="size-4 border-2 border-[#1daddd] border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <DynamicLucideIcon 
-                                        name="arrow_downward" 
-                                        size={18}
-                                        style={{ 
-                                            transform: `rotate(${Math.min((pullDelta / 45) * 180, 180)}deg)`,
-                                            transition: 'transform 0.15s ease'
-                                        }} 
-                                        className="text-[#1daddd]"
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    )}
                 {searchQuery.trim() && (
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 mb-3">
                         <span>
