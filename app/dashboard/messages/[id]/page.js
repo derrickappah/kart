@@ -875,45 +875,45 @@ export default function ChatPage() {
                     onChange={handleFileUpload}
                 />
 
-                <form onSubmit={handleSendMessage} className="flex items-end gap-3">
+                <form onSubmit={handleSendMessage} className="flex items-end gap-2.5">
                     {!isRecording && (
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploading}
-                            className="p-3 text-gray-400 hover:text-[#1daddd] dark:text-gray-500 dark:hover:text-[#1daddd] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0 disabled:opacity-50"
+                            className="size-11 flex items-center justify-center text-gray-500 hover:text-[#1daddd] dark:text-gray-400 dark:hover:text-[#1daddd] transition-colors bg-gray-100 dark:bg-gray-800 rounded-full shrink-0 disabled:opacity-50"
                             aria-label="Attach file"
                         >
                             {uploading ? (
-                                <div className="size-6 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
+                                <div className="size-5 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
                             ) : (
-                                <DynamicLucideIcon name="add" className="text-[24px]" />
+                                <DynamicLucideIcon name="add" className="text-[22px]" />
                             )}
                         </button>
                     )}
 
                     {isRecording ? (
-                        <div className="flex-1 bg-red-50/90 dark:bg-red-950/40 rounded-2xl flex items-center justify-between px-4 py-3 border border-red-200/80 dark:border-red-900/50 shadow-sm animate-pulse min-h-[48px]">
-                            <div className="flex items-center gap-3">
-                                <span className="size-3 rounded-full bg-red-500 animate-ping shrink-0" />
-                                <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                                    Recording audio {formatRecordingTimer(recordingDuration)}
+                        <div className="flex-1 bg-red-50/90 dark:bg-red-950/40 rounded-2xl flex items-center justify-between px-4 py-2.5 border border-red-200/80 dark:border-red-900/50 shadow-sm animate-pulse h-11">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <span className="size-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                                <span className="text-sm font-semibold text-red-600 dark:text-red-400 truncate">
+                                    Recording {formatRecordingTimer(recordingDuration)}
                                 </span>
                             </div>
                             <button
                                 type="button"
                                 onClick={cancelRecording}
-                                className="text-xs font-bold text-red-500 hover:text-red-700 dark:text-red-400 flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-red-100/70 dark:hover:bg-red-900/50 transition-colors"
+                                className="text-xs font-bold text-red-500 hover:text-red-700 dark:text-red-400 flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-red-100/70 dark:hover:bg-red-900/50 transition-colors shrink-0"
                             >
-                                <DynamicLucideIcon name="delete" className="text-[16px]" />
+                                <DynamicLucideIcon name="delete" className="text-[15px]" />
                                 Cancel
                             </button>
                         </div>
                     ) : (
-                        <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#1daddd]/50 focus-within:bg-white dark:focus-within:bg-[#111d21] transition-all">
+                        <div className="flex-1 min-h-[44px] bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center px-3 py-1 border border-transparent focus-within:border-[#1daddd]/50 focus-within:bg-white dark:focus-within:bg-[#111d21] transition-all">
                             <textarea
                                 ref={textareaRef}
-                                className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-3 px-4 max-h-24"
+                                className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-2 px-1 max-h-24 text-sm leading-relaxed"
                                 placeholder="Message..."
                                 rows="1"
                                 value={newMessage}
@@ -929,7 +929,7 @@ export default function ChatPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                className={`p-2 mr-1 transition-colors ${showEmojiPicker ? 'text-[#1daddd]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
+                                className={`p-1.5 transition-colors shrink-0 ${showEmojiPicker ? 'text-[#1daddd]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
                                 aria-label="Insert emoji"
                             >
                                 <DynamicLucideIcon name="sentiment_satisfied" className="text-[20px]" />
@@ -942,26 +942,26 @@ export default function ChatPage() {
                             type="button"
                             onClick={stopAndSendRecording}
                             disabled={uploading}
-                            className="p-3 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg shadow-red-500/30 transition-all transform active:scale-95 shrink-0 flex items-center justify-center min-w-[48px] min-h-[48px]"
+                            className="size-11 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md shadow-red-500/20 transition-all transform active:scale-95 shrink-0 flex items-center justify-center"
                             aria-label="Send audio message"
                         >
                             {uploading ? (
                                 <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             ) : (
-                                <DynamicLucideIcon name="send" className="text-[20px] ml-0.5" />
+                                <DynamicLucideIcon name="send" className="text-[18px] translate-x-[1px]" />
                             )}
                         </button>
                     ) : isTyping ? (
                         <button
                             type="submit"
                             disabled={sending || uploading}
-                            className="p-3 bg-[#1daddd] text-white rounded-full shadow-lg shadow-[#1daddd]/30 hover:bg-[#159ac6] transition-all transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none min-w-[48px] min-h-[48px]"
+                            className="size-11 bg-[#1daddd] hover:bg-[#159ac6] text-white rounded-full shadow-md shadow-[#1daddd]/25 transition-all transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none"
                             aria-label="Send message"
                         >
                             {sending || uploading ? (
                                 <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             ) : (
-                                <DynamicLucideIcon name="send" className="text-[20px] ml-0.5" />
+                                <DynamicLucideIcon name="send" className="text-[18px] translate-x-[1px]" />
                             )}
                         </button>
                     ) : (
@@ -969,13 +969,13 @@ export default function ChatPage() {
                             type="button"
                             onClick={startRecording}
                             disabled={uploading || sending}
-                            className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-[#1daddd] hover:text-white dark:hover:bg-[#1daddd] dark:hover:text-white rounded-full transition-all transform active:scale-95 shrink-0 flex items-center justify-center min-w-[48px] min-h-[48px] shadow-sm"
+                            className="size-11 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-[#1daddd] hover:text-white dark:hover:bg-[#1daddd] dark:hover:text-white rounded-full transition-all transform active:scale-95 shrink-0 flex items-center justify-center shadow-none hover:shadow-md"
                             aria-label="Record voice note"
                         >
                             {uploading ? (
                                 <div className="size-5 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
                             ) : (
-                                <DynamicLucideIcon name="mic" className="text-[22px]" />
+                                <DynamicLucideIcon name="mic" className="text-[20px]" />
                             )}
                         </button>
                     )}
