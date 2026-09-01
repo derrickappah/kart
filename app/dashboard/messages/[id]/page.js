@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { mutate as globalMutate } from 'swr';
 import { createClient } from '../../../../utils/supabase/client';
 import { broadcastMessagesRead } from '@/app/hooks/useUnreadMessagesCount';
+import { parseSafeDate } from '@/utils/dateUtils';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ReportModal from '../../../../components/ReportModal';
@@ -225,8 +226,8 @@ export default function ChatPage() {
     }, [messages]);
 
     const formatTime = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const date = parseSafeDate(dateString);
+        return date ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
     };
 
     const addEmoji = (emoji) => {
@@ -341,7 +342,7 @@ export default function ChatPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col h-full w-full max-w-md mx-auto overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] animate-pulse">
+            <div className="flex flex-col h-[100dvh] max-w-md mx-auto bg-[#f6f7f8] dark:bg-[#111d21] animate-pulse">
                 {/* Header skeleton */}
                 <div className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
                     <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700" />
@@ -361,7 +362,7 @@ export default function ChatPage() {
                     <div className="flex justify-end"><div className="h-20 w-52 bg-[#1daddd]/30 dark:bg-[#1daddd]/20 rounded-2xl" /></div>
                 </main>
                 {/* Footer skeleton */}
-                <div className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] flex items-center gap-3">
+                <div className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 flex items-center gap-3">
                     <div className="size-11 rounded-full bg-gray-100 dark:bg-gray-800" />
                     <div className="flex-1 h-11 bg-gray-100 dark:bg-gray-800 rounded-2xl" />
                     <div className="size-11 rounded-full bg-[#1daddd]/30 dark:bg-[#1daddd]/20" />
@@ -371,7 +372,7 @@ export default function ChatPage() {
     }
 
     return (
-        <div className="flex flex-col h-full w-full max-w-md mx-auto overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] text-[#111618] dark:text-gray-100 font-display">
+        <div className="flex flex-col h-[100dvh] max-w-md mx-auto overflow-hidden bg-[#f6f7f8] dark:bg-[#111d21] text-[#111618] dark:text-gray-100 font-display">
             <header className="flex-none bg-white dark:bg-[#232628] px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between z-30 shadow-sm relative">
                 <button
                     onClick={() => router.back()}
@@ -450,22 +451,24 @@ export default function ChatPage() {
 
             {/* Chat Area */}
             <main className="flex-1 overflow-y-auto overscroll-contain no-scrollbar px-4 pb-4 scroll-smooth flex flex-col">
-                {[...messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).map((msg, index, sortedMessages) => {
+                {[...messages].sort((a, b) => (parseSafeDate(a.created_at)?.getTime() || 0) - (parseSafeDate(b.created_at)?.getTime() || 0)).map((msg, index, sortedMessages) => {
                     const isMe = msg.sender_id === currentUser?.id;
                     const prevMsg = index > 0 ? sortedMessages[index - 1] : null;
                     const nextMsg = index < sortedMessages.length - 1 ? sortedMessages[index + 1] : null;
 
-                    // Time gap calculations
-                    const timeGapPrev = prevMsg ? (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) / (1000 * 60) : Infinity;
-                    const timeGapNext = nextMsg ? (new Date(nextMsg.created_at).getTime() - new Date(msg.created_at).getTime()) / (1000 * 60) : Infinity;
+                    const msgDate = parseSafeDate(msg.created_at);
+                    const prevMsgDate = prevMsg ? parseSafeDate(prevMsg.created_at) : null;
+                    const nextMsgDate = nextMsg ? parseSafeDate(nextMsg.created_at) : null;
+
+                    // Time gap calculations (in minutes)
+                    const timeGapPrev = (prevMsgDate && msgDate) ? (msgDate.getTime() - prevMsgDate.getTime()) / (1000 * 60) : Infinity;
+                    const timeGapNext = (nextMsgDate && msgDate) ? (nextMsgDate.getTime() - msgDate.getTime()) / (1000 * 60) : Infinity;
 
                     // Grouping Logic
                     const isSameSenderPrev = prevMsg?.sender_id === msg.sender_id;
                     const isSameSenderNext = nextMsg?.sender_id === msg.sender_id;
 
-                    // A message is "grouped" with the PREVIOUS one if same sender AND < 2 mins
                     const isContinuedFromPrev = isSameSenderPrev && timeGapPrev <= 2;
-                    // A message is "grouped" with the NEXT one if same sender AND < 2 mins
                     const isContinuedToNext = isSameSenderNext && timeGapNext <= 2;
 
                     // Border Radius Logic
@@ -481,9 +484,9 @@ export default function ChatPage() {
                     const marginTopClass = isContinuedFromPrev ? 'mt-[2px]' : 'mt-3';
 
                     // Time Divider Logic
-                    const prevDate = prevMsg ? new Date(prevMsg.created_at).toDateString() : null;
-                    const currDate = new Date(msg.created_at).toDateString();
-                    const isNewDay = prevDate !== currDate;
+                    const prevDayStr = prevMsgDate ? prevMsgDate.toDateString() : null;
+                    const currDayStr = msgDate ? msgDate.toDateString() : null;
+                    const isNewDay = prevDayStr !== currDayStr;
                     const showTimeBreak = !prevMsg || isNewDay || timeGapPrev > 15;
 
                     return (
@@ -491,7 +494,7 @@ export default function ChatPage() {
                             {showTimeBreak && (
                                 <div className="flex justify-center my-6 sticky top-2 z-10">
                                     <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 bg-white/90 dark:bg-[#1e282c]/90 backdrop-blur-sm px-4 py-1.5 rounded-full uppercase tracking-[0.15em] shadow-sm border border-gray-100 dark:border-gray-800">
-                                        {isNewDay ? new Date(msg.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : formatTime(msg.created_at)}
+                                        {isNewDay && msgDate ? msgDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : formatTime(msg.created_at)}
                                     </span>
                                 </div>
                             )}
@@ -570,7 +573,7 @@ export default function ChatPage() {
             </main>
 
             {/* Footer */}
-            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] z-30 relative">
+            <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
                 {/* Emoji Picker Popover */}
                 {showEmojiPicker && (
                     <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">

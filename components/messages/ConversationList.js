@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '../../utils/supabase/client';
 import { broadcastMessagesRead } from '@/app/hooks/useUnreadMessagesCount';
+import { formatChatTimeAgo, parseSafeDate } from '@/utils/dateUtils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SearchBar from '../SearchBar';
@@ -79,6 +80,13 @@ const fetchConversations = async () => {
             }
         }));
 
+        // Sort by the latest message timestamp (or conversation updated_at / created_at)
+        enrichedConvs.sort((a, b) => {
+            const timeA = parseSafeDate(a.lastMessage?.created_at || a.updated_at || a.created_at)?.getTime() || 0;
+            const timeB = parseSafeDate(b.lastMessage?.created_at || b.updated_at || b.created_at)?.getTime() || 0;
+            return timeB - timeA;
+        });
+
         return { user, conversations: enrichedConvs };
     } catch (err) {
         console.error('fetchConversations error:', err);
@@ -144,22 +152,6 @@ export default function ConversationList() {
         }, false);
     }, [mutate]);
 
-    const timeAgo = (date) => {
-        if (!date) return '';
-        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + "y";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + "mo";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + "d";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + "h";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + "m";
-        return Math.floor(seconds) + "s";
-    };
-
     const filteredConversations = conversations.filter(conv =>
         conv.otherUser.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         conv.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -188,50 +180,42 @@ export default function ConversationList() {
         if (!isEligible.current || isRefreshing || !mainRef.current) return;
         if (mainRef.current.scrollTop > 0) {
             isEligible.current = false;
-            setIsDragging(false);
             setPullDelta(0);
+            setIsDragging(false);
             return;
         }
 
         const currentY = e.touches[0].clientY;
         const currentX = e.touches[0].clientX;
         const diffY = currentY - startY.current;
-        const diffX = currentX - startX.current;
+        const diffX = Math.abs(currentX - startX.current);
 
-        // Cancel if moving horizontally more than vertically
-        if (Math.abs(diffX) > diffY) {
-            isEligible.current = false;
-            setIsDragging(false);
-            setPullDelta(0);
-            return;
-        }
-
-        if (diffY > 8) {
+        if (diffY > 0 && diffY > diffX) {
             setIsDragging(true);
-            const delta = Math.min((diffY - 8) * 0.45, 75);
-            setPullDelta(delta);
-        } else {
+            const friction = 0.4;
+            const newDelta = Math.min(diffY * friction, 90);
+            setPullDelta(newDelta);
+        } else if (diffY <= 0) {
             setPullDelta(0);
             setIsDragging(false);
         }
     };
 
     const handleTouchEnd = async () => {
-        if (!isEligible.current && !isDragging) return;
-        const wasDragging = isDragging;
+        if (!isEligible.current || isRefreshing) return;
         isEligible.current = false;
         setIsDragging(false);
 
-        if (wasDragging && pullDelta >= 45 && !isRefreshing) {
+        if (pullDelta > 45) {
             setIsRefreshing(true);
-            setPullDelta(50);
+            setPullDelta(45);
             try {
                 await mutate();
             } finally {
                 setTimeout(() => {
                     setIsRefreshing(false);
                     setPullDelta(0);
-                }, 350);
+                }, 400);
             }
         } else {
             setPullDelta(0);
@@ -239,8 +223,11 @@ export default function ConversationList() {
     };
 
     return (
-        <div className="bg-white dark:bg-[#242428] font-display antialiased flex flex-col h-full w-full overflow-hidden relative">
-            <div className="max-w-[440px] w-full mx-auto flex flex-col h-full overflow-hidden relative">
+        <div
+            className="bg-white dark:bg-[#242428] font-display antialiased flex flex-col overflow-hidden w-full"
+            style={{ height: 'calc(100dvh - 4rem - max(66px, calc(50px + env(safe-area-inset-bottom, 0px))))' }}
+        >
+            <div className="max-w-[440px] w-full mx-auto flex flex-col h-full overflow-hidden">
                 <header className="flex-none z-40 px-4 py-3 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
                     {conversations.length > 0 ? (
                         <SearchBar
@@ -264,32 +251,17 @@ export default function ConversationList() {
                     )}
                 </header>
 
-                {/* Floating Pull To Refresh Indicator */}
                 <div 
-                    className={`pointer-events-none absolute left-1/2 z-50 flex items-center justify-center -translate-x-1/2 ${
-                        !isDragging ? 'transition-all duration-300 ease-out' : ''
-                    }`}
+                    className="flex items-center justify-center overflow-hidden transition-all duration-200"
                     style={{ 
-                        top: '72px',
-                        transform: `translate3d(-50%, ${isRefreshing ? 12 : Math.max(pullDelta - 35, -45)}px, 0)`,
-                        opacity: pullDelta > 15 || isRefreshing ? 1 : 0,
-                        visibility: pullDelta > 5 || isRefreshing ? 'visible' : 'hidden'
+                        height: isRefreshing ? '45px' : `${pullDelta}px`,
+                        opacity: Math.min(pullDelta / 35, 1)
                     }}
                 >
-                    <div className="size-9 rounded-full bg-white dark:bg-[#2d2d32] shadow-lg border border-gray-200/90 dark:border-gray-700/90 flex items-center justify-center text-[#1daddd]">
-                        {isRefreshing ? (
-                            <div className="size-4 border-2 border-[#1daddd] border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                            <DynamicLucideIcon 
-                                name="arrow_downward" 
-                                size={18}
-                                style={{ 
-                                    transform: `rotate(${Math.min((pullDelta / 45) * 180, 180)}deg)`,
-                                    transition: isDragging ? 'none' : 'transform 0.15s ease'
-                                }} 
-                                className="text-[#1daddd]"
-                            />
-                        )}
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[#1daddd]">
+                        <div className={`size-4 border-2 border-[#1daddd] border-t-transparent rounded-full ${isRefreshing ? 'animate-spin' : ''}`} 
+                             style={{ transform: !isRefreshing ? `rotate(${pullDelta * 4}deg)` : undefined }} />
+                        <span>{isRefreshing ? 'Refreshing...' : pullDelta > 45 ? 'Release to refresh' : 'Pull to refresh'}</span>
                     </div>
                 </div>
 
@@ -356,6 +328,7 @@ export default function ConversationList() {
                     filteredConversations.map(conv => {
                         const isActive = pathname === `/dashboard/messages/${conv.id}`;
                         const isUnread = (conv.unreadCount || 0) > 0;
+                        const lastTimestamp = conv.lastMessage?.created_at || conv.updated_at || conv.created_at;
 
                         return (
                             <Link 
@@ -381,7 +354,7 @@ export default function ConversationList() {
                                                 {conv.otherUser.display_name}
                                             </span>
                                             <span className={`text-[12px] ${isActive || isUnread ? 'font-semibold text-[#1daddd]' : 'font-normal text-[#5e7d87] dark:text-gray-500'}`}>
-                                                {timeAgo(conv.updated_at)}
+                                                {formatChatTimeAgo(lastTimestamp)}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
