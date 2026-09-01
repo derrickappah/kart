@@ -320,29 +320,36 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
     }
 
     try {
+      const response = await fetch('/api/notifications/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: notificationId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete notification');
+      }
+
+      // Also call client supabase as fallback/realtime trigger
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Failed to delete notification:', error);
-        setError('Failed to delete notification. Please try again.');
-        // Revert optimistic update
-        if (targetNotif) {
-          setNotifications((prev) => [targetNotif, ...prev]);
-          if (wasUnread) {
-            setUnreadCount((prev) => prev + 1);
-          }
-        }
+      if (user) {
+        await supabase
+          .from('notifications')
+          .delete()
+          .eq('id', notificationId)
+          .eq('user_id', user.id);
       }
     } catch (err) {
       console.error('Error deleting notification:', err);
-      setError('Failed to delete notification.');
+      setError('Failed to delete notification. Please try again.');
+      // Revert optimistic update
+      if (targetNotif) {
+        setNotifications((prev) => [targetNotif, ...prev]);
+        if (wasUnread) {
+          setUnreadCount((prev) => prev + 1);
+        }
+      }
     }
   }, [notifications]);
 

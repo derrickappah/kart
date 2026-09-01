@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import NotificationsClient from './NotificationsClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Notifications | KART',
   description: 'Stay up to date with your orders, messages, and activity on KART.',
