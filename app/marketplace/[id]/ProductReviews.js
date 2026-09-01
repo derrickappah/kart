@@ -250,7 +250,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
             {/* Section Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h2 id="reviews-heading" className="text-xl md:text-2xl font-extrabold text-[#0e181b] dark:text-white flex items-center gap-2.5">
+                    <h2 id="reviews-heading" className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0e181b] dark:text-white flex items-center gap-2.5">
                         <span>Ratings & Reviews</span>
                         {totalReviews > 0 && (
                             <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">

@@ -161,7 +161,7 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
             {/* Header with Title, Controls, and See All */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-extrabold tracking-tight">Similar Items</h2>
+                    <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0e181b] dark:text-white">Similar Items</h2>
                     {category && (
                         <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                             {category}

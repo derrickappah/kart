@@ -556,7 +556,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
 
                             {/* Description Section */}
                             <div>
-                                <h2 className="text-lg font-bold mb-2">Description</h2>
+                                <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0e181b] dark:text-white mb-3">Description</h2>
                                 {product.condition && (
                                     <p className="text-sm font-semibold text-[#0e181b] dark:text-white mb-2">
                                         Condition : {product.condition}
@@ -570,7 +570,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                             {/* Location Section */}
                             {product.campus && (
                                 <div>
-                                    <h2 className="text-lg font-bold mb-2">Location</h2>
+                                    <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0e181b] dark:text-white mb-3">Location</h2>
                                     <div className="flex items-center gap-3 p-4 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/10">
                                         <div className="size-10 flex items-center justify-center bg-primary rounded-xl text-white shrink-0 shadow-sm">
                                             <DynamicLucideIcon name="location_on" aria-hidden="true" />
