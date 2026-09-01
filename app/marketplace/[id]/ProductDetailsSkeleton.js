@@ -71,6 +71,7 @@ export function ProductDetailsSkeleton() {
                                 <div className="h-4 w-full bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-5/6 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-2/3 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
+                                <div className="h-4 w-28 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                             </div>
 
                             {/* Pickup Location Skeleton */}

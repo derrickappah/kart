@@ -565,6 +565,11 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                 <div className="text-[#4f5b66] dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-base">
                                     {product.description || <span className="italic text-gray-400">No description provided.</span>}
                                 </div>
+                                {product.price != null && (
+                                    <p className="text-sm font-semibold text-[#4f5b66] dark:text-slate-300 mt-2">
+                                        Price : ₵ {formatPrice(product.price)}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Location Section */}
