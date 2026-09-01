@@ -400,7 +400,7 @@ export default function ChatPage() {
     const startRecording = async () => {
         try {
             if (typeof window !== 'undefined' && window.isSecureContext === false && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                alert("Microphone recording requires a secure connection (HTTPS) or localhost.");
+                alert("Microphone recording requires a secure HTTPS connection.");
                 return;
             }
 
@@ -409,23 +409,45 @@ export default function ChatPage() {
                 return;
             }
 
+            // Stop any existing stream tracks
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(t => t.stop());
+                streamRef.current = null;
+            }
+
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
+            // Safe MediaRecorder instantiation with browser-compatible codecs
+            let mediaRecorder;
             const mimeTypes = [
                 'audio/webm;codecs=opus',
                 'audio/webm',
                 'audio/mp4',
                 'audio/aac',
                 'audio/ogg;codecs=opus',
-                ''
+                'audio/ogg'
             ];
-            const supportedMime = typeof MediaRecorder !== 'undefined'
-                ? mimeTypes.find(t => t === '' || MediaRecorder.isTypeSupported(t))
-                : '';
 
-            const options = supportedMime ? { mimeType: supportedMime } : {};
-            const mediaRecorder = new MediaRecorder(stream, options);
+            let selectedMime = '';
+            if (typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function') {
+                for (const mime of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(mime)) {
+                        selectedMime = mime;
+                        break;
+                    }
+                }
+            }
+
+            try {
+                mediaRecorder = selectedMime 
+                    ? new MediaRecorder(stream, { mimeType: selectedMime }) 
+                    : new MediaRecorder(stream);
+            } catch (instError) {
+                console.warn('[ChatPage] MediaRecorder with options failed, falling back to default:', instError);
+                mediaRecorder = new MediaRecorder(stream);
+            }
+
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
 
@@ -435,20 +457,39 @@ export default function ChatPage() {
                 }
             };
 
+            mediaRecorder.onerror = (recErr) => {
+                console.error('[ChatPage] MediaRecorder error:', recErr);
+                cancelRecording();
+            };
+
             mediaRecorder.start(100);
             setIsRecording(true);
             setRecordingDuration(0);
 
+            if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
             recordingTimerRef.current = setInterval(() => {
                 setRecordingDuration(prev => prev + 1);
             }, 1000);
         } catch (err) {
             console.error("Error starting recording:", err);
-            const errStr = String(err?.message || err || '');
-            if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError' || errStr.toLowerCase().includes('permission')) {
-                alert("Microphone permission was denied.\n\nTo allow voice recording:\n1. Tap the lock or settings icon next to your browser address bar.\n2. Allow Microphone access for this site.\n3. Try again!");
+            const errName = err?.name || '';
+            const errMsg = String(err?.message || err || '');
+
+            if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
+                alert(
+                    "Microphone access is not enabled.\n\n" +
+                    "To fix this:\n" +
+                    "1. Tap the lock/tune icon in your browser address bar and set Microphone to 'Allow'.\n" +
+                    "2. If on iOS (iPhone), check iPhone Settings → Safari → Microphone (or Settings → Privacy & Security → Microphone).\n" +
+                    "3. If on Android, check Android Settings → Apps → Chrome/Browser → Permissions → Microphone.\n" +
+                    "4. Refresh the page after enabling."
+                );
+            } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
+                alert("No microphone found on this device. Please connect a microphone or headset.");
+            } else if (errName === 'NotReadableError' || errName === 'TrackStartError') {
+                alert("Your microphone is currently in use by another app (e.g. phone call, video call, or camera). Please close other apps and try again.");
             } else {
-                alert("Could not access microphone: " + (err.message || "Unknown error"));
+                alert("Could not start audio recording: " + (errMsg || "Unknown error"));
             }
         }
     };
