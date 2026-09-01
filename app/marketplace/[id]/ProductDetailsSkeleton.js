@@ -19,7 +19,7 @@ export function ProductDetailsSkeleton() {
                 </div>
             </div>
 
-            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-2 md:pb-8">
+            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-28 md:pb-8">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-8 items-start">
                     {/* Left Column: Hero Image & Thumbnails */}
                     <div className="md:col-span-7 flex flex-col gap-4 sticky top-0 md:static z-0">
@@ -50,10 +50,10 @@ export function ProductDetailsSkeleton() {
                                 <div className="h-8 w-24 bg-gray-100 dark:bg-[#2f2f35] rounded-lg shrink-0 shimmer" />
                             </div>
 
-                            {/* Action CTA Buttons */}
-                            <div className="flex gap-3 my-1">
-                                <div className="flex-1 h-14 rounded-full bg-gray-100 dark:bg-[#2f2f35] shimmer" />
-                                <div className="flex-1 h-14 rounded-full bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                            {/* Desktop Action CTA Buttons */}
+                            <div className="hidden md:flex gap-3 my-1">
+                                <div className="flex-1 h-14 rounded-2xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                                <div className="flex-1 h-14 rounded-2xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
                             </div>
 
                             {/* Seller Info Card */}
@@ -102,6 +102,14 @@ export function ProductDetailsSkeleton() {
                     </div>
                 </div>
             </main>
+
+            {/* Mobile Sticky Bottom Action Bar Skeleton */}
+            <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-md border-t border-black/5 dark:border-white/10 rounded-t-3xl p-4 shadow-lg pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+                <div className="flex gap-3">
+                    <div className="flex-1 h-12 rounded-2xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                    <div className="flex-1 h-12 rounded-2xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                </div>
+            </div>
         </div>
     );
 }

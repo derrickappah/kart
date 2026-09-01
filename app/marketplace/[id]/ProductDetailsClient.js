@@ -346,7 +346,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                 </div>
             </div>
 
-            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-2 md:pb-8">
+            <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-28 md:pb-8">
                 {/* Main Content Layout: Stack on Mobile, 2 Columns on Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-8 items-start">
                     {/* Left Column: Hero Carousel + Gallery Thumbnails (7 Cols Desktop) */}
@@ -465,9 +465,9 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                 </div>
                             </div>
 
-                            {/* Immediate Action CTAs (Above the fold for instant access) */}
+                            {/* Desktop Immediate Action CTAs */}
                             {!isOwner && (
-                                <div className="flex flex-col gap-2 my-1">
+                                <div className="hidden md:flex flex-col gap-2 my-1">
                                     {inlineError && (
                                         <div
                                             role="alert"
@@ -481,7 +481,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                             onClick={handleContactSeller}
                                             disabled={loadingChat}
                                             aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
-                                            className="flex-1 h-14 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="flex-1 h-14 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             {loadingChat
                                                 ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
@@ -495,7 +495,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                         </button>
                                         <Link
                                             href={product.seller_id ? `/profile/${product.seller_id}` : '#'}
-                                            className="flex-1 h-14 rounded-full bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all whitespace-nowrap px-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="flex-1 h-14 rounded-2xl bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all whitespace-nowrap px-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                             aria-label="View seller profile"
                                         >
                                             <DynamicLucideIcon name="person" size={20} aria-hidden="true" />
@@ -598,6 +598,45 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                 {/* Similar Items Section with Horizontal Infinite Scroll */}
                 <SimilarItemsSlider category={product.category} currentProductId={product.id} />
             </main>
+
+            {/* Sticky Bottom Action Area for Mobile */}
+            {!isOwner && (
+                <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-md border-t border-black/5 dark:border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] rounded-t-3xl px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+                    {inlineError && (
+                        <div
+                            role="alert"
+                            className="mb-2 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-xs font-medium text-center"
+                        >
+                            {inlineError}
+                        </div>
+                    )}
+                    <div className="flex gap-3 items-center">
+                        <button
+                            onClick={handleContactSeller}
+                            disabled={loadingChat}
+                            aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
+                            className="flex-1 h-12 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                            {loadingChat ? (
+                                <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
+                            ) : (
+                                <>
+                                    <DynamicLucideIcon name="chat_bubble" size={20} className="text-[#0e7490] dark:text-primary-light" aria-hidden="true" />
+                                    <span>Chat</span>
+                                </>
+                            )}
+                        </button>
+                        <Link
+                            href={product.seller_id ? `/profile/${product.seller_id}` : '#'}
+                            className="flex-1 h-12 rounded-2xl bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all whitespace-nowrap px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            aria-label="View seller profile"
+                        >
+                            <DynamicLucideIcon name="person" size={18} aria-hidden="true" />
+                            <span>Seller Profile</span>
+                        </Link>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
