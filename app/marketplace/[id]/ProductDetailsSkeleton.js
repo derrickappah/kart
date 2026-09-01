@@ -37,7 +37,6 @@ export function ProductDetailsSkeleton() {
                             {/* Badges & Time */}
                             <div className="flex items-center gap-2">
                                 <div className="h-6 w-20 bg-gray-100 dark:bg-[#2f2f35] rounded-md shimmer" />
-                                <div className="h-6 w-16 bg-gray-100 dark:bg-[#2f2f35] rounded-md shimmer" />
                                 <div className="h-4 w-16 bg-gray-100 dark:bg-[#2f2f35] rounded ml-auto shimmer" />
                             </div>
 
@@ -68,6 +67,7 @@ export function ProductDetailsSkeleton() {
                             {/* Description Skeleton */}
                             <div className="flex flex-col gap-2.5">
                                 <div className="h-5 w-28 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
+                                <div className="h-4 w-32 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-full bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-5/6 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-2/3 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />

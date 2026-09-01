@@ -447,9 +447,6 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                     <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
                                         {product.category}
                                     </span>
-                                    <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                                        {product.condition}
-                                    </span>
                                     <span className="text-[#5e7d87] dark:text-gray-400 text-xs font-bold uppercase tracking-wider ml-auto flex items-center gap-1">
                                         <DynamicLucideIcon name="schedule" size={14} aria-hidden="true" />
                                         <time dateTime={product.created_at}>{timeAgo(product.created_at)}</time>
@@ -560,6 +557,11 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                             {/* Description Section */}
                             <div>
                                 <h2 className="text-lg font-bold mb-2">Description</h2>
+                                {product.condition && (
+                                    <p className="text-sm font-semibold text-[#0e181b] dark:text-white mb-2">
+                                        Condition : {product.condition}
+                                    </p>
+                                )}
                                 <div className="text-[#4f5b66] dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-base">
                                     {product.description || <span className="italic text-gray-400">No description provided.</span>}
                                 </div>
