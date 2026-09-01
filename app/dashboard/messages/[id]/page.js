@@ -10,6 +10,100 @@ import Link from 'next/link';
 import ReportModal from '../../../../components/ReportModal';
 import { formatPrice } from '../../../../utils/formatters';
 
+function AudioMessageBubble({ src, isMe }) {
+    const audioRef = useRef(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+
+    const togglePlay = () => {
+        if (!audioRef.current) return;
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            audioRef.current.play();
+        }
+    };
+
+    const handleTimeUpdate = () => {
+        if (audioRef.current) {
+            setCurrentTime(audioRef.current.currentTime);
+        }
+    };
+
+    const handleLoadedMetadata = () => {
+        if (audioRef.current) {
+            setDuration(audioRef.current.duration || 0);
+        }
+    };
+
+    const handleSeek = (e) => {
+        if (!audioRef.current || !duration) return;
+        const newTime = (parseFloat(e.target.value) / 100) * duration;
+        audioRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+    };
+
+    const formatSeconds = (secs) => {
+        if (isNaN(secs) || secs <= 0) return '0:00';
+        const mins = Math.floor(secs / 60);
+        const rem = Math.floor(secs % 60);
+        return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
+    };
+
+    const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+    return (
+        <div className="flex items-center gap-3 py-1 px-1 min-w-[210px] max-w-full">
+            <audio
+                ref={audioRef}
+                src={src}
+                preload="metadata"
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => {
+                    setIsPlaying(false);
+                    setCurrentTime(0);
+                }}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+            />
+
+            <button
+                type="button"
+                onClick={togglePlay}
+                className={`size-9 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-90 ${
+                    isMe
+                        ? 'bg-white text-[#1daddd] hover:bg-white/90'
+                        : 'bg-[#1daddd] text-white hover:bg-[#159ac6]'
+                }`}
+                aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
+            >
+                <DynamicLucideIcon name={isPlaying ? 'pause' : 'play_arrow'} className="text-[18px] ml-0.5" />
+            </button>
+
+            <div className="flex-1 flex flex-col justify-center min-w-0">
+                <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={progress}
+                    onChange={handleSeek}
+                    className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[#1daddd] ${
+                        isMe ? 'bg-white/40' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                />
+                <div className={`flex justify-between items-center text-[10px] mt-1 font-medium select-none ${
+                    isMe ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                    <span>{formatSeconds(currentTime)}</span>
+                    <span>{formatSeconds(duration || 0)}</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function ChatPage() {
     const { id: conversationId } = useParams();
     const searchParams = useSearchParams();
@@ -32,6 +126,14 @@ export default function ChatPage() {
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const textareaRef = useRef(null);
+
+    // Audio recording state
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingDuration, setRecordingDuration] = useState(0);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+    const recordingTimerRef = useRef(null);
+    const streamRef = useRef(null);
 
     const markConversationAsRead = useCallback(async (convId, userId) => {
         if (!convId || convId === 'new') return;
@@ -218,6 +320,8 @@ export default function ChatPage() {
             window.removeEventListener('focus', handleFocusOrVisible);
             document.removeEventListener('visibilitychange', handleFocusOrVisible);
             if (channel) supabase.removeChannel(channel);
+            if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+            if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
         };
     }, [conversationId, sellerId, router, supabase, markConversationAsRead]);
 
@@ -263,6 +367,132 @@ export default function ChatPage() {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
+    };
+
+    // Voice recording handlers
+    const startRecording = async () => {
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Audio recording is not supported in your browser.");
+                return;
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            streamRef.current = stream;
+
+            const mimeTypes = [
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/mp4',
+                'audio/ogg;codecs=opus',
+                ''
+            ];
+            const supportedMime = typeof MediaRecorder !== 'undefined'
+                ? mimeTypes.find(t => t === '' || MediaRecorder.isTypeSupported(t))
+                : '';
+
+            const options = supportedMime ? { mimeType: supportedMime } : {};
+            const mediaRecorder = new MediaRecorder(stream, options);
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            mediaRecorder.start(100);
+            setIsRecording(true);
+            setRecordingDuration(0);
+
+            recordingTimerRef.current = setInterval(() => {
+                setRecordingDuration(prev => prev + 1);
+            }, 1000);
+        } catch (err) {
+            console.error("Error starting recording:", err);
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                alert("Microphone permission denied. Please allow microphone access in your browser settings.");
+            } else {
+                alert("Could not access microphone: " + (err.message || "Unknown error"));
+            }
+        }
+    };
+
+    const cancelRecording = () => {
+        if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.onstop = null;
+            mediaRecorderRef.current.stop();
+        }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(t => t.stop());
+            streamRef.current = null;
+        }
+        audioChunksRef.current = [];
+        setIsRecording(false);
+        setRecordingDuration(0);
+    };
+
+    const stopAndSendRecording = async () => {
+        if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+
+        const mediaRecorder = mediaRecorderRef.current;
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            cancelRecording();
+            return;
+        }
+
+        setUploading(true);
+        setIsRecording(false);
+
+        mediaRecorder.onstop = async () => {
+            try {
+                if (streamRef.current) {
+                    streamRef.current.getTracks().forEach(t => t.stop());
+                    streamRef.current = null;
+                }
+
+                const mimeType = mediaRecorder.mimeType || 'audio/webm';
+                const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+
+                if (audioBlob.size < 100) {
+                    setUploading(false);
+                    return;
+                }
+
+                const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm';
+                const fileName = `voice_${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`;
+                const filePath = `${conversationId}/${fileName}`;
+
+                const { data, error: uploadError } = await supabase.storage
+                    .from('chat-attachments')
+                    .upload(filePath, audioBlob, { contentType: mimeType });
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('chat-attachments')
+                    .getPublicUrl(filePath);
+
+                await sendMessage(publicUrl);
+            } catch (err) {
+                console.error("Error saving voice message:", err);
+                alert("Failed to send voice message. Please try again.");
+            } finally {
+                setUploading(false);
+                setRecordingDuration(0);
+                audioChunksRef.current = [];
+            }
+        };
+
+        mediaRecorder.stop();
+    };
+
+    const formatRecordingTimer = (secs) => {
+        const mins = Math.floor(secs / 60);
+        const rem = secs % 60;
+        return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
     };
 
     const sendMessage = async (content) => {
@@ -337,8 +567,16 @@ export default function ChatPage() {
 
     const handleSendMessage = async (e) => {
         if (e) e.preventDefault();
-        await sendMessage(newMessage);
+        if (isRecording) {
+            await stopAndSendRecording();
+            return;
+        }
+        if (newMessage.trim()) {
+            await sendMessage(newMessage);
+        }
     };
+
+    const isTyping = newMessage.trim().length > 0;
 
     if (loading) {
         return (
@@ -489,6 +727,10 @@ export default function ChatPage() {
                     const isNewDay = prevDayStr !== currDayStr;
                     const showTimeBreak = !prevMsg || isNewDay || timeGapPrev > 15;
 
+                    const isVideo = typeof msg.content === 'string' && msg.content.startsWith('http') && /\.(mp4|webm|ogg|mov|m4v|3gp)(\?.*)?$/i.test(msg.content);
+                    const isImage = typeof msg.content === 'string' && msg.content.startsWith('http') && /\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|heif)(\?.*)?$/i.test(msg.content);
+                    const isAudio = typeof msg.content === 'string' && msg.content.startsWith('http') && /\.(mp3|wav|m4a|aac|opus|webm|ogg)(\?.*)?$/i.test(msg.content) && !isVideo;
+
                     return (
                         <div key={msg.id} className="flex flex-col w-full">
                             {showTimeBreak && (
@@ -524,25 +766,37 @@ export default function ChatPage() {
                                         }`}>
                                         <div className="flex flex-col gap-1">
                                             <div className="break-words">
-                                                {msg.content.match(/\.(jpg|jpeg|png|gif|webp)/i) && msg.content.startsWith('http') ? (
+                                                {isVideo ? (
+                                                    <div className="rounded-xl overflow-hidden my-1 bg-black/20 dark:bg-black/50 shadow-inner max-w-full">
+                                                        <video
+                                                            src={msg.content}
+                                                            controls
+                                                            playsInline
+                                                            preload="metadata"
+                                                            className="w-full max-h-[340px] rounded-xl object-contain bg-black"
+                                                        />
+                                                    </div>
+                                                ) : isImage ? (
                                                     <img
                                                         src={msg.content}
-                                                        alt="Attachment"
-                                                        className="max-w-full rounded-lg cursor-pointer hover:opacity-95 transition-opacity"
+                                                        alt="Photo attachment"
+                                                        className="max-w-full max-h-[340px] rounded-xl cursor-pointer hover:opacity-95 transition-opacity object-cover my-1"
                                                         onClick={() => window.open(msg.content, '_blank')}
                                                     />
-                                                ) : msg.content.startsWith('http') ? (
+                                                ) : isAudio ? (
+                                                    <AudioMessageBubble src={msg.content} isMe={isMe} />
+                                                ) : typeof msg.content === 'string' && msg.content.startsWith('http') ? (
                                                     <a
                                                         href={msg.content}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex items-center gap-2 underline break-all"
+                                                        className="flex items-center gap-2 underline break-all py-1"
                                                     >
                                                         <DynamicLucideIcon name="attachment" className="text-[18px]" />
                                                         Attachment
                                                     </a>
                                                 ) : (
-                                                    /^[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{200D}]+$/u.test(msg.content.trim()) && [...msg.content.trim()].length <= 6 ? (
+                                                    typeof msg.content === 'string' && /^[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{200D}]+$/u.test(msg.content.trim()) && [...msg.content.trim()].length <= 6 ? (
                                                         <span className={`block leading-normal ${[...new Intl.Segmenter().segment(msg.content.trim())].length === 1 ? 'text-[40px]' : 'text-[28px]'
                                                             }`}>
                                                             {msg.content}
@@ -575,7 +829,7 @@ export default function ChatPage() {
             {/* Footer */}
             <footer className="flex-none bg-white dark:bg-[#232628] border-t border-gray-100 dark:border-gray-800 p-4 pb-4 z-30 relative">
                 {/* Emoji Picker Popover */}
-                {showEmojiPicker && (
+                {showEmojiPicker && !isRecording && (
                     <div className="absolute bottom-full left-4 mb-2 p-3 bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl z-20 grid grid-cols-6 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
                         {['😀', '😂', '😍', '👍', '🙏', '🔥', '✨', '💯', '🙌', '🎉', '👋', '❤️'].map(emoji => (
                             <button
@@ -593,57 +847,114 @@ export default function ChatPage() {
                     type="file"
                     ref={fileInputRef}
                     className="hidden"
+                    accept="image/*,video/*,audio/*"
                     onChange={handleFileUpload}
                 />
 
                 <form onSubmit={handleSendMessage} className="flex items-end gap-3">
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                        className="p-3 text-gray-400 hover:text-[#1daddd] dark:text-gray-500 dark:hover:text-[#1daddd] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0 disabled:opacity-50"
-                    >
-                        {uploading ? (
-                            <div className="size-6 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
-                        ) : (
-                            <DynamicLucideIcon name="add" className="text-[24px]" />
-                        )}
-                    </button>
-                    <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#1daddd]/50 focus-within:bg-white dark:focus-within:bg-[#111d21] transition-all">
-                        <textarea
-                            ref={textareaRef}
-                            className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-3 px-4 max-h-24"
-                            placeholder="Message..."
-                            rows="1"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onFocus={() => setShowEmojiPicker(false)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSendMessage(e);
-                                }
-                            }}
-                        ></textarea>
+                    {!isRecording && (
                         <button
                             type="button"
-                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                            className={`p-2 mr-1 transition-colors ${showEmojiPicker ? 'text-[#1daddd]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="p-3 text-gray-400 hover:text-[#1daddd] dark:text-gray-500 dark:hover:text-[#1daddd] transition-colors bg-gray-50 dark:bg-gray-800 rounded-full shrink-0 disabled:opacity-50"
+                            aria-label="Attach file"
                         >
-                            <DynamicLucideIcon name="sentiment_satisfied" className="text-[20px]" />
+                            {uploading ? (
+                                <div className="size-6 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
+                            ) : (
+                                <DynamicLucideIcon name="add" className="text-[24px]" />
+                            )}
                         </button>
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={!newMessage.trim() || sending || uploading}
-                        className="p-3 bg-[#1daddd] text-white rounded-full shadow-lg shadow-[#1daddd]/30 hover:bg-[#159ac6] transition-colors transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none min-w-[48px]"
-                    >
-                        {sending ? (
-                            <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        ) : (
-                            <DynamicLucideIcon name="send" className="text-[20px] ml-0.5" />
-                        )}
-                    </button>
+                    )}
+
+                    {isRecording ? (
+                        <div className="flex-1 bg-red-50/90 dark:bg-red-950/40 rounded-2xl flex items-center justify-between px-4 py-3 border border-red-200/80 dark:border-red-900/50 shadow-sm animate-pulse min-h-[48px]">
+                            <div className="flex items-center gap-3">
+                                <span className="size-3 rounded-full bg-red-500 animate-ping shrink-0" />
+                                <span className="text-sm font-semibold text-red-600 dark:text-red-400">
+                                    Recording audio {formatRecordingTimer(recordingDuration)}
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={cancelRecording}
+                                className="text-xs font-bold text-red-500 hover:text-red-700 dark:text-red-400 flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-red-100/70 dark:hover:bg-red-900/50 transition-colors"
+                            >
+                                <DynamicLucideIcon name="delete" className="text-[16px]" />
+                                Cancel
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center p-1 border border-transparent focus-within:border-[#1daddd]/50 focus-within:bg-white dark:focus-within:bg-[#111d21] transition-all">
+                            <textarea
+                                ref={textareaRef}
+                                className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 resize-none py-3 px-4 max-h-24"
+                                placeholder="Message..."
+                                rows="1"
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onFocus={() => setShowEmojiPicker(false)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage(e);
+                                    }
+                                }}
+                            ></textarea>
+                            <button
+                                type="button"
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                className={`p-2 mr-1 transition-colors ${showEmojiPicker ? 'text-[#1daddd]' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
+                                aria-label="Insert emoji"
+                            >
+                                <DynamicLucideIcon name="sentiment_satisfied" className="text-[20px]" />
+                            </button>
+                        </div>
+                    )}
+
+                    {isRecording ? (
+                        <button
+                            type="button"
+                            onClick={stopAndSendRecording}
+                            disabled={uploading}
+                            className="p-3 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg shadow-red-500/30 transition-all transform active:scale-95 shrink-0 flex items-center justify-center min-w-[48px] min-h-[48px]"
+                            aria-label="Send audio message"
+                        >
+                            {uploading ? (
+                                <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <DynamicLucideIcon name="send" className="text-[20px] ml-0.5" />
+                            )}
+                        </button>
+                    ) : isTyping ? (
+                        <button
+                            type="submit"
+                            disabled={sending || uploading}
+                            className="p-3 bg-[#1daddd] text-white rounded-full shadow-lg shadow-[#1daddd]/30 hover:bg-[#159ac6] transition-all transform active:scale-95 shrink-0 flex items-center justify-center disabled:opacity-50 disabled:shadow-none min-w-[48px] min-h-[48px]"
+                            aria-label="Send message"
+                        >
+                            {sending || uploading ? (
+                                <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <DynamicLucideIcon name="send" className="text-[20px] ml-0.5" />
+                            )}
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={startRecording}
+                            disabled={uploading || sending}
+                            className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-[#1daddd] hover:text-white dark:hover:bg-[#1daddd] dark:hover:text-white rounded-full transition-all transform active:scale-95 shrink-0 flex items-center justify-center min-w-[48px] min-h-[48px] shadow-sm"
+                            aria-label="Record voice note"
+                        >
+                            {uploading ? (
+                                <div className="size-5 border-2 border-[#1daddd]/30 border-t-[#1daddd] rounded-full animate-spin"></div>
+                            ) : (
+                                <DynamicLucideIcon name="mic" className="text-[22px]" />
+                            )}
+                        </button>
+                    )}
                 </form>
             </footer>
 

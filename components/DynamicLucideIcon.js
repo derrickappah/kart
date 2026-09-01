@@ -143,7 +143,10 @@ import {
   Gavel,
   FlipHorizontal,
   Maximize2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Mic,
+  MicOff,
+  Square
 } from 'lucide-react';
 
 const iconMap = {
@@ -339,6 +342,11 @@ const iconMap = {
   'flip': FlipHorizontal,
   'maximize': Maximize2,
   'tune': SlidersHorizontal,
+  'mic': Mic,
+  'mic_none': Mic,
+  'mic_off': MicOff,
+  'stop': Square,
+  'square': Square,
 };
 
 export default function DynamicLucideIcon({ name, className = '', ...props }) {

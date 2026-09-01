@@ -11,6 +11,26 @@ import SearchBar from '../SearchBar';
 
 const supabase = createClient();
 
+const getMessagePreview = (content) => {
+    if (!content) return 'No messages yet';
+    if (typeof content !== 'string') return String(content);
+    if (content.startsWith('http')) {
+        if (/\.(mp4|webm|mov|m4v|3gp|ogg)(\?.*)?$/i.test(content)) {
+            return '🎥 Video';
+        }
+        if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|heif)(\?.*)?$/i.test(content)) {
+            return '📷 Photo';
+        }
+        if (/\.(mp3|wav|m4a|aac|opus)(\?.*)?$/i.test(content)) {
+            return '🎵 Audio';
+        }
+        if (content.includes('chat-attachments') || content.includes('storage')) {
+            return '📎 Attachment';
+        }
+    }
+    return content;
+};
+
 const fetchConversations = async () => {
     try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -359,7 +379,7 @@ export default function ConversationList() {
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
                                             <p className={`text-sm line-clamp-1 ${isUnread ? 'font-semibold text-gray-900 dark:text-gray-100' : isActive ? 'font-medium text-[#111618] dark:text-gray-300' : 'text-[#5e7d87] dark:text-gray-400'}`}>
-                                                {conv.lastMessage?.content || 'No messages yet'}
+                                                {getMessagePreview(conv.lastMessage?.content)}
                                             </p>
                                             {isUnread && (
                                                 <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm shrink-0">
