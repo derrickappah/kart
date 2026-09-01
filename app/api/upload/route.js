@@ -94,10 +94,27 @@ export async function POST(request) {
                 return NextResponse.json({ error: 'No file provided' }, { status: 400, headers: corsHeaders });
             }
 
+            const reqContentType = formData.get('contentType');
             if (reqBucket) bucket = reqBucket;
             if (reqPath) customPath = reqPath;
 
-            contentType = file.type || 'image/jpeg';
+            contentType = reqContentType || file.type || '';
+            
+            // Derive contentType from customPath / file.name if missing or generic
+            if (!contentType || contentType === 'application/octet-stream') {
+                const checkTarget = (customPath || file.name || '').toLowerCase();
+                if (checkTarget.endsWith('.webm')) contentType = 'audio/webm';
+                else if (checkTarget.endsWith('.mp3')) contentType = 'audio/mpeg';
+                else if (checkTarget.endsWith('.wav')) contentType = 'audio/wav';
+                else if (checkTarget.endsWith('.ogg') || checkTarget.endsWith('.opus')) contentType = 'audio/ogg';
+                else if (checkTarget.endsWith('.m4a') || checkTarget.endsWith('.aac')) contentType = 'audio/mp4';
+                else if (checkTarget.endsWith('.mp4')) contentType = 'video/mp4';
+                else if (checkTarget.endsWith('.png')) contentType = 'image/png';
+                else if (checkTarget.endsWith('.webp')) contentType = 'image/webp';
+                else if (checkTarget.endsWith('.gif')) contentType = 'image/gif';
+                else contentType = 'image/jpeg';
+            }
+
             const bytes = await file.arrayBuffer();
             buffer = Buffer.from(bytes);
         }

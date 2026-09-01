@@ -11,37 +11,107 @@ import Link from 'next/link';
 import ReportModal from '../../../../components/ReportModal';
 import { formatPrice } from '../../../../utils/formatters';
 
+function generateWaveformBars(seedStr, count = 26) {
+    let hash = 0;
+    const str = seedStr || 'default_voice';
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+    }
+    const bars = [];
+    for (let i = 0; i < count; i++) {
+        const v = Math.abs(Math.sin((hash + i * 13) * 0.28) * 0.65 + Math.cos((hash + i * 7) * 0.35) * 0.35);
+        const percent = Math.min(100, Math.max(22, Math.round(v * 100)));
+        bars.push(percent);
+    }
+    return bars;
+}
+
 function AudioMessageBubble({ src, isMe }) {
     const audioRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
+
+    const getInitialDuration = () => {
+        try {
+            if (!src) return 0;
+            const u = new URL(src, 'https://dummy.org');
+            const d = parseFloat(u.searchParams.get('dur') || '0');
+            return isFinite(d) && d > 0 ? d : 0;
+        } catch {
+            return 0;
+        }
+    };
+
+    const [duration, setDuration] = useState(getInitialDuration);
+    const waveformBars = useRef(generateWaveformBars(src, 26)).current;
 
     const togglePlay = () => {
-        if (!audioRef.current) return;
+        const audio = audioRef.current;
+        if (!audio) return;
+
         if (isPlaying) {
-            audioRef.current.pause();
+            audio.pause();
+            setIsPlaying(false);
         } else {
-            audioRef.current.play();
+            if (duration > 0 && currentTime >= duration - 0.2) {
+                audio.currentTime = 0;
+                setCurrentTime(0);
+            }
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => setIsPlaying(true))
+                    .catch(err => {
+                        console.warn('[AudioMessageBubble] Play error:', err);
+                        setIsPlaying(false);
+                    });
+            }
         }
     };
 
     const handleTimeUpdate = () => {
-        if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
+        const audio = audioRef.current;
+        if (!audio) return;
+        const curr = audio.currentTime;
+        setCurrentTime(curr);
+
+        if (duration > 0 && curr >= duration) {
+            audio.pause();
+            audio.currentTime = 0;
+            setIsPlaying(false);
+            setCurrentTime(0);
         }
     };
 
     const handleLoadedMetadata = () => {
-        if (audioRef.current) {
-            setDuration(audioRef.current.duration || 0);
+        const audio = audioRef.current;
+        if (!audio) return;
+        const d = audio.duration;
+        if (d && isFinite(d) && d > 0) {
+            setDuration(d);
+        } else {
+            // Chromium WebM Infinite duration workaround: seek to end to read duration
+            audio.currentTime = 1e101;
+            const onSeeked = () => {
+                audio.removeEventListener('seeked', onSeeked);
+                if (audio.duration && isFinite(audio.duration) && audio.duration > 0) {
+                    setDuration(audio.duration);
+                }
+                audio.currentTime = 0;
+            };
+            audio.addEventListener('seeked', onSeeked);
         }
     };
 
-    const handleSeek = (e) => {
-        if (!audioRef.current || !duration) return;
-        const newTime = (parseFloat(e.target.value) / 100) * duration;
-        audioRef.current.currentTime = newTime;
+    const handleWaveformClick = (e) => {
+        const audio = audioRef.current;
+        if (!audio || !duration || duration <= 0) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+        const newTime = ratio * duration;
+        audio.currentTime = newTime;
         setCurrentTime(newTime);
     };
 
@@ -52,10 +122,10 @@ function AudioMessageBubble({ src, isMe }) {
         return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
     };
 
-    const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
     return (
-        <div className="flex items-center gap-3 py-1 px-1 min-w-[210px] max-w-full">
+        <div className="flex items-center gap-2.5 py-1.5 px-0.5 min-w-[210px] max-w-[260px]">
             <audio
                 ref={audioRef}
                 src={src}
@@ -65,6 +135,7 @@ function AudioMessageBubble({ src, isMe }) {
                 onEnded={() => {
                     setIsPlaying(false);
                     setCurrentTime(0);
+                    if (audioRef.current) audioRef.current.currentTime = 0;
                 }}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
@@ -75,26 +146,41 @@ function AudioMessageBubble({ src, isMe }) {
                 onClick={togglePlay}
                 className={`size-9 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-90 ${
                     isMe
-                        ? 'bg-white text-[#1daddd] hover:bg-white/90'
+                        ? 'bg-white text-[#1daddd] hover:bg-white/95'
                         : 'bg-[#1daddd] text-white hover:bg-[#159ac6]'
                 }`}
                 aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
             >
-                <DynamicLucideIcon name={isPlaying ? 'pause' : 'play_arrow'} className="text-[18px] ml-0.5" />
+                <DynamicLucideIcon name={isPlaying ? 'pause' : 'play_arrow'} className="text-[19px] ml-0.5" />
             </button>
 
             <div className="flex-1 flex flex-col justify-center min-w-0">
-                <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={progress}
-                    onChange={handleSeek}
-                    className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[#1daddd] ${
-                        isMe ? 'bg-white/40' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
-                />
-                <div className={`flex justify-between items-center text-[10px] mt-1 font-medium select-none ${
+                {/* Waveform Bar Visualizer */}
+                <div
+                    onClick={handleWaveformClick}
+                    className="flex items-center justify-between gap-[2px] h-7 cursor-pointer py-1 select-none w-full"
+                    title="Tap to seek"
+                >
+                    {waveformBars.map((heightPercent, idx) => {
+                        const barProgress = (idx / waveformBars.length) * 100;
+                        const isPassed = progress >= barProgress;
+                        return (
+                            <div
+                                key={idx}
+                                className={`flex-1 rounded-full transition-colors duration-100 ${
+                                    isPassed
+                                        ? (isMe ? 'bg-white' : 'bg-[#1daddd]')
+                                        : (isMe ? 'bg-white/35' : 'bg-gray-300 dark:bg-gray-600')
+                                }`}
+                                style={{
+                                    height: `${Math.max(5, Math.round((heightPercent / 100) * 22))}px`,
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+
+                <div className={`flex justify-between items-center text-[10px] font-semibold mt-0.5 select-none ${
                     isMe ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
                 }`}>
                     <span>{formatSeconds(currentTime)}</span>
@@ -131,6 +217,7 @@ export default function ChatPage() {
     // Audio recording state
     const [isRecording, setIsRecording] = useState(false);
     const [recordingDuration, setRecordingDuration] = useState(0);
+    const recordingStartTimeRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
     const recordingTimerRef = useRef(null);
@@ -347,6 +434,9 @@ export default function ChatPage() {
             formData.append('file', fileOrBlob, fileName);
             formData.append('bucket', 'chat-attachments');
             formData.append('filePath', `${conversationId}/${fileName}`);
+            if (mimeType) {
+                formData.append('contentType', mimeType);
+            }
 
             const res = await fetch('/api/upload', {
                 method: 'POST',
@@ -416,7 +506,13 @@ export default function ChatPage() {
                 streamRef.current = null;
             }
 
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                }
+            });
             streamRef.current = stream;
 
             // Safe MediaRecorder instantiation with browser-compatible codecs
@@ -464,6 +560,7 @@ export default function ChatPage() {
             };
 
             mediaRecorder.start(100);
+            recordingStartTimeRef.current = Date.now();
             setIsRecording(true);
             setRecordingDuration(0);
 
@@ -537,11 +634,13 @@ export default function ChatPage() {
                     return;
                 }
 
+                const durationSecs = Math.max(1, Math.round((Date.now() - (recordingStartTimeRef.current || Date.now())) / 1000));
                 const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm';
                 const fileName = `voice_${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`;
 
                 const publicUrl = await uploadMediaFile(audioBlob, fileName, mimeType);
-                await sendMessage(publicUrl);
+                const voiceUrl = publicUrl.includes('?') ? `${publicUrl}&dur=${durationSecs}` : `${publicUrl}?dur=${durationSecs}`;
+                await sendMessage(voiceUrl);
             } catch (err) {
                 console.error("Error saving voice message:", err);
                 alert("Failed to send voice message: " + (err.message || "Please try again."));
