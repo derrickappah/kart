@@ -1,5 +1,6 @@
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { triggerPushNotification, createNotification } from '@/lib/notifications';
+import { isAudioUrl, isVideoUrl, isImageUrl } from '@/utils/mediaUtils';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
@@ -51,16 +52,16 @@ export async function POST(req) {
     const senderName = senderProfile?.display_name || senderProfile?.full_name || 'Someone on KART';
     const senderAvatar = senderProfile?.avatar_url || null;
 
-    const isVideo = typeof messageContent === 'string' && messageContent.startsWith('http') && /\.(mp4|webm|mov|m4v|3gp|ogg)(\?.*)?$/i.test(messageContent);
-    const isImage = typeof messageContent === 'string' && messageContent.startsWith('http') && /\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|heif)(\?.*)?$/i.test(messageContent);
-    const isAudio = typeof messageContent === 'string' && messageContent.startsWith('http') && /\.(mp3|wav|m4a|aac|opus)(\?.*)?$/i.test(messageContent);
+    const isAudio = isAudioUrl(messageContent);
+    const isVideo = !isAudio && isVideoUrl(messageContent);
+    const isImage = !isAudio && !isVideo && isImageUrl(messageContent);
 
-    const cleanContent = isVideo
+    const cleanContent = isAudio
+      ? '🎤 Sent a voice message'
+      : isVideo
       ? '🎥 Sent a video'
       : isImage
       ? '📷 Sent a photo'
-      : isAudio
-      ? '🎵 Sent an audio message'
       : typeof messageContent === 'string' && messageContent.startsWith('http') && (messageContent.includes('storage') || messageContent.includes('chat-attachments'))
       ? '📎 Sent an attachment'
       : typeof messageContent === 'string' && messageContent.length > 100 ? `${messageContent.slice(0, 97)}...` : messageContent;

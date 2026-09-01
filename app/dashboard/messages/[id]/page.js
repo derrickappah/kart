@@ -5,6 +5,7 @@ import { mutate as globalMutate } from 'swr';
 import { createClient } from '../../../../utils/supabase/client';
 import { broadcastMessagesRead } from '@/app/hooks/useUnreadMessagesCount';
 import { parseSafeDate } from '@/utils/dateUtils';
+import { isAudioUrl, isVideoUrl, isImageUrl } from '@/utils/mediaUtils';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ReportModal from '../../../../components/ReportModal';
@@ -792,9 +793,9 @@ export default function ChatPage() {
                     const isNewDay = prevDayStr !== currDayStr;
                     const showTimeBreak = !prevMsg || isNewDay || timeGapPrev > 15;
 
-                    const isVideo = typeof msg.content === 'string' && msg.content.startsWith('http') && /\.(mp4|webm|ogg|mov|m4v|3gp)(\?.*)?$/i.test(msg.content);
-                    const isImage = typeof msg.content === 'string' && msg.content.startsWith('http') && /\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|heif)(\?.*)?$/i.test(msg.content);
-                    const isAudio = typeof msg.content === 'string' && msg.content.startsWith('http') && /\.(mp3|wav|m4a|aac|opus|webm|ogg)(\?.*)?$/i.test(msg.content) && !isVideo;
+                    const isAudio = isAudioUrl(msg.content);
+                    const isVideo = !isAudio && isVideoUrl(msg.content);
+                    const isImage = !isAudio && !isVideo && isImageUrl(msg.content);
 
                     return (
                         <div key={msg.id} className="flex flex-col w-full">
@@ -831,7 +832,9 @@ export default function ChatPage() {
                                         }`}>
                                         <div className="flex flex-col gap-1">
                                             <div className="break-words">
-                                                {isVideo ? (
+                                                {isAudio ? (
+                                                    <AudioMessageBubble src={msg.content} isMe={isMe} />
+                                                ) : isVideo ? (
                                                     <div className="rounded-xl overflow-hidden my-1 bg-black/20 dark:bg-black/50 shadow-inner max-w-full">
                                                         <video
                                                             src={msg.content}
@@ -848,8 +851,6 @@ export default function ChatPage() {
                                                         className="max-w-full max-h-[340px] rounded-xl cursor-pointer hover:opacity-95 transition-opacity object-cover my-1"
                                                         onClick={() => window.open(msg.content, '_blank')}
                                                     />
-                                                ) : isAudio ? (
-                                                    <AudioMessageBubble src={msg.content} isMe={isMe} />
                                                 ) : typeof msg.content === 'string' && msg.content.startsWith('http') ? (
                                                     <a
                                                         href={msg.content}

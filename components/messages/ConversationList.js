@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '../../utils/supabase/client';
 import { broadcastMessagesRead } from '@/app/hooks/useUnreadMessagesCount';
 import { formatChatTimeAgo, parseSafeDate } from '@/utils/dateUtils';
+import { getMessageSnippet } from '@/utils/mediaUtils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SearchBar from '../SearchBar';
@@ -12,23 +13,7 @@ import SearchBar from '../SearchBar';
 const supabase = createClient();
 
 const getMessagePreview = (content) => {
-    if (!content) return 'No messages yet';
-    if (typeof content !== 'string') return String(content);
-    if (content.startsWith('http')) {
-        if (/\.(mp4|webm|mov|m4v|3gp|ogg)(\?.*)?$/i.test(content)) {
-            return '🎥 Video';
-        }
-        if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|heif)(\?.*)?$/i.test(content)) {
-            return '📷 Photo';
-        }
-        if (/\.(mp3|wav|m4a|aac|opus)(\?.*)?$/i.test(content)) {
-            return '🎵 Audio';
-        }
-        if (content.includes('chat-attachments') || content.includes('storage')) {
-            return '📎 Attachment';
-        }
-    }
-    return content;
+    return getMessageSnippet(content);
 };
 
 const fetchConversations = async () => {
