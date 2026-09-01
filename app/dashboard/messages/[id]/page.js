@@ -44,7 +44,47 @@ function AudioMessageBubble({ src, isMe }) {
     };
 
     const [duration, setDuration] = useState(getInitialDuration);
-    const waveformBars = useRef(generateWaveformBars(src, 26)).current;
+    const waveformBars = useRef(generateWaveformBars(src, 28)).current;
+
+    // Guaranteed full audio length resolution: Web Audio probe for WebM/audio buffers
+    useEffect(() => {
+        let isMounted = true;
+        if (!src) return;
+
+        // 1. URL search param check
+        try {
+            const u = new URL(src, 'https://dummy.org');
+            const qDur = parseFloat(u.searchParams.get('dur') || '0');
+            if (qDur > 0) {
+                setDuration(qDur);
+                return;
+            }
+        } catch {}
+
+        // 2. Exact audio buffer decode probe
+        const probeFullAudioDuration = async () => {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const res = await fetch(src);
+                const ab = await res.arrayBuffer();
+                const decoded = await ctx.decodeAudioData(ab);
+                if (isMounted && decoded?.duration && isFinite(decoded.duration) && decoded.duration > 0) {
+                    setDuration(decoded.duration);
+                }
+                ctx.close();
+            } catch (e) {
+                // Ignore probe errors; HTMLAudioElement loadedmetadata will handle fallback
+            }
+        };
+
+        probeFullAudioDuration();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [src]);
 
     const togglePlay = () => {
         const audio = audioRef.current;
@@ -76,6 +116,10 @@ function AudioMessageBubble({ src, isMe }) {
         const curr = audio.currentTime;
         setCurrentTime(curr);
 
+        if (audio.duration && isFinite(audio.duration) && audio.duration > 0 && duration <= 0) {
+            setDuration(audio.duration);
+        }
+
         if (duration > 0 && curr >= duration) {
             audio.pause();
             audio.currentTime = 0;
@@ -91,7 +135,7 @@ function AudioMessageBubble({ src, isMe }) {
         if (d && isFinite(d) && d > 0) {
             setDuration(d);
         } else {
-            // Chromium WebM Infinite duration workaround: seek to end to read duration
+            // Chromium WebM workaround
             audio.currentTime = 1e101;
             const onSeeked = () => {
                 audio.removeEventListener('seeked', onSeeked);
@@ -122,10 +166,10 @@ function AudioMessageBubble({ src, isMe }) {
         return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
     };
 
-    const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+    const progress = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0;
 
     return (
-        <div className="flex items-center gap-2.5 py-1.5 px-0.5 min-w-[210px] max-w-[260px]">
+        <div className="flex items-center gap-3 py-1.5 px-0.5 min-w-[220px] max-w-[270px]">
             <audio
                 ref={audioRef}
                 src={src}
@@ -139,49 +183,66 @@ function AudioMessageBubble({ src, isMe }) {
                 }}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
+                onDurationChange={handleLoadedMetadata}
+                onCanPlayThrough={handleLoadedMetadata}
             />
 
             <button
                 type="button"
                 onClick={togglePlay}
-                className={`size-9 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-90 ${
+                className={`size-10 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-90 ${
                     isMe
                         ? 'bg-white text-[#1daddd] hover:bg-white/95'
                         : 'bg-[#1daddd] text-white hover:bg-[#159ac6]'
                 }`}
                 aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
             >
-                <DynamicLucideIcon name={isPlaying ? 'pause' : 'play_arrow'} className="text-[19px] ml-0.5" />
+                <DynamicLucideIcon name={isPlaying ? 'pause' : 'play_arrow'} className="text-[20px] ml-0.5" />
             </button>
 
             <div className="flex-1 flex flex-col justify-center min-w-0">
-                {/* Waveform Bar Visualizer */}
+                {/* Waveform Bar Visualizer with Smooth Continuous Fill */}
                 <div
                     onClick={handleWaveformClick}
-                    className="flex items-center justify-between gap-[2px] h-7 cursor-pointer py-1 select-none w-full"
-                    title="Tap to seek"
+                    className="relative flex items-center justify-between gap-[2px] h-7 cursor-pointer py-1 select-none w-full"
+                    title="Tap or scrub to seek"
                 >
-                    {waveformBars.map((heightPercent, idx) => {
-                        const barProgress = (idx / waveformBars.length) * 100;
-                        const isPassed = progress >= barProgress;
-                        return (
+                    {/* 1. Background Unplayed Waveform Layer */}
+                    <div className="absolute inset-0 flex items-center justify-between gap-[2px] pointer-events-none">
+                        {waveformBars.map((heightPercent, idx) => (
                             <div
                                 key={idx}
-                                className={`flex-1 rounded-full transition-colors duration-100 ${
-                                    isPassed
-                                        ? (isMe ? 'bg-white' : 'bg-[#1daddd]')
-                                        : (isMe ? 'bg-white/35' : 'bg-gray-300 dark:bg-gray-600')
-                                }`}
+                                className={`flex-1 rounded-full ${isMe ? 'bg-white/35' : 'bg-gray-300 dark:bg-gray-600'}`}
                                 style={{
                                     height: `${Math.max(5, Math.round((heightPercent / 100) * 22))}px`,
                                 }}
                             />
-                        );
-                    })}
+                        ))}
+                    </div>
+
+                    {/* 2. Foreground Played Waveform Layer with Hardware-Accelerated Continuous Fill Mask */}
+                    <div
+                        className="absolute inset-0 flex items-center justify-between gap-[2px] pointer-events-none transition-all duration-75 ease-linear"
+                        style={{
+                            clipPath: `inset(0 ${Math.max(0, 100 - progress)}% 0 0)`,
+                            WebkitClipPath: `inset(0 ${Math.max(0, 100 - progress)}% 0 0)`,
+                        }}
+                    >
+                        {waveformBars.map((heightPercent, idx) => (
+                            <div
+                                key={idx}
+                                className={`flex-1 rounded-full ${isMe ? 'bg-white' : 'bg-[#1daddd]'}`}
+                                style={{
+                                    height: `${Math.max(5, Math.round((heightPercent / 100) * 22))}px`,
+                                }}
+                            />
+                        ))}
+                    </div>
                 </div>
 
+                {/* Duration & Playback Time Display */}
                 <div className={`flex justify-between items-center text-[10px] font-semibold mt-0.5 select-none ${
-                    isMe ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
+                    isMe ? 'text-white/85' : 'text-gray-500 dark:text-gray-400'
                 }`}>
                     <span>{formatSeconds(currentTime)}</span>
                     <span>{formatSeconds(duration || 0)}</span>
