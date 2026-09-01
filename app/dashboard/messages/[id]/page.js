@@ -339,6 +339,44 @@ export default function ChatPage() {
         textareaRef.current?.focus();
     };
 
+    // Robust file upload helper using server API (service role) with client fallback
+    const uploadMediaFile = async (fileOrBlob, fileName, mimeType) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', fileOrBlob, fileName);
+            formData.append('bucket', 'chat-attachments');
+            formData.append('filePath', `${conversationId}/${fileName}`);
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.publicUrl) return data.publicUrl;
+            }
+        } catch (apiErr) {
+            console.warn('[ChatPage] /api/upload failed, falling back to direct storage:', apiErr);
+        }
+
+        // Direct client fallback
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('chat-attachments')
+            .upload(`${conversationId}/${fileName}`, fileOrBlob, {
+                contentType: mimeType,
+                upsert: true
+            });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('chat-attachments')
+            .getPublicUrl(`${conversationId}/${fileName}`);
+
+        return publicUrl;
+    };
+
     const handleFileUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file || !currentUser) return;
@@ -347,22 +385,11 @@ export default function ChatPage() {
         try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-            const filePath = `${conversationId}/${fileName}`;
-
-            const { data, error: uploadError } = await supabase.storage
-                .from('chat-attachments')
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('chat-attachments')
-                .getPublicUrl(filePath);
-
+            const publicUrl = await uploadMediaFile(file, fileName, file.type);
             await sendMessage(publicUrl);
         } catch (error) {
             console.error("Error uploading file:", error);
-            alert("Failed to upload file. Please try again.");
+            alert("Failed to upload file: " + (error.message || "Permission or network error"));
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -372,8 +399,13 @@ export default function ChatPage() {
     // Voice recording handlers
     const startRecording = async () => {
         try {
+            if (typeof window !== 'undefined' && window.isSecureContext === false && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                alert("Microphone recording requires a secure connection (HTTPS) or localhost.");
+                return;
+            }
+
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("Audio recording is not supported in your browser.");
+                alert("Audio recording is not supported in this browser.");
                 return;
             }
 
@@ -384,6 +416,7 @@ export default function ChatPage() {
                 'audio/webm;codecs=opus',
                 'audio/webm',
                 'audio/mp4',
+                'audio/aac',
                 'audio/ogg;codecs=opus',
                 ''
             ];
@@ -411,8 +444,9 @@ export default function ChatPage() {
             }, 1000);
         } catch (err) {
             console.error("Error starting recording:", err);
-            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                alert("Microphone permission denied. Please allow microphone access in your browser settings.");
+            const errStr = String(err?.message || err || '');
+            if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError' || errStr.toLowerCase().includes('permission')) {
+                alert("Microphone permission was denied.\n\nTo allow voice recording:\n1. Tap the lock or settings icon next to your browser address bar.\n2. Allow Microphone access for this site.\n3. Try again!");
             } else {
                 alert("Could not access microphone: " + (err.message || "Unknown error"));
             }
@@ -463,22 +497,12 @@ export default function ChatPage() {
 
                 const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm';
                 const fileName = `voice_${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`;
-                const filePath = `${conversationId}/${fileName}`;
 
-                const { data, error: uploadError } = await supabase.storage
-                    .from('chat-attachments')
-                    .upload(filePath, audioBlob, { contentType: mimeType });
-
-                if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('chat-attachments')
-                    .getPublicUrl(filePath);
-
+                const publicUrl = await uploadMediaFile(audioBlob, fileName, mimeType);
                 await sendMessage(publicUrl);
             } catch (err) {
                 console.error("Error saving voice message:", err);
-                alert("Failed to send voice message. Please try again.");
+                alert("Failed to send voice message: " + (err.message || "Please try again."));
             } finally {
                 setUploading(false);
                 setRecordingDuration(0);
@@ -559,7 +583,7 @@ export default function ChatPage() {
             setNewMessage('');
         } catch (error) {
             console.error("Error sending message:", error);
-            alert("Failed to send message. Please try again.");
+            alert("Failed to send message: " + (error.message || "Please try again."));
         } finally {
             setSending(false);
         }

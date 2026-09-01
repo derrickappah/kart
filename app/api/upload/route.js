@@ -107,7 +107,14 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Invalid storage bucket' }, { status: 400, headers: corsHeaders });
         }
 
-        if (contentType.includes('webp')) ext = 'webp';
+        if (contentType.includes('webm')) ext = 'webm';
+        else if (contentType.includes('mp4')) ext = 'mp4';
+        else if (contentType.includes('ogg')) ext = 'ogg';
+        else if (contentType.includes('quicktime') || contentType.includes('mov')) ext = 'mov';
+        else if (contentType.includes('mpeg') || contentType.includes('mp3')) ext = 'mp3';
+        else if (contentType.includes('m4a')) ext = 'm4a';
+        else if (contentType.includes('wav')) ext = 'wav';
+        else if (contentType.includes('webp')) ext = 'webp';
         else if (contentType.includes('png')) ext = 'png';
         else if (contentType.includes('gif')) ext = 'gif';
 
