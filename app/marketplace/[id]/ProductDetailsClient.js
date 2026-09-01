@@ -305,9 +305,6 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     <p className="font-bold text-sm text-[#0e181b] dark:text-white truncate">
                         {toSentenceCase(product.title)}
                     </p>
-                    <p className="text-xs font-bold text-primary dark:text-primary-light">
-                        ₵ {formatPrice(product.price)}
-                    </p>
                 </div>
 
                 <div className="flex gap-2 items-center">
