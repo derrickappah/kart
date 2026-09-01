@@ -302,7 +302,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
 
             <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-2 md:pb-8">
                 {/* Main Content Layout: Stack on Mobile, 2 Columns on Desktop */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-8 items-start">
                     {/* Left Column: Hero Carousel + Gallery Thumbnails (7 Cols Desktop) */}
                     <div className="md:col-span-7 flex flex-col gap-4">
                         <div
@@ -354,7 +354,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
 
                             {/* Pagination Dots (Mobile) */}
                             {images.length > 1 && (
-                                <div className="absolute bottom-4 left-0 right-0 flex md:hidden justify-center gap-2 z-10">
+                                <div className="absolute bottom-8 left-0 right-0 flex md:hidden justify-center gap-2 z-10">
                                     {images.map((_, idx) => (
                                         <button
                                             key={idx}
@@ -393,7 +393,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     </div>
 
                     {/* Right Column: Details, Seller & Action Sidebar (5 Cols Desktop, Sticky on Desktop) */}
-                    <div className="md:col-span-5 px-4 md:px-0 pt-4 md:pt-0 md:sticky md:top-24 self-start">
+                    <div className="md:col-span-5 px-4 md:px-0 pt-6 md:pt-0 -mt-6 md:mt-0 relative z-10 bg-[#fafafa] dark:bg-[#22262a] rounded-t-3xl md:rounded-none md:sticky md:top-24 self-start">
                         <div className="flex flex-col gap-5">
                             {/* Product Header & Title */}
                             <div className="flex flex-col gap-2">

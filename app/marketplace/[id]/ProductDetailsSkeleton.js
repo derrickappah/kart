@@ -20,7 +20,7 @@ export function ProductDetailsSkeleton() {
             </div>
 
             <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-2 md:pb-8">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-8 items-start">
                     {/* Left Column: Hero Image & Thumbnails */}
                     <div className="md:col-span-7 flex flex-col gap-4">
                         <div className="relative w-full aspect-[4/5] md:aspect-[4/3] rounded-none md:rounded-2xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35] shadow-sm shimmer" />
@@ -32,7 +32,7 @@ export function ProductDetailsSkeleton() {
                     </div>
 
                     {/* Right Column: Title, Price, CTAs, Seller & Details */}
-                    <div className="md:col-span-5 px-4 md:px-0 pt-4 md:pt-0">
+                    <div className="md:col-span-5 px-4 md:px-0 pt-6 md:pt-0 -mt-6 md:mt-0 relative z-10 bg-[#fafafa] dark:bg-[#22262a] rounded-t-3xl md:rounded-none">
                         <div className="flex flex-col gap-5">
                             {/* Badges & Time */}
                             <div className="flex items-center gap-2">
