@@ -53,13 +53,31 @@ export default function NotificationBell() {
         )
         .subscribe();
 
-      // Subscribe to read-status changes (UPDATE) — re-fetch count for accuracy
+      // Subscribe to read-status changes (UPDATE) & deletions (DELETE) — re-fetch count for accuracy
       updateChannel = supabase
         .channel('bell-notifications-updates')
         .on(
           'postgres_changes',
           {
             event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          async () => {
+            if (cancelled) return;
+            const { count: newCount } = await supabase
+              .from('notifications')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('is_read', false);
+            if (!cancelled) setUnreadCount(newCount || 0);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
             schema: 'public',
             table: 'notifications',
             filter: `user_id=eq.${user.id}`,

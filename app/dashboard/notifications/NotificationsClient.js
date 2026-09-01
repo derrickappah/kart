@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import SearchBar from '@/components/SearchBar';
 import { formatPrice } from '@/utils/formatters';
+import SwipeableNotificationItem from './SwipeableNotificationItem';
 
 // Stable Supabase client – created once per module, never re-created on render.
 const supabase = createClient();
@@ -227,6 +228,7 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
   const [notifications, setNotifications] = useState(initialNotifications);
   const [unreadCount, setUnreadCount]     = useState(initialUnreadCount);
   const [searchQuery, setSearchQuery]     = useState('');
+  const [openItemId, setOpenItemId]       = useState(null);
   const [loading, setLoading]             = useState(false);
   const [loadingMore, setLoadingMore]     = useState(false);
   const [hasMore, setHasMore]             = useState(initialNotifications.length >= PAGE_SIZE);
@@ -276,6 +278,19 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
             setNewArrivals((prev) => prev + 1);
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            if (!payload.old?.id) return;
+            setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id));
+          }
+        )
         .subscribe();
 
       channelRef.current = channel;
@@ -291,6 +306,45 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
       }
     };
   }, []); // no deps — supabase is module-scoped and stable
+
+  /* ─── Delete a notification ─────────────────────────────────────────── */
+  const handleDeleteNotification = useCallback(async (notificationId) => {
+    // Find notification to check if it was unread
+    const targetNotif = notifications.find((n) => n.id === notificationId);
+    const wasUnread = targetNotif && !targetNotif.is_read;
+
+    // Optimistic UI state update
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    if (wasUnread) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Failed to delete notification:', error);
+        setError('Failed to delete notification. Please try again.');
+        // Revert optimistic update
+        if (targetNotif) {
+          setNotifications((prev) => [targetNotif, ...prev]);
+          if (wasUnread) {
+            setUnreadCount((prev) => prev + 1);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting notification:', err);
+      setError('Failed to delete notification.');
+    }
+  }, [notifications]);
 
   /* ─── Mark one notification as read ─────────────────────────────────── */
   const markAsRead = useCallback(async (notificationId) => {
@@ -380,14 +434,6 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
       setHasMore((data || []).length >= PAGE_SIZE);
     }
     setLoadingMore(false);
-  };
-
-  /* ─── Keyboard handler for notification items ────────────────────────── */
-  const handleKeyDown = (e, notification) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleNotificationClick(notification);
-    }
   };
 
   return (
@@ -517,78 +563,18 @@ export default function NotificationsClient({ initialNotifications, initialUnrea
             </div>
           )
         ) : (
-          <div className="space-y-3" role="list" aria-label="Notification items">
+          <div className="space-y-0" role="list" aria-label="Notification items">
             {filteredNotifications.map((notification) => (
-              <div
+              <SwipeableNotificationItem
                 key={notification.id}
-                role="listitem"
-              >
-                {/* Using a button for full keyboard + screen-reader accessibility */}
-                <button
-                  onClick={() => handleNotificationClick(notification)}
-                  onKeyDown={(e) => handleKeyDown(e, notification)}
-                  aria-label={`${notification.is_read ? '' : 'Unread: '}${notification.title}. ${notification.message}. ${getTimeAgo(notification.created_at)}`}
-                  className={`group relative flex w-full items-start gap-4 p-4 rounded-xl transition-all text-left active:scale-[0.99] cursor-pointer border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#387d94] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#242428] ${
-                    !notification.is_read
-                      ? 'bg-[#387d94]/5 dark:bg-[#387d94]/10 border-transparent dark:border-[#387d94]/10 shadow-[0_0_12px_rgba(56,125,148,0.15)]'
-                      : 'bg-white dark:bg-[#2A3036] border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600'
-                  }`}
-                >
-                  {/* ── Unread indicator dot ────────────────────────────── */}
-                  {!notification.is_read && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-4 right-4 size-2.5 bg-[#387d94] rounded-full shadow-[0_0_8px_rgba(56,125,148,0.6)]"
-                    />
-                  )}
-
-                  {/* ── Icon / Avatar ────────────────────────────────────── */}
-                  <span aria-hidden="true" className="shrink-0">
-                    {notification.data?.avatar_url || notification.avatar_url || notification.data?.avatarUrl ? (
-                      <img
-                        src={notification.data?.avatar_url || notification.avatar_url || notification.data?.avatarUrl}
-                        alt=""
-                        className="size-12 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm group-hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <span className="size-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[#387d94] group-hover:scale-105 transition-transform">
-                        <DynamicLucideIcon
-                          name={getIconForType(notification.type)}
-                          size={22}
-                        />
-                      </span>
-                    )}
-                  </span>
-
-                  {/* ── Content ──────────────────────────────────────────── */}
-                  <span className="flex-1 pr-2 min-w-0">
-                    <span
-                      className={`block text-[15px] leading-snug font-semibold truncate ${
-                        !notification.is_read
-                          ? 'text-gray-900 dark:text-white'
-                          : 'text-gray-700 dark:text-gray-200'
-                      }`}
-                    >
-                      {notification.title}
-                    </span>
-                    <span className="block text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2 text-left">
-                      {notification.message}
-                    </span>
-                    <span
-                      className={`block text-xs font-semibold mt-1.5 ${
-                        !notification.is_read ? 'text-[#387d94]' : 'text-gray-400 dark:text-gray-500'
-                      }`}
-                    >
-                      {getTimeAgo(notification.created_at)}
-                    </span>
-                  </span>
-
-                  {/* ── Right Chevron indicator ─────────────────────────── */}
-                  <span aria-hidden="true" className="shrink-0 self-center text-gray-400 dark:text-gray-500 group-hover:text-[#387d94] dark:group-hover:text-[#387d94] group-hover:translate-x-0.5 transition-all">
-                    <DynamicLucideIcon name="chevron_right" size={18} />
-                  </span>
-                </button>
-              </div>
+                notification={notification}
+                getIconForType={getIconForType}
+                getTimeAgo={getTimeAgo}
+                onClick={handleNotificationClick}
+                onDelete={handleDeleteNotification}
+                isOpen={openItemId === notification.id}
+                onOpenChange={setOpenItemId}
+              />
             ))}
           </div>
         )}
