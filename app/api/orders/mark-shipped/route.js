@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import { createNotification } from '@/lib/notifications';
 
 export async function POST(request) {
     try {
@@ -69,13 +70,13 @@ export async function POST(request) {
             notes: 'Order marked as shipped by seller'
         });
 
-        // 6. Create notification for buyer
-        await adminSupabase.from('notifications').insert({
-            user_id: order.buyer_id,
+        // 6. Create notification for buyer & trigger push notification
+        await createNotification(adminSupabase, {
+            userId: order.buyer_id,
             type: 'ItemShipped',
             title: 'Order Shipped',
             message: `The seller has marked your order #${orderId.slice(0, 8)} as shipped.`,
-            related_order_id: orderId
+            relatedOrderId: orderId
         });
 
         return NextResponse.json({

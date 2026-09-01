@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import { createNotifications } from '@/lib/notifications';
 
 export async function POST(request) {
     try {
@@ -191,23 +192,27 @@ export async function POST(request) {
             }
         ]);
 
-        // Create Notifications
-        await adminSupabase.from('notifications').insert([
-            {
-                user_id: user.id,
-                type: 'PaymentReceived',
-                title: 'Purchase Successful',
-                message: `Your payment for "${product.title}" was successful. The funds are held in escrow.`,
-                related_order_id: order.id
-            },
-            {
-                user_id: product.seller_id,
-                type: 'OrderPlaced',
-                title: 'Item Sold!',
-                message: `Your item "${product.title}" has been bought. Please coordinate with the buyer for handover.`,
-                related_order_id: order.id
-            }
-        ]);
+        // Create Notifications & Trigger Push
+        try {
+            await createNotifications(adminSupabase, [
+                {
+                    userId: user.id,
+                    type: 'PaymentReceived',
+                    title: 'Purchase Successful',
+                    message: `Your payment for "${product.title}" was successful. The funds are held in escrow.`,
+                    relatedOrderId: order.id
+                },
+                {
+                    userId: product.seller_id,
+                    type: 'OrderPlaced',
+                    title: 'Item Sold!',
+                    message: `Your item "${product.title}" has been bought. Please coordinate with the buyer for handover.`,
+                    relatedOrderId: order.id
+                }
+            ]);
+        } catch (notifErr) {
+            console.error('[PayWithWallet] Notification error:', notifErr);
+        }
 
         // Status History
         await adminSupabase.from('order_status_history').insert({

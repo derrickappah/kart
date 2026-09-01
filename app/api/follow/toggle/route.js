@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import { createNotification } from '@/lib/notifications';
 
 export async function POST(request) {
     try {
@@ -73,22 +74,27 @@ export async function POST(request) {
                 return NextResponse.json({ error: 'Failed to follow user' }, { status: 500 });
             }
 
-            // Send notification to the followed user asynchronously
+            // Send notification to the followed user & trigger push
             try {
                 const adminSupabase = createServiceRoleClient();
                 const { data: followerProfile } = await adminSupabase
                     .from('profiles')
-                    .select('display_name, username')
+                    .select('display_name, username, avatar_url')
                     .eq('id', user.id)
                     .maybeSingle();
 
                 const followerName = followerProfile?.username || followerProfile?.display_name || 'Someone';
 
-                await adminSupabase.from('notifications').insert({
-                    user_id: followingId,
+                await createNotification(adminSupabase, {
+                    userId: followingId,
                     type: 'follow',
                     title: 'New Follower',
-                    message: `${followerName} started following you.`
+                    message: `${followerName} started following you.`,
+                    options: {
+                        icon: followerProfile?.avatar_url || '/icon.png',
+                        avatarUrl: followerProfile?.avatar_url,
+                        url: `/profile/${user.id}`
+                    }
                 });
             } catch (notifyErr) {
                 console.error('Failed to create follow notification:', notifyErr);

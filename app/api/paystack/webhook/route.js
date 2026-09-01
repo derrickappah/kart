@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { verifyTransaction } from '@/lib/paystack';
+import { createNotification, createNotifications } from '@/lib/notifications';
 import crypto from 'crypto';
 import { logWebhook } from '@/lib/webhookLogger';
 
@@ -283,9 +284,9 @@ export async function POST(request) {
                     console.log('[Webhook] Wallet transaction recorded successfully');
                 }
 
-                // Create notification
-                await adminSupabase.from('notifications').insert({
-                    user_id: userId,
+                // Create notification & trigger push
+                await createNotification(adminSupabase, {
+                    userId: userId,
                     type: 'PaymentReceived',
                     title: 'Wallet Top-up Successful',
                     message: `GHS ${amount.toFixed(2)} has been added to your wallet.`,
@@ -413,9 +414,9 @@ export async function POST(request) {
                     }
                 }
 
-                // Create notification
-                await adminSupabase.from('notifications').insert({
-                    user_id: ad.seller_id,
+                // Create notification & trigger push
+                await createNotification(adminSupabase, {
+                    userId: ad.seller_id,
                     type: 'PromotionActivated',
                     title: 'Promotion Activated!',
                     message: `Your listing "${ad.ad_type}" promotion has been activated.`,
@@ -486,9 +487,9 @@ export async function POST(request) {
                     })
                     .eq('id', subscription.id);
 
-                // Create notification
-                await adminSupabase.from('notifications').insert({
-                    user_id: subscription.user_id,
+                // Create notification & trigger push
+                await createNotification(adminSupabase, {
+                    userId: subscription.user_id,
                     type: 'SubscriptionActivated',
                     title: 'Subscription Activated',
                     message: `Your ${subscription.plan?.name || 'subscription'} has been activated successfully!`,
@@ -579,23 +580,27 @@ export async function POST(request) {
                     .eq('id', sellerWallet.id);
             }
 
-            // Notifications and history
-            await adminSupabase.from('notifications').insert([
-                {
-                    user_id: order.buyer_id,
-                    type: 'PaymentReceived',
-                    title: 'Payment Successful',
-                    message: `Your payment for order #${order.id.slice(0, 8)} has been received.`,
-                    related_order_id: order.id,
-                },
-                {
-                    user_id: order.seller_id,
-                    type: 'OrderPlaced',
-                    title: 'New Order Received',
-                    message: `You have received a new order for ${order.quantity}x ${order.product?.title || 'product'}.`,
-                    related_order_id: order.id,
-                },
-            ]);
+            // Notifications and history (triggers Push Notifications for both buyer & seller)
+            try {
+                await createNotifications(adminSupabase, [
+                    {
+                        userId: order.buyer_id,
+                        type: 'PaymentReceived',
+                        title: 'Payment Successful',
+                        message: `Your payment for order #${order.id.slice(0, 8)} has been received.`,
+                        relatedOrderId: order.id,
+                    },
+                    {
+                        userId: order.seller_id,
+                        type: 'OrderPlaced',
+                        title: 'New Order Received',
+                        message: `You have received a new order for ${order.quantity}x ${order.product?.title || 'product'}.`,
+                        relatedOrderId: order.id,
+                    },
+                ]);
+            } catch (notifErr) {
+                console.error('[Webhook] Order notification error:', notifErr);
+            }
 
             await adminSupabase.from('order_status_history').insert({
                 order_id: order.id,

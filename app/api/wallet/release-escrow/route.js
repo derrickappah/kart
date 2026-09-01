@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import { createNotification } from '@/lib/notifications';
 
 export async function POST(request) {
   try {
@@ -213,20 +214,17 @@ export async function POST(request) {
       // Non-critical error - continue execution
     }
 
-    // Create notification for seller (non-critical - log errors but don't fail)
-    const { error: notificationError } = await supabase
-      .from('notifications')
-      .insert({
-        user_id: order.seller_id,
+    // Create notification for seller & trigger push
+    try {
+      await createNotification(adminSupabase, {
+        userId: order.seller_id,
         type: 'EscrowReleased',
         title: 'Escrow Released',
         message: `GHS ${payoutAmount.toFixed(2)} has been released to your wallet for order #${order.id.slice(0, 8)}.`,
-        related_order_id: order.id,
+        relatedOrderId: order.id,
       });
-
-    if (notificationError) {
+    } catch (notificationError) {
       console.error('Error creating notification:', notificationError);
-      // Non-critical error - continue execution
     }
 
     return NextResponse.json({

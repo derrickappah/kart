@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
 import { verifyTransaction } from '@/lib/paystack';
+import { createNotifications } from '@/lib/notifications';
 
 export async function POST(request) {
   try {
@@ -200,23 +201,27 @@ export async function POST(request) {
           .eq('id', wallet.id);
       }
 
-      // Create notifications
-      await adminSupabase.from('notifications').insert([
-        {
-          user_id: order.buyer_id,
-          type: 'PaymentReceived',
-          title: 'Payment Successful',
-          message: `Your payment for order #${order.id.slice(0, 8)} has been received.`,
-          related_order_id: order.id,
-        },
-        {
-          user_id: order.seller_id,
-          type: 'OrderPlaced',
-          title: 'New Order Received',
-          message: `You have received a new order.`,
-          related_order_id: order.id,
-        },
-      ]);
+      // Create notifications & trigger push
+      try {
+        await createNotifications(adminSupabase, [
+          {
+            userId: order.buyer_id,
+            type: 'PaymentReceived',
+            title: 'Payment Successful',
+            message: `Your payment for order #${order.id.slice(0, 8)} has been received.`,
+            relatedOrderId: order.id,
+          },
+          {
+            userId: order.seller_id,
+            type: 'OrderPlaced',
+            title: 'New Order Received',
+            message: `You have received a new order.`,
+            relatedOrderId: order.id,
+          },
+        ]);
+      } catch (notifErr) {
+        console.error('[Verify] Notification error:', notifErr);
+      }
 
       // Record status change
       await adminSupabase.from('order_status_history').insert({

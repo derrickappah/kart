@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/utils/supabase/server';
+import { createNotification } from '@/lib/notifications';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request) {
@@ -193,13 +194,13 @@ export async function POST(request) {
                             admin_notes: 'Escrow released automatically upon delivery confirmation',
                         });
 
-                        // Create notification for seller
-                        await adminSupabase.from('notifications').insert({
-                            user_id: order.seller_id,
+                        // Create notification for seller & trigger push
+                        await createNotification(adminSupabase, {
+                            userId: order.seller_id,
                             type: 'EscrowReleased',
                             title: 'Escrow Released',
                             message: `GHS ${payoutAmount.toFixed(2)} has been released to your wallet for order #${order.id.slice(0, 8)}.`,
-                            related_order_id: order.id,
+                            relatedOrderId: order.id,
                         });
                     }
                 }
@@ -223,18 +224,16 @@ export async function POST(request) {
             console.error('Error recording order status history:', historyError);
         }
 
-        // Create notification for seller
-        const { error: notificationError } = await adminSupabase
-            .from('notifications')
-            .insert({
-                user_id: order.seller_id,
+        // Create notification for seller & trigger push
+        try {
+            await createNotification(adminSupabase, {
+                userId: order.seller_id,
                 type: 'DeliveryConfirmed',
                 title: 'Delivery Confirmed',
                 message: `The buyer has confirmed delivery for order #${order.id.slice(0, 8)}.`,
-                related_order_id: order.id,
+                relatedOrderId: order.id,
             });
-
-        if (notificationError) {
+        } catch (notificationError) {
             console.error('Error creating notification:', notificationError);
         }
 
