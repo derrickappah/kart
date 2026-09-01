@@ -22,7 +22,7 @@ export function ProductDetailsSkeleton() {
             <main className="max-w-6xl mx-auto px-0 md:px-4 py-0 md:py-6 pb-2 md:pb-8">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-8 items-start">
                     {/* Left Column: Hero Image & Thumbnails */}
-                    <div className="md:col-span-7 flex flex-col gap-4">
+                    <div className="md:col-span-7 flex flex-col gap-4 sticky top-0 md:static z-0">
                         <div className="relative w-full aspect-[4/5] md:aspect-[4/3] rounded-none md:rounded-2xl overflow-hidden bg-gray-100 dark:bg-[#2f2f35] shadow-sm shimmer" />
                         <div className="hidden md:flex gap-3">
                             {Array.from({ length: 4 }).map((_, idx) => (

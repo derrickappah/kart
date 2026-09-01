@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import SimilarItemsSlider from './SimilarItemsSlider';
 import ProductReviews from './ProductReviews';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { toSentenceCase, formatPrice, seededShuffle } from '@/utils/formatters';
@@ -18,6 +18,8 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
     const [loadingWishlist, setLoadingWishlist] = useState(false);
     const [inlineError, setInlineError] = useState(null);
     const [shareFeedback, setShareFeedback] = useState(null);
+    const [isScrolledPastImage, setIsScrolledPastImage] = useState(false);
+    const detailsRef = useRef(null);
 
     // Initialize with first image from array if available, otherwise fallback to image_url
     const rawImages = (product?.images && Array.isArray(product.images)) ? product.images.filter(Boolean) : [];
@@ -102,8 +104,18 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
 
         init();
 
+        const handleScroll = () => {
+            if (!detailsRef.current) return;
+            const rect = detailsRef.current.getBoundingClientRect();
+            setIsScrolledPastImage(rect.top <= 64);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+
         return () => {
             active = false;
+            window.removeEventListener('scroll', handleScroll);
         };
     }, [product.id, product.seller_id, product.category]);
 
@@ -262,21 +274,48 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                 </div>
             </div>
 
-            {/* Mobile Top Navigation Bar (Absolute so it scrolls away naturally) */}
-            <div className="absolute top-0 left-0 right-0 z-20 flex md:hidden items-center justify-between p-4 pointer-events-none">
+            {/* Mobile Top Navigation Bar */}
+            <div
+                className={`fixed top-0 left-0 right-0 z-30 flex md:hidden items-center justify-between px-4 py-3 transition-all duration-300 ${
+                    isScrolledPastImage
+                        ? 'bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-md border-b border-black/5 dark:border-white/10 shadow-sm pointer-events-auto'
+                        : 'bg-transparent border-transparent pointer-events-none'
+                }`}
+            >
                 <button
                     onClick={handleBack}
                     aria-label="Go back"
-                    className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    className={`pointer-events-auto size-10 flex items-center justify-center rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                        isScrolledPastImage
+                            ? 'bg-gray-100 dark:bg-[#2c3136] hover:bg-gray-200 dark:hover:bg-[#383e44] text-gray-800 dark:text-white border border-black/5 dark:border-white/10'
+                            : 'bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg'
+                    }`}
                 >
-                    <DynamicLucideIcon name="arrow_back" aria-hidden="true" />
+                    <DynamicLucideIcon name="arrow_back" size={20} aria-hidden="true" />
                 </button>
-                <div className="flex gap-2">
+
+                {/* Sticky Product Title in Navigation */}
+                <div
+                    className={`flex-1 mx-3 text-center transition-all duration-300 transform ${
+                        isScrolledPastImage
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 -translate-y-2 pointer-events-none'
+                    }`}
+                >
+                    <p className="font-bold text-sm text-[#0e181b] dark:text-white truncate">
+                        {toSentenceCase(product.title)}
+                    </p>
+                    <p className="text-xs font-bold text-primary dark:text-primary-light">
+                        ₵ {formatPrice(product.price)}
+                    </p>
+                </div>
+
+                <div className="flex gap-2 items-center">
                     {shareFeedback && (
                         <span
                             role="status"
                             aria-live="polite"
-                            className="pointer-events-auto flex items-center bg-black/80 text-white text-xs font-bold px-3 py-2 rounded-full backdrop-blur-md shadow-md"
+                            className="pointer-events-auto flex items-center bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md animate-fade-in"
                         >
                             {shareFeedback}
                         </span>
@@ -284,18 +323,28 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     <button
                         onClick={handleShare}
                         aria-label="Share this listing"
-                        className="pointer-events-auto size-11 flex items-center justify-center rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        className={`pointer-events-auto size-10 flex items-center justify-center rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                            isScrolledPastImage
+                                ? 'bg-gray-100 dark:bg-[#2c3136] hover:bg-gray-200 dark:hover:bg-[#383e44] text-gray-800 dark:text-white border border-black/5 dark:border-white/10'
+                                : 'bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg'
+                        }`}
                     >
-                        <DynamicLucideIcon name="share" aria-hidden="true" />
+                        <DynamicLucideIcon name="share" size={18} aria-hidden="true" />
                     </button>
                     <button
                         onClick={handleWishlistToggle}
                         disabled={loadingWishlist}
                         aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
                         aria-pressed={isInWishlist}
-                        className={`pointer-events-auto size-11 flex items-center justify-center rounded-full backdrop-blur-md border border-white/10 shadow-lg active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 ${isInWishlist ? 'bg-primary text-white border-transparent' : 'bg-black/45 hover:bg-black/60 text-white'}`}
+                        className={`pointer-events-auto size-10 flex items-center justify-center rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
+                            isInWishlist
+                                ? 'bg-primary text-white border-transparent'
+                                : isScrolledPastImage
+                                    ? 'bg-gray-100 dark:bg-[#2c3136] hover:bg-gray-200 dark:hover:bg-[#383e44] text-gray-800 dark:text-white border border-black/5 dark:border-white/10'
+                                    : 'bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg'
+                        }`}
                     >
-                        <DynamicLucideIcon name="favorite" fill={isInWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
+                        <DynamicLucideIcon name="favorite" size={18} fill={isInWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
                     </button>
                 </div>
             </div>
@@ -304,7 +353,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                 {/* Main Content Layout: Stack on Mobile, 2 Columns on Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-8 items-start">
                     {/* Left Column: Hero Carousel + Gallery Thumbnails (7 Cols Desktop) */}
-                    <div className="md:col-span-7 flex flex-col gap-4">
+                    <div className="md:col-span-7 flex flex-col gap-4 sticky top-0 md:static z-0">
                         <div
                             role="region"
                             aria-label={`Product images${images.length > 1 ? ` — ${currentImageIndex + 1} of ${images.length}` : ''}`}
@@ -393,7 +442,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     </div>
 
                     {/* Right Column: Details, Seller & Action Sidebar (5 Cols Desktop, Sticky on Desktop) */}
-                    <div className="md:col-span-5 px-4 md:px-0 pt-6 md:pt-0 -mt-6 md:mt-0 relative z-10 bg-[#fafafa] dark:bg-[#22262a] rounded-t-3xl md:rounded-none md:sticky md:top-24 self-start">
+                    <div ref={detailsRef} className="md:col-span-5 px-4 md:px-0 pt-6 md:pt-0 -mt-6 md:mt-0 relative z-10 bg-[#fafafa] dark:bg-[#22262a] rounded-t-3xl md:rounded-none md:sticky md:top-24 self-start">
                         <div className="flex flex-col gap-5">
                             {/* Product Header & Title */}
                             <div className="flex flex-col gap-2">
