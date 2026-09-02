@@ -19,8 +19,9 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
     const [inlineError, setInlineError] = useState(null);
     const [shareFeedback, setShareFeedback] = useState(null);
     const [isScrolledPastImage, setIsScrolledPastImage] = useState(false);
-    const [productRating, setProductRating] = useState(null);
-    const [totalProductReviews, setTotalProductReviews] = useState(0);
+    const [productRating, setProductRating] = useState(product?.product_average_rating || null);
+    const [totalProductReviews, setTotalProductReviews] = useState(product?.product_total_reviews ?? 0);
+    const [loadingRating, setLoadingRating] = useState(product?.product_total_reviews === undefined);
     const detailsRef = useRef(null);
 
     // Initialize with first image from array if available, otherwise fallback to image_url
@@ -100,14 +101,18 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     .select('rating')
                     .eq('product_id', product.id);
 
-                if (active && revData && revData.length > 0) {
+                if (active && revData) {
                     const count = revData.length;
-                    const avg = (revData.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / count).toFixed(1);
+                    const avg = count > 0
+                        ? (revData.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / count).toFixed(1)
+                        : null;
                     setProductRating(avg);
                     setTotalProductReviews(count);
                 }
             } catch (err) {
                 console.error('Error fetching product rating:', err);
+            } finally {
+                if (active) setLoadingRating(false);
             }
         };
 
@@ -483,35 +488,42 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                 </div>
 
                                 {/* Item Rating Below Product Name */}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const el = document.getElementById('reviews-section');
-                                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                    }}
-                                    className="flex items-center gap-1.5 mt-0.5 text-left w-fit hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-                                    aria-label={`Rating: ${totalProductReviews > 0 ? `${productRating} out of 5 stars from ${totalProductReviews} reviews` : 'No reviews yet'}`}
-                                >
-                                    <div className="flex items-center text-yellow-400 gap-0.5">
-                                        {[1, 2, 3, 4, 5].map((s) => (
-                                            <DynamicLucideIcon
-                                                key={s}
-                                                name="star"
-                                                size={14}
-                                                fill={totalProductReviews > 0 && Number(productRating) >= s ? 'currentColor' : 'none'}
-                                                className={totalProductReviews > 0 && Number(productRating) >= s ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}
-                                                aria-hidden="true"
-                                            />
-                                        ))}
+                                {loadingRating ? (
+                                    <div className="flex items-center gap-2 mt-0.5 animate-pulse" aria-hidden="true">
+                                        <div className="h-3.5 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                                        <div className="h-3.5 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
                                     </div>
-                                    {totalProductReviews > 0 ? (
-                                        <span className="font-bold text-xs text-[#0e181b] dark:text-white">
-                                            {productRating} <span className="font-normal text-slate-500 dark:text-slate-400">({totalProductReviews} {totalProductReviews === 1 ? 'review' : 'reviews'})</span>
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium hover:underline">No reviews yet</span>
-                                    )}
-                                </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const el = document.getElementById('reviews-section');
+                                            if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                        }}
+                                        className="flex items-center gap-1.5 mt-0.5 text-left w-fit hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                                        aria-label={`Rating: ${totalProductReviews > 0 ? `${productRating} out of 5 stars from ${totalProductReviews} reviews` : 'No reviews yet'}`}
+                                    >
+                                        <div className="flex items-center text-yellow-400 gap-0.5">
+                                            {[1, 2, 3, 4, 5].map((s) => (
+                                                <DynamicLucideIcon
+                                                    key={s}
+                                                    name="star"
+                                                    size={14}
+                                                    fill={totalProductReviews > 0 && Number(productRating) >= s ? 'currentColor' : 'none'}
+                                                    className={totalProductReviews > 0 && Number(productRating) >= s ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}
+                                                    aria-hidden="true"
+                                                />
+                                            ))}
+                                        </div>
+                                        {totalProductReviews > 0 ? (
+                                            <span className="font-bold text-xs text-[#0e181b] dark:text-white">
+                                                {productRating} <span className="font-normal text-slate-500 dark:text-slate-400">({totalProductReviews} {totalProductReviews === 1 ? 'review' : 'reviews'})</span>
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium hover:underline">No reviews yet</span>
+                                        )}
+                                    </button>
+                                )}
                             </div>
 
                             {/* Desktop Immediate Action CTAs */}

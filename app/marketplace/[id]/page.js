@@ -24,24 +24,41 @@ export const dynamicParams = true;
 async function getProductDetails(id) {
     return getOrSet(`product:${id}:details`, async () => {
         const supabase = await createClient();
-        const { data: product, error } = await supabase
-            .from('products')
-            .select(`
-                *,
-                seller:profiles (
-                    display_name,
-                    email,
-                    created_at,
-                    is_verified,
-                    average_rating,
-                    total_reviews,
-                    avatar_url
-                )
-            `)
-            .eq('id', id)
-            .maybeSingle();
+        const [productRes, reviewsRes] = await Promise.all([
+            supabase
+                .from('products')
+                .select(`
+                    *,
+                    seller:profiles (
+                        display_name,
+                        email,
+                        created_at,
+                        is_verified,
+                        average_rating,
+                        total_reviews,
+                        avatar_url
+                    )
+                `)
+                .eq('id', id)
+                .maybeSingle(),
+            supabase
+                .from('reviews')
+                .select('rating')
+                .eq('product_id', id)
+        ]);
 
-        if (error || !product) return null;
+        if (productRes.error || !productRes.data) return null;
+        const product = productRes.data;
+
+        const reviews = reviewsRes.data || [];
+        const totalReviews = reviews.length;
+        const averageRating = totalReviews > 0
+            ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / totalReviews).toFixed(1)
+            : null;
+
+        product.product_average_rating = averageRating;
+        product.product_total_reviews = totalReviews;
+
         return product;
     }, 120);
 }
