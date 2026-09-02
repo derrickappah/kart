@@ -266,7 +266,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
             <div className="max-w-6xl mx-auto px-4 pt-4 hidden md:flex items-center justify-between">
                 <button
                     onClick={handleBack}
-                    className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg px-2 py-1"
+                    className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200 hover:text-primary transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl px-3.5 py-2 bg-white/40 dark:bg-black/20 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] hover:bg-white/60 dark:hover:bg-black/30 active:scale-95"
                 >
                     <DynamicLucideIcon name="arrow_back" size={18} aria-hidden="true" />
                     <span>Back to listings</span>
@@ -276,7 +276,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         <span
                             role="status"
                             aria-live="polite"
-                            className="flex items-center bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md animate-fade-in"
+                            className="flex items-center bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md animate-fade-in"
                         >
                             {shareFeedback}
                         </span>
@@ -284,7 +284,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     <button
                         onClick={handleShare}
                         aria-label="Share listing"
-                        className="size-10 flex items-center justify-center rounded-full bg-white dark:bg-[#2c3136] border border-black/5 dark:border-white/10 shadow-sm hover:border-primary/40 text-gray-700 dark:text-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="size-10 flex items-center justify-center rounded-full bg-white/40 dark:bg-black/20 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] hover:bg-white/60 dark:hover:bg-black/30 text-gray-800 dark:text-gray-100 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         <DynamicLucideIcon name="share" size={18} aria-hidden="true" />
                     </button>
@@ -293,7 +293,11 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         disabled={loadingWishlist}
                         aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
                         aria-pressed={isInWishlist}
-                        className={`size-10 flex items-center justify-center rounded-full border shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${isInWishlist ? 'bg-primary text-white border-transparent' : 'bg-white dark:bg-[#2c3136] border-black/5 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:border-primary/40'}`}
+                        className={`size-10 flex items-center justify-center rounded-full backdrop-blur-xl transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
+                            isInWishlist
+                                ? 'bg-primary/90 text-white border border-primary/50 shadow-[0_6px_20px_rgba(14,116,144,0.4),inset_0_1px_2px_rgba(255,255,255,0.5)]'
+                                : 'bg-white/40 dark:bg-black/20 border border-white/60 dark:border-white/15 text-gray-800 dark:text-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] hover:bg-white/60 dark:hover:bg-black/30'
+                        }`}
                     >
                         <DynamicLucideIcon name="favorite" size={18} fill={isInWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
                     </button>
@@ -311,10 +315,10 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                 <button
                     onClick={handleBack}
                     aria-label="Go back"
-                    className={`pointer-events-auto size-10 flex items-center justify-center rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    className={`pointer-events-auto size-10 flex items-center justify-center rounded-full backdrop-blur-xl transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                         isScrolledPastImage
-                            ? 'bg-gray-100 dark:bg-[#2c3136] hover:bg-gray-200 dark:hover:bg-[#383e44] text-gray-800 dark:text-white border border-black/5 dark:border-white/10'
-                            : 'bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg'
+                            ? 'bg-white/60 dark:bg-black/40 border border-white/60 dark:border-white/20 text-gray-900 dark:text-white shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_1.5px_rgba(255,255,255,0.8)] hover:bg-white/80'
+                            : 'bg-white/35 dark:bg-black/45 border border-white/50 dark:border-white/25 text-gray-900 dark:text-white shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_2px_rgba(255,255,255,0.85)] hover:bg-white/50'
                     }`}
                 >
                     <DynamicLucideIcon name="arrow_back" size={20} aria-hidden="true" />
@@ -338,7 +342,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         <span
                             role="status"
                             aria-live="polite"
-                            className="pointer-events-auto flex items-center bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md animate-fade-in"
+                            className="pointer-events-auto flex items-center bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md animate-fade-in"
                         >
                             {shareFeedback}
                         </span>
@@ -346,10 +350,10 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     <button
                         onClick={handleShare}
                         aria-label="Share this listing"
-                        className={`pointer-events-auto size-10 flex items-center justify-center rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                        className={`pointer-events-auto size-10 flex items-center justify-center rounded-full backdrop-blur-xl transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                             isScrolledPastImage
-                                ? 'bg-gray-100 dark:bg-[#2c3136] hover:bg-gray-200 dark:hover:bg-[#383e44] text-gray-800 dark:text-white border border-black/5 dark:border-white/10'
-                                : 'bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg'
+                                ? 'bg-white/60 dark:bg-black/40 border border-white/60 dark:border-white/20 text-gray-900 dark:text-white shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_1.5px_rgba(255,255,255,0.8)] hover:bg-white/80'
+                                : 'bg-white/35 dark:bg-black/45 border border-white/50 dark:border-white/25 text-gray-900 dark:text-white shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_2px_rgba(255,255,255,0.85)] hover:bg-white/50'
                         }`}
                     >
                         <DynamicLucideIcon name="share" size={18} aria-hidden="true" />
@@ -359,12 +363,12 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         disabled={loadingWishlist}
                         aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
                         aria-pressed={isInWishlist}
-                        className={`pointer-events-auto size-10 flex items-center justify-center rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
+                        className={`pointer-events-auto size-10 flex items-center justify-center rounded-full backdrop-blur-xl transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
                             isInWishlist
-                                ? 'bg-primary text-white border-transparent'
+                                ? 'bg-primary/90 text-white border border-primary/50 shadow-[0_8px_24px_rgba(14,116,144,0.4),inset_0_1px_2px_rgba(255,255,255,0.5)]'
                                 : isScrolledPastImage
-                                    ? 'bg-gray-100 dark:bg-[#2c3136] hover:bg-gray-200 dark:hover:bg-[#383e44] text-gray-800 dark:text-white border border-black/5 dark:border-white/10'
-                                    : 'bg-black/45 hover:bg-black/60 backdrop-blur-md text-white border border-white/10 shadow-lg'
+                                    ? 'bg-white/60 dark:bg-black/40 border border-white/60 dark:border-white/20 text-gray-900 dark:text-white shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_1.5px_rgba(255,255,255,0.8)] hover:bg-white/80'
+                                    : 'bg-white/35 dark:bg-black/45 border border-white/50 dark:border-white/25 text-gray-900 dark:text-white shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_2px_rgba(255,255,255,0.85)] hover:bg-white/50'
                         }`}
                     >
                         <DynamicLucideIcon name="favorite" size={18} fill={isInWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
