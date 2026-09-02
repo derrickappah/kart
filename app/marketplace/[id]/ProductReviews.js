@@ -277,15 +277,16 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                 )}
             </div>
 
-            {/* Main Interactive Ratings Hub: Dual-Pane Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-                {/* Left Card: Score & Rating Distribution (7 Cols) */}
-                <div className="lg:col-span-7 bg-white dark:bg-[#2c3136] rounded-3xl p-6 border border-black/5 dark:border-white/5 shadow-sm flex flex-col justify-between">
-                    <h3 className="text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-widest mb-4">
-                        Rating Breakdown
-                    </h3>
-                    
-                    {totalReviews > 0 ? (
+            {/* Main Interactive Ratings Hub */}
+            {totalReviews > 0 ? (
+                /* Dual-Pane Layout: Rating Breakdown (7 Cols) & Action Callout (5 Cols) */
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                    {/* Left Card: Score & Rating Distribution (7 Cols) */}
+                    <div className="lg:col-span-7 bg-white dark:bg-[#2c3136] rounded-3xl p-6 border border-black/5 dark:border-white/5 shadow-sm flex flex-col justify-between">
+                        <h3 className="text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-widest mb-4">
+                            Rating Breakdown
+                        </h3>
+                        
                         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
                             {/* Big Score Block */}
                             <div className="sm:col-span-5 flex flex-col items-center sm:items-start justify-center text-center sm:text-left sm:border-r border-gray-100 dark:border-gray-800 pr-0 sm:pr-4">
@@ -338,25 +339,141 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                 ))}
                             </div>
                         </div>
-                    ) : (
-                        <div className="py-6 flex flex-col items-center justify-center text-center gap-2">
-                            <div className="size-12 rounded-full bg-yellow-400/10 text-yellow-500 flex items-center justify-center">
-                                <DynamicLucideIcon name="star" size={24} fill="currentColor" />
-                            </div>
-                            <p className="font-bold text-sm text-[#0e181b] dark:text-white mt-1">No ratings yet</p>
-                            <p className="text-xs text-gray-400 max-w-xs">Be the first to rate this listing and share your experience with campus buyers.</p>
-                        </div>
-                    )}
-                </div>
+                    </div>
 
-                {/* Right Card: Prominent Review Action Callout (5 Cols) */}
-                <div className="lg:col-span-5 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent dark:from-[#2c3136] dark:to-[#22262a] rounded-3xl p-6 border border-primary/20 dark:border-white/10 shadow-sm flex flex-col justify-between">
+                    {/* Right Card: Review Action Callout (5 Cols) */}
+                    <div className="lg:col-span-5 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent dark:from-[#2c3136] dark:to-[#22262a] rounded-3xl p-6 border border-primary/20 dark:border-white/10 shadow-sm flex flex-col justify-between">
+                        {!isOwner ? (
+                            userReview ? (
+                                /* User already reviewed: Pinned "Your Review" Card with prominent Edit CTA */
+                                <div className="flex flex-col justify-between h-full gap-4">
+                                    <div>
+                                        <div className="flex items-center justify-between gap-2 mb-2">
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-bold tracking-wide">
+                                                <DynamicLucideIcon name="check" size={12} strokeWidth={3} />
+                                                <span>Your Review</span>
+                                            </span>
+                                            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                                                {timeAgo(userReview.created_at)}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5 my-2">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <DynamicLucideIcon
+                                                    key={star}
+                                                    name="star"
+                                                    size={18}
+                                                    fill={star <= userReview.rating ? 'currentColor' : 'none'}
+                                                    className={star <= userReview.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}
+                                                    aria-hidden="true"
+                                                />
+                                            ))}
+                                            <span className="text-xs font-black ml-1 text-primary">
+                                                {userReview.rating}.0 • {RATING_LABELS[userReview.rating - 1]}
+                                            </span>
+                                        </div>
+
+                                        {parsedUserReview?.text ? (
+                                            <p className="text-xs text-[#4f5b66] dark:text-slate-300 line-clamp-2 leading-relaxed mt-2 italic">
+                                                &ldquo;{parsedUserReview.text}&rdquo;
+                                            </p>
+                                        ) : (
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                                Rating submitted without comment.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => openReviewModal(userReview)}
+                                        className="w-full h-12 rounded-2xl bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-primary dark:text-primary-light font-bold text-sm border border-primary/30 dark:border-primary/40 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    >
+                                        <DynamicLucideIcon name="edit" size={16} aria-hidden="true" />
+                                        <span>Edit Your Review</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                /* User hasn't reviewed: Engaging Call-To-Action Card */
+                                <div className="flex flex-col justify-between h-full gap-4">
+                                    <div>
+                                        <h3 className="text-base font-extrabold text-[#0e181b] dark:text-white">
+                                            Review this listing
+                                        </h3>
+                                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                                            Have you interacted with this seller or checked out this item? Share your feedback.
+                                        </p>
+
+                                        {/* Interactive 5-star quick launch row */}
+                                        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-primary/10 dark:border-gray-700/50">
+                                            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tap to rate:</span>
+                                            <div
+                                                className="flex items-center gap-1"
+                                                onMouseLeave={() => setQuickHoverRating(0)}
+                                                role="group"
+                                                aria-label="Quick rating selector"
+                                            >
+                                                {[1, 2, 3, 4, 5].map(star => {
+                                                    const isFilled = star <= quickHoverRating;
+                                                    return (
+                                                        <button
+                                                            key={star}
+                                                            type="button"
+                                                            onClick={() => openReviewModal(null, star)}
+                                                            onMouseEnter={() => setQuickHoverRating(star)}
+                                                            onTouchStart={() => setQuickHoverRating(star)}
+                                                            aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                                                            className="p-1 hover:scale-125 active:scale-95 transition-transform focus:outline-none rounded"
+                                                        >
+                                                            <DynamicLucideIcon
+                                                                name="star"
+                                                                size={22}
+                                                                fill={isFilled ? 'currentColor' : 'none'}
+                                                                className={`transition-colors ${
+                                                                    isFilled ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+                                                                }`}
+                                                                aria-hidden="true"
+                                                            />
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => openReviewModal(null)}
+                                        className="w-full h-12 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    >
+                                        <DynamicLucideIcon name="rate_review" size={18} aria-hidden="true" />
+                                        <span>Write a Review</span>
+                                    </button>
+                                </div>
+                            )
+                        ) : (
+                            /* Product Owner / Seller Card */
+                            <div className="flex flex-col items-center justify-center text-center h-full p-4 gap-2">
+                                <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                                    <DynamicLucideIcon name="person" size={20} />
+                                </div>
+                                <p className="font-bold text-sm text-[#0e181b] dark:text-white">Seller Dashboard</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">
+                                    You are the owner of this listing. Customer feedback from campus buyers will appear here.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                /* No Ratings Yet: Do NOT show Rating Breakdown; Render clean Single Review Action Card */
+                <div className="mb-8 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent dark:from-[#2c3136] dark:to-[#22262a] rounded-3xl p-6 sm:p-8 border border-primary/20 dark:border-white/10 shadow-sm">
                     {!isOwner ? (
                         userReview ? (
-                            /* User already reviewed: Pinned "Your Review" Card with prominent Edit CTA */
-                            <div className="flex flex-col justify-between h-full gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
-                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-2 mb-2">
                                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-bold tracking-wide">
                                             <DynamicLucideIcon name="check" size={12} strokeWidth={3} />
                                             <span>Your Review</span>
@@ -365,7 +482,6 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                             {timeAgo(userReview.created_at)}
                                         </span>
                                     </div>
-
                                     <div className="flex items-center gap-1.5 my-2">
                                         {[1, 2, 3, 4, 5].map(star => (
                                             <DynamicLucideIcon
@@ -381,41 +497,32 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                             {userReview.rating}.0 • {RATING_LABELS[userReview.rating - 1]}
                                         </span>
                                     </div>
-
-                                    {parsedUserReview?.text ? (
-                                        <p className="text-xs text-[#4f5b66] dark:text-slate-300 line-clamp-2 leading-relaxed mt-2 italic">
+                                    {parsedUserReview?.text && (
+                                        <p className="text-xs text-[#4f5b66] dark:text-slate-300 italic mt-1">
                                             &ldquo;{parsedUserReview.text}&rdquo;
-                                        </p>
-                                    ) : (
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                                            Rating submitted without comment.
                                         </p>
                                     )}
                                 </div>
-
                                 <button
                                     type="button"
                                     onClick={() => openReviewModal(userReview)}
-                                    className="w-full h-12 rounded-2xl bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-primary dark:text-primary-light font-bold text-sm border border-primary/30 dark:border-primary/40 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="h-11 px-6 rounded-2xl bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-primary dark:text-primary-light font-bold text-sm border border-primary/30 dark:border-primary/40 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                                 >
                                     <DynamicLucideIcon name="edit" size={16} aria-hidden="true" />
                                     <span>Edit Your Review</span>
                                 </button>
                             </div>
                         ) : (
-                            /* User hasn't reviewed: Engaging Call-To-Action Card */
-                            <div className="flex flex-col justify-between h-full gap-4">
-                                <div>
-                                    <h3 className="text-base font-extrabold text-[#0e181b] dark:text-white">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                <div className="max-w-xl">
+                                    <h3 className="text-base sm:text-lg font-extrabold text-[#0e181b] dark:text-white">
                                         Review this listing
                                     </h3>
-                                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
-                                        Have you interacted with this seller or checked out this item? Share your feedback.
+                                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                                        Have you interacted with this seller or checked out this item? Be the first to share your feedback.
                                     </p>
-
-                                    {/* Interactive 5-star quick launch row */}
                                     <div className="flex items-center gap-2 mt-4 pt-3 border-t border-primary/10 dark:border-gray-700/50">
-                                        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tap to rate:</span>
+                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Tap to rate:</span>
                                         <div
                                             className="flex items-center gap-1"
                                             onMouseLeave={() => setQuickHoverRating(0)}
@@ -453,7 +560,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                 <button
                                     type="button"
                                     onClick={() => openReviewModal(null)}
-                                    className="w-full h-12 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="h-12 px-6 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                                 >
                                     <DynamicLucideIcon name="rate_review" size={18} aria-hidden="true" />
                                     <span>Write a Review</span>
@@ -461,19 +568,20 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                             </div>
                         )
                     ) : (
-                        /* Product Owner / Seller Card */
-                        <div className="flex flex-col items-center justify-center text-center h-full p-4 gap-2">
-                            <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                <DynamicLucideIcon name="person" size={20} />
+                        <div className="flex items-center gap-4 py-1">
+                            <div className="size-11 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                <DynamicLucideIcon name="person" size={22} />
                             </div>
-                            <p className="font-bold text-sm text-[#0e181b] dark:text-white">Seller Dashboard</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">
-                                You are the owner of this listing. Customer feedback from campus buyers will appear here.
-                            </p>
+                            <div>
+                                <p className="font-bold text-sm text-[#0e181b] dark:text-white">Seller Dashboard</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    You are the owner of this listing. Customer feedback from campus buyers will appear here once submitted.
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
-            </div>
+            )}
 
             {/* Existing Reviews List */}
             {reviews.length > 0 ? (
