@@ -354,7 +354,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         <div
                             role="region"
                             aria-label={`Product images${images.length > 1 ? ` — ${currentImageIndex + 1} of ${images.length}` : ''}`}
-                            className="relative w-full aspect-[4/5] md:aspect-[4/3] rounded-none md:rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 touch-pan-y shadow-sm"
+                            className="relative w-full aspect-[4/5] md:aspect-[4/3] rounded-none md:rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 touch-pan-y shadow-none md:shadow-sm"
                             onTouchStart={onTouchStart}
                             onTouchMove={onTouchMove}
                             onTouchEnd={onTouchEnd}
@@ -557,18 +557,18 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                             {/* Description Section */}
                             <div>
                                 <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0e181b] dark:text-white mb-3">Description</h2>
-                                {product.condition && (
-                                    <p className="text-sm font-semibold text-[#0e181b] dark:text-white mb-2">
-                                        Condition : {product.condition}
-                                    </p>
-                                )}
                                 <div className="text-[#4f5b66] dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-base">
                                     {product.description || <span className="italic text-gray-400">No description provided.</span>}
                                 </div>
-                                {product.price != null && (
-                                    <p className="text-sm font-semibold text-[#4f5b66] dark:text-slate-300 mt-2">
-                                        Price : ₵ {formatPrice(product.price)}
-                                    </p>
+                                {(product.condition || product.price != null) && (
+                                    <div className="mt-3 flex flex-col gap-1 text-sm font-semibold text-[#4f5b66] dark:text-slate-300">
+                                        {product.condition && (
+                                            <p>Condition : {product.condition}</p>
+                                        )}
+                                        {product.price != null && (
+                                            <p>Price : ₵ {formatPrice(product.price)}</p>
+                                        )}
+                                    </div>
                                 )}
                             </div>
 
@@ -591,19 +591,22 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     </div>
                 </div>
 
-                {/* Product Ratings & Reviews Section */}
-                <div className="px-4 md:px-0">
-                    <ProductReviews
-                        productId={product.id}
-                        sellerId={product.seller_id}
-                        productTitle={toSentenceCase(product.title)}
-                        isOwner={isOwner}
-                        currentUser={currentUser}
-                    />
-                </div>
+                {/* Lower Content Wrapper: Continuous z-10 background covering underlying sticky layer */}
+                <div className="relative z-10 bg-[#fafafa] dark:bg-[#22262a] pt-8 md:pt-12">
+                    {/* Product Ratings & Reviews Section */}
+                    <div className="px-4 md:px-0">
+                        <ProductReviews
+                            productId={product.id}
+                            sellerId={product.seller_id}
+                            productTitle={toSentenceCase(product.title)}
+                            isOwner={isOwner}
+                            currentUser={currentUser}
+                        />
+                    </div>
 
-                {/* Similar Items Section with Horizontal Infinite Scroll */}
-                <SimilarItemsSlider category={product.category} currentProductId={product.id} />
+                    {/* Similar Items Section with Horizontal Infinite Scroll */}
+                    <SimilarItemsSlider category={product.category} currentProductId={product.id} />
+                </div>
             </main>
 
             {/* Sticky Bottom Action Area for Mobile */}

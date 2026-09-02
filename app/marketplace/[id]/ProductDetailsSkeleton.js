@@ -67,10 +67,10 @@ export function ProductDetailsSkeleton() {
                             {/* Description Skeleton */}
                             <div className="flex flex-col gap-2.5">
                                 <div className="h-5 w-28 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
-                                <div className="h-4 w-32 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-full bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-5/6 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-2/3 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
+                                <div className="h-4 w-32 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer mt-1" />
                                 <div className="h-4 w-28 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                             </div>
 
@@ -90,7 +90,7 @@ export function ProductDetailsSkeleton() {
                 </div>
 
                 {/* Similar Items Section */}
-                <div className="mt-12 px-4 md:px-0">
+                <div className="relative z-10 bg-[#fafafa] dark:bg-[#22262a] pt-8 md:pt-12 px-4 md:px-0">
                     <div className="h-6 w-36 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer mb-4" />
                     <div className="grid grid-rows-2 grid-flow-col auto-cols-[145px] sm:auto-cols-[165px] md:auto-cols-[185px] gap-3 sm:gap-3.5 overflow-hidden pb-4">
                         {Array.from({ length: 6 }).map((_, i) => (

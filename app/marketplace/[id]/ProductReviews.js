@@ -246,7 +246,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
     const parsedUserReview = userReview ? parseReviewComment(userReview.comment) : null;
 
     return (
-        <section id="reviews-section" className="mt-8 md:mt-12 scroll-mt-24" aria-labelledby="reviews-heading">
+        <section id="reviews-section" className="scroll-mt-24" aria-labelledby="reviews-heading">
             {/* Section Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>

@@ -157,7 +157,7 @@ export default function SimilarItemsSlider({ category, currentProductId }) {
     }
 
     return (
-        <section className="mt-8 md:mt-16 mb-2 md:mb-8 px-4 md:px-0" aria-label="Similar items">
+        <section className="pt-8 md:pt-16 mb-2 md:mb-8 px-4 md:px-0" aria-label="Similar items">
             {/* Header with Title, Controls, and See All */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
