@@ -5,13 +5,7 @@
   "id": "/",
   "start_url": "/",
   "scope": "/",
-  "display": "fullscreen",
-  "display_override": [
-    "fullscreen",
-    "standalone",
-    "minimal-ui",
-    "browser"
-  ],
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#000000",

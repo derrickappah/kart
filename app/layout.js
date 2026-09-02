@@ -11,7 +11,6 @@ export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kart.cx'),
   title: "KART | Campus Marketplace",
   description: "The premium marketplace for students.",
-  manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
     apple: "/icon.png",
@@ -38,22 +37,12 @@ export const metadata = {
     description: "The premium marketplace for students.",
     images: ["/icon.png"],
   },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "KART",
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-    "apple-touch-fullscreen": "yes",
-  },
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#000000",
 };
 
 export default function RootLayout({ children }) {
