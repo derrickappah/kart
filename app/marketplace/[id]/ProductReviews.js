@@ -453,7 +453,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                 <button
                                     type="button"
                                     onClick={() => openReviewModal(null)}
-                                    className="w-full h-12 rounded-2xl bg-primary hover:bg-[#0b5f76] text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="w-full h-12 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                     <DynamicLucideIcon name="rate_review" size={18} aria-hidden="true" />
                                     <span>Write a Review</span>
@@ -739,7 +739,7 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-6 py-2.5 rounded-full bg-primary hover:bg-[#0b5f76] text-white font-bold text-sm shadow-md active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
+                                    className="px-6 py-2.5 rounded-full bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
                                 >
                                     {submitting ? (
                                         <>
