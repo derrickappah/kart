@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -57,8 +58,13 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
     const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successFeedback, setSuccessFeedback] = useState(null);
+    const [mounted, setMounted] = useState(false);
 
     const supabase = createClient();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Sync propUser if passed from parent
     useEffect(() => {
@@ -582,9 +588,9 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
             ) : null}
 
             {/* Leave / Edit Review Modal */}
-            {isModalOpen && (
+            {isModalOpen && mounted && createPortal(
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in"
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="review-modal-title"
@@ -747,7 +753,8 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </section>
     );

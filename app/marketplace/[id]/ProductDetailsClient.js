@@ -542,7 +542,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                             onClick={handleContactSeller}
                                             disabled={loadingChat}
                                             aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
-                                            className="flex-1 h-14 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="flex-1 h-14 rounded-[18px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-base flex items-center justify-center gap-2.5 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             {loadingChat
                                                 ? <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
@@ -556,7 +556,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                         </button>
                                         <Link
                                             href={product.seller_id ? `/profile/${product.seller_id}` : '#'}
-                                            className="flex-1 h-14 rounded-xl bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all whitespace-nowrap px-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            className="flex-1 h-14 rounded-[18px] bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-base flex items-center justify-center gap-2.5 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all whitespace-nowrap px-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                             aria-label="View seller profile"
                                         >
                                             <DynamicLucideIcon name="person" size={20} aria-hidden="true" />
@@ -636,7 +636,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                             onClick={handleContactSeller}
                             disabled={loadingChat}
                             aria-label={loadingChat ? 'Opening chat…' : 'Chat with seller'}
-                            className="flex-1 h-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="flex-1 h-12 rounded-[16px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2c3136] text-[#0e7490] dark:text-primary-light font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             {loadingChat ? (
                                 <div className="size-5 border-2 border-primary border-t-transparent animate-spin rounded-full" aria-hidden="true" />
@@ -649,7 +649,7 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         </button>
                         <Link
                             href={product.seller_id ? `/profile/${product.seller_id}` : '#'}
-                            className="flex-1 h-12 rounded-xl bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all whitespace-nowrap px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="flex-1 h-12 rounded-[16px] bg-[#0e7490] hover:bg-[#0b5f76] dark:bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(14,116,144,0.4)] active:scale-[0.98] transition-all whitespace-nowrap px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             aria-label="View seller profile"
                         >
                             <DynamicLucideIcon name="person" size={18} aria-hidden="true" />

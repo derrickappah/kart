@@ -57,8 +57,8 @@ export function ProductDetailsSkeleton() {
 
                             {/* Desktop Action CTA Buttons */}
                             <div className="hidden md:flex gap-3 my-1">
-                                <div className="flex-1 h-14 rounded-xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
-                                <div className="flex-1 h-14 rounded-xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                                <div className="flex-1 h-14 rounded-[18px] bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                                <div className="flex-1 h-14 rounded-[18px] bg-gray-100 dark:bg-[#2f2f35] shimmer" />
                             </div>
 
                             {/* Description Skeleton */}
@@ -103,8 +103,8 @@ export function ProductDetailsSkeleton() {
             {/* Mobile Sticky Bottom Action Bar Skeleton */}
             <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-[#22262a]/95 backdrop-blur-md border-t border-black/5 dark:border-white/10 rounded-t-3xl p-4 shadow-lg pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
                 <div className="flex gap-3">
-                    <div className="flex-1 h-12 rounded-xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
-                    <div className="flex-1 h-12 rounded-xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                    <div className="flex-1 h-12 rounded-[16px] bg-gray-100 dark:bg-[#2f2f35] shimmer" />
+                    <div className="flex-1 h-12 rounded-[16px] bg-gray-100 dark:bg-[#2f2f35] shimmer" />
                 </div>
             </div>
         </div>
