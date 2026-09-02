@@ -192,16 +192,16 @@ export default function SellerProfilePage() {
                                     </div>
                                 )}
                             </div>
-                            {profile.is_verified && (
-                                <div className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-4 border-white dark:border-[#242428] flex items-center justify-center shadow-lg">
-                                    <DynamicLucideIcon name="verified" style={{ fontVariationSettings: "'FILL' 1" }} className="text-[16px] font-bold" />
-                                </div>
-                            )}
                         </div>
                         <div className="mt-4 text-center flex flex-col items-center">
-                            <h2 className="text-2xl font-bold tracking-tight">
-                                {profile.username || profile.display_name || 'Anonymous'}
-                            </h2>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <h2 className="text-2xl font-bold tracking-tight">
+                                    {profile.username || profile.display_name || 'Anonymous'}
+                                </h2>
+                                {profile.is_verified && (
+                                    <DynamicLucideIcon name="verified" size={22} className="text-primary shrink-0" />
+                                )}
+                            </div>
                             {/* Rating Badge */}
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold shadow-sm">
                                 <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-sm text-amber-500" />
