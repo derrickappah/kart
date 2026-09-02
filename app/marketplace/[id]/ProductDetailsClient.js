@@ -296,13 +296,13 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
 
                 {/* Sticky Product Title in Navigation */}
                 <div
-                    className={`flex-1 mx-3 text-center transition-all duration-300 transform ${
+                    className={`flex-1 min-w-0 mx-2 sm:mx-3 text-center transition-all duration-300 transform ${
                         isScrolledPastImage
                             ? 'opacity-100 translate-y-0'
                             : 'opacity-0 -translate-y-2 pointer-events-none'
                     }`}
                 >
-                    <p className="font-bold text-sm text-[#0e181b] dark:text-white truncate">
+                    <p className="font-extrabold text-base sm:text-lg text-[#0e181b] dark:text-white truncate tracking-tight">
                         {toSentenceCase(product.title)}
                     </p>
                 </div>
