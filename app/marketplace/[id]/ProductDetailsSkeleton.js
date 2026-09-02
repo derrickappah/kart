@@ -49,6 +49,12 @@ export function ProductDetailsSkeleton() {
                                 <div className="h-8 w-24 bg-gray-100 dark:bg-[#2f2f35] rounded-lg shrink-0 shimmer" />
                             </div>
 
+                            {/* Rating Skeleton */}
+                            <div className="flex items-center gap-2">
+                                <div className="h-3.5 w-20 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
+                                <div className="h-3.5 w-16 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
+                            </div>
+
                             {/* Desktop Action CTA Buttons */}
                             <div className="hidden md:flex gap-3 my-1">
                                 <div className="flex-1 h-14 rounded-2xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
