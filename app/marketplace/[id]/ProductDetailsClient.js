@@ -576,9 +576,9 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                             {product.campus && (
                                 <div>
                                     <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0e181b] dark:text-white mb-3">Location</h2>
-                                    <div className="flex items-center gap-3 p-4 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/10">
-                                        <div className="size-10 flex items-center justify-center bg-primary rounded-xl text-white shrink-0 shadow-sm">
-                                            <DynamicLucideIcon name="location_on" aria-hidden="true" />
+                                    <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#2c3136] rounded-2xl border border-black/5 dark:border-white/5 shadow-sm">
+                                        <div className="size-10 flex items-center justify-center bg-primary/10 text-primary rounded-xl shrink-0">
+                                            <DynamicLucideIcon name="location_on" size={20} aria-hidden="true" />
                                         </div>
                                         <div>
                                             <p className="font-bold text-sm text-[#0e181b] dark:text-white">{product.campus}</p>

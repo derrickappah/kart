@@ -77,7 +77,7 @@ export function ProductDetailsSkeleton() {
                             {/* Pickup Location Skeleton */}
                             <div className="flex flex-col gap-2">
                                 <div className="h-5 w-32 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
-                                <div className="p-4 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/10 flex items-center gap-3">
+                                <div className="p-4 bg-white dark:bg-[#2c3136] rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex items-center gap-3">
                                     <div className="size-10 rounded-xl bg-gray-100 dark:bg-[#2f2f35] shrink-0 shimmer" />
                                     <div className="flex-1 flex flex-col gap-1.5">
                                         <div className="h-4 w-28 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
