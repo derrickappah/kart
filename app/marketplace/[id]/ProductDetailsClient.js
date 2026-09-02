@@ -442,17 +442,17 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                     <div ref={detailsRef} className="md:col-span-5 px-4 md:px-0 pt-6 md:pt-0 -mt-6 md:mt-0 relative z-10 bg-[#fafafa] dark:bg-[#22262a] rounded-t-3xl md:rounded-none md:sticky md:top-24 self-start">
                         <div className="flex flex-col gap-5">
                             {/* Product Header & Title */}
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                            <div className="flex flex-col gap-1.5">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-primary text-xs font-bold uppercase tracking-wider">
                                         {product.category}
                                     </span>
-                                    <span className="text-[#5e7d87] dark:text-gray-400 text-xs font-bold uppercase tracking-wider ml-auto flex items-center gap-1">
+                                    <span className="text-[#5e7d87] dark:text-gray-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
                                         <DynamicLucideIcon name="schedule" size={14} aria-hidden="true" />
                                         <time dateTime={product.created_at}>{timeAgo(product.created_at)}</time>
                                     </span>
                                 </div>
-                                <div className="flex items-start justify-between gap-4 mt-1">
+                                <div className="flex items-start justify-between gap-4 mt-0.5">
                                     <h1 className="text-[#0e181b] dark:text-white text-2xl md:text-3xl font-extrabold leading-tight tracking-tight">
                                         {toSentenceCase(product.title)}
                                     </h1>

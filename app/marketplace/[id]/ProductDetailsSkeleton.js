@@ -34,10 +34,10 @@ export function ProductDetailsSkeleton() {
                     {/* Right Column: Title, Price, CTAs, Seller & Details */}
                     <div className="md:col-span-5 px-4 md:px-0 pt-6 md:pt-0 -mt-6 md:mt-0 relative z-10 bg-[#fafafa] dark:bg-[#22262a] rounded-t-3xl md:rounded-none">
                         <div className="flex flex-col gap-5">
-                            {/* Badges & Time */}
-                            <div className="flex items-center gap-2">
-                                <div className="h-6 w-20 bg-gray-100 dark:bg-[#2f2f35] rounded-md shimmer" />
-                                <div className="h-4 w-16 bg-gray-100 dark:bg-[#2f2f35] rounded ml-auto shimmer" />
+                            {/* Category & Time */}
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="h-4 w-20 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
+                                <div className="h-4 w-16 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                             </div>
 
                             {/* Title & Price */}
