@@ -293,13 +293,15 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         disabled={loadingWishlist}
                         aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
                         aria-pressed={isInWishlist}
-                        className={`size-10 flex items-center justify-center rounded-full backdrop-blur-xl transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
-                            isInWishlist
-                                ? 'bg-primary/90 text-white border border-primary/50 shadow-[0_6px_20px_rgba(14,116,144,0.4),inset_0_1px_2px_rgba(255,255,255,0.5)]'
-                                : 'bg-white/40 dark:bg-black/20 border border-white/60 dark:border-white/15 text-gray-800 dark:text-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] hover:bg-white/60 dark:hover:bg-black/30'
-                        }`}
+                        className="size-10 flex items-center justify-center rounded-full bg-white/40 dark:bg-black/20 backdrop-blur-xl border border-white/60 dark:border-white/15 text-gray-800 dark:text-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] hover:bg-white/60 dark:hover:bg-black/30 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
                     >
-                        <DynamicLucideIcon name="favorite" size={18} fill={isInWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
+                        <DynamicLucideIcon
+                            name="favorite"
+                            size={18}
+                            fill={isInWishlist ? 'currentColor' : 'none'}
+                            className={isInWishlist ? 'text-black dark:text-white scale-110 transition-transform' : 'text-gray-700 dark:text-gray-200'}
+                            aria-hidden="true"
+                        />
                     </button>
                 </div>
             </div>
@@ -364,14 +366,18 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                         aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
                         aria-pressed={isInWishlist}
                         className={`pointer-events-auto size-10 flex items-center justify-center rounded-full backdrop-blur-xl transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
-                            isInWishlist
-                                ? 'bg-primary/90 text-white border border-primary/50 shadow-[0_8px_24px_rgba(14,116,144,0.4),inset_0_1px_2px_rgba(255,255,255,0.5)]'
-                                : isScrolledPastImage
-                                    ? 'bg-white/60 dark:bg-black/40 border border-white/60 dark:border-white/20 text-gray-900 dark:text-white shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_1.5px_rgba(255,255,255,0.8)] hover:bg-white/80'
-                                    : 'bg-white/35 dark:bg-black/45 border border-white/50 dark:border-white/25 text-gray-900 dark:text-white shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_2px_rgba(255,255,255,0.85)] hover:bg-white/50'
+                            isScrolledPastImage
+                                ? 'bg-white/60 dark:bg-black/40 border border-white/60 dark:border-white/20 text-gray-900 dark:text-white shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_1.5px_rgba(255,255,255,0.8)] hover:bg-white/80'
+                                : 'bg-white/35 dark:bg-black/45 border border-white/50 dark:border-white/25 text-gray-900 dark:text-white shadow-[0_8px_32px_rgba(0,0,0,0.15),inset_0_1px_2px_rgba(255,255,255,0.85)] hover:bg-white/50'
                         }`}
                     >
-                        <DynamicLucideIcon name="favorite" size={18} fill={isInWishlist ? 'currentColor' : 'none'} aria-hidden="true" />
+                        <DynamicLucideIcon
+                            name="favorite"
+                            size={18}
+                            fill={isInWishlist ? 'currentColor' : 'none'}
+                            className={isInWishlist ? 'text-black dark:text-white scale-110 transition-transform' : 'text-gray-800 dark:text-gray-100'}
+                            aria-hidden="true"
+                        />
                     </button>
                 </div>
             </div>
