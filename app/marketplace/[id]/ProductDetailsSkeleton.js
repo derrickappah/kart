@@ -61,18 +61,8 @@ export function ProductDetailsSkeleton() {
                                 <div className="flex-1 h-14 rounded-2xl bg-gray-100 dark:bg-[#2f2f35] shimmer" />
                             </div>
 
-                            {/* Seller Info Card */}
-                            <div className="p-4 bg-white dark:bg-[#2c3136] rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex items-center gap-4">
-                                <div className="size-12 rounded-full bg-gray-100 dark:bg-[#2f2f35] shrink-0 shimmer" />
-                                <div className="flex-1 flex flex-col gap-2">
-                                    <div className="h-4 w-32 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
-                                    <div className="h-3.5 w-24 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
-                                </div>
-                            </div>
-
                             {/* Description Skeleton */}
                             <div className="flex flex-col gap-2.5">
-                                <div className="h-5 w-28 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-full bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-5/6 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />
                                 <div className="h-4 w-2/3 bg-gray-100 dark:bg-[#2f2f35] rounded shimmer" />

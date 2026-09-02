@@ -566,61 +566,8 @@ export default function ProductDetailsClient({ product, initialUser = null }) {
                                 </div>
                             )}
 
-                            {/* Seller Info Card */}
-                            <Link
-                                href={`/profile/${product.seller_id}`}
-                                className="p-4 bg-white dark:bg-[#2c3136] rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex items-center justify-between hover:border-primary/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                aria-label={`View ${product.seller?.display_name || 'seller'}'s profile`}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-[#0f7295] dark:text-primary ring-2 ring-primary/20 overflow-hidden shrink-0">
-                                        {product.seller?.avatar_url ? (
-                                            <Image
-                                                src={product.seller.avatar_url}
-                                                alt={product.seller?.display_name || 'Seller avatar'}
-                                                width={48}
-                                                height={48}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <span className="text-lg font-bold" aria-hidden="true">
-                                                {product.seller?.display_name ? product.seller.display_name[0].toUpperCase() : 'U'}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <div className="font-bold text-base flex items-center gap-1.5">
-                                            <span>{product.seller?.display_name || 'Anonymous Seller'}</span>
-                                            {product.seller?.is_verified && (
-                                                <DynamicLucideIcon
-                                                    name="verified"
-                                                    size={16}
-                                                    className="text-[#1daddd] shrink-0"
-                                                    aria-label="Verified Seller"
-                                                />
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 mt-0.5">
-                                            {product.seller?.total_reviews > 0 ? (
-                                                <>
-                                                    <DynamicLucideIcon name="star" size={14} fill="currentColor" className="text-yellow-400" aria-hidden="true" />
-                                                    <span className="text-sm font-semibold">
-                                                        {parseFloat(product.seller.average_rating || 0).toFixed(1)}
-                                                    </span>
-                                                    <span className="text-xs text-slate-500 dark:text-slate-400">• {product.seller.total_reviews} {product.seller.total_reviews === 1 ? 'review' : 'reviews'}</span>
-                                                </>
-                                            ) : (
-                                                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">New Seller • No reviews yet</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                <DynamicLucideIcon name="chevron_right" className="text-slate-400 shrink-0" aria-hidden="true" />
-                            </Link>
-
                             {/* Description Section */}
                             <div>
-                                <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0e181b] dark:text-white mb-3">Description</h2>
                                 <div className="text-[#4f5b66] dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-base">
                                     {product.description || <span className="italic text-gray-400">No description provided.</span>}
                                 </div>

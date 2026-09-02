@@ -10,6 +10,7 @@ import PageTransition from './PageTransition';
 import PullToRefresh from './PullToRefresh';
 import FilterSidebar from './FilterSidebar';
 import PushNotificationPrompt from './PushNotificationPrompt';
+import FullscreenHandler from './FullscreenHandler';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 
@@ -191,6 +192,7 @@ export default function LayoutWrapper({ children }) {
 
     return (
         <>
+            <FullscreenHandler />
             <AppDeepLinkHandler />
             {!isEditingPage && <Navbar user={user} />}
             <main className={`overflow-x-clip ${mainBg} ${paddingClass}`}>
