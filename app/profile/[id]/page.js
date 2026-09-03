@@ -22,6 +22,7 @@ export default function SellerProfilePage() {
     const [activeTab, setActiveTab] = useState('listings'); // 'listings' or 'reviews'
     const [reviews, setReviews] = useState([]);
     const [reviewers, setReviewers] = useState({});
+    const [reviewedProducts, setReviewedProducts] = useState({});
     const [showContact, setShowContact] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
     const [followersCount, setFollowersCount] = useState(0);
@@ -93,20 +94,38 @@ export default function SellerProfilePage() {
                     setFollowersCount(followsCount);
                 }
 
-                // Fetch reviewers profiles
+                // Fetch reviewers profiles and reviewed products
                 if (reviewsData && reviewsData.length > 0) {
-                    const buyerIds = [...new Set(reviewsData.map(r => r.buyer_id))];
-                    const { data: buyersData } = await supabase
-                        .from('profiles')
-                        .select('id, display_name, avatar_url')
-                        .in('id', buyerIds);
+                    const buyerIds = [...new Set(reviewsData.map(r => r.buyer_id).filter(Boolean))];
+                    if (buyerIds.length > 0) {
+                        const { data: buyersData } = await supabase
+                            .from('profiles')
+                            .select('id, display_name, username, avatar_url, is_verified')
+                            .in('id', buyerIds);
 
-                    if (buyersData) {
-                        const buyersMap = buyersData.reduce((acc, buyer) => {
-                            acc[buyer.id] = buyer;
-                            return acc;
-                        }, {});
-                        setReviewers(buyersMap);
+                        if (buyersData) {
+                            const buyersMap = buyersData.reduce((acc, buyer) => {
+                                acc[buyer.id] = buyer;
+                                return acc;
+                            }, {});
+                            setReviewers(buyersMap);
+                        }
+                    }
+
+                    const productIds = [...new Set(reviewsData.map(r => r.product_id).filter(Boolean))];
+                    if (productIds.length > 0) {
+                        const { data: productsData } = await supabase
+                            .from('products')
+                            .select('id, title, price, images, image_url')
+                            .in('id', productIds);
+
+                        if (productsData) {
+                            const productsMap = productsData.reduce((acc, prod) => {
+                                acc[prod.id] = prod;
+                                return acc;
+                            }, {});
+                            setReviewedProducts(productsMap);
+                        }
                     }
                 }
 
@@ -404,33 +423,73 @@ export default function SellerProfilePage() {
                             {reviews.length > 0 ? (
                                 reviews.map((review) => {
                                     const reviewer = reviewers[review.buyer_id] || {};
+                                    const reviewedProduct = review.product_id ? reviewedProducts[review.product_id] : null;
                                     return (
                                         <div key={review.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-3">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                                    <div className="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
                                                         {reviewer.avatar_url ? (
-                                                            <img src={reviewer.avatar_url} alt={reviewer.display_name} className="w-full h-full object-cover" />
+                                                            <img src={reviewer.avatar_url} alt={reviewer.display_name || reviewer.username || 'User'} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold">
-                                                                {reviewer.display_name?.[0]?.toUpperCase() || 'U'}
+                                                                {(reviewer.display_name?.[0] || reviewer.username?.[0] || 'U').toUpperCase()}
                                                             </div>
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-bold text-slate-900 dark:text-white">
-                                                            {reviewer.display_name || 'Anonymous User'}
-                                                        </p>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                {reviewer.display_name || reviewer.username || 'Anonymous User'}
+                                                            </p>
+                                                            {reviewer.is_verified && (
+                                                                <DynamicLucideIcon name="verified" size={14} className="text-primary shrink-0" />
+                                                            )}
+                                                        </div>
                                                         <p className="text-xs text-slate-500 dark:text-slate-400">
                                                             {timeAgo(review.created_at)}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-0.5 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg">
+                                                <div className="flex items-center gap-0.5 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg shrink-0">
                                                     <span className="text-sm font-bold text-yellow-600 dark:text-yellow-500">{review.rating}</span>
-                                                    <DynamicLucideIcon name="star" className="text-sm text-yellow-500 filled" />
+                                                    <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-sm text-yellow-500" />
                                                 </div>
                                             </div>
+
+                                            {/* Reviewed Product Link */}
+                                            {reviewedProduct && (
+                                                <Link
+                                                    href={`/marketplace/${reviewedProduct.id}`}
+                                                    className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/70 dark:border-slate-700/60 transition-all group/prod"
+                                                >
+                                                    <div className="size-11 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
+                                                        {(reviewedProduct.images?.[0] || reviewedProduct.image_url) ? (
+                                                            <img
+                                                                src={reviewedProduct.images?.[0] || reviewedProduct.image_url}
+                                                                alt={reviewedProduct.title}
+                                                                className="w-full h-full object-cover group-hover/prod:scale-105 transition-transform"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                                                <DynamicLucideIcon name="package" className="text-lg" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Item Reviewed</p>
+                                                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover/prod:text-primary transition-colors">
+                                                            {reviewedProduct.title}
+                                                        </p>
+                                                    </div>
+                                                    {reviewedProduct.price !== undefined && reviewedProduct.price !== null && (
+                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
+                                                            ₵ {formatPrice(reviewedProduct.price)}
+                                                        </span>
+                                                    )}
+                                                    <DynamicLucideIcon name="chevron_right" className="text-slate-400 text-sm shrink-0 group-hover/prod:translate-x-0.5 transition-transform" />
+                                                </Link>
+                                            )}
 
                                             {review.comment && (
                                                 <div className="pl-1">
