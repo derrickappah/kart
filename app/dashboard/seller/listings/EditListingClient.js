@@ -49,6 +49,18 @@ export default function EditListingClient({ product }) {
         replaceIndex: null,
     });
 
+    const [touched, setTouched] = useState({
+        title: false,
+        price: false,
+        category: false,
+        description: false,
+        photos: false,
+    });
+
+    const markTouched = (field) => {
+        setTouched((prev) => ({ ...prev, [field]: true }));
+    };
+
     const isSubmittingRef = useRef(false);
     const previewsRef = useRef(imagePreviews);
 
@@ -314,6 +326,16 @@ export default function EditListingClient({ product }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Mark all fields as touched immediately
+        setTouched({
+            title: true,
+            price: true,
+            category: true,
+            description: true,
+            photos: true,
+        });
+
         setLoading(true);
         setUploadProgress('');
         setError(null);
@@ -497,15 +519,26 @@ export default function EditListingClient({ product }) {
                             <button
                                 type="button"
                                 disabled={loading}
-                                onClick={() => setSourceModal({ isOpen: true, replaceIndex: null })}
+                                onClick={() => {
+                                    markTouched('photos');
+                                    setSourceModal({ isOpen: true, replaceIndex: null });
+                                }}
                                 className={`cursor-pointer block text-left ${loading ? 'pointer-events-none opacity-50' : ''}`}
                             >
-                                <div className="aspect-[4/3] w-full rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#2E2E32] flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:border-[#1daddd] hover:bg-[#1daddd]/5 active:scale-[0.98]">
-                                    <div className="size-10 rounded-full bg-[#1daddd]/10 flex items-center justify-center text-[#1daddd]">
+                                <div className={`aspect-[4/3] w-full rounded-2xl border-2 border-dashed ${
+                                    touched.photos && imageFiles.length === 0
+                                        ? 'border-red-400 dark:border-red-500/60 bg-red-500/5'
+                                        : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#2E2E32]'
+                                } flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:border-[#1daddd] hover:bg-[#1daddd]/5 active:scale-[0.98]`}>
+                                    <div className={`size-10 rounded-full ${
+                                        touched.photos && imageFiles.length === 0
+                                            ? 'bg-red-500/10 text-red-500'
+                                            : 'bg-[#1daddd]/10 text-[#1daddd]'
+                                    } flex items-center justify-center`}>
                                         <DynamicLucideIcon name="add_a_photo" />
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-[#1daddd] font-bold text-xs uppercase tracking-widest">
+                                        <p className={`${touched.photos && imageFiles.length === 0 ? 'text-red-500' : 'text-[#1daddd]'} font-bold text-xs uppercase tracking-widest`}>
                                             {imageFiles.length === 0 ? 'Add Photo' : 'Add More'}
                                         </p>
                                         <p className="text-gray-400 text-[9px] font-medium mt-0.5">
@@ -516,64 +549,179 @@ export default function EditListingClient({ product }) {
                             </button>
                         )}
                     </div>
+                    {touched.photos && imageFiles.length === 0 && (
+                        <p className="mt-2 text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1.5 ml-1 animate-fade-in">
+                            <DynamicLucideIcon name="error" className="text-sm shrink-0" />
+                            <span>Please add at least 1 photo of your item</span>
+                        </p>
+                    )}
                 </section>
 
                 {/* Form Fields */}
                 <section className="px-4 space-y-6">
                     {/* Item Name */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="title">
-                            Title
-                        </label>
-                        <input
-                            required
-                            disabled={loading}
-                            maxLength={80}
-                            className="w-full bg-[#F5F5F5] dark:bg-[#2E2E32] border-none rounded-xl px-4 py-4 text-base font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow disabled:opacity-50"
-                            id="title"
-                            name="title"
-                            placeholder="What are you selling?"
-                            type="text"
-                            value={formData.title}
-                            onChange={handleChange}
-                        />
-                    </div>
+                    {(() => {
+                        const titleTrimmed = (formData.title || '').trim();
+                        const isTitleEmpty = titleTrimmed.length === 0;
+                        const isTitleTooShort = !isTitleEmpty && titleTrimmed.length < 3;
+                        const isTitleValid = titleTrimmed.length >= 3;
+                        const showTitleError = (touched.title || isTitleTooShort) && !isTitleValid;
+                        const charsNeeded = Math.max(0, 3 - titleTrimmed.length);
 
-                    {/* Price & Category Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="price">
-                                Price
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₵</span>
+                        return (
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between ml-1">
+                                    <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200" htmlFor="title">
+                                        Title
+                                    </label>
+                                    {isTitleValid ? (
+                                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-0.5 rounded-full animate-fade-in">
+                                            <DynamicLucideIcon name="check_circle" className="text-xs" />
+                                            <span>Valid</span>
+                                        </span>
+                                    ) : showTitleError ? (
+                                        <span className="text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1 bg-red-500/10 px-2.5 py-0.5 rounded-full animate-pulse">
+                                            <DynamicLucideIcon name="info" className="text-xs" />
+                                            <span>{isTitleEmpty ? 'Required' : `${charsNeeded} more needed`}</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">Min. 3 chars</span>
+                                    )}
+                                </div>
                                 <input
                                     required
                                     disabled={loading}
-                                    min="0.00"
-                                    max="1000000.00"
-                                    className="w-full bg-[#F5F5F5] dark:bg-[#2E2E32] border-none rounded-xl pl-8 pr-4 py-4 text-base font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow disabled:opacity-50"
-                                    id="price"
-                                    name="price"
-                                    placeholder="0.00"
-                                    type="number"
-                                    step="0.01"
-                                    value={formData.price}
+                                    maxLength={80}
+                                    className={`w-full bg-[#F5F5F5] dark:bg-[#2E2E32] rounded-xl px-4 py-4 text-base font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none transition-all disabled:opacity-50 ${
+                                        showTitleError
+                                            ? 'ring-2 ring-red-500/60 dark:ring-red-500/60 focus:ring-2 focus:ring-red-500'
+                                            : isTitleValid
+                                                ? 'ring-1 ring-emerald-500/30 dark:ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50'
+                                                : 'border-none focus:ring-2 focus:ring-primary/50'
+                                    }`}
+                                    id="title"
+                                    name="title"
+                                    placeholder="What are you selling?"
+                                    type="text"
+                                    value={formData.title}
                                     onChange={handleChange}
+                                    onBlur={() => markTouched('title')}
                                 />
+                                {showTitleError && (
+                                    <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1 ml-1 animate-fade-in">
+                                        <DynamicLucideIcon name="error" className="text-sm shrink-0" />
+                                        <span>{isTitleEmpty ? 'Title is required (at least 3 characters)' : `Title must be at least 3 characters long (${charsNeeded} more needed)`}</span>
+                                    </p>
+                                )}
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="category">
-                                Category
-                            </label>
-                            <CategorySelector
-                                id="category"
-                                value={formData.category}
-                                onChange={(category) => setFormData((prev) => ({ ...prev, category }))}
-                                disabled={loading}
-                            />
-                        </div>
+                        );
+                    })()}
+
+                    {/* Price & Category Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Price Field */}
+                        {(() => {
+                            const priceStr = formData.price !== undefined && formData.price !== null ? String(formData.price).trim() : '';
+                            const priceNum = parseFloat(priceStr);
+                            const isPriceEmpty = priceStr.length === 0;
+                            const isPriceInvalid = !isPriceEmpty && (isNaN(priceNum) || priceNum < 0 || priceNum > 1000000);
+                            const isPriceValid = !isPriceEmpty && !isNaN(priceNum) && priceNum >= 0 && priceNum <= 1000000;
+                            const showPriceError = (touched.price || isPriceInvalid) && !isPriceValid;
+
+                            return (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between ml-1">
+                                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200" htmlFor="price">
+                                            Price
+                                        </label>
+                                        {isPriceValid ? (
+                                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-fade-in">
+                                                <DynamicLucideIcon name="check_circle" className="text-xs" />
+                                                <span>Valid</span>
+                                            </span>
+                                        ) : showPriceError ? (
+                                            <span className="text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1 bg-red-500/10 px-2 py-0.5 rounded-full animate-pulse">
+                                                <span>{isPriceEmpty ? 'Required' : 'Invalid'}</span>
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₵</span>
+                                        <input
+                                            required
+                                            disabled={loading}
+                                            min="0.00"
+                                            max="1000000.00"
+                                            className={`w-full bg-[#F5F5F5] dark:bg-[#2E2E32] rounded-xl pl-8 pr-4 py-4 text-base font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none transition-all disabled:opacity-50 ${
+                                                showPriceError
+                                                    ? 'ring-2 ring-red-500/60 dark:ring-red-500/60 focus:ring-2 focus:ring-red-500'
+                                                    : isPriceValid
+                                                        ? 'ring-1 ring-emerald-500/30 dark:ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50'
+                                                        : 'border-none focus:ring-2 focus:ring-primary/50'
+                                            }`}
+                                            id="price"
+                                            name="price"
+                                            placeholder="0.00"
+                                            type="number"
+                                            step="0.01"
+                                            value={formData.price}
+                                            onChange={handleChange}
+                                            onBlur={() => markTouched('price')}
+                                        />
+                                    </div>
+                                    {showPriceError && (
+                                        <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1 ml-1 animate-fade-in">
+                                            <DynamicLucideIcon name="error" className="text-sm shrink-0" />
+                                            <span>{isPriceEmpty ? 'Price is required' : priceNum > 1000000 ? 'Max ₵1,000,000' : 'Enter a valid price'}</span>
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })()}
+
+                        {/* Category Field */}
+                        {(() => {
+                            const isCategoryEmpty = !formData.category;
+                            const showCategoryError = touched.category && isCategoryEmpty;
+                            const isCategoryValid = !isCategoryEmpty;
+
+                            return (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between ml-1">
+                                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200" htmlFor="category">
+                                            Category
+                                        </label>
+                                        {isCategoryValid ? (
+                                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-fade-in">
+                                                <DynamicLucideIcon name="check_circle" className="text-xs" />
+                                                <span>Valid</span>
+                                            </span>
+                                        ) : showCategoryError ? (
+                                            <span className="text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1 bg-red-500/10 px-2 py-0.5 rounded-full animate-pulse">
+                                                <span>Required</span>
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                    <CategorySelector
+                                        id="category"
+                                        value={formData.category}
+                                        hasError={showCategoryError}
+                                        onChange={(category) => {
+                                            setFormData((prev) => ({ ...prev, category }));
+                                            markTouched('category');
+                                        }}
+                                        onBlur={() => markTouched('category')}
+                                        disabled={loading}
+                                    />
+                                    {showCategoryError && (
+                                        <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1 ml-1 animate-fade-in">
+                                            <DynamicLucideIcon name="error" className="text-sm shrink-0" />
+                                            <span>Please select a category</span>
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {/* Condition Chips */}
@@ -680,8 +828,10 @@ export default function EditListingClient({ product }) {
                         const descTrimmed = (formData.description || '').trim();
                         const descLength = descTrimmed.length;
                         const hasStarted = (formData.description || '').length > 0;
-                        const isTooShort = hasStarted && descLength < 10;
-                        const isValid = descLength >= 10;
+                        const isDescEmpty = descLength === 0;
+                        const isDescTooShort = !isDescEmpty && descLength < 10;
+                        const isDescValid = descLength >= 10;
+                        const showDescError = (touched.description || isDescTooShort) && !isDescValid;
                         const charsNeeded = Math.max(0, 10 - descLength);
 
                         return (
@@ -690,15 +840,19 @@ export default function EditListingClient({ product }) {
                                     <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200" htmlFor="description">
                                         Description
                                     </label>
-                                    {isValid ? (
+                                    {isDescValid ? (
                                         <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-0.5 rounded-full animate-fade-in">
                                             <DynamicLucideIcon name="check_circle" className="text-xs" />
                                             <span>Valid length</span>
                                         </span>
-                                    ) : isTooShort ? (
+                                    ) : isDescTooShort ? (
                                         <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-500/10 px-2.5 py-0.5 rounded-full animate-pulse">
                                             <DynamicLucideIcon name="info" className="text-xs" />
                                             <span>{charsNeeded} more {charsNeeded === 1 ? 'char' : 'chars'} needed</span>
+                                        </span>
+                                    ) : showDescError ? (
+                                        <span className="text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1 bg-red-500/10 px-2.5 py-0.5 rounded-full animate-pulse">
+                                            <span>Required</span>
                                         </span>
                                     ) : (
                                         <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
@@ -713,11 +867,13 @@ export default function EditListingClient({ product }) {
                                         disabled={loading}
                                         aria-describedby="char-counter desc-live-feedback"
                                         className={`w-full bg-[#F5F5F5] dark:bg-[#2E2E32] rounded-2xl px-4 py-4 text-base font-normal text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none transition-all resize-none disabled:opacity-50 ${
-                                            isTooShort
+                                            isDescTooShort
                                                 ? 'ring-2 ring-amber-500/60 dark:ring-amber-500/60 focus:ring-2 focus:ring-amber-500'
-                                                : isValid
-                                                    ? 'ring-1 ring-emerald-500/30 dark:ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50'
-                                                    : 'border-none focus:ring-2 focus:ring-primary/50'
+                                                : showDescError && isDescEmpty
+                                                    ? 'ring-2 ring-red-500/60 dark:ring-red-500/60 focus:ring-2 focus:ring-red-500'
+                                                    : isDescValid
+                                                        ? 'ring-1 ring-emerald-500/30 dark:ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50'
+                                                        : 'border-none focus:ring-2 focus:ring-primary/50'
                                         }`}
                                         id="description"
                                         name="description"
@@ -725,6 +881,7 @@ export default function EditListingClient({ product }) {
                                         rows="5"
                                         value={formData.description}
                                         onChange={handleChange}
+                                        onBlur={() => markTouched('description')}
                                         maxLength={300}
                                     ></textarea>
                                 </div>
@@ -734,7 +891,7 @@ export default function EditListingClient({ product }) {
                                     <div className="w-full bg-gray-200 dark:bg-gray-700/60 h-1.5 rounded-full overflow-hidden transition-all">
                                         <div
                                             className={`h-full transition-all duration-300 rounded-full ${
-                                                isValid ? 'bg-emerald-500' : 'bg-amber-500'
+                                                isDescValid ? 'bg-emerald-500' : 'bg-amber-500'
                                             }`}
                                             style={{ width: `${Math.min(100, (descLength / 10) * 100)}%` }}
                                         />
@@ -743,12 +900,17 @@ export default function EditListingClient({ product }) {
 
                                 <div className="flex items-center justify-between px-1" id="desc-live-feedback">
                                     <div>
-                                        {isTooShort ? (
+                                        {isDescTooShort ? (
                                             <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 animate-fade-in">
                                                 <DynamicLucideIcon name="error" className="text-sm shrink-0" />
                                                 <span>Description must be at least 10 characters long</span>
                                             </p>
-                                        ) : isValid ? (
+                                        ) : showDescError && isDescEmpty ? (
+                                            <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1 animate-fade-in">
+                                                <DynamicLucideIcon name="error" className="text-sm shrink-0" />
+                                                <span>Description is required (minimum 10 characters)</span>
+                                            </p>
+                                        ) : isDescValid ? (
                                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-fade-in">
                                                 <DynamicLucideIcon name="check" className="text-sm shrink-0" />
                                                 <span>Ready to save</span>
@@ -763,11 +925,13 @@ export default function EditListingClient({ product }) {
                                         id="char-counter"
                                         aria-live="polite"
                                         className={`text-xs font-semibold transition-colors ${
-                                            isTooShort
+                                            isDescTooShort
                                                 ? 'text-amber-600 dark:text-amber-400'
-                                                : isValid
-                                                    ? 'text-emerald-600 dark:text-emerald-400'
-                                                    : 'text-gray-400 dark:text-gray-500'
+                                                : showDescError && isDescEmpty
+                                                    ? 'text-red-600 dark:text-red-400'
+                                                    : isDescValid
+                                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                                        : 'text-gray-400 dark:text-gray-500'
                                         }`}
                                     >
                                         {formData.description.length}/300

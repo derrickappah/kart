@@ -24,9 +24,11 @@ export const CATEGORIES = [
 export default function CategorySelector({
     value = '',
     onChange,
+    onBlur,
     disabled = false,
     className = '',
     id = 'category',
+    hasError = false,
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -39,6 +41,7 @@ export default function CategorySelector({
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (containerRef.current && !containerRef.current.contains(event.target)) {
+                if (isOpen && onBlur) onBlur();
                 setIsOpen(false);
                 setSearchQuery('');
             }
@@ -53,7 +56,7 @@ export default function CategorySelector({
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('touchstart', handleClickOutside);
         };
-    }, [isOpen]);
+    }, [isOpen, onBlur]);
 
     // Focus search input when dropdown opens
     useEffect(() => {
@@ -65,6 +68,7 @@ export default function CategorySelector({
     // Close on Escape
     const handleKeyDown = (e) => {
         if (e.key === 'Escape') {
+            if (isOpen && onBlur) onBlur();
             setIsOpen(false);
             setSearchQuery('');
         }
@@ -89,11 +93,18 @@ export default function CategorySelector({
                 type="button"
                 id={id}
                 disabled={disabled}
-                onClick={() => setIsOpen((prev) => !prev)}
+                onClick={() => {
+                    if (isOpen && onBlur) onBlur();
+                    setIsOpen((prev) => !prev);
+                }}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                className={`w-full h-[56px] bg-[#F5F5F5] dark:bg-[#2E2E32] rounded-xl px-3.5 flex items-center justify-between gap-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 ${
-                    isOpen ? 'ring-2 ring-primary/50' : ''
+                className={`w-full h-[56px] bg-[#F5F5F5] dark:bg-[#2E2E32] rounded-xl px-3.5 flex items-center justify-between gap-2 text-left transition-all focus:outline-none disabled:opacity-50 ${
+                    hasError
+                        ? 'ring-2 ring-red-500/60 dark:ring-red-500/60'
+                        : isOpen
+                            ? 'ring-2 ring-primary/50'
+                            : 'focus:ring-2 focus:ring-primary/50'
                 }`}
             >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
