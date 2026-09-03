@@ -676,29 +676,106 @@ export default function EditListingClient({ product }) {
                     </div>
 
                     {/* Description */}
-                    <div className="space-y-2 pb-6">
-                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 ml-1" htmlFor="description">
-                            Description
-                        </label>
-                        <textarea
-                            required
-                            disabled={loading}
-                            aria-describedby="char-counter"
-                            className="w-full bg-[#F5F5F5] dark:bg-[#2E2E32] border-none rounded-2xl px-4 py-4 text-base font-normal text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow resize-none disabled:opacity-50"
-                            id="description"
-                            name="description"
-                            placeholder="Describe the item details, defects, or preferred pickup location..."
-                            rows="5"
-                            value={formData.description}
-                            onChange={handleChange}
-                            maxLength={300}
-                        ></textarea>
-                        <div className="flex justify-end px-1">
-                            <p id="char-counter" aria-live="polite" className="text-xs font-medium text-gray-400">
-                                {formData.description.length}/300 characters
-                            </p>
-                        </div>
-                    </div>
+                    {(() => {
+                        const descTrimmed = (formData.description || '').trim();
+                        const descLength = descTrimmed.length;
+                        const hasStarted = (formData.description || '').length > 0;
+                        const isTooShort = hasStarted && descLength < 10;
+                        const isValid = descLength >= 10;
+                        const charsNeeded = Math.max(0, 10 - descLength);
+
+                        return (
+                            <div className="space-y-2 pb-6">
+                                <div className="flex items-center justify-between ml-1">
+                                    <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200" htmlFor="description">
+                                        Description
+                                    </label>
+                                    {isValid ? (
+                                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-0.5 rounded-full animate-fade-in">
+                                            <DynamicLucideIcon name="check_circle" className="text-xs" />
+                                            <span>Valid length</span>
+                                        </span>
+                                    ) : isTooShort ? (
+                                        <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-500/10 px-2.5 py-0.5 rounded-full animate-pulse">
+                                            <DynamicLucideIcon name="info" className="text-xs" />
+                                            <span>{charsNeeded} more {charsNeeded === 1 ? 'char' : 'chars'} needed</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
+                                            Min. 10 characters
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="relative">
+                                    <textarea
+                                        required
+                                        disabled={loading}
+                                        aria-describedby="char-counter desc-live-feedback"
+                                        className={`w-full bg-[#F5F5F5] dark:bg-[#2E2E32] rounded-2xl px-4 py-4 text-base font-normal text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none transition-all resize-none disabled:opacity-50 ${
+                                            isTooShort
+                                                ? 'ring-2 ring-amber-500/60 dark:ring-amber-500/60 focus:ring-2 focus:ring-amber-500'
+                                                : isValid
+                                                    ? 'ring-1 ring-emerald-500/30 dark:ring-emerald-500/30 focus:ring-2 focus:ring-emerald-500/50'
+                                                    : 'border-none focus:ring-2 focus:ring-primary/50'
+                                        }`}
+                                        id="description"
+                                        name="description"
+                                        placeholder="Describe the item details, defects, or preferred pickup location..."
+                                        rows="5"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        maxLength={300}
+                                    ></textarea>
+                                </div>
+
+                                {/* Visual Progress Bar toward 10 chars requirement */}
+                                {hasStarted && (
+                                    <div className="w-full bg-gray-200 dark:bg-gray-700/60 h-1.5 rounded-full overflow-hidden transition-all">
+                                        <div
+                                            className={`h-full transition-all duration-300 rounded-full ${
+                                                isValid ? 'bg-emerald-500' : 'bg-amber-500'
+                                            }`}
+                                            style={{ width: `${Math.min(100, (descLength / 10) * 100)}%` }}
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="flex items-center justify-between px-1" id="desc-live-feedback">
+                                    <div>
+                                        {isTooShort ? (
+                                            <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 animate-fade-in">
+                                                <DynamicLucideIcon name="error" className="text-sm shrink-0" />
+                                                <span>Description must be at least 10 characters long</span>
+                                            </p>
+                                        ) : isValid ? (
+                                            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 animate-fade-in">
+                                                <DynamicLucideIcon name="check" className="text-sm shrink-0" />
+                                                <span>Ready to save</span>
+                                            </p>
+                                        ) : (
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">
+                                                Please enter at least 10 characters
+                                            </p>
+                                        )}
+                                    </div>
+                                    <p
+                                        id="char-counter"
+                                        aria-live="polite"
+                                        className={`text-xs font-semibold transition-colors ${
+                                            isTooShort
+                                                ? 'text-amber-600 dark:text-amber-400'
+                                                : isValid
+                                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                                    : 'text-gray-400 dark:text-gray-500'
+                                        }`}
+                                    >
+                                        {formData.description.length}/300
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </section>
 
                 {/* Sticky Bottom Action Bar */}
