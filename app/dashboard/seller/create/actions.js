@@ -49,7 +49,7 @@ export async function createListingAction(listingData) {
         }
 
         // 1. Verify seller permissions on server
-        const [subsRes, profileRes] = await Promise.all([
+        const [subsRes, profileRes, productsCountRes] = await Promise.all([
             supabase
                 .from('subscriptions')
                 .select('status, end_date')
@@ -57,9 +57,13 @@ export async function createListingAction(listingData) {
                 .order('created_at', { ascending: false }),
             supabase
                 .from('profiles')
-                .select('is_verified, verification_status')
+                .select('is_verified, verification_status, free_listings_used')
                 .eq('id', user.id)
-                .single()
+                .single(),
+            supabase
+                .from('products')
+                .select('*', { count: 'exact', head: true })
+                .eq('seller_id', user.id)
         ]);
 
         const activeSub = subsRes.data?.find(sub =>
@@ -67,13 +71,20 @@ export async function createListingAction(listingData) {
             new Date(sub.end_date) > new Date()
         );
 
-        if (!activeSub) {
-            return { success: false, error: 'Active subscription required to create listings. Please subscribe first.' };
-        }
-
         const isVerified = profileRes.data?.is_verified || profileRes.data?.verification_status === 'Approved';
         if (!isVerified) {
             return { success: false, error: 'Seller verification required to create listings. Please get verified first.' };
+        }
+
+        const freeListingsUsed = profileRes.data?.free_listings_used ?? 0;
+        const totalProductsCount = productsCountRes.count ?? 0;
+        const effectiveListingsCount = Math.max(freeListingsUsed, totalProductsCount);
+
+        if (!activeSub && effectiveListingsCount >= 3) {
+            return { 
+                success: false, 
+                error: 'Free trial limit reached (3 of 3 listings used). Please subscribe to continue posting listings.' 
+            };
         }
 
         // 2. Validate form fields
@@ -228,6 +239,17 @@ export async function createListingAction(listingData) {
         const newProductId = insertData?.[0]?.id;
         debugLog.push(`Product created: ${newProductId}`);
         
+        // Increment free_listings_used on profile
+        const newFreeListingsUsed = effectiveListingsCount + 1;
+        try {
+            await serviceClient
+                .from('profiles')
+                .update({ free_listings_used: newFreeListingsUsed })
+                .eq('id', user.id);
+        } catch (updateErr) {
+            console.warn('[createListingAction] Failed to update free_listings_used:', updateErr);
+        }
+
         return { success: true, productId: newProductId, debug: debugLog.join('\n') };
     } catch (err) {
         debugLog.push(`EXCEPTION: ${err.message}`);

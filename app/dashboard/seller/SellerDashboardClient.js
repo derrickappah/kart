@@ -21,7 +21,8 @@ export default function SellerDashboardClient({
     daysUntilExpiry,
     activePromotions,
     chartData = [],
-    dayLabels = []
+    dayLabels = [],
+    freeListingsUsed = 0
 }) {
     const router = useRouter();
     const rechartsData = chartData.map((val, idx) => ({ label: dayLabels[idx] || '', val }));
@@ -111,11 +112,47 @@ export default function SellerDashboardClient({
                                 <DynamicLucideIcon name="add" className="text-xl group-hover:rotate-90 transition-transform" />
                                 <span>Create Listing</span>
                             </Link>
+                        ) : freeListingsUsed < 3 ? (
+                            <div className="space-y-3">
+                                <Link href="/dashboard/seller/create" className="h-14 flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group gap-2">
+                                    <DynamicLucideIcon name="add" className="text-xl group-hover:rotate-90 transition-transform" />
+                                    <span>Create Listing</span>
+                                </Link>
+                                <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/25 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="size-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                            <DynamicLucideIcon name="stars" className="text-lg" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                                <span>Free Trial:</span>
+                                                <span className="text-amber-600 dark:text-amber-400 font-black">{Math.max(0, 3 - freeListingsUsed)} of 3</span>
+                                                <span>remaining</span>
+                                            </div>
+                                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                                {freeListingsUsed} of 3 free listings used
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <Link 
+                                        href="/subscriptions" 
+                                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-sm"
+                                    >
+                                        Upgrade
+                                    </Link>
+                                </div>
+                            </div>
                         ) : (
-                            <Link href="/subscriptions" className="h-14 flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group gap-2">
-                                <DynamicLucideIcon name="loyalty" className="text-xl" />
-                                <span>Subscribe to Sell</span>
-                            </Link>
+                            <div className="space-y-3">
+                                <Link href="/subscriptions" className="h-14 flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group gap-2">
+                                    <DynamicLucideIcon name="loyalty" className="text-xl" />
+                                    <span>Subscribe to Sell</span>
+                                </Link>
+                                <div className="p-3 bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center gap-2.5 text-xs text-amber-700 dark:text-amber-300 font-medium">
+                                    <DynamicLucideIcon name="lock" className="text-base shrink-0" />
+                                    <span>Free trial completed (3/3 listings used). Subscribe to post unlimited listings.</span>
+                                </div>
+                            </div>
                         )}
                     </section>
 

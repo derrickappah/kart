@@ -22,6 +22,7 @@ export default function CreateListingPage() {
     const [imagePreviews, setImagePreviews] = useState([]);
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [verificationStatus, setVerificationStatus] = useState(null);
+    const [freeListingsUsed, setFreeListingsUsed] = useState(0);
     const [checkingSubscription, setCheckingSubscription] = useState(true);
     const [sourceModal, setSourceModal] = useState({
         isOpen: false,
@@ -91,7 +92,7 @@ export default function CreateListingPage() {
     }, [formData, imageFiles]);
 
 
-    // Check subscription and verification status on mount
+    // Check subscription, trial, and verification status on mount
     useEffect(() => {
         const checkAccess = async () => {
             try {
@@ -101,8 +102,8 @@ export default function CreateListingPage() {
                     return;
                 }
 
-                // Fetch subscriptions and profile in parallel
-                const [subsResult, profileResult] = await Promise.all([
+                // Fetch subscriptions, profile, and products count in parallel
+                const [subsResult, profileResult, productsCountResult] = await Promise.all([
                     supabase
                         .from('subscriptions')
                         .select('*, plan:subscription_plans(*)')
@@ -110,13 +111,21 @@ export default function CreateListingPage() {
                         .order('created_at', { ascending: false }),
                     supabase
                         .from('profiles')
-                        .select('is_verified, verification_status')
+                        .select('is_verified, verification_status, free_listings_used')
                         .eq('id', user.id)
-                        .single()
+                        .single(),
+                    supabase
+                        .from('products')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('seller_id', user.id)
                 ]);
 
                 const allSubscriptions = subsResult.data;
                 const profile = profileResult.data;
+                const usedFromProfile = profile?.free_listings_used ?? 0;
+                const totalCreated = productsCountResult?.count ?? 0;
+                const effectiveUsed = Math.max(usedFromProfile, totalCreated);
+                setFreeListingsUsed(effectiveUsed);
 
                 const subscription = allSubscriptions?.find(sub =>
                     (sub.status === 'Active' || sub.status === 'active') &&
@@ -441,15 +450,15 @@ export default function CreateListingPage() {
         return <LoadingScreen message="Checking access..." fullScreen={false} />;
     }
 
-    if (subscriptionStatus !== 'active') {
+    if (subscriptionStatus !== 'active' && freeListingsUsed >= 3) {
         return (
             <main className="bg-white dark:bg-[#242428] min-h-screen flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6">
                     <DynamicLucideIcon name="lock" className="text-4xl" />
                 </div>
-                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">Subscription Required</h2>
+                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">Free Trial Limit Reached</h2>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm">
-                    You need an active subscription to create listings. Choose a plan to start selling on KART.
+                    You've used all 3 free trial listings. Subscribe to an active seller plan to post unlimited listings and reach more buyers across campus.
                 </p>
                 <Link href="/subscriptions" className="w-full max-w-xs btn-primary h-14">
                     View Subscription Plans
@@ -487,6 +496,33 @@ export default function CreateListingPage() {
         <main className="bg-white dark:bg-[#242428] font-display text-gray-900 dark:text-white min-h-screen flex flex-col pt-4">
             {/* Main Content Area */}
             <form onSubmit={handleSubmit} className="flex-1 pb-36 relative max-w-[430px] mx-auto w-full">
+                {/* Free Trial Banner */}
+                {subscriptionStatus !== 'active' && (
+                    <div className="mx-4 mb-4 p-3.5 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 rounded-2xl flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <DynamicLucideIcon name="stars" className="text-xl" />
+                            </div>
+                            <div>
+                                <div className="text-xs font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                                    <span>Free Trial:</span>
+                                    <span className="text-amber-600 dark:text-amber-400">{Math.max(0, 3 - freeListingsUsed)} of 3</span>
+                                    <span>remaining</span>
+                                </div>
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                                    Post up to 3 listings free before subscribing.
+                                </div>
+                            </div>
+                        </div>
+                        <Link 
+                            href="/subscriptions" 
+                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-sm"
+                        >
+                            Upgrade
+                        </Link>
+                    </div>
+                )}
+
                 {error && (
                     <div className="mx-4 mt-4 p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium">
                         {error}

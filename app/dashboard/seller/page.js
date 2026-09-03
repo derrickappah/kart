@@ -77,6 +77,9 @@ export default async function SellerDashboard() {
         chartData[i] = dayTotal;
     }
 
+    // Free trial calculation
+    const freeListingsUsed = Math.max(profile?.free_listings_used ?? 0, (listings || []).length);
+
     return (
         <SellerDashboardClient
             user={user}
@@ -92,6 +95,7 @@ export default async function SellerDashboard() {
             activePromotions={activePromotions || 0}
             chartData={chartData}
             dayLabels={dayLabels}
+            freeListingsUsed={freeListingsUsed}
         />
     );
 }

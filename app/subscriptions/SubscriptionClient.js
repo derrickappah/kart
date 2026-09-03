@@ -4,7 +4,7 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function SubscriptionClient({ plans = [], currentSubscription = null }) {
+export default function SubscriptionClient({ plans = [], currentSubscription = null, freeListingsUsed = 0 }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [billingCycle, setBillingCycle] = useState('Monthly');
@@ -186,6 +186,26 @@ export default function SubscriptionClient({ plans = [], currentSubscription = n
             {error && (
                 <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm mb-4">
                     {error}
+                </div>
+            )}
+
+            {!isActive && (
+                <div className="p-4 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/25 rounded-2xl flex items-center gap-3.5 mb-2">
+                    <div className="size-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <DynamicLucideIcon name="stars" className="text-xl" />
+                    </div>
+                    <div>
+                        <p className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <span>Free Trial:</span>
+                            <span className="text-amber-600 dark:text-amber-400 font-black">{Math.max(0, 3 - freeListingsUsed)} of 3</span>
+                            <span>listings remaining</span>
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {freeListingsUsed < 3 
+                                ? 'Every seller starts with 3 free listings. Subscribe below when you are ready for unlimited listings!'
+                                : 'You have used your 3 free trial listings. Subscribe below to post unlimited listings.'}
+                        </p>
+                    </div>
                 </div>
             )}
 

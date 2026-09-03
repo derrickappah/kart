@@ -11,20 +11,36 @@ export default async function SubscriptionPage() {
     redirect('/login');
   }
 
-  // Fetch subscription plans
-  const { data: plans } = await supabase
-    .from('subscription_plans')
-    .select('*')
-    .order('duration_months', { ascending: true });
+  // Fetch subscription plans, current subscription, and trial usage in parallel
+  const [
+    { data: plans },
+    { data: currentSubscription },
+    { data: profile },
+    { count: productsCount }
+  ] = await Promise.all([
+    supabase
+      .from('subscription_plans')
+      .select('*')
+      .order('duration_months', { ascending: true }),
+    supabase
+      .from('subscriptions')
+      .select('*, plan:subscription_plans(name)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('free_listings_used')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('seller_id', user.id)
+  ]);
 
-  // Fetch user's current subscription status
-  const { data: currentSubscription } = await supabase
-    .from('subscriptions')
-    .select('*, plan:subscription_plans(name)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const freeListingsUsed = Math.max(profile?.free_listings_used ?? 0, productsCount ?? 0);
 
   return (
     <div className="bg-white dark:bg-[#242428] font-display text-[#0e171b] dark:text-slate-100 min-h-screen transition-colors duration-200 subscription-page">
@@ -36,7 +52,7 @@ export default async function SubscriptionPage() {
         </div>
 
         {/* Subscription Content */}
-        <SubscriptionClient plans={plans || []} currentSubscription={currentSubscription} />
+        <SubscriptionClient plans={plans || []} currentSubscription={currentSubscription} freeListingsUsed={freeListingsUsed} />
 
       </div>
     </div>
