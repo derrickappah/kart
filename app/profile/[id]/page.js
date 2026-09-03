@@ -196,18 +196,27 @@ export default function SellerProfilePage() {
                         <div className="mt-4 text-center flex flex-col items-center">
                             <div className="flex items-center justify-center gap-1.5">
                                 <h2 className="text-2xl font-bold tracking-tight">
-                                    {profile.username || profile.display_name || 'Anonymous'}
+                                    {profile.display_name || profile.username || 'Anonymous'}
                                 </h2>
                                 {profile.is_verified && (
                                     <DynamicLucideIcon name="verified" size={22} className="text-primary shrink-0" />
                                 )}
                             </div>
-                            {/* Rating Badge */}
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold shadow-sm">
-                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-sm text-amber-500" />
-                                <span>{parseFloat(profile.average_rating || 0).toFixed(1)}</span>
-                                <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">({profile.total_reviews || 0} reviews)</span>
-                            </div>
+                            {profile.username && profile.display_name && profile.username !== profile.display_name && (
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                                    @{profile.username}
+                                </p>
+                            )}
+                            {(profile.campus || profile.created_at) && (
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">
+                                    {profile.campus ? `${profile.campus} • ` : ''}Joined {timeAgo(profile.created_at)}
+                                </p>
+                            )}
+                            {profile.bio && (
+                                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 max-w-sm text-center line-clamp-2">
+                                    {profile.bio}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -230,10 +239,17 @@ export default function SellerProfilePage() {
                         <button
                             type="button"
                             onClick={() => setActiveTab('reviews')}
-                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors cursor-pointer"
+                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors cursor-pointer group"
                         >
-                            <p className="text-xl font-bold">{profile.total_reviews || 0}</p>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Reviews</p>
+                            <div className="flex items-center justify-center gap-1">
+                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-base text-amber-500" />
+                                <p className="text-xl font-bold">
+                                    {Number(profile.average_rating || 0) > 0 ? Number(profile.average_rating).toFixed(1) : '0.0'}
+                                </p>
+                            </div>
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">
+                                {profile.total_reviews || 0} {profile.total_reviews === 1 ? 'Review' : 'Reviews'}
+                            </p>
                         </button>
                     </div>
                 </section>
