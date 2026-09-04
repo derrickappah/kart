@@ -26,10 +26,13 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
   }
 
-  const { productId, status } = await request.json();
+  const body = await request.json();
+  const rawIds = body.productIds || (body.productId ? [body.productId] : []);
+  const ids = Array.isArray(rawIds) ? rawIds.filter(Boolean) : [];
+  const status = body.status;
 
-  if (!productId || !status) {
-    return NextResponse.json({ error: 'Missing productId or status' }, { status: 400 });
+  if (ids.length === 0 || !status) {
+    return NextResponse.json({ error: 'Missing product ID(s) or status' }, { status: 400 });
   }
 
   const allowedStatuses = ['Active', 'Pending', 'Banned'];
@@ -41,27 +44,28 @@ export async function POST(request) {
   const { error } = await adminSupabase
     .from('products')
     .update({ status })
-    .eq('id', productId);
+    .in('id', ids);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   // Invalidate product details and public listings cache
+  const cacheDeletions = ids.map(id => deleteCache(`product:${id}:details`));
   await Promise.all([
-    deleteCache(`product:${productId}:details`),
+    ...cacheDeletions,
     deleteCache('home:products:latest'),
     deleteCache('home:ads:active'),
     deleteCache('marketplace:feed:*'),
   ]);
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, count: ids.length });
 }
 
 /**
  * DELETE /api/admin/products/update-status
- * Body: { productId }
- * Permanently deletes a product. Requires server-verified admin session.
+ * Body: { productId } or { productIds }
+ * Permanently deletes a product or batch of products. Requires server-verified admin session.
  */
 export async function DELETE(request) {
   const supabase = await createClient();
@@ -81,29 +85,32 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
   }
 
-  const { productId } = await request.json();
+  const body = await request.json();
+  const rawIds = body.productIds || (body.productId ? [body.productId] : []);
+  const ids = Array.isArray(rawIds) ? rawIds.filter(Boolean) : [];
 
-  if (!productId) {
-    return NextResponse.json({ error: 'Missing productId' }, { status: 400 });
+  if (ids.length === 0) {
+    return NextResponse.json({ error: 'Missing product ID(s)' }, { status: 400 });
   }
 
   const adminSupabase = createServiceRoleClient();
   const { error } = await adminSupabase
     .from('products')
     .delete()
-    .eq('id', productId);
+    .in('id', ids);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   // Invalidate product details and public listings cache
+  const cacheDeletions = ids.map(id => deleteCache(`product:${id}:details`));
   await Promise.all([
-    deleteCache(`product:${productId}:details`),
+    ...cacheDeletions,
     deleteCache('home:products:latest'),
     deleteCache('home:ads:active'),
     deleteCache('marketplace:feed:*'),
   ]);
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, count: ids.length });
 }
