@@ -25,41 +25,47 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
   }
 
-  const { userId, banned } = await request.json();
+  const body = await request.json();
+  const rawIds = body.userIds || (body.userId ? [body.userId] : []);
+  const ids = Array.isArray(rawIds) ? rawIds.filter(Boolean) : [];
+  const banned = body.banned;
 
-  if (!userId || typeof banned !== 'boolean') {
-    return NextResponse.json({ error: 'Missing userId or banned value' }, { status: 400 });
+  if (ids.length === 0 || typeof banned !== 'boolean') {
+    return NextResponse.json({ error: 'Missing userId(s) or banned value' }, { status: 400 });
   }
 
-  // Prevent banning other admins
   const adminSupabase = createServiceRoleClient();
-  const { data: targetProfile } = await adminSupabase
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', userId)
-    .single();
 
-  if (targetProfile?.is_admin) {
-    return NextResponse.json({ error: 'Cannot ban an admin account' }, { status: 403 });
+  // Prevent banning any admin accounts
+  if (banned) {
+    const { data: adminProfiles } = await adminSupabase
+      .from('profiles')
+      .select('id')
+      .in('id', ids)
+      .eq('is_admin', true);
+
+    if (adminProfiles && adminProfiles.length > 0) {
+      return NextResponse.json({ error: 'Cannot ban admin accounts. Remove admin role first.' }, { status: 403 });
+    }
   }
 
   const { error } = await adminSupabase
     .from('profiles')
     .update({ banned })
-    .eq('id', userId);
+    .in('id', ids);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   // Update ban status in Supabase Auth (auth.users)
-  try {
-    await adminSupabase.auth.admin.updateUserById(userId, {
-      ban_duration: banned ? '876000h' : 'none'
-    });
-  } catch (authError) {
-    console.error('Failed to update auth ban status:', authError);
-  }
+  await Promise.allSettled(
+    ids.map((id) =>
+      adminSupabase.auth.admin.updateUserById(id, {
+        ban_duration: banned ? '876000h' : 'none'
+      })
+    )
+  );
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, count: ids.length });
 }
