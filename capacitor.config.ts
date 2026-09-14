@@ -5,14 +5,13 @@ const config: CapacitorConfig = {
   appName: 'KART',
   webDir: 'out',
   server: {
-    url: 'https://kart-murex.vercel.app'
-  },
-  plugins: {
-    GoogleAuth: {
-      scopes: ['profile', 'email'],
-      serverClientId: '619280398298-k61jk3980dbvd0b9k15ai63l6pp56v4g.apps.googleusercontent.com',
-      forceCodeForRefreshToken: true,
-    },
+    url: 'https://www.kart.cx',
+    errorPath: 'offline.html',
+    allowNavigation: [
+      'kart.cx',
+      '*.kart.cx',
+      'kart-murex.vercel.app'
+    ]
   },
   android: {
     overrideUserAgent: "Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"

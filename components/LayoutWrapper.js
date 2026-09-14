@@ -175,8 +175,8 @@ export default function LayoutWrapper({ children }) {
         : (isEditingPage ? "" : "pt-16 pb-[66px]");
 
     const mainBg = isMessagesDetailPage
-        ? "bg-[#f6f7f8] dark:bg-[#111d21]"
-        : "bg-white dark:bg-[#242428]";
+        ? "bg-[#f6f7f8]"
+        : "bg-white";
 
     const isFullViewportPage = pathname === '/dashboard/settings/verify/id-capture' || pathname === '/dashboard/settings/verify/face-capture';
 

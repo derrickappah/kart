@@ -74,7 +74,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="antialiased" suppressHydrationWarning>
+      <body className="antialiased bg-white" suppressHydrationWarning>
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
