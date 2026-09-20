@@ -28,14 +28,13 @@ export default function ProfileClient({ initialData }) {
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                         <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111618] dark:text-white truncate">{displayName}</h1>
-                        <p className="text-[#5e7d87] dark:text-gray-400 text-sm font-medium">
-                            Joined {timeAgo(user?.created_at)}
-                        </p>
-                        {/* Rating Badge */}
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold">
-                            <DynamicLucideIcon name="star" className="text-sm filled text-amber-500" />
-                            <span>{parseFloat(stats.reviews || 0).toFixed(1)}</span>
-                            <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Rating</span>
+                        <div className="flex items-center gap-2 text-sm text-[#5e7d87] dark:text-gray-400 font-medium">
+                            <span>Joined {timeAgo(user?.created_at)}</span>
+                            <span className="text-gray-300 dark:text-gray-700 select-none">•</span>
+                            <span className="inline-flex items-center gap-1 font-semibold text-[#111618] dark:text-white">
+                                <DynamicLucideIcon name="star" size={14} fill="currentColor" className="text-amber-400" />
+                                <span>{parseFloat(stats.reviews || 0) > 0 ? parseFloat(stats.reviews).toFixed(1) : 'New'}</span>
+                            </span>
                         </div>
                     </div>
                     <Link href="/profile/edit" className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] hover:bg-[#1daddd] hover:text-white transition-colors duration-300 shrink-0">
