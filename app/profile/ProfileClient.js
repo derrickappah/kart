@@ -16,7 +16,7 @@ export default function ProfileClient({ initialData }) {
 
     return (
         <div className="bg-white dark:bg-[#242428] font-display text-[#111618] dark:text-gray-100 min-h-screen pb-4 md:pb-8 overflow-x-hidden profile-page">
-            <main className="max-w-md mx-auto flex flex-col gap-8 px-4 pt-6">
+            <main className="max-w-md mx-auto flex flex-col gap-5 px-4 pt-6">
                 {/* Profile Header Section */}
                 <section className="flex items-center gap-4 animate-fade-in">
                     <div className="relative shrink-0">
@@ -44,29 +44,31 @@ export default function ProfileClient({ initialData }) {
                 </section>
 
                 {/* Stats Section */}
-                <section className="grid grid-cols-3 gap-3">
+                <section className="flex items-center justify-around py-3 border-y border-gray-100 dark:border-gray-800/80">
                     <Link
                         href="/dashboard/seller/listings"
-                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm"
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                     >
-                        <p className="text-xl font-bold text-[#111618] dark:text-white">{stats.listings}</p>
-                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Listings</p>
+                        <span className="text-base font-bold text-[#111618] dark:text-white">{stats.listings}</span>
+                        <span className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Listings</span>
                     </Link>
+                    <span className="text-gray-300 dark:text-gray-700 select-none">•</span>
                     <button
                         type="button"
                         onClick={() => setModalConfig({ isOpen: true, type: 'followers' })}
-                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
                     >
-                        <p className="text-xl font-bold text-primary">{stats.followers}</p>
-                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Followers</p>
+                        <span className="text-base font-bold text-[#111618] dark:text-white">{stats.followers}</span>
+                        <span className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Followers</span>
                     </button>
+                    <span className="text-gray-300 dark:text-gray-700 select-none">•</span>
                     <button
                         type="button"
                         onClick={() => setModalConfig({ isOpen: true, type: 'following' })}
-                        className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white dark:bg-[#232628] border border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all text-center shadow-sm cursor-pointer"
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
                     >
-                        <p className="text-xl font-bold text-primary">{stats.following}</p>
-                        <p className="text-[11px] text-[#5e7d87] dark:text-gray-400 font-bold uppercase tracking-tight mt-0.5">Following</p>
+                        <span className="text-base font-bold text-[#111618] dark:text-white">{stats.following}</span>
+                        <span className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Following</span>
                     </button>
                 </section>
 
