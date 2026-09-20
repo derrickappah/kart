@@ -13,35 +13,34 @@ export default function ProfileClient({ initialData }) {
 
     const { user, profile, wallet, stats } = initialData;
     const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
-    const university = profile?.university || profile?.campus || "University Student";
 
     return (
         <div className="bg-white dark:bg-[#242428] font-display text-[#111618] dark:text-gray-100 min-h-screen pb-4 md:pb-8 overflow-x-hidden profile-page">
             <main className="max-w-md mx-auto flex flex-col gap-8 px-4 pt-6">
                 {/* Profile Header Section */}
-                <section className="flex flex-col items-center animate-fade-in text-center">
-                    <div className="relative group cursor-pointer">
-                        <div className="w-32 h-32 rounded-full p-1 border-2 border-dashed border-[#1daddd]/30 group-hover:border-[#1daddd] transition-colors duration-300">
+                <section className="flex items-center gap-4 animate-fade-in">
+                    <div className="relative shrink-0">
+                        <div className="w-20 h-20 rounded-full p-0.5 border-2 border-dashed border-[#1daddd]/30">
                             <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden bg-cover bg-center shadow-sm"
                                 style={{ backgroundImage: `url('${getAvatarUrl(profile, user?.id)}')` }}>
                             </div>
                         </div>
-                        <Link href="/profile/edit" className="absolute bottom-1 right-1 bg-[#1daddd] text-white rounded-full p-2 shadow-lg ring-4 ring-white dark:ring-[#242428] flex items-center justify-center hover:scale-105 transition-transform">
-                            <DynamicLucideIcon name="edit" className="text-[18px]" />
-                        </Link>
                     </div>
-                    <div className="mt-4 space-y-1.5 flex flex-col items-center">
-                        <h1 className="text-[26px] font-bold leading-tight tracking-tight text-[#111618] dark:text-white">{displayName}</h1>
+                    <div className="flex-1 min-w-0 space-y-1">
+                        <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111618] dark:text-white truncate">{displayName}</h1>
                         <p className="text-[#5e7d87] dark:text-gray-400 text-sm font-medium">
-                            {university} • Joined {timeAgo(user?.created_at)}
+                            Joined {timeAgo(user?.created_at)}
                         </p>
                         {/* Rating Badge */}
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold shadow-sm">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold">
                             <DynamicLucideIcon name="star" className="text-sm filled text-amber-500" />
                             <span>{parseFloat(stats.reviews || 0).toFixed(1)}</span>
                             <span className="text-amber-600/80 dark:text-amber-400/80 font-medium">Rating</span>
                         </div>
                     </div>
+                    <Link href="/profile/edit" className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] hover:bg-[#1daddd] hover:text-white transition-colors duration-300 shrink-0">
+                        <DynamicLucideIcon name="edit" size={18} />
+                    </Link>
                 </section>
 
                 {/* Stats Section */}
