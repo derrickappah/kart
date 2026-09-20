@@ -28,6 +28,7 @@ export default function SellerProfilePage() {
     const [loadingChat, setLoadingChat] = useState(false);
     const [followersCount, setFollowersCount] = useState(0);
     const [showFollowersModal, setShowFollowersModal] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     const tagIcons = {
         'Fair Price': 'thumb_up',
@@ -54,6 +55,10 @@ export default function SellerProfilePage() {
             if (!id) return;
             setLoading(true);
             try {
+                // Fetch current authenticated user
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) setCurrentUser(user);
+
                 // Fetch profile
                 const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
@@ -198,93 +203,111 @@ export default function SellerProfilePage() {
 
     return (
         <div className="bg-white dark:bg-[#242428] text-slate-900 dark:text-slate-100 min-h-screen font-display">
-            <main className="max-w-lg mx-auto pb-4 md:pb-8">
+            <main className="max-w-lg mx-auto pb-4 md:pb-8 flex flex-col gap-4">
+                {/* Top Bar */}
+                <div className="flex items-center justify-between px-4 pt-4">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center justify-center size-10 rounded-full bg-gray-100 dark:bg-[#1c2b30] text-slate-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-[#243438] transition-colors cursor-pointer"
+                        aria-label="Back"
+                    >
+                        <DynamicLucideIcon name="arrow_back" size={20} />
+                    </button>
+                    {currentUser?.id === id && (
+                        <Link
+                            href="/profile/edit"
+                            className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] hover:bg-[#1daddd] hover:text-white transition-colors cursor-pointer"
+                        >
+                            <DynamicLucideIcon name="edit" size={18} />
+                        </Link>
+                    )}
+                </div>
+
                 {/* Profile Header Section */}
-                <section className="px-4 pt-6 pb-2">
-                    <div className="flex flex-col items-center">
-                        <div className="relative">
-                            <div className="size-28 rounded-full border-4 border-white dark:border-slate-800 shadow-xl overflow-hidden bg-slate-200 dark:bg-slate-700">
-                                <img alt={profile.display_name || 'Profile'} className="w-full h-full object-cover" src={getAvatarUrl(profile)} />
-                            </div>
-                        </div>
-                        <div className="mt-4 text-center flex flex-col items-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                                <h2 className="text-2xl font-bold tracking-tight">
-                                    {profile.display_name || profile.username || 'Anonymous'}
-                                </h2>
-                                {profile.is_verified && (
-                                    <DynamicLucideIcon name="verified" size={22} className="text-primary shrink-0" />
-                                )}
-                            </div>
-                            {profile.username && profile.display_name && profile.username !== profile.display_name && (
-                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                                    @{profile.username}
-                                </p>
-                            )}
-                            {(profile.campus || profile.created_at) && (
-                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">
-                                    {profile.campus ? `${profile.campus} • ` : ''}Joined {timeAgo(profile.created_at)}
-                                </p>
-                            )}
-                            {profile.bio && (
-                                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 max-w-sm text-center line-clamp-2">
-                                    {profile.bio}
-                                </p>
-                            )}
+                <section className="flex items-center gap-4 px-4 animate-fade-in">
+                    <div className="relative shrink-0">
+                        <div className="w-20 h-20 rounded-full p-0.5 border-2 border-dashed border-[#1daddd]/30">
+                            <img
+                                alt={profile.display_name || 'Profile'}
+                                className="w-full h-full rounded-full object-cover shadow-sm bg-gray-100 dark:bg-gray-800"
+                                src={getAvatarUrl(profile)}
+                            />
                         </div>
                     </div>
-                </section>
-
-                {/* Reputation Metrics */}
-                <section className="px-4 py-4">
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm">
-                            <p className="text-xl font-bold">{activeListings.length}</p>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Listings</p>
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                            <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111618] dark:text-white truncate">
+                                {profile.display_name || profile.username || 'Anonymous'}
+                            </h1>
+                            {profile.is_verified && (
+                                <DynamicLucideIcon name="verified" size={18} className="text-primary shrink-0" />
+                            )}
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setShowFollowersModal(true)}
-                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors cursor-pointer"
-                        >
-                            <p className="text-xl font-bold text-primary">{followersCount}</p>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">Followers</p>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('reviews')}
-                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-center shadow-sm hover:border-primary/50 transition-colors cursor-pointer group"
-                        >
-                            <div className="flex items-center justify-center gap-1">
-                                <DynamicLucideIcon name="star" style={{ fontVariationSettings: "'FILL' 1" }} className="text-base text-amber-500" />
-                                <p className="text-xl font-bold">
-                                    {Number(profile.average_rating || 0) > 0 ? Number(profile.average_rating).toFixed(1) : '0.0'}
-                                </p>
-                            </div>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight">
-                                {profile.total_reviews || 0} {profile.total_reviews === 1 ? 'Review' : 'Reviews'}
+                        {profile.username && profile.display_name && profile.username !== profile.display_name && (
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                @{profile.username}
                             </p>
-                        </button>
+                        )}
+                        <p className="text-xs text-[#5e7d87] dark:text-gray-400 font-medium">
+                            {profile.campus ? `${profile.campus} • ` : ''}Joined {timeAgo(profile.created_at)}
+                        </p>
+                        {profile.bio && (
+                            <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 pt-0.5">
+                                {profile.bio}
+                            </p>
+                        )}
                     </div>
                 </section>
 
-                {/* Profile Actions: Message & Follow */}
-                <section className="px-4 pb-2">
-                    <div className="flex gap-3">
-                        <button
-                            onClick={handleContactSeller}
-                            disabled={loadingChat}
-                            className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-[#159ac6] text-white py-3.5 px-5 rounded-xl font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50"
-                        >
-                            <DynamicLucideIcon name="chat_bubble" className="text-lg" />
-                            {loadingChat ? 'Connecting...' : `Message ${profile.username || (profile.display_name?.split(' ')[0] || 'Seller')}`}
-                        </button>
-                        <FollowButton
-                            targetUserId={id}
-                            onFollowChange={(data) => setFollowersCount(data.followerCount)}
-                        />
-                    </div>
+                {/* Stats Section (Not cards) */}
+                <section className="flex items-center justify-around py-3 mx-4 border-y border-gray-100 dark:border-gray-800/80">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('listings')}
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                        <span className="text-base font-bold text-[#111618] dark:text-white">{activeListings.length}</span>
+                        <span className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Listings</span>
+                    </button>
+                    <span className="text-gray-300 dark:text-gray-700 select-none">•</span>
+                    <button
+                        type="button"
+                        onClick={() => setShowFollowersModal(true)}
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                        <span className="text-base font-bold text-[#111618] dark:text-white">{followersCount}</span>
+                        <span className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Followers</span>
+                    </button>
+                    <span className="text-gray-300 dark:text-gray-700 select-none">•</span>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('reviews')}
+                        className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                        <span className="text-base font-bold text-[#111618] dark:text-white">{profile.total_reviews || 0}</span>
+                        <span className="text-sm text-[#5e7d87] dark:text-gray-400 font-medium">Reviews</span>
+                    </button>
                 </section>
+
+                {/* Profile Actions: Message & Follow (Only for other users) */}
+                {currentUser?.id !== id && (
+                    <section className="px-4 pb-1">
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleContactSeller}
+                                disabled={loadingChat}
+                                className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-[#159ac6] text-white py-3.5 px-5 rounded-xl font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                            >
+                                <DynamicLucideIcon name="chat_bubble" className="text-lg" />
+                                {loadingChat ? 'Connecting...' : `Message ${profile.username || (profile.display_name?.split(' ')[0] || 'Seller')}`}
+                            </button>
+                            <FollowButton
+                                targetUserId={id}
+                                onFollowChange={(data) => setFollowersCount(data.followerCount)}
+                            />
+                        </div>
+                    </section>
+                )}
 
                 {/* Contact Information Section - Premium Redesign */}
                 {(profile.phone || profile.instagram || profile.snapchat) && (
