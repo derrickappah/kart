@@ -270,39 +270,64 @@ export default function EditProfilePage() {
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-[#242428] font-body text-slate-900 dark:text-white min-h-screen flex items-center justify-center">
-                <div className="animate-pulse text-primary font-bold">Loading...</div>
+            <div className="bg-gray-50 dark:bg-[#242428] font-display text-slate-900 dark:text-white min-h-screen flex flex-col items-center justify-center gap-3">
+                <div className="size-10 rounded-full border-[3px] border-gray-200 dark:border-gray-700 border-t-[#1daddd] animate-spin"></div>
+                <p className="text-sm font-medium text-slate-400">Loading profile...</p>
             </div>
         );
     }
 
+    const inputBase = "w-full h-12 bg-gray-50 dark:bg-[#162226] border border-gray-200 dark:border-gray-700 focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd]/20 rounded-xl pl-11 pr-4 text-sm text-slate-900 dark:text-white font-medium placeholder-slate-400 transition-all outline-none";
+    const inputError = "border-red-400 dark:border-red-500 focus:border-red-400 focus:ring-red-400/20";
+    const labelClass = "block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide";
+    const iconWrapperClass = "absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors";
+    const sectionHeadingClass = "text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 ml-1";
+    const cardClass = "bg-white dark:bg-[#1c2b30] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden";
+
     return (
-        <div className="bg-white dark:bg-[#242428] font-body text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
-            <main className="flex-1 overflow-y-auto pb-60">
+        <div className="bg-gray-50 dark:bg-[#242428] font-display text-slate-900 dark:text-white min-h-screen flex flex-col antialiased">
+            <main className="flex-1 overflow-y-auto pb-36">
                 <div className="max-w-md mx-auto w-full px-5">
-                    <div className="pt-8 pb-4 text-center space-y-1">
-                        <Link href="/profile" className="flex items-center text-primary text-sm font-bold gap-1 mb-2">
-                            <DynamicLucideIcon name="arrow_back" className="text-sm" />
-                            Back to Profile
-                        </Link>
-                        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">Profile Settings</h1>
-                        <p className="text-slate-500 font-medium">Update your campus presence</p>
+                    {/* Header */}
+                    <div className="sticky top-0 z-10 bg-gray-50/95 dark:bg-[#242428]/95 backdrop-blur-md pt-4 pb-3">
+                        <div className="flex items-center gap-3">
+                            <Link
+                                href="/profile"
+                                className="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1c2b30] border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-[#243438] transition-colors shadow-sm active:scale-95"
+                            >
+                                <DynamicLucideIcon name="arrow_back" size={20} />
+                            </Link>
+                            <div>
+                                <h1 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">Edit Profile</h1>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Update your campus presence</p>
+                            </div>
+                        </div>
                     </div>
 
+                    {/* Alerts */}
                     {errors.general && (
-                        <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-                            <p className="text-red-600 dark:text-red-400 text-sm">{errors.general}</p>
+                        <div className="mt-3 p-3.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
+                            <DynamicLucideIcon name="error" className="text-red-500 shrink-0 mt-0.5" size={18} />
+                            <p className="text-red-600 dark:text-red-400 text-sm font-medium">{errors.general}</p>
                         </div>
                     )}
 
                     {success && (
-                        <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-2 animate-bounce">
-                            <DynamicLucideIcon name="check_circle" className="text-emerald-600 dark:text-emerald-400" />
-                            <p className="text-emerald-600 dark:text-emerald-400 text-sm font-bold">Profile updated successfully! Redirecting...</p>
+                        <div className="mt-3 p-3.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
+                            <DynamicLucideIcon name="check_circle" className="text-emerald-500 shrink-0" size={18} />
+                            <p className="text-emerald-600 dark:text-emerald-400 text-sm font-bold">Profile updated! Redirecting...</p>
                         </div>
                     )}
 
-                    <section className="flex flex-col items-center pt-8 pb-6">
+                    {errors.image && (
+                        <div className="mt-3 p-3.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-3">
+                            <DynamicLucideIcon name="warning" className="text-amber-500 shrink-0 mt-0.5" size={18} />
+                            <p className="text-amber-700 dark:text-amber-400 text-sm font-medium">{errors.image}</p>
+                        </div>
+                    )}
+
+                    {/* Avatar Section */}
+                    <section className="flex flex-col items-center pt-6 pb-2">
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -314,133 +339,180 @@ export default function EditProfilePage() {
                             className="relative group cursor-pointer"
                             onClick={() => setIsAvatarPickerOpen(true)}
                         >
-                            <div className="size-32 rounded-full p-1 bg-white dark:bg-[#1a2c32] shadow-soft">
+                            <div className="size-28 rounded-full p-1 bg-white dark:bg-[#1c2b30] shadow-md border-2 border-dashed border-[#1daddd]/30 group-hover:border-[#1daddd] transition-colors duration-300">
                                 <div
-                                    className="w-full h-full rounded-full bg-cover bg-center border-2 border-gray-50 dark:border-gray-800 bg-slate-100 dark:bg-slate-800"
+                                    className="w-full h-full rounded-full bg-cover bg-center bg-slate-100 dark:bg-slate-800"
                                     style={{ backgroundImage: `url('${imagePreview || getAvatarUrl(profile, user?.id)}')` }}
                                 >
                                 </div>
                             </div>
-                            <div className="absolute bottom-0 right-0 size-9 bg-[#1daddd] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-[#111d21] transform transition-transform group-hover:scale-110">
-                                <DynamicLucideIcon name={uploading ? 'hourglass_empty' : 'sparkles'} className="text-[20px]" />
+                            <div className="absolute bottom-0 right-0 size-8 bg-[#1daddd] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-[#242428] transform transition-transform group-hover:scale-110">
+                                <DynamicLucideIcon name={uploading ? 'progress_activity' : 'camera'} size={16} className={uploading ? 'animate-spin' : ''} />
                             </div>
                         </div>
 
-                        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                             <button
                                 type="button"
                                 onClick={() => setIsAvatarPickerOpen(true)}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/50 text-[#1daddd] border border-sky-200 dark:border-sky-800/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all shadow-xs active:scale-95 cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/50 text-[#1daddd] border border-sky-200 dark:border-sky-800/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all active:scale-95 cursor-pointer"
                             >
-                                <DynamicLucideIcon name="sparkles" className="size-3.5" />
-                                Choose Adventurer Avatar
+                                <DynamicLucideIcon name="sparkles" size={14} />
+                                Choose Avatar
                             </button>
-
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95 cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95 cursor-pointer"
                             >
-                                <DynamicLucideIcon name="photo_camera" className="size-3.5" />
+                                <DynamicLucideIcon name="photo_camera" size={14} />
                                 Upload Photo
                             </button>
                         </div>
                     </section>
 
-                    <section className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <DynamicLucideIcon name="person" className="text-[22px]" />
-                                </div>
-                                <input
-                                    className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium placeholder-slate-400 shadow-sm transition-all duration-200"
-                                    placeholder="Enter your name"
-                                    type="text"
-                                    value={formData.display_name}
-                                    onChange={(e) => handleInputChange('display_name', e.target.value)}
-                                />
-                            </div>
-                            {errors.display_name && <p className="mt-1 text-xs text-red-500 font-medium ml-1">{errors.display_name}</p>}
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Username</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <DynamicLucideIcon name="alternate_email" className="text-[22px]" />
-                                </div>
-                                <input
-                                    className={`w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200 ${errors.username ? 'border-red-400 focus:border-red-400' : ''}`}
-                                    placeholder="username"
-                                    type="text"
-                                    value={formData.username}
-                                    onChange={(e) => handleInputChange('username', e.target.value)}
-                                />
-                                {errors.username && <p className="mt-1 text-xs text-red-500 font-medium ml-1">{errors.username}</p>}
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Bio</label>
-                            <div className="relative group">
-                                <div className="absolute top-4 left-4 pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <DynamicLucideIcon name="edit_note" className="text-[22px]" />
-                                </div>
-                                <textarea
-                                    className="w-full min-h-[120px] bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 py-4 text-slate-900 dark:text-white font-medium placeholder-slate-400 shadow-sm transition-all duration-200 resize-none"
-                                    placeholder="Tell others about yourself..."
-                                    value={formData.bio}
-                                    onChange={(e) => handleInputChange('bio', e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 ml-1">
-                                University
-                                <span className="px-2 py-0.5 bg-[#1daddd]/10 text-[#1daddd] text-[10px] uppercase font-bold tracking-wider rounded-full border border-[#1daddd]/20">Verified</span>
-                            </label>
-                            <div className="relative">
-                                <input
-                                    className="w-full h-14 bg-slate-100 dark:bg-white/5 border-transparent rounded-xl px-4 text-slate-500 dark:text-slate-400 font-medium cursor-not-allowed shadow-inner"
-                                    type="text"
-                                    value={profile?.university || profile?.campus || 'University not set'}
-                                    readOnly
-                                />
-                                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
-                                    <DynamicLucideIcon name="lock" style={{ fontSize: '20px' }} />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="pt-4">
-                            <h4 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500 ml-1 mb-3">Contact Information</h4>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email Address</label>
-                                    <div className="relative opacity-60">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                            <DynamicLucideIcon name="mail" className="text-[22px]" />
+                    {/* Personal Information */}
+                    <section className="mt-5">
+                        <h3 className={sectionHeadingClass}>Personal Information</h3>
+                        <div className={cardClass}>
+                            <div className="p-4 space-y-4">
+                                {/* Full Name */}
+                                <div className="space-y-1.5">
+                                    <label className={labelClass}>Full Name</label>
+                                    <div className="relative group">
+                                        <div className={iconWrapperClass}>
+                                            <DynamicLucideIcon name="person" size={18} />
                                         </div>
                                         <input
-                                            className="w-full h-14 bg-gray-100 dark:bg-[#142328] border-none rounded-xl pl-12 pr-4 text-slate-500 font-medium cursor-not-allowed"
+                                            className={`${inputBase} ${errors.display_name ? inputError : ''}`}
+                                            placeholder="Enter your full name"
+                                            type="text"
+                                            value={formData.display_name}
+                                            onChange={(e) => handleInputChange('display_name', e.target.value)}
+                                        />
+                                    </div>
+                                    {errors.display_name && <p className="text-xs text-red-500 font-medium ml-1">{errors.display_name}</p>}
+                                </div>
+
+                                {/* Username */}
+                                <div className="space-y-1.5">
+                                    <label className={labelClass}>Username</label>
+                                    <div className="relative group">
+                                        <div className={iconWrapperClass}>
+                                            <DynamicLucideIcon name="alternate_email" size={18} />
+                                        </div>
+                                        <input
+                                            className={`${inputBase} ${errors.username ? inputError : ''}`}
+                                            placeholder="username"
+                                            type="text"
+                                            value={formData.username}
+                                            onChange={(e) => handleInputChange('username', e.target.value)}
+                                        />
+                                    </div>
+                                    {errors.username && <p className="text-xs text-red-500 font-medium ml-1">{errors.username}</p>}
+                                </div>
+
+                                {/* Bio */}
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <label className={labelClass}>Bio</label>
+                                        <span className={`text-[10px] font-medium tabular-nums ${formData.bio.length > 150 ? 'text-amber-500' : 'text-slate-400'}`}>
+                                            {formData.bio.length}/200
+                                        </span>
+                                    </div>
+                                    <div className="relative group">
+                                        <div className="absolute top-3.5 left-3.5 pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
+                                            <DynamicLucideIcon name="edit_note" size={18} />
+                                        </div>
+                                        <textarea
+                                            className="w-full min-h-[100px] bg-gray-50 dark:bg-[#162226] border border-gray-200 dark:border-gray-700 focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd]/20 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white font-medium placeholder-slate-400 transition-all resize-none outline-none"
+                                            placeholder="Tell others about yourself..."
+                                            value={formData.bio}
+                                            maxLength={200}
+                                            onChange={(e) => handleInputChange('bio', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* University & Campus */}
+                    <section className="mt-5">
+                        <h3 className={sectionHeadingClass}>University</h3>
+                        <div className={cardClass}>
+                            <div className="p-4 space-y-4">
+                                {/* University (locked) */}
+                                <div className="space-y-1.5">
+                                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                        Institution
+                                        <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-[9px] uppercase font-bold tracking-wider rounded-full">Locked</span>
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            className="w-full h-12 bg-gray-100 dark:bg-[#111b1e] border border-gray-200 dark:border-gray-700/50 rounded-xl px-4 text-sm text-slate-500 dark:text-slate-400 font-medium cursor-not-allowed"
+                                            type="text"
+                                            value={profile?.university || profile?.campus || 'University not set'}
+                                            readOnly
+                                        />
+                                        <div className="absolute inset-y-0 right-3.5 flex items-center pointer-events-none text-slate-400">
+                                            <DynamicLucideIcon name="lock" size={16} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Campus / Location */}
+                                <div className="space-y-1.5">
+                                    <label className={labelClass}>Campus / Location</label>
+                                    <div className="relative group">
+                                        <div className={iconWrapperClass}>
+                                            <DynamicLucideIcon name="location_on" size={18} />
+                                        </div>
+                                        <input
+                                            className={inputBase}
+                                            placeholder="e.g. Main Campus, City Campus"
+                                            type="text"
+                                            value={formData.campus}
+                                            onChange={(e) => handleInputChange('campus', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Contact Information */}
+                    <section className="mt-5">
+                        <h3 className={sectionHeadingClass}>Contact Information</h3>
+                        <div className={cardClass}>
+                            <div className="p-4 space-y-4">
+                                {/* Email (locked) */}
+                                <div className="space-y-1.5">
+                                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                        Email Address
+                                        <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-[9px] uppercase font-bold tracking-wider rounded-full">Locked</span>
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                            <DynamicLucideIcon name="mail" size={18} />
+                                        </div>
+                                        <input
+                                            className="w-full h-12 bg-gray-100 dark:bg-[#111b1e] border border-gray-200 dark:border-gray-700/50 rounded-xl pl-11 pr-4 text-sm text-slate-500 dark:text-slate-400 font-medium cursor-not-allowed"
                                             value={user?.email}
                                             disabled
                                         />
                                     </div>
-                                    <p className="text-[10px] text-slate-400 ml-1">Email cannot be changed</p>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">WhatsApp / Phone</label>
+                                {/* WhatsApp / Phone */}
+                                <div className="space-y-1.5">
+                                    <label className={labelClass}>WhatsApp / Phone</label>
                                     <div className="relative group">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                            <DynamicLucideIcon name="call" className="text-[22px]" />
+                                        <div className={iconWrapperClass}>
+                                            <DynamicLucideIcon name="call" size={18} />
                                         </div>
                                         <input
-                                            className={`w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200 ${errors.phone ? 'border-red-400 focus:border-red-400' : ''}`}
+                                            className={`${inputBase} ${errors.phone ? inputError : ''}`}
                                             placeholder="e.g. 024 395 3094 or +233..."
                                             type="tel"
                                             value={formData.phone}
@@ -448,43 +520,31 @@ export default function EditProfilePage() {
                                         />
                                     </div>
                                     {errors.phone ? (
-                                        <p className="mt-1 text-xs text-red-500 font-medium ml-1">{errors.phone}</p>
+                                        <p className="text-xs text-red-500 font-medium ml-1">{errors.phone}</p>
                                     ) : (
                                         <p className="text-[10px] text-slate-400 ml-1">
-                                            Saved in standard international format (+233...) for WhatsApp and SMS delivery
+                                            Saved in international format (+233...) for WhatsApp and SMS
                                         </p>
                                     )}
                                 </div>
                             </div>
                         </div>
+                    </section>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Campus / Location</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#1daddd] transition-colors">
-                                    <DynamicLucideIcon name="location_on" className="text-[22px]" />
-                                </div>
-                                <input
-                                    className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#1daddd] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
-                                    placeholder="Your focus campus"
-                                    type="text"
-                                    value={formData.campus}
-                                    onChange={(e) => handleInputChange('campus', e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="pt-4 pb-10">
-                            <h4 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500 ml-1 mb-3">Social Links</h4>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Instagram</label>
+                    {/* Social Links */}
+                    <section className="mt-5 mb-4">
+                        <h3 className={sectionHeadingClass}>Social Links</h3>
+                        <div className={cardClass}>
+                            <div className="p-4 space-y-4">
+                                {/* Instagram */}
+                                <div className="space-y-1.5">
+                                    <label className={labelClass}>Instagram</label>
                                     <div className="relative group">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#E1306C] transition-colors">
-                                            <DynamicLucideIcon name="photo_camera" className="text-[22px]" />
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#E1306C] transition-colors">
+                                            <DynamicLucideIcon name="photo_camera" size={18} />
                                         </div>
                                         <input
-                                            className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#E1306C] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium placeholder-slate-400 shadow-sm transition-all duration-200"
+                                            className="w-full h-12 bg-gray-50 dark:bg-[#162226] border border-gray-200 dark:border-gray-700 focus:border-[#E1306C] focus:ring-1 focus:ring-[#E1306C]/20 rounded-xl pl-11 pr-4 text-sm text-slate-900 dark:text-white font-medium placeholder-slate-400 transition-all outline-none"
                                             placeholder="Instagram username"
                                             type="text"
                                             value={formData.instagram}
@@ -492,14 +552,16 @@ export default function EditProfilePage() {
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Snapchat</label>
+
+                                {/* Snapchat */}
+                                <div className="space-y-1.5">
+                                    <label className={labelClass}>Snapchat</label>
                                     <div className="relative group">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FFFC00] transition-colors">
-                                            <DynamicLucideIcon name="camera_alt" className="text-[22px]" />
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#F7D900] transition-colors">
+                                            <DynamicLucideIcon name="camera_alt" size={18} />
                                         </div>
                                         <input
-                                            className="w-full h-14 bg-white dark:bg-[#1a2c32] border-transparent focus:border-[#FFFC00] focus:ring-0 rounded-xl pl-12 pr-4 text-slate-900 dark:text-white font-medium shadow-sm transition-all duration-200"
+                                            className="w-full h-12 bg-gray-50 dark:bg-[#162226] border border-gray-200 dark:border-gray-700 focus:border-[#F7D900] focus:ring-1 focus:ring-[#F7D900]/30 rounded-xl pl-11 pr-4 text-sm text-slate-900 dark:text-white font-medium placeholder-slate-400 transition-all outline-none"
                                             placeholder="Snapchat username"
                                             type="text"
                                             value={formData.snapchat}
@@ -513,15 +575,30 @@ export default function EditProfilePage() {
                 </div>
             </main>
 
-            <div className="fixed bottom-[92px] left-0 right-0 z-50 px-5 py-4 bg-white/95 dark:bg-[#1a2c32]/95 border-t border-gray-100 dark:border-white/5 backdrop-blur-md">
+            {/* Fixed Save Button */}
+            <div className="fixed bottom-[72px] left-0 right-0 z-50 px-5 py-3 bg-white/95 dark:bg-[#242428]/95 border-t border-gray-100 dark:border-gray-800 backdrop-blur-md">
                 <div className="max-w-md mx-auto w-full">
                     <button
                         onClick={handleSave}
                         disabled={saving || uploading}
-                        className="w-full h-14 bg-primary hover:bg-primary-dark active:scale-[0.98] text-white font-bold text-lg rounded-2xl shadow-lg shadow-primary/25 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full h-12 bg-[#1daddd] hover:bg-[#159ac6] active:scale-[0.98] text-white font-bold text-[15px] rounded-xl shadow-lg shadow-[#1daddd]/20 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                        <span>{saving ? 'Saving Changes...' : uploading ? 'Uploading Photo...' : 'Save All Changes'}</span>
-                        <DynamicLucideIcon name={success ? 'done_all' : 'check'} className="text-[20px]" />
+                        {saving ? (
+                            <>
+                                <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Saving...</span>
+                            </>
+                        ) : uploading ? (
+                            <>
+                                <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Uploading Photo...</span>
+                            </>
+                        ) : (
+                            <>
+                                <span>Save Changes</span>
+                                <DynamicLucideIcon name={success ? 'done_all' : 'check'} size={18} />
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
