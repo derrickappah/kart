@@ -6,13 +6,15 @@
 export const ADVENTURER_BASE_URL = 'https://api.dicebear.com/10.x/adventurer/svg';
 
 export const AVATAR_PALETTES = [
-    { id: 'pastel', label: 'Pastel Wall', colors: 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf' },
-    { id: 'vibrant', label: 'Vibrant', colors: 'ffadad,ffd6a5,fdffb6,caffbf,9bf6ff,a0c4ff,bdb2ff,ffc6ff' },
-    { id: 'warm', label: 'Warm Glow', colors: 'fcd34d,f87171,fb923c,f43f5e' },
-    { id: 'cool', label: 'Ocean Cool', colors: '38bdf8,818cf8,67e8f9,a5f3fc' },
-    { id: 'sunset', label: 'Sunset', colors: 'fdba74,f472b6,c084fc' },
-    { id: 'clean', label: 'Minimal / Clean', colors: 'f1f5f9,e2e8f0,f8fafc' },
+    { id: 'pastel', label: 'Pastel Wall', colors: ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'] },
+    { id: 'vibrant', label: 'Vibrant', colors: ['ffadad', 'ffd6a5', 'fdffb6', 'caffbf', '9bf6ff', 'a0c4ff', 'bdb2ff', 'ffc6ff'] },
+    { id: 'warm', label: 'Warm Glow', colors: ['fcd34d', 'f87171', 'fb923c', 'f43f5e'] },
+    { id: 'cool', label: 'Ocean Cool', colors: ['38bdf8', '818cf8', '67e8f9', 'a5f3fc'] },
+    { id: 'sunset', label: 'Sunset', colors: ['fdba74', 'f472b6', 'c084fc'] },
+    { id: 'clean', label: 'Minimal / Clean', colors: ['f1f5f9', 'e2e8f0', 'f8fafc'] },
 ];
+
+export const DEFAULT_AVATAR_COLORS = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'];
 
 export const PRESET_AVATARS = [
     { name: 'Alex', seed: 'Alex', options: { backgroundColor: 'b6e3f4' } },
@@ -36,23 +38,41 @@ export const PRESET_AVATARS = [
  * @returns {string}
  */
 export function getAdventurerAvatarUrl(seed = 'kart_user', options = {}) {
-    const cleanSeed = encodeURIComponent(String(seed || 'kart_user').trim());
-    const params = new URLSearchParams({ seed: cleanSeed });
+    const params = new URLSearchParams();
+    params.set('seed', String(seed || 'kart_user').trim());
 
     if (options.backgroundColor) {
-        params.set('backgroundColor', options.backgroundColor.replace(/#/g, ''));
+        const colors = Array.isArray(options.backgroundColor)
+            ? options.backgroundColor
+            : String(options.backgroundColor).split(',');
+        for (const c of colors) {
+            const clean = c.trim().replace(/^#/g, '');
+            if (clean) params.append('backgroundColor', clean);
+        }
     }
     if (options.glassesProbability !== undefined) {
         params.set('glassesProbability', String(options.glassesProbability));
     }
-    if (options.hair) {
-        params.set('hair', options.hair);
+    if (options.hair || options.hairVariant) {
+        params.set('hair', options.hair || options.hairVariant);
     }
     if (options.skinColor) {
-        params.set('skinColor', options.skinColor.replace(/#/g, ''));
+        const skins = Array.isArray(options.skinColor)
+            ? options.skinColor
+            : String(options.skinColor).split(',');
+        for (const s of skins) {
+            const clean = s.trim().replace(/^#/g, '');
+            if (clean) params.append('skinColor', clean);
+        }
     }
     if (options.hairColor) {
-        params.set('hairColor', options.hairColor.replace(/#/g, ''));
+        const hairs = Array.isArray(options.hairColor)
+            ? options.hairColor
+            : String(options.hairColor).split(',');
+        for (const h of hairs) {
+            const clean = h.trim().replace(/^#/g, '');
+            if (clean) params.append('hairColor', clean);
+        }
     }
     if (options.radius !== undefined) {
         params.set('radius', String(options.radius));
@@ -83,7 +103,7 @@ export function getAvatarUrl(userOrProfile, fallbackSeed = '') {
         if (userOrProfile && !isGravatarUrl(userOrProfile)) {
             return userOrProfile;
         }
-        return getAdventurerAvatarUrl(fallbackSeed || 'kart_user', { backgroundColor: 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf' });
+        return getAdventurerAvatarUrl(fallbackSeed || 'kart_user', { backgroundColor: DEFAULT_AVATAR_COLORS });
     }
 
     const currentUrl = userOrProfile?.avatar_url || userOrProfile?.avatarUrl;
@@ -98,5 +118,5 @@ export function getAvatarUrl(userOrProfile, fallbackSeed = '') {
                  fallbackSeed || 
                  'kart_user';
 
-    return getAdventurerAvatarUrl(seed, { backgroundColor: 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf' });
+    return getAdventurerAvatarUrl(seed, { backgroundColor: DEFAULT_AVATAR_COLORS });
 }
