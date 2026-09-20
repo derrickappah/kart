@@ -28,11 +28,11 @@ export default function ProfileClient({ initialData }) {
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                         <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111618] dark:text-white truncate">{displayName}</h1>
-                        <div className="flex items-center gap-2 text-sm text-[#5e7d87] dark:text-gray-400 font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-[#5e7d87] dark:text-gray-400 font-medium whitespace-nowrap">
                             <span>Joined {timeAgo(user?.created_at)}</span>
                             <span className="text-gray-300 dark:text-gray-700 select-none">•</span>
                             <span className="inline-flex items-center gap-1 font-semibold text-[#111618] dark:text-white">
-                                <DynamicLucideIcon name="star" size={14} fill="currentColor" className="text-amber-400" />
+                                <DynamicLucideIcon name="star" size={13} fill="currentColor" className="text-amber-400" />
                                 <span>{parseFloat(stats.reviews || 0) > 0 ? parseFloat(stats.reviews).toFixed(1) : 'New'}</span>
                             </span>
                         </div>
