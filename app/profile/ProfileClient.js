@@ -4,6 +4,7 @@ import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import Link from 'next/link';
 import { timeAgo } from '../../utils/dateUtils';
 import FollowersListModal from '@/components/FollowersListModal';
+import { getAvatarUrl } from '@/utils/avatar';
 
 export default function ProfileClient({ initialData }) {
     const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'followers' });
@@ -22,7 +23,7 @@ export default function ProfileClient({ initialData }) {
                     <div className="relative group cursor-pointer">
                         <div className="w-32 h-32 rounded-full p-1 border-2 border-dashed border-[#1daddd]/30 group-hover:border-[#1daddd] transition-colors duration-300">
                             <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden bg-cover bg-center shadow-sm"
-                                style={{ backgroundImage: profile?.avatar_url ? `url('${profile.avatar_url}')` : "url('https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y')" }}>
+                                style={{ backgroundImage: `url('${getAvatarUrl(profile, user?.id)}')` }}>
                             </div>
                         </div>
                         <Link href="/profile/edit" className="absolute bottom-1 right-1 bg-[#1daddd] text-white rounded-full p-2 shadow-lg ring-4 ring-white dark:ring-[#242428] flex items-center justify-center hover:scale-105 transition-transform">

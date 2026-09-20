@@ -10,6 +10,7 @@ import FollowButton from '@/components/FollowButton';
 import FollowersListModal from '@/components/FollowersListModal';
 import { formatPrice } from '@/utils/formatters';
 import { formatPhoneDisplay, getWhatsAppUrl } from '@/utils/phoneUtils';
+import { getAvatarUrl } from '@/utils/avatar';
 
 export default function SellerProfilePage() {
     const router = useRouter();
@@ -203,13 +204,7 @@ export default function SellerProfilePage() {
                     <div className="flex flex-col items-center">
                         <div className="relative">
                             <div className="size-28 rounded-full border-4 border-white dark:border-slate-800 shadow-xl overflow-hidden bg-slate-200 dark:bg-slate-700">
-                                {profile.avatar_url ? (
-                                    <img alt={profile.display_name} className="w-full h-full object-cover" src={profile.avatar_url} />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-3xl font-bold">
-                                        {profile.display_name?.[0].toUpperCase() || 'U'}
-                                    </div>
-                                )}
+                                <img alt={profile.display_name || 'Profile'} className="w-full h-full object-cover" src={getAvatarUrl(profile)} />
                             </div>
                         </div>
                         <div className="mt-4 text-center flex flex-col items-center">
@@ -429,13 +424,7 @@ export default function SellerProfilePage() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <div className="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
-                                                        {reviewer.avatar_url ? (
-                                                            <img src={reviewer.avatar_url} alt={reviewer.display_name || reviewer.username || 'User'} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold">
-                                                                {(reviewer.display_name?.[0] || reviewer.username?.[0] || 'U').toUpperCase()}
-                                                            </div>
-                                                        )}
+                                                        <img src={getAvatarUrl(reviewer)} alt={reviewer.display_name || reviewer.username || 'User'} className="w-full h-full object-cover" />
                                                     </div>
                                                     <div>
                                                         <div className="flex items-center gap-1.5">

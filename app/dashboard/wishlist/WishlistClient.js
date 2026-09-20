@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import SearchBar from '@/components/SearchBar';
 import { formatPrice } from '@/utils/formatters';
+import { getAvatarUrl } from '@/utils/avatar';
 
 export default function WishlistClient({ initialItems }) {
     const router = useRouter();
@@ -168,11 +169,7 @@ export default function WishlistClient({ initialItems }) {
                                                 {seller && (
                                                     <div className="flex items-center gap-2">
                                                         <div className="relative size-5 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[8px] font-bold ring-1 ring-primary/20 overflow-hidden">
-                                                            {seller.avatar_url ? (
-                                                                <Image src={seller.avatar_url} alt={seller.display_name} fill className="object-cover" />
-                                                            ) : (
-                                                                <span>{seller.display_name?.[0]}</span>
-                                                            )}
+                                                            <img src={getAvatarUrl(seller)} alt={seller.display_name} className="w-full h-full object-cover" />
                                                         </div>
                                                         <span className="text-[10px] text-slate-400 font-medium truncate">
                                                             {seller.display_name}

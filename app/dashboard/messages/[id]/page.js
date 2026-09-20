@@ -10,6 +10,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ReportModal from '../../../../components/ReportModal';
 import { formatPrice } from '../../../../utils/formatters';
+import { getAvatarUrl } from '@/utils/avatar';
 
 function generateWaveformBars(seedStr, count = 26) {
     let hash = 0;
@@ -972,15 +973,9 @@ export default function ChatPage() {
                                     <div className="w-8 shrink-0 flex flex-col justify-end">
                                         {!isContinuedToNext ? (
                                             <div
-                                                className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center shadow-sm"
-                                                style={{ backgroundImage: `url('${otherUser?.avatar_url || ''}')` }}
-                                            >
-                                                {!otherUser?.avatar_url && (
-                                                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                                        {otherUser?.display_name?.[0]?.toUpperCase()}
-                                                    </div>
-                                                )}
-                                            </div>
+                                                className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 bg-cover bg-center shadow-sm overflow-hidden"
+                                                style={{ backgroundImage: `url('${getAvatarUrl(otherUser)}')` }}
+                                            />
                                         ) : <div className="w-8" />}
                                     </div>
                                 )}

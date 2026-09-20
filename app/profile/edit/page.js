@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { validateImage, compressImage, generateProfilePicturePath, getFileExtension } from '../../../utils/imageUtils';
 import { formatToInternationalPhone, isValidInternationalPhone } from '../../../utils/phoneUtils';
+import { getAvatarUrl } from '../../../utils/avatar';
+import AvatarPickerModal from '@/components/profile/AvatarPickerModal';
 
 export default function EditProfilePage() {
     const router = useRouter();
@@ -19,6 +21,7 @@ export default function EditProfilePage() {
     const [success, setSuccess] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
     const [formData, setFormData] = useState({
         display_name: '',
         username: '',
@@ -93,6 +96,15 @@ export default function EditProfilePage() {
             setImagePreview(reader.result);
         };
         reader.readAsDataURL(file);
+        if (success) setSuccess(false);
+    };
+
+    const handleSelectAdventurerAvatar = (url) => {
+        setSelectedFile(null);
+        setImagePreview(url);
+        if (errors.image) {
+            setErrors(prev => ({ ...prev, image: null }));
+        }
         if (success) setSuccess(false);
     };
 
@@ -181,6 +193,8 @@ export default function EditProfilePage() {
                     setSaving(false);
                     return;
                 }
+            } else if (imagePreview) {
+                avatarUrl = imagePreview;
             }
 
             const standardizedPhone = formData.phone?.trim()
@@ -217,12 +231,14 @@ export default function EditProfilePage() {
                 data: { full_name: formData.display_name }
             });
 
-            // Success! Now we can safely delete the old image if a new one was uploaded
-            if (selectedFile && profile?.avatar_url) {
+            // Success! Safely delete old storage file if user replaced it with a new upload or an Adventurer avatar
+            if ((selectedFile || (imagePreview && imagePreview !== profile?.avatar_url)) && profile?.avatar_url) {
                 try {
-                    const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
-                    if (oldPath && !oldPath.includes('http')) {
-                        await supabase.storage.from('profiles').remove([oldPath]);
+                    if (!profile.avatar_url.includes('api.dicebear.com') && !profile.avatar_url.includes('gravatar.com')) {
+                        const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
+                        if (oldPath && !oldPath.includes('http')) {
+                            await supabase.storage.from('profiles').remove([oldPath]);
+                        }
                     }
                 } catch (deleteError) {
                     console.error('Non-critical error deleting old avatar:', deleteError);
@@ -296,22 +312,38 @@ export default function EditProfilePage() {
                         />
                         <div
                             className="relative group cursor-pointer"
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() => setIsAvatarPickerOpen(true)}
                         >
                             <div className="size-32 rounded-full p-1 bg-white dark:bg-[#1a2c32] shadow-soft">
                                 <div
-                                    className="w-full h-full rounded-full bg-cover bg-center border-2 border-gray-50 dark:border-gray-800"
-                                    style={{ backgroundImage: `url('${imagePreview || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}')` }}
+                                    className="w-full h-full rounded-full bg-cover bg-center border-2 border-gray-50 dark:border-gray-800 bg-slate-100 dark:bg-slate-800"
+                                    style={{ backgroundImage: `url('${imagePreview || getAvatarUrl(profile, user?.id)}')` }}
                                 >
                                 </div>
                             </div>
                             <div className="absolute bottom-0 right-0 size-9 bg-[#1daddd] text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-[#111d21] transform transition-transform group-hover:scale-110">
-                                <DynamicLucideIcon name={uploading ? 'hourglass_empty' : 'photo_camera'} className="text-[20px]" />
+                                <DynamicLucideIcon name={uploading ? 'hourglass_empty' : 'sparkles'} className="text-[20px]" />
                             </div>
                         </div>
-                        <div className="mt-4 text-center">
-                            <h3 className="font-bold text-slate-900 dark:text-white">Profile Photo</h3>
-                            <p className="text-xs text-slate-500 font-medium mt-1">Tap to change avatar</p>
+
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsAvatarPickerOpen(true)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/50 text-[#1daddd] border border-sky-200 dark:border-sky-800/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all shadow-xs active:scale-95 cursor-pointer"
+                            >
+                                <DynamicLucideIcon name="sparkles" className="size-3.5" />
+                                Choose Adventurer Avatar
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95 cursor-pointer"
+                            >
+                                <DynamicLucideIcon name="photo_camera" className="size-3.5" />
+                                Upload Photo
+                            </button>
                         </div>
                     </section>
 
@@ -493,6 +525,13 @@ export default function EditProfilePage() {
                     </button>
                 </div>
             </div>
+
+            <AvatarPickerModal
+                isOpen={isAvatarPickerOpen}
+                onClose={() => setIsAvatarPickerOpen(false)}
+                onSelectAvatar={handleSelectAdventurerAvatar}
+                initialUrl={imagePreview || getAvatarUrl(profile, user?.id)}
+            />
         </div>
     );
 }

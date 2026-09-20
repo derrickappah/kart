@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import DynamicLucideIcon from '@/components/DynamicLucideIcon';
 import { createClient } from '@/utils/supabase/client';
 import { timeAgo } from '@/utils/dateUtils';
+import { getAvatarUrl } from '@/utils/avatar';
 
 const MAX_REVIEW_LENGTH = 500;
 
@@ -607,17 +608,11 @@ export default function ProductReviews({ productId, sellerId, productTitle, isOw
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex items-center gap-3">
                                             <div className="size-10 rounded-full bg-primary/10 text-primary overflow-hidden flex items-center justify-center font-bold text-sm shrink-0 ring-1 ring-primary/20">
-                                                {reviewer.avatar_url ? (
-                                                    <Image
-                                                        src={reviewer.avatar_url}
-                                                        alt={reviewer.display_name || 'Reviewer avatar'}
-                                                        width={40}
-                                                        height={40}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <span>{(reviewer.display_name?.[0] || reviewer.username?.[0] || 'U').toUpperCase()}</span>
-                                                )}
+                                                <img
+                                                    src={getAvatarUrl(reviewer)}
+                                                    alt={reviewer.display_name || 'Reviewer avatar'}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2 flex-wrap">

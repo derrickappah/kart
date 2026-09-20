@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '../../utils/supabase/server'
+import { getAdventurerAvatarUrl } from '../../utils/avatar'
 
 function getSiteUrl() {
     const rawUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
@@ -129,6 +130,7 @@ export async function signup(formData) {
     }
 
     const siteUrl = getSiteUrl()
+    const defaultAvatarUrl = getAdventurerAvatarUrl(fullName || email)
 
     const { data: signUpData, error } = await supabase.auth.signUp({
         email,
@@ -136,6 +138,7 @@ export async function signup(formData) {
         options: {
             data: {
                 full_name: fullName,
+                avatar_url: defaultAvatarUrl,
             },
             emailRedirectTo: `${siteUrl}/api/auth/callback`,
         }
@@ -148,6 +151,22 @@ export async function signup(formData) {
     // Check if the user already exists (Supabase returns empty identities list)
     if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0) {
         return { error: 'An account with this email address already exists. Please log in instead.' }
+    }
+
+    // Ensure profile has default Adventurer avatar
+    if (signUpData.user) {
+        try {
+            const { createServiceRoleClient } = await import('../../utils/supabase/server');
+            const adminSupabase = createServiceRoleClient();
+            await adminSupabase
+                .from('profiles')
+                .update({ avatar_url: defaultAvatarUrl })
+                .eq('id', signUpData.user.id)
+                .is('avatar_url', null);
+        } catch (avatarError) {
+            // Non-fatal
+            console.error('[signup] Default avatar assignment failed:', avatarError.message);
+        }
     }
 
     // If there's a referrer, record it in the profiles and tracking table (only if valid UUID)

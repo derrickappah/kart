@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.derrickappah.kart',
+  appId: 'kart.cx',
   appName: 'KART',
   webDir: 'out',
   server: {
