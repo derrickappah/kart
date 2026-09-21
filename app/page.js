@@ -15,23 +15,26 @@ import { getOrSet } from '@/lib/cache';
 export const revalidate = 60;
 
 
-const categories = [
-  { name: 'All' },
-  { name: 'Textbooks' },
-  { name: 'Electronics' },
-  { name: 'Dorm Furniture' },
-  { name: 'Clothing' },
-  { name: 'School Supplies' },
-  { name: 'Tickets & Events' },
-  { name: 'Services & Tutoring' },
-  { name: 'Beauty & Grooming' },
-  { name: 'Sports & Fitness' },
-  { name: 'Kitchenware' },
-  { name: 'Musical Instruments' },
-  { name: 'Games & Consoles' },
-  { name: 'Health & Wellness' },
-  { name: 'Arts & Crafts' },
-  { name: 'Home Appliances' },
+const popularCategories = [
+  { name: 'All', icon: 'grid_view' },
+  { name: 'Clothing', icon: 'checkroom' },
+  { name: 'Electronics', icon: 'devices' },
+  { name: 'Kitchenware', icon: 'kitchen' },
+  { name: 'Dorm Furniture', icon: 'chair' },
+  { name: 'Beauty & Grooming', icon: 'face_retouching_natural' },
+  { name: 'Sports & Fitness', icon: 'sports_soccer' },
+  { name: 'Health & Wellness', icon: 'favorite' },
+];
+
+const secondaryCategories = [
+  { name: 'Textbooks', icon: 'menu_book' },
+  { name: 'Games & Consoles', icon: 'sports_esports' },
+  { name: 'Tickets & Events', icon: 'confirmation_number' },
+  { name: 'Musical Instruments', icon: 'piano' },
+  { name: 'School Supplies', icon: 'school' },
+  { name: 'Home Appliances', icon: 'home_iot_device' },
+  { name: 'Services & Tutoring', icon: 'support_agent' },
+  { name: 'Arts & Crafts', icon: 'palette' },
 ];
 
 function ProductCardSkeleton() {
@@ -235,24 +238,74 @@ export default async function Home() {
       <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-4 md:pb-8 max-w-md mx-auto bg-white dark:bg-[#242428]">
         <PromotedBanner products={heroProducts} />
 
-        <div className="px-4 py-2 relative z-20 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
-          <SearchBar
-            placeholder="Search campus finds..."
-            showFilter={true}
-            leftContent={
-              <div className="flex items-center overflow-x-auto no-scrollbar space-x-2 w-full py-1">
-                {categories.map((cat) => (
+        {/* Shop by Category Section */}
+        <section className="pt-5 pb-2" aria-label="Shop by category">
+          <div className="flex items-center justify-between px-5 mb-3">
+            <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Shop by Category</h2>
+            <Link
+              href="/marketplace/categories"
+              className="text-xs font-bold text-primary hover:text-primary-dark transition-colors"
+            >
+              See All
+            </Link>
+          </div>
+
+          <div
+            className="overflow-x-auto no-scrollbar px-5 pb-1"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            <div className="flex flex-col gap-2 w-max">
+              {/* Top Row: Most Popular Categories on Top */}
+              <div className="flex items-center gap-2">
+                {popularCategories.map((cat) => {
+                  const isAll = cat.name === 'All';
+                  return (
+                    <Link
+                      key={cat.name}
+                      href={isAll ? '/marketplace' : `/marketplace?category=${encodeURIComponent(cat.name)}`}
+                      className={`group flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-xs font-bold transition-all active:scale-95 whitespace-nowrap ${
+                        isAll
+                          ? 'bg-gray-900 text-white shadow-sm dark:bg-white dark:text-gray-950'
+                          : 'bg-gray-100/90 text-gray-800 hover:bg-gray-200/80 hover:text-gray-950 dark:bg-[#2d2d32] dark:text-gray-200 dark:hover:bg-[#38383e] dark:hover:text-white border border-gray-200/60 dark:border-gray-700/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]'
+                      }`}
+                    >
+                      <DynamicLucideIcon
+                        name={cat.icon}
+                        size={15}
+                        className={isAll ? 'text-white dark:text-gray-950' : 'text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors'}
+                        aria-hidden="true"
+                      />
+                      <span>{cat.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Bottom Row: Remaining Categories */}
+              <div className="flex items-center gap-2">
+                {secondaryCategories.map((cat) => (
                   <Link
                     key={cat.name}
-                    href={cat.name === 'All' ? '/marketplace' : `/marketplace?category=${cat.name}`}
-                    className="flex h-9 items-center justify-center rounded-full px-4 text-xs font-black transition-all active:scale-95 whitespace-nowrap bg-primary/10 text-primary hover:bg-primary/20 border border-primary/15 dark:bg-primary/20 dark:text-blue-400 dark:border-primary/25"
+                    href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
+                    className="group flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-xs font-bold transition-all active:scale-95 whitespace-nowrap bg-gray-100/90 text-gray-800 hover:bg-gray-200/80 hover:text-gray-950 dark:bg-[#2d2d32] dark:text-gray-200 dark:hover:bg-[#38383e] dark:hover:text-white border border-gray-200/60 dark:border-gray-700/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
                   >
+                    <DynamicLucideIcon
+                      name={cat.icon}
+                      size={15}
+                      className="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors"
+                      aria-hidden="true"
+                    />
                     <span>{cat.name}</span>
                   </Link>
                 ))}
               </div>
-            }
-          />
+            </div>
+          </div>
+        </section>
+
+        {/* Clean Standalone Search Bar */}
+        <div className="px-5 py-2.5 relative z-10">
+          <SearchBar placeholder="Search campus finds..." />
         </div>
 
         {/* Heavy products section is streamed separately — page renders above instantly */}
