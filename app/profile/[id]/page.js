@@ -280,7 +280,7 @@ export default function SellerProfilePage() {
 
                 {/* Profile Actions: Message & Follow (Only for other users) */}
                 {currentUser?.id !== id && (
-                    <section className="px-4 pb-1">
+                    <section className="px-4">
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={handleContactSeller}
@@ -310,7 +310,7 @@ export default function SellerProfilePage() {
 
                 {/* Contact & Social Icons */}
                 {(profile.phone || profile.instagram || profile.snapchat) && (
-                    <div className="flex items-center justify-center gap-7 py-1.5">
+                    <div className="flex items-center justify-center gap-7">
                         {profile.phone && (
                             <a
                                 href={getWhatsAppUrl(profile.phone)}
@@ -351,7 +351,7 @@ export default function SellerProfilePage() {
                 )}
 
                 {/* Tabs Navigation */}
-                <section className="mt-4">
+                <section>
                     <div className="flex border-b border-slate-200 dark:border-slate-800 px-4">
                         <button
                             onClick={() => setActiveTab('listings')}
