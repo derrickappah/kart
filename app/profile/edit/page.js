@@ -8,6 +8,7 @@ import { validateImage, compressImage, generateProfilePicturePath, getFileExtens
 import { formatToInternationalPhone, isValidInternationalPhone } from '../../../utils/phoneUtils';
 import { getAvatarUrl } from '../../../utils/avatar';
 import AvatarPickerModal from '@/components/profile/AvatarPickerModal';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function EditProfilePage() {
     const router = useRouter();
@@ -269,12 +270,7 @@ export default function EditProfilePage() {
     };
 
     if (loading) {
-        return (
-            <div className="bg-gray-50 dark:bg-[#242428] font-display text-slate-900 dark:text-white min-h-screen flex flex-col items-center justify-center gap-3">
-                <div className="size-10 rounded-full border-[3px] border-gray-200 dark:border-gray-700 border-t-[#1daddd] animate-spin"></div>
-                <p className="text-sm font-medium text-slate-400">Loading profile...</p>
-            </div>
-        );
+        return <LoadingScreen message="Loading profile..." fullScreen={false} />;
     }
 
     const inputBase = "w-full h-12 bg-gray-50 dark:bg-[#162226] border border-gray-200 dark:border-gray-700 focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd]/20 rounded-xl pl-11 pr-4 text-sm text-slate-900 dark:text-white font-medium placeholder-slate-400 transition-all outline-none";
