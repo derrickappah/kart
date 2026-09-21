@@ -237,7 +237,7 @@ export default function PromotedBanner({ products = [] }) {
                         <DynamicLucideIcon
                             name="arrow_forward"
                             size={14}
-                            className="transition-transform group-hover/card:translate-x-0.5"
+                            className="animate-arrow-nudge"
                         />
                     </div>
                 </div>
