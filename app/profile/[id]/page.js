@@ -203,26 +203,7 @@ export default function SellerProfilePage() {
 
     return (
         <div className="bg-white dark:bg-[#242428] text-slate-900 dark:text-slate-100 min-h-screen font-display">
-            <main className="max-w-lg mx-auto pb-4 md:pb-8 flex flex-col gap-4">
-                {/* Top Bar */}
-                <div className="flex items-center justify-between px-4 pt-4">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center justify-center size-10 rounded-full bg-gray-100 dark:bg-[#1c2b30] text-slate-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-[#243438] transition-colors cursor-pointer"
-                        aria-label="Back"
-                    >
-                        <DynamicLucideIcon name="arrow_back" size={20} />
-                    </button>
-                    {currentUser?.id === id && (
-                        <Link
-                            href="/profile/edit"
-                            className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] hover:bg-[#1daddd] hover:text-white transition-colors cursor-pointer"
-                        >
-                            <DynamicLucideIcon name="edit" size={18} />
-                        </Link>
-                    )}
-                </div>
-
+            <main className="max-w-lg mx-auto pb-4 md:pb-8 flex flex-col gap-4 pt-6">
                 {/* Profile Header Section */}
                 <section className="flex items-center gap-4 px-4 animate-fade-in">
                     <div className="relative shrink-0">
@@ -257,6 +238,14 @@ export default function SellerProfilePage() {
                             </p>
                         )}
                     </div>
+                    {currentUser?.id === id && (
+                        <Link
+                            href="/profile/edit"
+                            className="flex items-center justify-center size-10 rounded-full bg-[#1daddd]/10 text-[#1daddd] hover:bg-[#1daddd] hover:text-white transition-colors duration-300 shrink-0"
+                        >
+                            <DynamicLucideIcon name="edit" size={18} />
+                        </Link>
+                    )}
                 </section>
 
                 {/* Stats Section (Not cards) */}
