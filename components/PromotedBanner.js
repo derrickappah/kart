@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toSentenceCase, formatPrice } from '../utils/formatters';
@@ -107,13 +107,9 @@ export default function PromotedBanner({ products = [] }) {
     // Editorial Fallback when no products exist
     if (validProducts.length === 0) {
         return (
-            <div className="relative w-full h-[360px] sm:h-[400px] overflow-hidden bg-gradient-to-br from-[#0c1821] via-[#102a43] to-[#1daddd]/40 flex flex-col justify-end p-6 select-none">
+            <div className="relative w-full h-[380px] sm:h-[420px] pt-20 overflow-hidden bg-gradient-to-br from-[#0c1821] via-[#102a43] to-[#1daddd]/40 flex flex-col justify-end p-6 select-none">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/30 via-transparent to-transparent pointer-events-none" />
                 <div className="relative z-10 flex flex-col gap-3 max-w-sm">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase bg-white/10 text-white backdrop-blur-md border border-white/15 w-fit">
-                        <DynamicLucideIcon name="sparkles" size={13} className="text-amber-300" />
-                        Campus Marketplace
-                    </span>
                     <h1 className="text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md">
                         Buy & sell effortlessly across campus
                     </h1>
@@ -145,7 +141,7 @@ export default function PromotedBanner({ products = [] }) {
             onBlur={() => setIsPaused(false)}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            className="relative w-full h-[390px] sm:h-[430px] overflow-hidden bg-black select-none group"
+            className="relative w-full h-[420px] sm:h-[460px] overflow-hidden bg-black select-none group"
             aria-live={isPaused ? 'off' : 'polite'}
         >
             {/* Background Slides */}
@@ -181,39 +177,10 @@ export default function PromotedBanner({ products = [] }) {
                 );
             })}
 
-            {/* Cinematic Scrims / Gradient Overlays */}
-            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-black/75 via-transparent to-transparent h-28" />
-            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black via-black/70 via-50% to-transparent" />
+            {/* Cinematic Scrims / Gradient Overlays (Top dark scrim provides contrast for transparent navbar) */}
+            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-black/85 via-black/25 to-transparent h-32" />
+            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black via-black/75 via-50% to-transparent" />
             <div className="absolute inset-0 z-10 pointer-events-none bg-radial-gradient from-transparent via-transparent to-black/30" />
-
-            {/* Top Floating Bar: Category/Badge + Slide Counter */}
-            <div className="absolute top-3.5 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
-                <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-widest uppercase bg-black/40 text-white backdrop-blur-md border border-white/20 shadow-md">
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        {currentProduct?.ad_type === 'Campus Ad'
-                            ? 'Campus Spotlight'
-                            : currentProduct?.ad_type === 'Featured'
-                            ? 'Featured Find'
-                            : currentProduct?.category
-                            ? currentProduct.category
-                            : 'Campus Exclusive'}
-                    </span>
-                    {currentProduct?.condition && (
-                        <span className="hidden xs:inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-md border border-white/15">
-                            {currentProduct.condition}
-                        </span>
-                    )}
-                </div>
-
-                {validProducts.length > 1 && (
-                    <div className="px-3 py-1 rounded-full text-[11px] font-bold tracking-widest text-white/95 bg-black/45 backdrop-blur-md border border-white/20 tabular-nums shadow-sm">
-                        <span>{String(currentIndex + 1).padStart(2, '0')}</span>
-                        <span className="text-white/40 mx-1">/</span>
-                        <span className="text-white/60">{String(validProducts.length).padStart(2, '0')}</span>
-                    </div>
-                )}
-            </div>
 
             {/* Desktop Navigation Chevrons */}
             {validProducts.length > 1 && (
@@ -249,42 +216,8 @@ export default function PromotedBanner({ products = [] }) {
             <Link
                 href={`/marketplace/${currentProduct.id}`}
                 onClick={() => handleAdClick(currentProduct.advertisement_id)}
-                className="absolute inset-0 z-20 flex flex-col justify-end p-5 pb-7 text-left group/card"
+                className="absolute inset-0 z-20 flex flex-col justify-end p-5 pb-8 pt-24 text-left group/card"
             >
-                {/* Micro Seller / Campus Badge */}
-                <div className="flex items-center gap-2 mb-2">
-                    {currentProduct.seller?.display_name && (
-                        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 max-w-[65%]">
-                            {currentProduct.seller.avatar_url ? (
-                                <Image
-                                    src={currentProduct.seller.avatar_url}
-                                    alt=""
-                                    width={16}
-                                    height={16}
-                                    className="size-4 rounded-full object-cover shrink-0"
-                                />
-                            ) : (
-                                <div className="size-4 rounded-full bg-primary/80 text-white flex items-center justify-center text-[9px] font-black shrink-0">
-                                    {currentProduct.seller.display_name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                            <span className="text-[11px] font-semibold text-white/90 truncate">
-                                {currentProduct.seller.display_name}
-                            </span>
-                            {currentProduct.seller.is_verified && (
-                                <DynamicLucideIcon name="verified" size={13} className="text-primary shrink-0" />
-                            )}
-                        </div>
-                    )}
-
-                    {currentProduct.campus && (
-                        <div className="flex items-center gap-1 text-[11px] font-semibold text-white/80 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 truncate">
-                            <DynamicLucideIcon name="location_on" size={13} className="text-primary shrink-0" />
-                            <span className="truncate">{currentProduct.campus}</span>
-                        </div>
-                    )}
-                </div>
-
                 {/* Main Headline / Title */}
                 <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight line-clamp-2 tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] group-hover/card:text-white/95 transition-colors">
                     {toSentenceCase(currentProduct.title)}
@@ -313,7 +246,7 @@ export default function PromotedBanner({ products = [] }) {
             {/* Segmented Progress Indicators */}
             {validProducts.length > 1 && (
                 <div
-                    className="absolute bottom-2 left-5 right-5 z-30 flex items-center gap-1.5"
+                    className="absolute bottom-2.5 left-5 right-5 z-30 flex items-center gap-1.5"
                     role="group"
                     aria-label="Carousel slide progress"
                 >

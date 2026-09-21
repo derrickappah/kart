@@ -166,12 +166,16 @@ export default function LayoutWrapper({ children }) {
     const isMessagesDetailPage = pathname?.startsWith('/dashboard/messages/') && pathname !== '/dashboard/messages';
     const isMessagesPage = pathname === '/dashboard/messages';
 
+    const isHomePage = pathname === '/';
+
     const paddingClass = isProductPage
         ? "" 
         : isMessagesDetailPage
         ? "fixed inset-0 overflow-hidden"
         : isMessagesPage
         ? "fixed inset-x-0 top-0 bottom-0 pt-16 pb-[max(66px,calc(50px+env(safe-area-inset-bottom,0px)))] overflow-hidden"
+        : isHomePage
+        ? "pb-[66px]"
         : (isEditingPage ? "" : "pt-16 pb-[66px]");
 
     const mainBg = isMessagesDetailPage

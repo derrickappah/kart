@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '../utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
-export default function NotificationBell() {
+export default function NotificationBell({ isTransparent = false }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading]         = useState(true);
   const router = useRouter();
@@ -112,17 +112,27 @@ export default function NotificationBell() {
 
   return (
     <button
-      className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-[#2d2d32] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd] focus-visible:ring-offset-1"
+      className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1daddd] focus-visible:ring-offset-1 ${
+        isTransparent
+          ? 'hover:bg-white/15'
+          : 'hover:bg-gray-100 dark:hover:bg-[#2d2d32]'
+      }`}
       onClick={() => router.push('/dashboard/notifications')}
       aria-label={ariaLabel}
     >
-      <DynamicLucideIcon name="notifications" size={26} className="text-gray-900 dark:text-white" />
+      <DynamicLucideIcon
+        name="notifications"
+        size={26}
+        className={isTransparent ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]' : 'text-gray-900 dark:text-white'}
+      />
 
       {/* Badge — shown once loading is done and there are unread items */}
       {!loading && unreadCount > 0 && (
         <span
           aria-hidden="true"
-          className={`absolute flex items-center justify-center rounded-full bg-red-500 ring-2 ring-white dark:ring-[#242428] text-white font-bold leading-none ${
+          className={`absolute flex items-center justify-center rounded-full bg-red-500 font-bold leading-none text-white ${
+            isTransparent ? 'ring-2 ring-black/50' : 'ring-2 ring-white dark:ring-[#242428]'
+          } ${
             unreadCount > 9
               ? 'right-0.5 top-0.5 h-[18px] min-w-[18px] px-1 text-[9px]'
               : 'right-1.5 top-1.5 h-3 w-3 text-[8px]'
