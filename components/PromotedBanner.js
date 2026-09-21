@@ -141,7 +141,7 @@ export default function PromotedBanner({ products = [] }) {
             onBlur={() => setIsPaused(false)}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            className="relative w-full h-[420px] sm:h-[460px] overflow-hidden bg-black select-none group"
+            className="relative w-full h-[420px] sm:h-[460px] overflow-hidden bg-gray-100 dark:bg-gray-900 select-none group"
             aria-live={isPaused ? 'off' : 'polite'}
         >
             {/* Background Slides */}
@@ -177,10 +177,9 @@ export default function PromotedBanner({ products = [] }) {
                 );
             })}
 
-            {/* Cinematic Scrims / Gradient Overlays (Top dark scrim provides contrast for transparent navbar) */}
-            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-black/85 via-black/25 to-transparent h-32" />
-            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black via-black/75 via-50% to-transparent" />
-            <div className="absolute inset-0 z-10 pointer-events-none bg-radial-gradient from-transparent via-transparent to-black/30" />
+            {/* Soft edge scrims: subtle top gradient for navbar contrast, gentle bottom gradient for text legibility */}
+            <div className="absolute top-0 inset-x-0 z-10 pointer-events-none bg-gradient-to-b from-black/40 to-transparent h-20" />
+            <div className="absolute bottom-0 inset-x-0 z-10 pointer-events-none bg-gradient-to-t from-black/75 via-black/30 to-transparent h-36" />
 
             {/* Desktop Navigation Chevrons */}
             {validProducts.length > 1 && (
