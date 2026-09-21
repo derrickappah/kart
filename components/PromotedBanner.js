@@ -218,36 +218,36 @@ export default function PromotedBanner({ products = [] }) {
                 className="absolute inset-0 z-20 flex flex-col justify-end p-5 pb-8 pt-24 text-left group/card"
             >
                 {/* Main Headline / Title */}
-                <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight line-clamp-2 tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] group-hover/card:text-white/95 transition-colors">
+                <h2 className="text-lg sm:text-xl font-extrabold text-white leading-snug line-clamp-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] group-hover/card:text-white/95 transition-colors">
                     {toSentenceCase(currentProduct.title)}
                 </h2>
 
                 {/* Price & Call To Action */}
-                <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="mt-2.5 flex items-center justify-between gap-3">
                     <div className="flex items-baseline gap-1">
-                        <span className="text-base font-black text-[#FFD700] drop-shadow-sm">₵</span>
-                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-md">
+                        <span className="text-sm font-black text-[#FFD700] drop-shadow-sm">₵</span>
+                        <span className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
                             {formatPrice(currentProduct.price)}
                         </span>
                     </div>
 
-                    <div className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white text-gray-950 hover:bg-gray-100 group-hover/card:bg-primary group-hover/card:text-white active:scale-95 text-xs font-black tracking-wider uppercase shadow-xl transition-all">
+                    <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-gray-950 hover:bg-gray-100 group-hover/card:bg-primary group-hover/card:text-white active:scale-95 text-xs font-black tracking-wider uppercase shadow-xl transition-all">
                         <span>View Deal</span>
                         <DynamicLucideIcon
                             name="arrow_forward"
-                            size={14}
+                            size={13}
                             className="animate-arrow-nudge"
                         />
                     </div>
                 </div>
             </Link>
 
-            {/* Segmented Progress Indicators */}
+            {/* Minimalist Centered Pill Indicators */}
             {validProducts.length > 1 && (
                 <div
-                    className="absolute bottom-2.5 left-5 right-5 z-30 flex items-center gap-1.5"
+                    className="absolute bottom-2.5 left-0 right-0 z-30 flex justify-center items-center gap-1.5"
                     role="group"
-                    aria-label="Carousel slide progress"
+                    aria-label="Carousel slide indicators"
                 >
                     {validProducts.map((_, idx) => {
                         const isCurrent = idx === currentIndex;
@@ -262,25 +262,12 @@ export default function PromotedBanner({ products = [] }) {
                                 }}
                                 aria-label={`Go to slide ${idx + 1}`}
                                 aria-current={isCurrent ? 'true' : 'false'}
-                                className="relative h-[3px] flex-1 rounded-full bg-white/25 overflow-hidden transition-all hover:bg-white/40 cursor-pointer py-1 -my-1"
-                            >
-                                {isCurrent ? (
-                                    <div
-                                        key={progressKey}
-                                        style={{
-                                            animationDuration: `${AUTO_PLAY_INTERVAL}ms`,
-                                            animationPlayState: isPaused ? 'paused' : 'running'
-                                        }}
-                                        className="absolute inset-0 bg-white rounded-full animate-hero-progress"
-                                    />
-                                ) : (
-                                    <div
-                                        className={`absolute inset-0 rounded-full ${
-                                            idx < currentIndex ? 'bg-white/80' : 'bg-transparent'
-                                        }`}
-                                    />
-                                )}
-                            </button>
+                                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                                    isCurrent
+                                        ? 'w-6 bg-white shadow-sm'
+                                        : 'w-1.5 bg-white/40 hover:bg-white/70'
+                                }`}
+                            />
                         );
                     })}
                 </div>
