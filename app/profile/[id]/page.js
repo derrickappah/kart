@@ -308,85 +308,91 @@ export default function SellerProfilePage() {
                     </section>
                 )}
 
-                {/* Contact Information Section - Premium Redesign */}
+                {/* Contact Information Section - Clean Redesign */}
                 {(profile.phone || profile.instagram || profile.snapchat) && (
-                    <section className="px-4 py-4">
-                        <div className="relative group overflow-hidden rounded-[2.5rem] border border-white/40 dark:border-slate-800/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-3xl shadow-2xl p-7 transition-all duration-500 hover:shadow-primary/20">
-                            {/* Decorative Background Elements */}
-                            <div className="absolute -top-24 -right-24 size-64 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors duration-1000" />
-                            <div className="absolute -bottom-24 -left-24 size-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors duration-1000" />
-
-                            <div className="relative z-10">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="space-y-1">
-                                        <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Contact Info</h3>
-                                        <div className="flex items-center gap-2">
-                                            <div className="size-1.5 rounded-full bg-primary animate-pulse" />
-                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Seller Socials & Contact</p>
-                                        </div>
+                    <section className="px-4">
+                        <div className="bg-white dark:bg-[#1c2b30] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xs p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                        <DynamicLucideIcon name="contact_page" size={16} />
                                     </div>
-                                    <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-inner">
-                                        <DynamicLucideIcon name="contact_page" className="font-bold text-2xl" />
-                                    </div>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                        Contact & Socials
+                                    </h3>
                                 </div>
+                                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800/40 uppercase tracking-wider">
+                                    Verified
+                                </span>
+                            </div>
 
-                                <div className="space-y-5">
-                                    {profile.phone && (
-                                        <div className="relative group/btn-container">
-                                            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur opacity-25 group-hover/btn-container:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                                            <a
-                                                href={getWhatsAppUrl(profile.phone)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="relative flex items-center gap-4 p-4 sm:p-5 rounded-[1.5rem] bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white shadow-xl active:scale-[0.98] transition-all duration-300 group/btn overflow-hidden"
-                                            >
-                                                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
-                                                <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md shadow-inner shrink-0">
-                                                    <img src="/icons/whatsapp.png" alt="WhatsApp" className="size-8 object-contain shrink-0" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[11px] font-black uppercase tracking-wider opacity-90">Send WhatsApp Message</p>
-                                                    <p className="text-lg font-black tracking-tight truncate">{formatPhoneDisplay(profile.phone)}</p>
-                                                </div>
-                                            </a>
+                            <div className="flex flex-col gap-2.5">
+                                {profile.phone && (
+                                    <a
+                                        href={getWhatsAppUrl(profile.phone)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 transition-colors group cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="size-9 rounded-xl bg-[#25D366] flex items-center justify-center text-white shadow-xs shrink-0">
+                                                <img src="/icons/whatsapp.png" alt="WhatsApp" className="size-5 object-contain brightness-0 invert" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200 truncate">
+                                                    WhatsApp
+                                                </p>
+                                                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate">
+                                                    {formatPhoneDisplay(profile.phone)}
+                                                </p>
+                                            </div>
                                         </div>
-                                    )}
+                                        <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-semibold shrink-0">
+                                            <span>Chat</span>
+                                            <DynamicLucideIcon name="chevron_right" size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                                        </div>
+                                    </a>
+                                )}
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                {(profile.instagram || profile.snapchat) && (
+                                    <div className={`grid ${profile.instagram && profile.snapchat ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5`}>
                                         {profile.instagram && (
                                             <a
                                                 href={`https://instagram.com/${profile.instagram.replace('@', '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500 min-w-0"
+                                                className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100/80 dark:bg-[#162226] dark:hover:bg-[#243438] border border-gray-200/70 dark:border-gray-700/60 transition-colors group cursor-pointer min-w-0"
                                             >
-                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/10 shrink-0">
-                                                    <img src="/icons/instagram.png" alt="Instagram" className="size-10 object-contain shrink-0" />
+                                                <div className="size-8 rounded-lg flex items-center justify-center shrink-0">
+                                                    <img src="/icons/instagram.png" alt="Instagram" className="size-6 object-contain" />
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Instagram</p>
-                                                    <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">@{profile.instagram.replace('@', '')}</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-tight">Instagram</p>
+                                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">@{profile.instagram.replace('@', '')}</p>
                                                 </div>
+                                                <DynamicLucideIcon name="open_in_new" size={13} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0" />
                                             </a>
                                         )}
+
                                         {profile.snapchat && (
                                             <a
                                                 href={`https://snapchat.com/add/${profile.snapchat.replace('@', '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex flex-col gap-3 p-4 rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xl hover:-translate-y-2 active:scale-95 transition-all duration-500 min-w-0"
+                                                className="flex items-center gap-2.5 p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100/80 dark:bg-[#162226] dark:hover:bg-[#243438] border border-gray-200/70 dark:border-gray-700/60 transition-colors group cursor-pointer min-w-0"
                                             >
-                                                <div className="size-12 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/10 shrink-0">
-                                                    <img src="/icons/snapchat.png" alt="Snapchat" className="size-10 object-contain shrink-0" />
+                                                <div className="size-8 rounded-lg flex items-center justify-center shrink-0">
+                                                    <img src="/icons/snapchat.png" alt="Snapchat" className="size-6 object-contain" />
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Snapchat</p>
-                                                    <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">@{profile.snapchat.replace('@', '')}</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-tight">Snapchat</p>
+                                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">@{profile.snapchat.replace('@', '')}</p>
                                                 </div>
+                                                <DynamicLucideIcon name="open_in_new" size={13} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0" />
                                             </a>
                                         )}
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </section>
