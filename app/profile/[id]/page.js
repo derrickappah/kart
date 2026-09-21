@@ -310,17 +310,17 @@ export default function SellerProfilePage() {
 
                 {/* Contact & Social Icons */}
                 {(profile.phone || profile.instagram || profile.snapchat) && (
-                    <section className="flex items-center gap-2.5 px-4">
+                    <div className="flex items-center justify-center gap-6 py-1">
                         {profile.phone && (
                             <a
                                 href={getWhatsAppUrl(profile.phone)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center size-10 rounded-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border border-emerald-200/70 dark:border-emerald-800/50 active:scale-95 transition-all shadow-xs cursor-pointer shrink-0"
+                                className="hover:opacity-80 active:scale-90 transition-all cursor-pointer"
                                 title="Chat on WhatsApp"
                                 aria-label="WhatsApp"
                             >
-                                <img src="/icons/whatsapp.png" alt="WhatsApp" className="size-5 object-contain" />
+                                <img src="/icons/whatsapp.png" alt="WhatsApp" className="size-6 object-contain" />
                             </a>
                         )}
                         {profile.instagram && (
@@ -328,11 +328,11 @@ export default function SellerProfilePage() {
                                 href={`https://instagram.com/${profile.instagram.replace('@', '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center size-10 rounded-full bg-gray-100 hover:bg-gray-200/80 dark:bg-[#1c2b30] dark:hover:bg-[#243438] border border-gray-200 dark:border-gray-700/80 active:scale-95 transition-all shadow-xs cursor-pointer shrink-0"
+                                className="hover:opacity-80 active:scale-90 transition-all cursor-pointer"
                                 title={`Instagram: @${profile.instagram.replace('@', '')}`}
                                 aria-label="Instagram"
                             >
-                                <img src="/icons/instagram.png" alt="Instagram" className="size-5 object-contain" />
+                                <img src="/icons/instagram.png" alt="Instagram" className="size-6 object-contain" />
                             </a>
                         )}
                         {profile.snapchat && (
@@ -340,14 +340,14 @@ export default function SellerProfilePage() {
                                 href={`https://snapchat.com/add/${profile.snapchat.replace('@', '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center size-10 rounded-full bg-gray-100 hover:bg-gray-200/80 dark:bg-[#1c2b30] dark:hover:bg-[#243438] border border-gray-200 dark:border-gray-700/80 active:scale-95 transition-all shadow-xs cursor-pointer shrink-0"
+                                className="hover:opacity-80 active:scale-90 transition-all cursor-pointer"
                                 title={`Snapchat: @${profile.snapchat.replace('@', '')}`}
                                 aria-label="Snapchat"
                             >
-                                <img src="/icons/snapchat.png" alt="Snapchat" className="size-5 object-contain" />
+                                <img src="/icons/snapchat.png" alt="Snapchat" className="size-6 object-contain" />
                             </a>
                         )}
-                    </section>
+                    </div>
                 )}
 
                 {/* Tabs Navigation */}
