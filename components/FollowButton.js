@@ -102,30 +102,49 @@ export default function FollowButton({
         }
     };
 
-    const sizeClasses = size === 'sm'
-        ? 'py-2 px-3.5 text-xs'
-        : (size === 'lg' ? 'py-4 px-6 text-base' : 'py-3 px-4 text-sm');
+    const handleMouseEnter = () => {
+        if (typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+            setIsHovered(true);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+    };
+
+    const sizeClasses = className.includes('h-') || className.includes('py-')
+        ? ''
+        : (size === 'sm'
+            ? 'py-2 px-3.5 text-xs'
+            : (size === 'lg' ? 'py-4 px-6 text-base' : 'py-2.5 px-4 text-sm'));
 
     if (isFollowing) {
         return (
             <button
                 type="button"
                 onClick={handleToggleFollow}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
                 disabled={loading}
-                className={`flex items-center justify-center gap-1.5 rounded-xl font-bold transition-all duration-200 active:scale-[0.98] ${
+                className={`flex items-center justify-center gap-2 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:opacity-50 ${
                     isHovered
-                        ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                        ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/50'
+                        : 'bg-gray-100 dark:bg-[#1c2b30] text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-gray-700/80 hover:bg-gray-200/70 dark:hover:bg-[#243438]'
                 } ${sizeClasses} ${className}`}
                 title={isHovered ? 'Unfollow' : 'Following'}
             >
-                <DynamicLucideIcon
-                    name={isHovered ? 'person_remove' : 'check'}
-                    className="text-base transition-transform"
-                />
-                <span>{isHovered ? 'Unfollow' : 'Following'}</span>
+                {loading ? (
+                    <div className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                    <>
+                        <DynamicLucideIcon
+                            name={isHovered ? 'person_remove' : 'check'}
+                            size={16}
+                            className="transition-transform"
+                        />
+                        <span>{isHovered ? 'Unfollow' : 'Following'}</span>
+                    </>
+                )}
             </button>
         );
     }
@@ -135,11 +154,17 @@ export default function FollowButton({
             type="button"
             onClick={handleToggleFollow}
             disabled={loading}
-            className={`flex items-center justify-center gap-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#2d2d32] dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold border border-slate-200 dark:border-slate-700/60 shadow-sm active:scale-[0.98] transition-all duration-200 ${sizeClasses} ${className}`}
+            className={`flex items-center justify-center gap-2 rounded-xl bg-gray-100 hover:bg-gray-200/80 dark:bg-[#1c2b30] dark:hover:bg-[#243438] text-slate-900 dark:text-white font-semibold text-sm border border-gray-200 dark:border-gray-700/80 shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-50 ${sizeClasses} ${className}`}
             title="Follow Seller"
         >
-            <DynamicLucideIcon name="person_add" className="text-base" />
-            <span>Follow</span>
+            {loading ? (
+                <div className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+                <>
+                    <DynamicLucideIcon name="person_add" size={16} />
+                    <span>Follow</span>
+                </>
+            )}
         </button>
     );
 }

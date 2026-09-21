@@ -281,18 +281,28 @@ export default function SellerProfilePage() {
                 {/* Profile Actions: Message & Follow (Only for other users) */}
                 {currentUser?.id !== id && (
                     <section className="px-4 pb-1">
-                        <div className="flex gap-3">
+                        <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={handleContactSeller}
                                 disabled={loadingChat}
-                                className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-[#159ac6] text-white py-3.5 px-5 rounded-xl font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                                className="h-11 w-full flex items-center justify-center gap-2 bg-[#1daddd] hover:bg-[#159ac6] active:scale-[0.98] text-white rounded-xl font-semibold text-sm shadow-sm shadow-[#1daddd]/25 transition-all duration-200 disabled:opacity-50 cursor-pointer"
                             >
-                                <DynamicLucideIcon name="chat_bubble" className="text-lg" />
-                                {loadingChat ? 'Connecting...' : `Message ${profile.username || (profile.display_name?.split(' ')[0] || 'Seller')}`}
+                                {loadingChat ? (
+                                    <>
+                                        <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <span>Connecting...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <DynamicLucideIcon name="chat_bubble" size={17} />
+                                        <span>Message</span>
+                                    </>
+                                )}
                             </button>
                             <FollowButton
                                 targetUserId={id}
                                 onFollowChange={(data) => setFollowersCount(data.followerCount)}
+                                className="w-full h-11"
                             />
                         </div>
                     </section>
