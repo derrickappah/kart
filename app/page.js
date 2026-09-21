@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
 import { createClient } from '../utils/supabase/server';
-import SearchBar from "../components/SearchBar";
 import WishlistButton from "../components/WishlistButton";
 import PromotedBanner from "../components/PromotedBanner";
 import AdTracker from "../components/AdTracker";
@@ -302,11 +301,6 @@ export default async function Home() {
             </div>
           </div>
         </section>
-
-        {/* Clean Standalone Search Bar */}
-        <div className="px-5 py-2.5 relative z-10">
-          <SearchBar placeholder="Search campus finds..." />
-        </div>
 
         {/* Heavy products section is streamed separately — page renders above instantly */}
         <Suspense fallback={
