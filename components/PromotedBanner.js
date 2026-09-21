@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toSentenceCase, formatPrice } from '../utils/formatters';
+import DynamicLucideIcon from './DynamicLucideIcon';
 
 export default function PromotedBanner({ products = [] }) {
     const validProducts = (products || []).filter(p => p && p.id && (p.image_url || p.images?.[0]));
@@ -91,22 +92,24 @@ export default function PromotedBanner({ products = [] }) {
     if (!validProducts || validProducts.length === 0) return null;
 
     return (
-        <div className="px-5 pt-4 pb-2" role="region" aria-roledescription="carousel" aria-label="Promoted Listings">
-            <div
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                onFocus={() => setIsHovered(true)} // Pauses autoplay on keyboard focus
-                onBlur={() => setIsHovered(false)}  // Resumes autoplay on blur
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-                className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-lg group"
-                aria-live={isHovered ? 'off' : 'polite'}
-            >
-                {validProducts.map((p, idx) => {
-                    // Only render the visible slide and immediate neighbors to avoid loading all images
-                    if (Math.abs(idx - currentIndex) > 1) return null;
-                    return (
+        <div
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Promoted Listings"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsHovered(true)}
+            onBlur={() => setIsHovered(false)}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            className="relative w-full aspect-[16/9] overflow-hidden group"
+            aria-live={isHovered ? 'off' : 'polite'}
+        >
+            {validProducts.map((p, idx) => {
+                // Only render the visible slide and immediate neighbors to avoid loading all images
+                if (Math.abs(idx - currentIndex) > 1) return null;
+                return (
                     <div
                         key={p.id}
                         role="group"
@@ -118,44 +121,55 @@ export default function PromotedBanner({ products = [] }) {
                         <Link href={`/marketplace/${p.id}`} onClick={() => handleAdClick(p.advertisement_id)}>
                             <Image
                                 src={p.images?.[0] || p.image_url || '/placeholder.png'}
-                                alt="" // Empty alt to hide redundant image from screen readers since title is text below
+                                alt=""
                                 fill
                                 sizes="(max-width: 768px) 100vw, 448px"
-                                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
                                 priority={idx === 0}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-                            <div className="absolute bottom-8 left-4 right-4 flex items-end justify-between gap-4">
-                                <h2 className="text-white text-lg font-extrabold leading-tight line-clamp-2 drop-shadow-md max-w-[75%]">
+
+                            {/* Multi-layer gradient for depth */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent"></div>
+
+                            {/* Content overlay */}
+                            <div className="absolute bottom-0 left-0 right-0 p-5 pb-10 flex flex-col gap-2.5">
+                                {/* Price tag */}
+                                <span className="self-start text-sm font-black text-white bg-primary/90 backdrop-blur-sm px-3 py-1 rounded-full">
+                                    ₵{formatPrice(p.price)}
+                                </span>
+
+                                {/* Title */}
+                                <h2 className="text-white text-xl font-extrabold leading-tight line-clamp-2 drop-shadow-lg">
                                     {toSentenceCase(p.title)}
                                 </h2>
-                                <div className="shrink-0 flex items-center">
-                                    <p className="text-[#FFD700] text-base font-black drop-shadow-md bg-black/40 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/10">
-                                        ₵{formatPrice(p.price)}
-                                    </p>
-                                </div>
+
+                                {/* CTA */}
+                                <span className="self-start flex items-center gap-1.5 text-white/90 text-xs font-bold uppercase tracking-wider">
+                                    Shop Now
+                                    <DynamicLucideIcon name="arrow_forward" size={14} className="text-[14px]" aria-hidden="true" />
+                                </span>
                             </div>
                         </Link>
                     </div>
-                    );
-                })}
+                );
+            })}
 
-                {/* Indicators */}
-                {validProducts.length > 1 && (
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20" role="group" aria-label="Slide indicators">
-                        {validProducts.map((_, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => setCurrentIndex(idx)}
-                                aria-label={`Go to slide ${idx + 1}`}
-                                aria-current={idx === currentIndex ? 'true' : 'false'}
-                                className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-4 bg-[#FFD700]' : 'w-1 bg-white/40'
-                                    }`}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
+            {/* Progress-bar style indicators */}
+            {validProducts.length > 1 && (
+                <div className="absolute bottom-3 left-5 right-5 flex gap-1.5 z-20" role="group" aria-label="Slide indicators">
+                    {validProducts.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setCurrentIndex(idx)}
+                            aria-label={`Go to slide ${idx + 1}`}
+                            aria-current={idx === currentIndex ? 'true' : 'false'}
+                            className={`h-[3px] flex-1 rounded-full transition-all duration-500 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'
+                                }`}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
