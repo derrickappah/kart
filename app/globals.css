@@ -262,3 +262,20 @@ input[type="search"]::-webkit-search-results-decoration {
     rgba(255, 255, 255, 0) 100%
   );
 }
+
+/* Hero Carousel Progress Bar (GPU accelerated) */
+@keyframes heroProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-hero-progress {
+  transform-origin: left center;
+  animation-name: heroProgress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}

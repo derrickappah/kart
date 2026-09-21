@@ -1,45 +1,58 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toSentenceCase, formatPrice } from '../utils/formatters';
 import DynamicLucideIcon from './DynamicLucideIcon';
 
+const AUTO_PLAY_INTERVAL = 4500; // 4.5 seconds per slide
+
 export default function PromotedBanner({ products = [] }) {
     const validProducts = (products || []).filter(p => p && p.id && (p.image_url || p.images?.[0]));
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isHovered, setIsHovered] = useState(false);
-    const [touchStart, setTouchStart] = useState(null);
-    const [touchEnd, setTouchEnd] = useState(null);
+    const [isPaused, setIsPaused] = useState(false);
+    const [touchStartX, setTouchStartX] = useState(null);
+    const [touchStartY, setTouchStartY] = useState(null);
+    const [progressKey, setProgressKey] = useState(0);
 
-    // Minimum swipe distance (in px)
-    const minSwipeDistance = 50;
+    const minSwipeDistance = 45;
 
     const nextSlide = useCallback(() => {
+        if (validProducts.length <= 1) return;
         setCurrentIndex((prev) => (prev === validProducts.length - 1 ? 0 : prev + 1));
+        setProgressKey((k) => k + 1);
     }, [validProducts.length]);
 
     const prevSlide = useCallback(() => {
+        if (validProducts.length <= 1) return;
         setCurrentIndex((prev) => (prev === 0 ? validProducts.length - 1 : prev - 1));
+        setProgressKey((k) => k + 1);
     }, [validProducts.length]);
 
-    useEffect(() => {
-        if (!validProducts || validProducts.length <= 1 || isHovered) return;
+    const goToSlide = (index) => {
+        setCurrentIndex(index);
+        setProgressKey((k) => k + 1);
+    };
 
-        const interval = setInterval(() => {
+    // Autoplay ticker
+    useEffect(() => {
+        if (validProducts.length <= 1 || isPaused) return;
+
+        const timer = setTimeout(() => {
             nextSlide();
-        }, 4000); // 4 seconds
+        }, AUTO_PLAY_INTERVAL);
 
-        return () => clearInterval(interval);
-    }, [nextSlide, validProducts, isHovered]);
+        return () => clearTimeout(timer);
+    }, [currentIndex, isPaused, nextSlide, validProducts.length]);
 
-    // Track views when active slide changes (with session cache to prevent rapid API inflation)
+    // Track views when active slide changes
     useEffect(() => {
-        if (validProducts && validProducts[currentIndex] && validProducts[currentIndex].advertisement_id) {
-            const adId = validProducts[currentIndex].advertisement_id;
+        const activeProduct = validProducts[currentIndex];
+        if (activeProduct && activeProduct.advertisement_id) {
+            const adId = activeProduct.advertisement_id;
             const viewKey = `ad_view_${adId}`;
-            
-            // Check session cache first
+
             if (typeof window !== 'undefined' && !window.sessionStorage.getItem(viewKey)) {
                 window.sessionStorage.setItem(viewKey, 'true');
                 fetch('/api/ads/track', {
@@ -54,8 +67,7 @@ export default function PromotedBanner({ products = [] }) {
     const handleAdClick = (adId) => {
         if (!adId) return;
         const clickKey = `ad_click_${adId}`;
-        
-        // Check session cache first
+
         if (typeof window !== 'undefined' && !window.sessionStorage.getItem(clickKey)) {
             window.sessionStorage.setItem(clickKey, 'true');
             fetch('/api/ads/track', {
@@ -66,110 +78,281 @@ export default function PromotedBanner({ products = [] }) {
         }
     };
 
-    const onTouchStart = (e) => {
-        setTouchEnd(null);
-        setTouchStart(e.targetTouches[0].clientX);
+    const handleTouchStart = (e) => {
+        setTouchStartX(e.targetTouches[0].clientX);
+        setTouchStartY(e.targetTouches[0].clientY);
     };
 
-    const onTouchMove = (e) => {
-        setTouchEnd(e.targetTouches[0].clientX);
-    };
+    const handleTouchEnd = (e) => {
+        if (touchStartX === null || touchStartY === null) return;
 
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const deltaX = touchStartX - endX;
+        const deltaY = touchStartY - endY;
 
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-            nextSlide();
-        } else if (isRightSwipe) {
-            prevSlide();
+        // Ensure horizontal intent over vertical scroll
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+            if (deltaX > 0) {
+                nextSlide();
+            } else {
+                prevSlide();
+            }
         }
+
+        setTouchStartX(null);
+        setTouchStartY(null);
     };
 
-    if (!validProducts || validProducts.length === 0) return null;
+    // Editorial Fallback when no products exist
+    if (validProducts.length === 0) {
+        return (
+            <div className="relative w-full h-[360px] sm:h-[400px] overflow-hidden bg-gradient-to-br from-[#0c1821] via-[#102a43] to-[#1daddd]/40 flex flex-col justify-end p-6 select-none">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/30 via-transparent to-transparent pointer-events-none" />
+                <div className="relative z-10 flex flex-col gap-3 max-w-sm">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black tracking-wider uppercase bg-white/10 text-white backdrop-blur-md border border-white/15 w-fit">
+                        <DynamicLucideIcon name="sparkles" size={13} className="text-amber-300" />
+                        Campus Marketplace
+                    </span>
+                    <h1 className="text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+                        Buy & sell effortlessly across campus
+                    </h1>
+                    <p className="text-sm text-gray-200 font-medium leading-relaxed">
+                        Discover textbooks, dorm essentials, electronics, and student deals nearby.
+                    </p>
+                    <Link
+                        href="/marketplace"
+                        className="mt-2 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-white text-gray-900 font-bold text-xs uppercase tracking-wider shadow-lg hover:bg-gray-100 active:scale-95 transition-all w-fit"
+                    >
+                        Browse Marketplace
+                        <DynamicLucideIcon name="arrow_forward" size={15} />
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    const currentProduct = validProducts[currentIndex];
 
     return (
-        <div
+        <section
             role="region"
             aria-roledescription="carousel"
-            aria-label="Promoted Listings"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onFocus={() => setIsHovered(true)}
-            onBlur={() => setIsHovered(false)}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            className="relative w-full aspect-[16/9] overflow-hidden group"
-            aria-live={isHovered ? 'off' : 'polite'}
+            aria-label="Featured Campus Listings"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onFocus={() => setIsPaused(true)}
+            onBlur={() => setIsPaused(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            className="relative w-full h-[390px] sm:h-[430px] overflow-hidden bg-black select-none group"
+            aria-live={isPaused ? 'off' : 'polite'}
         >
-            {validProducts.map((p, idx) => {
-                // Only render the visible slide and immediate neighbors to avoid loading all images
-                if (Math.abs(idx - currentIndex) > 1) return null;
+            {/* Background Slides */}
+            {validProducts.map((product, idx) => {
+                const isActive = idx === currentIndex;
+                const isAdjacent = Math.abs(idx - currentIndex) === 1 || (currentIndex === 0 && idx === validProducts.length - 1) || (currentIndex === validProducts.length - 1 && idx === 0);
+
+                if (!isActive && !isAdjacent) return null;
+
+                const displayImage = product.images?.[0] || product.image_url || '/placeholder.png';
+
                 return (
                     <div
-                        key={p.id}
+                        key={product.id}
                         role="group"
                         aria-roledescription="slide"
                         aria-label={`${idx + 1} of ${validProducts.length}`}
-                        className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                            }`}
+                        className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                            isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                        }`}
                     >
-                        <Link href={`/marketplace/${p.id}`} onClick={() => handleAdClick(p.advertisement_id)}>
-                            <Image
-                                src={p.images?.[0] || p.image_url || '/placeholder.png'}
-                                alt=""
-                                fill
-                                sizes="(max-width: 768px) 100vw, 448px"
-                                className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
-                                priority={idx === 0}
-                            />
-
-                            {/* Multi-layer gradient for depth */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10"></div>
-                            <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent"></div>
-
-                            {/* Content overlay */}
-                            <div className="absolute bottom-0 left-0 right-0 p-5 pb-10 flex flex-col gap-2.5">
-                                {/* Price tag */}
-                                <span className="self-start text-sm font-black text-white bg-primary/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                                    ₵{formatPrice(p.price)}
-                                </span>
-
-                                {/* Title */}
-                                <h2 className="text-white text-xl font-extrabold leading-tight line-clamp-2 drop-shadow-lg">
-                                    {toSentenceCase(p.title)}
-                                </h2>
-
-                                {/* CTA */}
-                                <span className="self-start flex items-center gap-1.5 text-white/90 text-xs font-bold uppercase tracking-wider">
-                                    Shop Now
-                                    <DynamicLucideIcon name="arrow_forward" size={14} className="text-[14px]" aria-hidden="true" />
-                                </span>
-                            </div>
-                        </Link>
+                        <Image
+                            src={displayImage}
+                            alt=""
+                            fill
+                            priority={idx === 0}
+                            sizes="(max-width: 768px) 100vw, 500px"
+                            className={`object-cover transition-transform duration-[5000ms] ease-out ${
+                                isActive ? 'scale-105' : 'scale-100'
+                            }`}
+                        />
                     </div>
                 );
             })}
 
-            {/* Progress-bar style indicators */}
+            {/* Cinematic Scrims / Gradient Overlays */}
+            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-black/75 via-transparent to-transparent h-28" />
+            <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black via-black/70 via-50% to-transparent" />
+            <div className="absolute inset-0 z-10 pointer-events-none bg-radial-gradient from-transparent via-transparent to-black/30" />
+
+            {/* Top Floating Bar: Category/Badge + Slide Counter */}
+            <div className="absolute top-3.5 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+                <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-black tracking-widest uppercase bg-black/40 text-white backdrop-blur-md border border-white/20 shadow-md">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        {currentProduct?.ad_type === 'Campus Ad'
+                            ? 'Campus Spotlight'
+                            : currentProduct?.ad_type === 'Featured'
+                            ? 'Featured Find'
+                            : currentProduct?.category
+                            ? currentProduct.category
+                            : 'Campus Exclusive'}
+                    </span>
+                    {currentProduct?.condition && (
+                        <span className="hidden xs:inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-md border border-white/15">
+                            {currentProduct.condition}
+                        </span>
+                    )}
+                </div>
+
+                {validProducts.length > 1 && (
+                    <div className="px-3 py-1 rounded-full text-[11px] font-bold tracking-widest text-white/95 bg-black/45 backdrop-blur-md border border-white/20 tabular-nums shadow-sm">
+                        <span>{String(currentIndex + 1).padStart(2, '0')}</span>
+                        <span className="text-white/40 mx-1">/</span>
+                        <span className="text-white/60">{String(validProducts.length).padStart(2, '0')}</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Navigation Chevrons */}
             {validProducts.length > 1 && (
-                <div className="absolute bottom-3 left-5 right-5 flex gap-1.5 z-20" role="group" aria-label="Slide indicators">
-                    {validProducts.map((_, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrentIndex(idx)}
-                            aria-label={`Go to slide ${idx + 1}`}
-                            aria-current={idx === currentIndex ? 'true' : 'false'}
-                            className={`h-[3px] flex-1 rounded-full transition-all duration-500 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'
-                                }`}
+                <>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            prevSlide();
+                        }}
+                        aria-label="Previous slide"
+                        className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-30 size-9 items-center justify-center rounded-full bg-black/45 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+                    >
+                        <DynamicLucideIcon name="chevron_left" size={20} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            nextSlide();
+                        }}
+                        aria-label="Next slide"
+                        className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-30 size-9 items-center justify-center rounded-full bg-black/45 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+                    >
+                        <DynamicLucideIcon name="chevron_right" size={20} />
+                    </button>
+                </>
+            )}
+
+            {/* Main Interactive Product Link Container */}
+            <Link
+                href={`/marketplace/${currentProduct.id}`}
+                onClick={() => handleAdClick(currentProduct.advertisement_id)}
+                className="absolute inset-0 z-20 flex flex-col justify-end p-5 pb-7 text-left group/card"
+            >
+                {/* Micro Seller / Campus Badge */}
+                <div className="flex items-center gap-2 mb-2">
+                    {currentProduct.seller?.display_name && (
+                        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 max-w-[65%]">
+                            {currentProduct.seller.avatar_url ? (
+                                <Image
+                                    src={currentProduct.seller.avatar_url}
+                                    alt=""
+                                    width={16}
+                                    height={16}
+                                    className="size-4 rounded-full object-cover shrink-0"
+                                />
+                            ) : (
+                                <div className="size-4 rounded-full bg-primary/80 text-white flex items-center justify-center text-[9px] font-black shrink-0">
+                                    {currentProduct.seller.display_name.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <span className="text-[11px] font-semibold text-white/90 truncate">
+                                {currentProduct.seller.display_name}
+                            </span>
+                            {currentProduct.seller.is_verified && (
+                                <DynamicLucideIcon name="verified" size={13} className="text-primary shrink-0" />
+                            )}
+                        </div>
+                    )}
+
+                    {currentProduct.campus && (
+                        <div className="flex items-center gap-1 text-[11px] font-semibold text-white/80 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 truncate">
+                            <DynamicLucideIcon name="location_on" size={13} className="text-primary shrink-0" />
+                            <span className="truncate">{currentProduct.campus}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Main Headline / Title */}
+                <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight line-clamp-2 tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] group-hover/card:text-white/95 transition-colors">
+                    {toSentenceCase(currentProduct.title)}
+                </h2>
+
+                {/* Price & Call To Action */}
+                <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-base font-black text-[#FFD700] drop-shadow-sm">₵</span>
+                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-md">
+                            {formatPrice(currentProduct.price)}
+                        </span>
+                    </div>
+
+                    <div className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white text-gray-950 hover:bg-gray-100 group-hover/card:bg-primary group-hover/card:text-white active:scale-95 text-xs font-black tracking-wider uppercase shadow-xl transition-all">
+                        <span>View Deal</span>
+                        <DynamicLucideIcon
+                            name="arrow_forward"
+                            size={14}
+                            className="transition-transform group-hover/card:translate-x-0.5"
                         />
-                    ))}
+                    </div>
+                </div>
+            </Link>
+
+            {/* Segmented Progress Indicators */}
+            {validProducts.length > 1 && (
+                <div
+                    className="absolute bottom-2 left-5 right-5 z-30 flex items-center gap-1.5"
+                    role="group"
+                    aria-label="Carousel slide progress"
+                >
+                    {validProducts.map((_, idx) => {
+                        const isCurrent = idx === currentIndex;
+                        return (
+                            <button
+                                key={idx}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    goToSlide(idx);
+                                }}
+                                aria-label={`Go to slide ${idx + 1}`}
+                                aria-current={isCurrent ? 'true' : 'false'}
+                                className="relative h-[3px] flex-1 rounded-full bg-white/25 overflow-hidden transition-all hover:bg-white/40 cursor-pointer py-1 -my-1"
+                            >
+                                {isCurrent ? (
+                                    <div
+                                        key={progressKey}
+                                        style={{
+                                            animationDuration: `${AUTO_PLAY_INTERVAL}ms`,
+                                            animationPlayState: isPaused ? 'paused' : 'running'
+                                        }}
+                                        className="absolute inset-0 bg-white rounded-full animate-hero-progress"
+                                    />
+                                ) : (
+                                    <div
+                                        className={`absolute inset-0 rounded-full ${
+                                            idx < currentIndex ? 'bg-white/80' : 'bg-transparent'
+                                        }`}
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
-        </div>
+        </section>
     );
 }

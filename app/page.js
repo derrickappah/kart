@@ -225,10 +225,15 @@ export default async function Home() {
   );
   const latestProducts = seededShuffle(latestData || [], getFairTimeSeed(30, 2));
 
+  // Ensure hero is always populated even if no active paid advertisements exist
+  const heroProducts = bannerProducts.length > 0
+    ? bannerProducts
+    : (featuredProducts.length > 0 ? featuredProducts.slice(0, 5) : latestProducts.slice(0, 5));
+
   return (
     <div className="bg-white dark:bg-[#242428] text-gray-900 dark:text-gray-50 font-display antialiased min-h-screen">
       <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-4 md:pb-8 max-w-md mx-auto bg-white dark:bg-[#242428]">
-        <PromotedBanner products={bannerProducts} />
+        <PromotedBanner products={heroProducts} />
 
         <div className="px-4 py-2 relative z-20 bg-white/95 dark:bg-[#242428]/95 backdrop-blur-md border-b border-gray-100/50 dark:border-gray-800/30">
           <SearchBar
