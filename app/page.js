@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Suspense } from 'react';
 import { createClient } from '../utils/supabase/server';
 import WishlistButton from "../components/WishlistButton";
+import StreakBadge from "../components/StreakBadge";
 import PromotedBanner from "../components/PromotedBanner";
 import AdTracker from "../components/AdTracker";
 import { toSentenceCase, seededShuffle, formatPrice } from '../utils/formatters';
@@ -58,48 +59,6 @@ async function FeaturedSection({ wishlistIds, featuredProducts, latestProducts }
   const displayFeatured = [...featuredProducts, ...organicFill];
   const displayRecommended = latestProducts.filter(p => !displayFeatured.some(f => f.id === p.id));
 
-  const getRecReason = (product) => {
-    if (product.ad_type === 'Featured' || product.is_featured) return "Featured";
-    if (product.ad_type === 'Boost' || product.is_boosted) return "Highest Priority";
-    if (product.category === 'Textbooks') return "Highly requested in your level";
-    if (product.campus) return `Trending at ${product.campus}`;
-    return "Based on your search interest";
-  };
-
-  const getBadgeStyle = (recReason) => {
-    if (recReason === "Featured") {
-      return {
-        bg: "bg-blue-50/95 dark:bg-[#1a233a]/90 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/40",
-        dot: "bg-blue-500",
-        label: "Featured"
-      };
-    } else if (recReason === "Highest Priority") {
-      return {
-        bg: "bg-indigo-50/95 dark:bg-[#1a1c2e]/90 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40",
-        dot: "bg-indigo-500",
-        label: "Top Pick"
-      };
-    } else if (recReason.includes("Highly requested")) {
-      return {
-        bg: "bg-rose-50/95 dark:bg-[#2e1a22]/90 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/40",
-        dot: "bg-rose-500",
-        label: "For You"
-      };
-    } else if (recReason.includes("Trending")) {
-      return {
-        bg: "bg-amber-50/95 dark:bg-[#2c2017]/90 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/40",
-        dot: "bg-amber-500",
-        label: "Popular"
-      };
-    } else {
-      return {
-        bg: "bg-teal-50/95 dark:bg-[#182a26]/90 text-teal-600 dark:text-teal-400 border-teal-100 dark:border-teal-900/40",
-        dot: "bg-teal-500",
-        label: "Matching"
-      };
-    }
-  };
-
   return (
     <>
       {/* Featured Section */}
@@ -116,9 +75,6 @@ async function FeaturedSection({ wishlistIds, featuredProducts, latestProducts }
       </div>
       <div className="grid grid-cols-2 gap-4 px-5">
         {displayRecommended.map(product => {
-          const recReason = getRecReason(product);
-          const badge = getBadgeStyle(recReason);
-
           return (
             <Link
               key={product.id}
@@ -134,10 +90,9 @@ async function FeaturedSection({ wishlistIds, featuredProducts, latestProducts }
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 
-                {/* Premium Recommendation Badge */}
-                <div className={`absolute top-2.5 left-2.5 px-2 py-0.5 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm border flex items-center gap-1.5 ${badge.bg}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${badge.dot}`} />
-                  {badge.label}
+                {/* Tiny Streak Lottie Badge */}
+                <div className="absolute top-1.5 left-1.5 z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                  <StreakBadge className="size-6" />
                 </div>
 
                 {product.condition && (
