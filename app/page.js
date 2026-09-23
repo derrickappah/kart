@@ -11,31 +11,10 @@ import { toSentenceCase, seededShuffle, formatPrice } from '../utils/formatters'
 import { getFairRotatedPromotions, getDivergentFeaturedPromotions, getFairTimeSeed } from '../utils/promotionAlgorithm';
 import FeaturedSlider from "../components/FeaturedSlider";
 import { getOrSet } from '@/lib/cache';
+import { topFourCategories } from '../utils/categories';
 
 export const revalidate = 60;
 
-
-const popularCategories = [
-  { name: 'All', icon: 'grid_view' },
-  { name: 'Clothing', icon: 'checkroom' },
-  { name: 'Electronics', icon: 'devices' },
-  { name: 'Kitchenware', icon: 'kitchen' },
-  { name: 'Dorm Furniture', icon: 'chair' },
-  { name: 'Beauty & Grooming', icon: 'face_retouching_natural' },
-  { name: 'Sports & Fitness', icon: 'sports_soccer' },
-  { name: 'Health & Wellness', icon: 'favorite' },
-];
-
-const secondaryCategories = [
-  { name: 'Textbooks', icon: 'menu_book' },
-  { name: 'Games & Consoles', icon: 'sports_esports' },
-  { name: 'Tickets & Events', icon: 'confirmation_number' },
-  { name: 'Musical Instruments', icon: 'piano' },
-  { name: 'School Supplies', icon: 'school' },
-  { name: 'Home Appliances', icon: 'home_iot_device' },
-  { name: 'Services & Tutoring', icon: 'support_agent' },
-  { name: 'Arts & Crafts', icon: 'palette' },
-];
 
 function ProductCardSkeleton() {
   return (
@@ -200,60 +179,37 @@ export default async function Home() {
               href="/marketplace/categories"
               className="text-xs font-bold text-primary hover:text-primary-dark transition-colors"
             >
-              See All
+              See all
             </Link>
           </div>
 
-          <div
-            className="overflow-x-auto no-scrollbar px-5 pb-1"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
-            <div className="flex flex-col gap-2 w-max">
-              {/* Top Row: Most Popular Categories on Top */}
-              <div className="flex items-center gap-2">
-                {popularCategories.map((cat) => {
-                  const isAll = cat.name === 'All';
-                  return (
-                    <Link
-                      key={cat.name}
-                      href={isAll ? '/marketplace' : `/marketplace?category=${encodeURIComponent(cat.name)}`}
-                      className={`group flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-xs font-bold transition-all active:scale-95 whitespace-nowrap ${
-                        isAll
-                          ? 'bg-gray-900 text-white shadow-sm dark:bg-white dark:text-gray-950'
-                          : 'bg-gray-100/90 text-gray-800 hover:bg-gray-200/80 hover:text-gray-950 dark:bg-[#2d2d32] dark:text-gray-200 dark:hover:bg-[#38383e] dark:hover:text-white border border-gray-200/60 dark:border-gray-700/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]'
-                      }`}
-                    >
-                      <DynamicLucideIcon
-                        name={cat.icon}
-                        size={15}
-                        className={isAll ? 'text-white dark:text-gray-950' : 'text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors'}
-                        aria-hidden="true"
-                      />
-                      <span>{cat.name}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Bottom Row: Remaining Categories */}
-              <div className="flex items-center gap-2">
-                {secondaryCategories.map((cat) => (
-                  <Link
-                    key={cat.name}
-                    href={`/marketplace?category=${encodeURIComponent(cat.name)}`}
-                    className="group flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-xs font-bold transition-all active:scale-95 whitespace-nowrap bg-gray-100/90 text-gray-800 hover:bg-gray-200/80 hover:text-gray-950 dark:bg-[#2d2d32] dark:text-gray-200 dark:hover:bg-[#38383e] dark:hover:text-white border border-gray-200/60 dark:border-gray-700/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
-                  >
-                    <DynamicLucideIcon
-                      name={cat.icon}
-                      size={15}
-                      className="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors"
-                      aria-hidden="true"
-                    />
-                    <span>{cat.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
+          <div className="grid grid-cols-2 gap-3 px-5">
+            {topFourCategories.map((category) => (
+              <Link
+                key={category.name}
+                href={`/marketplace?category=${encodeURIComponent(category.name)}`}
+                className="relative overflow-hidden rounded-2xl bg-[#EEF2F4] dark:bg-[#2A2E33] border border-gray-100/80 dark:border-gray-800/60 p-3.5 h-[116px] sm:h-32 flex flex-col justify-between group active:scale-[0.98] transition-all block w-full"
+                aria-label={`Browse ${category.name}`}
+              >
+                <div className="z-10 flex flex-col max-w-[62%]">
+                  <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white leading-tight">
+                    {category.name}
+                  </span>
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-snug line-clamp-2">
+                    {category.subtitle}
+                  </span>
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-20 h-20 sm:w-24 sm:h-24 pointer-events-none">
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    className="object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.12)] group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100px, 120px"
+                  />
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
 
