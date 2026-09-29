@@ -31,7 +31,7 @@ export default function MobileBottomNav({ user }) {
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-[70] flex w-full justify-center border-t border-gray-100 bg-white/95 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg dark:border-gray-800 dark:bg-[#242428]/95 overflow-visible">
-            <div className="grid grid-cols-5 items-end w-full max-w-md px-2">
+            <div className="grid grid-cols-5 items-center w-full max-w-md px-2">
                 {/* Home */}
                 <Link href="/" prefetch={true} className="group flex flex-col items-center justify-center py-1 transition-transform active:scale-95">
                     <div className={`flex items-center justify-center h-7 transition-colors ${isActive('/') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
@@ -52,20 +52,20 @@ export default function MobileBottomNav({ user }) {
                     </span>
                 </Link>
 
-                {/* Sell / Add (FAB) */}
-                <div className="relative -top-3.5 flex flex-col items-center justify-center">
-                    <Link
-                        href="/dashboard/seller/create"
-                        prefetch={true}
-                        aria-label="Add listing"
-                        className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1daddd] shadow-lg shadow-[#1daddd]/40 transition-transform active:scale-95 hover:bg-[#159ac6]"
-                    >
-                        <DynamicLucideIcon name="add" size={28} style={{ fontVariationSettings: "'wght' 400" }} className="text-white" />
-                    </Link>
-                    <span className={`text-[10px] tracking-tight leading-tight mt-1 transition-colors ${isActive('/dashboard/seller/create') ? 'text-[#1daddd] font-semibold' : 'text-gray-500 dark:text-gray-400 font-medium'}`}>
+                {/* Sell / Add */}
+                <Link
+                    href="/dashboard/seller/create"
+                    prefetch={true}
+                    className="group flex flex-col items-center justify-center py-1 transition-transform active:scale-95"
+                    aria-label="Add listing"
+                >
+                    <div className={`flex items-center justify-center h-7 transition-colors ${isActive('/dashboard/seller/create') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                        <DynamicLucideIcon name="add_circle" size={24} strokeWidth={isActive('/dashboard/seller/create') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/dashboard/seller/create') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                    </div>
+                    <span className={`text-[10px] tracking-tight leading-tight mt-0.5 transition-colors ${isActive('/dashboard/seller/create') ? 'text-[#1daddd] font-semibold' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 font-medium'}`}>
                         Add
                     </span>
-                </div>
+                </Link>
 
                 {/* Messages / Chat */}
                 <Link 
