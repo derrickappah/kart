@@ -141,19 +141,20 @@ export default function FilterSidebar() {
 
     const closeSidebar = () => {
         setAnimatingOut(true);
+        setIsDragging(false);
         setTimeout(() => {
             setIsOpen(false);
             setAnimatingOut(false);
             setDragY(0);
             currentDragY.current = 0;
             isDraggingRef.current = false;
-            setIsDragging(false);
             document.body.style.overflow = 'unset';
         }, 280);
     };
 
     // Header & Drag Handle touch gestures
     const handleHeaderTouchStart = (e) => {
+        e.stopPropagation();
         touchStartY.current = e.touches[0].clientY;
         touchStartX.current = e.touches[0].clientX;
         isDraggingRef.current = true;
@@ -161,6 +162,7 @@ export default function FilterSidebar() {
     };
 
     const handleHeaderTouchMove = (e) => {
+        e.stopPropagation();
         if (!isDraggingRef.current) return;
         const currentY = e.touches[0].clientY;
         const deltaY = currentY - touchStartY.current;
@@ -172,11 +174,12 @@ export default function FilterSidebar() {
         }
     };
 
-    const handleHeaderTouchEnd = () => {
+    const handleHeaderTouchEnd = (e) => {
+        e.stopPropagation();
         isDraggingRef.current = false;
         setIsDragging(false);
 
-        if (currentDragY.current > 80) {
+        if (currentDragY.current > 70) {
             closeSidebar();
         } else {
             setDragY(0);
@@ -186,6 +189,7 @@ export default function FilterSidebar() {
 
     // Scrollable content touch gestures (pull down to close when at the top)
     const handleContentTouchStart = (e) => {
+        e.stopPropagation();
         touchStartY.current = e.touches[0].clientY;
         touchStartX.current = e.touches[0].clientX;
         isDraggingRef.current = false;
@@ -199,23 +203,25 @@ export default function FilterSidebar() {
 
         const isAtTop = !contentScrollRef.current || contentScrollRef.current.scrollTop <= 0;
 
-        if (isAtTop && deltaY > 0 && deltaY > Math.abs(deltaX)) {
+        if (isAtTop && deltaY > 15 && deltaY > Math.abs(deltaX) * 1.5) {
+            e.stopPropagation();
             if (!isDraggingRef.current) {
                 isDraggingRef.current = true;
                 setIsDragging(true);
             }
-            currentDragY.current = deltaY;
-            setDragY(deltaY);
+            currentDragY.current = deltaY - 15;
+            setDragY(deltaY - 15);
             if (e.cancelable) e.preventDefault();
         }
     };
 
-    const handleContentTouchEnd = () => {
+    const handleContentTouchEnd = (e) => {
         if (!isDraggingRef.current) return;
+        e.stopPropagation();
         isDraggingRef.current = false;
         setIsDragging(false);
 
-        if (currentDragY.current > 80) {
+        if (currentDragY.current > 70) {
             closeSidebar();
         } else {
             setDragY(0);
@@ -335,14 +341,16 @@ export default function FilterSidebar() {
     return (
         /* Overlay Backdrop */
         <div
-            className={`fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm sm:p-4 transition-opacity duration-300 ${
-                animatingOut ? 'opacity-0' : 'animate-fade-in'
+            className={`fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm sm:p-4 ${
+                !dragY && !animatingOut ? 'animate-fade-in' : ''
             }`}
-            style={
-                dragY > 0
-                    ? { opacity: Math.max(0.1, 1 - dragY / 350) }
-                    : undefined
-            }
+            style={{
+                opacity: animatingOut ? 0 : dragY > 0 ? Math.max(0, 1 - dragY / 300) : 1,
+                transition: animatingOut ? 'opacity 0.28s ease' : isDragging ? 'none' : 'opacity 0.25s ease',
+            }}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-label="Filter and sort listings"
@@ -357,13 +365,23 @@ export default function FilterSidebar() {
             {/* Modal Body / Bottom Drawer container */}
             <div
                 className={`relative w-full max-w-lg bg-white dark:bg-[#1E2227] rounded-t-[32px] sm:rounded-[32px] shadow-2xl border-t sm:border border-gray-100 dark:border-gray-800 flex flex-col max-h-[90vh] overflow-hidden ${
-                    animatingOut ? 'translate-y-full transition-transform duration-300 ease-in' : !dragY ? 'animate-slide-up' : ''
+                    !dragY && !animatingOut ? 'animate-slide-up' : ''
                 }`}
                 style={
-                    dragY > 0
+                    animatingOut
+                        ? {
+                              transform: 'translateY(100%)',
+                              transition: 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
+                          }
+                        : isDragging
                         ? {
                               transform: `translateY(${dragY}px)`,
-                              transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                              transition: 'none',
+                          }
+                        : dragY > 0
+                        ? {
+                              transform: 'translateY(0px)',
+                              transition: 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)',
                           }
                         : undefined
                 }

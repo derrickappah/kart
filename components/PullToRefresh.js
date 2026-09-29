@@ -40,6 +40,13 @@ const PullToRefresh = ({ onRefresh, children, disabled = false }) => {
 
         touchTarget.current = e.target;
 
+        // Ignore touches inside modals, dialogs, drawers, or sheets
+        if (e.target?.closest && (e.target.closest('[role="dialog"]') || e.target.closest('[aria-modal="true"]'))) {
+            state.current.isEligible = false;
+            state.current.isPulling = false;
+            return;
+        }
+
         // Only eligible if at the absolute top of the page or scrollable container
         if (getScrollTop(e.target) > 0) {
             state.current.isEligible = false;
