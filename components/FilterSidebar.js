@@ -6,13 +6,19 @@ import { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { categoryDetails } from '@/utils/categories';
 
-const conditions = ['New', 'Like New', 'Good', 'Fair', 'Acceptable'];
+const conditionDetails = [
+    { name: 'New', desc: 'Brand new, sealed or unused', icon: 'new_releases' },
+    { name: 'Like New', desc: 'Flawless, barely used', icon: 'thumb_up' },
+    { name: 'Good', desc: 'Fully working, minor wear', icon: 'handshake' },
+    { name: 'Fair', desc: 'Noticeable wear, works fine', icon: 'rule' },
+    { name: 'Acceptable', desc: 'Heavy signs of use, functional', icon: 'build' },
+];
 
 const sortOptions = [
-    { value: 'newest', label: 'Newest First', icon: 'schedule' },
-    { value: 'oldest', label: 'Oldest First', icon: 'history' },
-    { value: 'price-low', label: 'Price: Low to High', icon: 'trending_up' },
-    { value: 'price-high', label: 'Price: High to Low', icon: 'trending_down' },
+    { value: 'newest', label: 'Newest First', desc: 'Recently posted', icon: 'schedule' },
+    { value: 'price-low', label: 'Price: Low to High', desc: 'Most affordable', icon: 'trending_up' },
+    { value: 'price-high', label: 'Price: High to Low', desc: 'Premium listings', icon: 'trending_down' },
+    { value: 'oldest', label: 'Oldest First', desc: 'Earliest listings', icon: 'history' },
 ];
 
 const pricePresets = [
@@ -326,7 +332,7 @@ export default function FilterSidebar() {
                                         onClick={() => toggleCategory(category.name)}
                                         className={`relative overflow-hidden rounded-2xl p-3 h-[104px] flex flex-col justify-between text-left transition-all group active:scale-[0.98] border-2 cursor-pointer ${
                                             isSelected
-                                                ? 'border-[#1daddd] bg-[#1daddd]/10 dark:bg-[#1daddd]/20 shadow-sm'
+                                                ? 'border-[#1daddd] bg-[#1daddd]/10 dark:bg-[#1daddd]/20 shadow-sm ring-1 ring-[#1daddd]'
                                                 : 'border-transparent bg-[#EEF2F4] dark:bg-[#2A2E33] hover:border-gray-200 dark:hover:border-gray-700'
                                         }`}
                                         aria-pressed={isSelected}
@@ -368,7 +374,7 @@ export default function FilterSidebar() {
                         <button
                             type="button"
                             onClick={() => setShowAllCategories(!showAllCategories)}
-                            className="w-full py-2.5 rounded-xl border border-dashed border-gray-200 dark:border-gray-750 text-xs font-bold text-[#1daddd] hover:bg-[#1daddd]/5 flex items-center justify-center gap-1.5 transition-colors"
+                            className="w-full py-2.5 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-xs font-bold text-[#1daddd] hover:bg-[#1daddd]/5 flex items-center justify-center gap-1.5 transition-colors"
                         >
                             <span>{showAllCategories ? 'Show fewer categories' : `Show all ${categoryDetails.length} categories`}</span>
                             <DynamicLucideIcon
@@ -379,13 +385,13 @@ export default function FilterSidebar() {
                         </button>
                     </div>
 
-                    {/* 2. Sort Options */}
+                    {/* 2. Sort Options (Modern Radio Tiles with Subtitles) */}
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                             <DynamicLucideIcon name="sort" className="text-[#1daddd]" size={18} />
                             <h3 className="font-bold text-sm tracking-tight" id="sort-heading">Sort By</h3>
                         </div>
-                        <div className="grid grid-cols-2 gap-2.5" role="radiogroup" aria-labelledby="sort-heading">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" role="radiogroup" aria-labelledby="sort-heading">
                             {sortOptions.map((opt) => {
                                 const isSelected = sort === opt.value;
                                 return (
@@ -395,25 +401,41 @@ export default function FilterSidebar() {
                                         role="radio"
                                         aria-checked={isSelected}
                                         onClick={() => setSort(opt.value)}
-                                        className={`flex items-center gap-2.5 p-3 rounded-2xl transition-all border text-left active:scale-[0.98] ${
+                                        className={`relative flex items-center justify-between p-3.5 rounded-2xl transition-all border text-left active:scale-[0.98] ${
                                             isSelected
-                                                ? 'border-[#1daddd] bg-[#1daddd]/10 dark:bg-[#1daddd]/20 text-[#1daddd] shadow-xs'
-                                                : 'border-transparent bg-gray-50 dark:bg-[#2A2E33] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#32363C]'
+                                                ? 'border-[#1daddd] bg-[#1daddd]/10 dark:bg-[#1daddd]/15 shadow-sm ring-1 ring-[#1daddd]'
+                                                : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#25292E] hover:border-gray-200 dark:hover:border-gray-700'
                                         }`}
                                     >
-                                        <div className={`flex items-center justify-center size-8 rounded-xl shrink-0 ${
-                                            isSelected ? 'bg-[#1daddd] text-white shadow-xs' : 'bg-white dark:bg-[#1E2227] text-gray-400'
-                                        }`}>
-                                            <DynamicLucideIcon name={opt.icon} size={16} />
+                                        <div className="flex items-center gap-3">
+                                            <div className={`flex items-center justify-center size-9 rounded-xl shrink-0 transition-colors ${
+                                                isSelected ? 'bg-[#1daddd] text-white shadow-xs' : 'bg-white dark:bg-[#1E2227] text-gray-500 dark:text-gray-400'
+                                            }`}>
+                                                <DynamicLucideIcon name={opt.icon} size={17} />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-[#1daddd] dark:text-[#34bcff]' : 'text-gray-900 dark:text-white'}`}>
+                                                    {opt.label}
+                                                </span>
+                                                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium mt-0.5">
+                                                    {opt.desc}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <span className="text-xs font-bold leading-tight">{opt.label}</span>
+
+                                        {/* Custom Radio Circle */}
+                                        <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                            isSelected ? 'border-[#1daddd]' : 'border-gray-300 dark:border-gray-600'
+                                        }`}>
+                                            {isSelected && <div className="size-2 rounded-full bg-[#1daddd]" />}
+                                        </div>
                                     </button>
                                 );
                             })}
                         </div>
                     </div>
 
-                    {/* 3. Price Range Section */}
+                    {/* 3. Price Range Section (Integrated Budget Card + Connected Inputs) */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -431,87 +453,101 @@ export default function FilterSidebar() {
                             )}
                         </div>
 
-                        {/* Quick Presets for student budgets */}
-                        <div className="flex flex-wrap gap-2">
-                            {pricePresets.map((preset) => {
-                                const isPresetActive = minPrice === preset.min && maxPrice === preset.max;
-                                return (
+                        <div className="p-4 rounded-2xl bg-gray-50/80 dark:bg-[#25292E] border border-gray-100 dark:border-gray-800 space-y-4">
+                            {/* Quick Presets */}
+                            <div>
+                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                                    Quick Budget Presets
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    {pricePresets.map((preset) => {
+                                        const isPresetActive = minPrice === preset.min && maxPrice === preset.max;
+                                        return (
+                                            <button
+                                                key={preset.label}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isPresetActive) {
+                                                        setMinPrice('');
+                                                        setMaxPrice('');
+                                                    } else {
+                                                        setMinPrice(preset.min);
+                                                        setMaxPrice(preset.max);
+                                                    }
+                                                }}
+                                                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center border ${
+                                                    isPresetActive
+                                                        ? 'bg-[#1daddd] text-white border-[#1daddd] shadow-xs scale-[1.02]'
+                                                        : 'bg-white dark:bg-[#1E2227] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                                }`}
+                                            >
+                                                {preset.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Dual Min / Max Connected Inputs */}
+                            <div>
+                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                                    Custom Range (GH₵)
+                                </div>
+                                <div className="flex items-center gap-2.5">
+                                    <div className="relative flex-1">
+                                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 dark:text-gray-500">
+                                            ₵
+                                        </span>
+                                        <input
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="Min (0)"
+                                            value={minPrice}
+                                            onChange={(e) => setMinPrice(sanitizePrice(e.target.value))}
+                                            className="w-full h-11 pl-8 pr-3 bg-white dark:bg-[#1E2227] border border-gray-200/80 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd] transition-all placeholder:text-gray-400 placeholder:font-medium"
+                                        />
+                                    </div>
+                                    <span className="text-gray-400 dark:text-gray-500 font-bold text-xs">to</span>
+                                    <div className="relative flex-1">
+                                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 dark:text-gray-500">
+                                            ₵
+                                        </span>
+                                        <input
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="Max (Any)"
+                                            value={maxPrice}
+                                            onChange={(e) => setMaxPrice(sanitizePrice(e.target.value))}
+                                            className="w-full h-11 pl-8 pr-3 bg-white dark:bg-[#1E2227] border border-gray-200/80 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd] transition-all placeholder:text-gray-400 placeholder:font-medium"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Validation / Summary */}
+                            {isPriceRangeInvalid ? (
+                                <div className="flex items-center gap-1.5 text-red-500 bg-red-50 dark:bg-red-950/30 p-2.5 rounded-xl border border-red-200 dark:border-red-900/40">
+                                    <DynamicLucideIcon name="error" size={15} />
+                                    <p className="text-xs font-bold tracking-tight">
+                                        Min price cannot exceed Max price
+                                    </p>
+                                </div>
+                            ) : (minPrice || maxPrice) ? (
+                                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-[#1E2227]/70 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                    <span>Filtering: <strong className="text-gray-900 dark:text-white font-bold">{minPrice ? `₵${minPrice}` : '₵0'} – {maxPrice ? `₵${maxPrice}` : 'Any'}</strong></span>
                                     <button
-                                        key={preset.label}
                                         type="button"
-                                        onClick={() => {
-                                            if (isPresetActive) {
-                                                setMinPrice('');
-                                                setMaxPrice('');
-                                            } else {
-                                                setMinPrice(preset.min);
-                                                setMaxPrice(preset.max);
-                                            }
-                                        }}
-                                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                                            isPresetActive
-                                                ? 'bg-[#1daddd] text-white border-[#1daddd] shadow-xs'
-                                                : 'bg-gray-50 dark:bg-[#2A2E33] text-gray-600 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
-                                        }`}
+                                        onClick={() => { setMinPrice(''); setMaxPrice(''); }}
+                                        className="text-[11px] text-[#1daddd] font-bold hover:underline"
                                     >
-                                        {preset.label}
+                                        Reset
                                     </button>
-                                );
-                            })}
-                        </div>
-
-                        {/* Custom Min / Max Inputs */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
-                                    Min Price
-                                </span>
-                                <div className="relative flex items-center">
-                                    <span className="absolute left-3.5 text-xs font-black text-gray-400 dark:text-gray-500">
-                                        ₵
-                                    </span>
-                                    <input
-                                        type="text"
-                                        inputMode="decimal"
-                                        placeholder="0"
-                                        value={minPrice}
-                                        onChange={(e) => setMinPrice(sanitizePrice(e.target.value))}
-                                        className="w-full h-11 pl-8 pr-3 bg-gray-50 dark:bg-[#2A2E33] border border-gray-100 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd] transition-all placeholder:text-gray-400"
-                                    />
                                 </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">
-                                    Max Price
-                                </span>
-                                <div className="relative flex items-center">
-                                    <span className="absolute left-3.5 text-xs font-black text-gray-400 dark:text-gray-500">
-                                        ₵
-                                    </span>
-                                    <input
-                                        type="text"
-                                        inputMode="decimal"
-                                        placeholder="Any"
-                                        value={maxPrice}
-                                        onChange={(e) => setMaxPrice(sanitizePrice(e.target.value))}
-                                        className="w-full h-11 pl-8 pr-3 bg-gray-50 dark:bg-[#2A2E33] border border-gray-100 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd] transition-all placeholder:text-gray-400"
-                                    />
-                                </div>
-                            </div>
+                            ) : null}
                         </div>
-
-                        {/* Validation Error Message */}
-                        {isPriceRangeInvalid && (
-                            <div className="flex items-center gap-1.5 text-red-500 pl-1">
-                                <DynamicLucideIcon name="error" size={14} />
-                                <p className="text-xs font-bold tracking-tight">
-                                    Min price cannot exceed Max price
-                                </p>
-                            </div>
-                        )}
                     </div>
 
-                    {/* 4. Condition Filters */}
+                    {/* 4. Condition Filters (Descriptive Cards with Checkboxes) */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -533,33 +569,50 @@ export default function FilterSidebar() {
                                 </button>
                             )}
                         </div>
-                        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="condition-heading">
-                            {conditions.map((con) => {
-                                const isSelected = selectedConditions.includes(con);
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" role="group" aria-labelledby="condition-heading">
+                            {conditionDetails.map((con) => {
+                                const isSelected = selectedConditions.includes(con.name);
                                 return (
                                     <button
-                                        key={con}
+                                        key={con.name}
                                         type="button"
-                                        onClick={() => toggleCondition(con)}
-                                        aria-pressed={isSelected}
-                                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border active:scale-[0.98] ${
+                                        onClick={() => toggleCondition(con.name)}
+                                        className={`relative flex items-center justify-between p-3 rounded-2xl transition-all border text-left active:scale-[0.98] ${
                                             isSelected
-                                                ? 'bg-[#1daddd] text-white border-[#1daddd] shadow-xs'
-                                                : 'bg-gray-50 dark:bg-[#2A2E33] text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                                                ? 'border-[#1daddd] bg-[#1daddd]/10 dark:bg-[#1daddd]/15 shadow-sm ring-1 ring-[#1daddd]'
+                                                : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#25292E] hover:border-gray-200 dark:hover:border-gray-700'
                                         }`}
+                                        aria-pressed={isSelected}
                                     >
-                                        <DynamicLucideIcon
-                                            name={con === 'New' ? 'new_releases' : con === 'Like New' ? 'thumb_up' : con === 'Good' ? 'handshake' : con === 'Fair' ? 'rule' : 'build'}
-                                            size={15}
-                                        />
-                                        {con}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`flex items-center justify-center size-9 rounded-xl shrink-0 transition-colors ${
+                                                isSelected ? 'bg-[#1daddd] text-white shadow-xs' : 'bg-white dark:bg-[#1E2227] text-gray-500 dark:text-gray-400'
+                                            }`}>
+                                                <DynamicLucideIcon name={con.icon} size={17} />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-[#1daddd] dark:text-[#34bcff]' : 'text-gray-900 dark:text-white'}`}>
+                                                    {con.name}
+                                                </span>
+                                                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium mt-0.5">
+                                                    {con.desc}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Checkbox indicator */}
+                                        <div className={`size-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                            isSelected ? 'border-[#1daddd] bg-[#1daddd] text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1E2227]'
+                                        }`}>
+                                            {isSelected && <DynamicLucideIcon name="check" size={13} strokeWidth={3} />}
+                                        </div>
                                     </button>
                                 );
                             })}
                         </div>
                     </div>
 
-                    {/* 5. Campus Location Section */}
+                    {/* 5. Campus Location Section (Top Campus Grid + Integrated Search) */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -577,55 +630,79 @@ export default function FilterSidebar() {
                             )}
                         </div>
 
-                        {/* Popular Campus Quick Pills */}
-                        <div className="flex flex-wrap gap-2">
-                            {popularCampuses.map((camp) => {
-                                const isSelected = campus.toLowerCase() === camp.name.toLowerCase() || campus.toLowerCase() === camp.short.toLowerCase();
-                                return (
-                                    <button
-                                        key={camp.short}
-                                        type="button"
-                                        onClick={() => {
-                                            if (isSelected) {
-                                                setCampus('');
-                                            } else {
-                                                setCampus(camp.name);
-                                            }
-                                        }}
-                                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                                            isSelected
-                                                ? 'bg-[#1daddd] text-white border-[#1daddd] shadow-xs'
-                                                : 'bg-gray-50 dark:bg-[#2A2E33] text-gray-600 dark:text-gray-400 border-gray-100 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
-                                        }`}
-                                    >
-                                        {camp.short}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        <div className="p-4 rounded-2xl bg-gray-50/80 dark:bg-[#25292E] border border-gray-100 dark:border-gray-800 space-y-3.5">
+                            {/* Popular Campuses */}
+                            <div>
+                                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                                    Top University Campuses
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                                    {popularCampuses.map((camp) => {
+                                        const isSelected = campus.toLowerCase() === camp.name.toLowerCase() || campus.toLowerCase() === camp.short.toLowerCase();
+                                        return (
+                                            <button
+                                                key={camp.short}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isSelected) {
+                                                        setCampus('');
+                                                    } else {
+                                                        setCampus(camp.name);
+                                                    }
+                                                }}
+                                                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all text-center border active:scale-[0.97] ${
+                                                    isSelected
+                                                        ? 'bg-[#1daddd] text-white border-[#1daddd] shadow-xs scale-[1.02]'
+                                                        : 'bg-white dark:bg-[#1E2227] text-gray-700 dark:text-gray-300 border-gray-200/80 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                                }`}
+                                            >
+                                                {camp.short}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
 
-                        {/* Custom Campus Input */}
-                        <div className="relative flex items-center">
-                            <DynamicLucideIcon
-                                name="location_on"
-                                size={18}
-                                className="absolute left-3.5 text-gray-400 dark:text-gray-500 pointer-events-none"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Search or enter campus name..."
-                                value={campus}
-                                onChange={(e) => setCampus(e.target.value)}
-                                className="w-full h-11 pl-10 pr-9 bg-gray-50 dark:bg-[#2A2E33] border border-gray-100 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd] transition-all placeholder:text-gray-400"
-                            />
+                            {/* Search Input */}
+                            <div className="relative flex items-center">
+                                <DynamicLucideIcon
+                                    name="location_on"
+                                    size={18}
+                                    className="absolute left-3.5 text-gray-400 dark:text-gray-500 pointer-events-none"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Search or enter campus name..."
+                                    value={campus}
+                                    onChange={(e) => setCampus(e.target.value)}
+                                    className="w-full h-11 pl-10 pr-9 bg-white dark:bg-[#1E2227] border border-gray-200/80 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:outline-none focus:border-[#1daddd] focus:ring-1 focus:ring-[#1daddd] transition-all placeholder:text-gray-400 placeholder:font-medium"
+                                />
+                                {campus && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setCampus('')}
+                                        className="absolute right-3 size-6 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                                    >
+                                        <DynamicLucideIcon name="close" size={14} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Active Campus Tag indicator */}
                             {campus && (
-                                <button
-                                    type="button"
-                                    onClick={() => setCampus('')}
-                                    className="absolute right-3 size-6 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
-                                >
-                                    <DynamicLucideIcon name="close" size={14} />
-                                </button>
+                                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-[#1E2227]/70 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="text-sm">📍</span>
+                                        <span>Active: <strong className="text-gray-900 dark:text-white font-bold">{campus}</strong></span>
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCampus('')}
+                                        className="text-[11px] text-[#1daddd] font-bold hover:underline"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>
