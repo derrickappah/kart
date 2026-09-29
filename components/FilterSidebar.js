@@ -45,6 +45,15 @@ export default function FilterSidebar() {
     const [animatingOut, setAnimatingOut] = useState(false);
     const [showAllCategories, setShowAllCategories] = useState(false);
 
+    // Swipe-down-to-close gesture state
+    const [dragY, setDragY] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const touchStartY = useRef(0);
+    const touchStartX = useRef(0);
+    const isDraggingRef = useRef(false);
+    const currentDragY = useRef(0);
+    const contentScrollRef = useRef(null);
+
     // Focus trap refs
     const closeButtonRef = useRef(null);
     const lastFocusableRef = useRef(null);
@@ -84,6 +93,10 @@ export default function FilterSidebar() {
         const handleOpenFilters = () => {
             setIsOpen(true);
             setAnimatingOut(false);
+            setDragY(0);
+            currentDragY.current = 0;
+            isDraggingRef.current = false;
+            setIsDragging(false);
             document.body.style.overflow = 'hidden';
             setTimeout(() => closeButtonRef.current?.focus(), 50);
         };
@@ -131,8 +144,83 @@ export default function FilterSidebar() {
         setTimeout(() => {
             setIsOpen(false);
             setAnimatingOut(false);
+            setDragY(0);
+            currentDragY.current = 0;
+            isDraggingRef.current = false;
+            setIsDragging(false);
             document.body.style.overflow = 'unset';
         }, 280);
+    };
+
+    // Header & Drag Handle touch gestures
+    const handleHeaderTouchStart = (e) => {
+        touchStartY.current = e.touches[0].clientY;
+        touchStartX.current = e.touches[0].clientX;
+        isDraggingRef.current = true;
+        setIsDragging(true);
+    };
+
+    const handleHeaderTouchMove = (e) => {
+        if (!isDraggingRef.current) return;
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - touchStartY.current;
+
+        if (deltaY > 0) {
+            currentDragY.current = deltaY;
+            setDragY(deltaY);
+            if (e.cancelable) e.preventDefault();
+        }
+    };
+
+    const handleHeaderTouchEnd = () => {
+        isDraggingRef.current = false;
+        setIsDragging(false);
+
+        if (currentDragY.current > 80) {
+            closeSidebar();
+        } else {
+            setDragY(0);
+            currentDragY.current = 0;
+        }
+    };
+
+    // Scrollable content touch gestures (pull down to close when at the top)
+    const handleContentTouchStart = (e) => {
+        touchStartY.current = e.touches[0].clientY;
+        touchStartX.current = e.touches[0].clientX;
+        isDraggingRef.current = false;
+    };
+
+    const handleContentTouchMove = (e) => {
+        const currentY = e.touches[0].clientY;
+        const currentX = e.touches[0].clientX;
+        const deltaY = currentY - touchStartY.current;
+        const deltaX = currentX - touchStartX.current;
+
+        const isAtTop = !contentScrollRef.current || contentScrollRef.current.scrollTop <= 0;
+
+        if (isAtTop && deltaY > 0 && deltaY > Math.abs(deltaX)) {
+            if (!isDraggingRef.current) {
+                isDraggingRef.current = true;
+                setIsDragging(true);
+            }
+            currentDragY.current = deltaY;
+            setDragY(deltaY);
+            if (e.cancelable) e.preventDefault();
+        }
+    };
+
+    const handleContentTouchEnd = () => {
+        if (!isDraggingRef.current) return;
+        isDraggingRef.current = false;
+        setIsDragging(false);
+
+        if (currentDragY.current > 80) {
+            closeSidebar();
+        } else {
+            setDragY(0);
+            currentDragY.current = 0;
+        }
     };
 
     const updateFilters = (cats, conds, min, max, campusValue, sortValue) => {
@@ -250,6 +338,11 @@ export default function FilterSidebar() {
             className={`fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm sm:p-4 transition-opacity duration-300 ${
                 animatingOut ? 'opacity-0' : 'animate-fade-in'
             }`}
+            style={
+                dragY > 0
+                    ? { opacity: Math.max(0.1, 1 - dragY / 350) }
+                    : undefined
+            }
             role="dialog"
             aria-modal="true"
             aria-label="Filter and sort listings"
@@ -264,17 +357,40 @@ export default function FilterSidebar() {
             {/* Modal Body / Bottom Drawer container */}
             <div
                 className={`relative w-full max-w-lg bg-white dark:bg-[#1E2227] rounded-t-[32px] sm:rounded-[32px] shadow-2xl border-t sm:border border-gray-100 dark:border-gray-800 flex flex-col max-h-[90vh] overflow-hidden ${
-                    animatingOut ? 'translate-y-full transition-transform duration-300 ease-in' : 'animate-slide-up'
+                    animatingOut ? 'translate-y-full transition-transform duration-300 ease-in' : !dragY ? 'animate-slide-up' : ''
                 }`}
+                style={
+                    dragY > 0
+                        ? {
+                              transform: `translateY(${dragY}px)`,
+                              transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                          }
+                        : undefined
+                }
                 onKeyDown={handleKeyDown}
             >
-                {/* Visual drag handle indicator for mobile */}
-                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden" aria-hidden="true">
-                    <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                {/* Visual drag handle indicator for mobile - high touch target */}
+                <div
+                    className="w-full flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing sm:hidden touch-none"
+                    aria-hidden="true"
+                    onTouchStart={handleHeaderTouchStart}
+                    onTouchMove={handleHeaderTouchMove}
+                    onTouchEnd={handleHeaderTouchEnd}
+                >
+                    <div
+                        className={`w-12 h-1.5 rounded-full transition-all ${
+                            isDragging ? 'bg-[#1daddd] w-14 scale-105' : 'bg-gray-300 dark:bg-gray-600'
+                        }`}
+                    />
                 </div>
 
                 {/* Modal Header */}
-                <div className="px-6 pt-3 pb-3 border-b border-gray-100 dark:border-gray-800/80 flex items-center justify-between">
+                <div
+                    className="px-6 pt-1 pb-3 border-b border-gray-100 dark:border-gray-800/80 flex items-center justify-between select-none touch-none"
+                    onTouchStart={handleHeaderTouchStart}
+                    onTouchMove={handleHeaderTouchMove}
+                    onTouchEnd={handleHeaderTouchEnd}
+                >
                     <div className="flex items-center gap-2.5">
                         <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
                             Filter &amp; Sort
@@ -296,7 +412,13 @@ export default function FilterSidebar() {
                 </div>
 
                 {/* Scrollable Filters Content */}
-                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-7 no-scrollbar">
+                <div
+                    ref={contentScrollRef}
+                    onTouchStart={handleContentTouchStart}
+                    onTouchMove={handleContentTouchMove}
+                    onTouchEnd={handleContentTouchEnd}
+                    className="flex-1 overflow-y-auto px-6 py-5 space-y-7 no-scrollbar overscroll-contain"
+                >
 
                     {/* 1. Categories Section (Matches /categories card style) */}
                     <div className="space-y-3">
