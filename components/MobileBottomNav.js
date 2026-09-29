@@ -30,54 +30,74 @@ export default function MobileBottomNav({ user }) {
     const profileLink = '/profile';
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-[70] flex w-full justify-center border-t border-gray-100 bg-white/95 pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-lg dark:border-gray-800 dark:bg-[#242428]/95 overflow-visible">
-            <div className="flex w-full max-w-md items-center justify-between px-8">
+        <nav className="fixed bottom-0 left-0 right-0 z-[70] flex w-full justify-center border-t border-gray-100 bg-white/95 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg dark:border-gray-800 dark:bg-[#242428]/95 overflow-visible">
+            <div className="grid grid-cols-5 items-end w-full max-w-md px-2">
                 {/* Home */}
-                <Link href="/" prefetch={true} className="group flex flex-col items-center">
-                    <div className={`w-[44px] h-[44px] flex justify-center items-center transition-transform group-active:scale-90 ${isActive('/') ? 'text-[#1daddd]' : 'text-gray-400'}`}>
-                        <DynamicLucideIcon name="home" size={26} strokeWidth={isActive('/') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                <Link href="/" prefetch={true} className="group flex flex-col items-center justify-center py-1 transition-transform active:scale-95">
+                    <div className={`flex items-center justify-center h-7 transition-colors ${isActive('/') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                        <DynamicLucideIcon name="home" size={24} strokeWidth={isActive('/') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                     </div>
+                    <span className={`text-[10px] tracking-tight leading-tight mt-0.5 transition-colors ${isActive('/') ? 'text-[#1daddd] font-semibold' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 font-medium'}`}>
+                        Home
+                    </span>
                 </Link>
 
-                {/* Marketplace */}
-                <Link href="/marketplace" prefetch={true} className="group flex flex-col items-center -mr-8">
-                    <div className={`w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/marketplace') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
-                        <DynamicLucideIcon name="storefront" size={26} strokeWidth={isActive('/marketplace') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/marketplace') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                {/* Marketplace / Shop */}
+                <Link href="/marketplace" prefetch={true} className="group flex flex-col items-center justify-center py-1 transition-transform active:scale-95">
+                    <div className={`flex items-center justify-center h-7 transition-colors ${isActive('/marketplace') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                        <DynamicLucideIcon name="storefront" size={24} strokeWidth={isActive('/marketplace') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/marketplace') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                     </div>
+                    <span className={`text-[10px] tracking-tight leading-tight mt-0.5 transition-colors ${isActive('/marketplace') ? 'text-[#1daddd] font-semibold' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 font-medium'}`}>
+                        Shop
+                    </span>
                 </Link>
 
-                {/* Sell (FAB) */}
-                <div className="relative -top-3.5">
-                    <Link href="/dashboard/seller/create" prefetch={true} className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1daddd] shadow-lg shadow-[#1daddd]/40 transition-transform active:scale-95 hover:bg-[#159ac6]">
-                        <DynamicLucideIcon name="add" size={30} style={{ fontVariationSettings: "'wght' 400" }} className="text-white" />
+                {/* Sell / Add (FAB) */}
+                <div className="relative -top-3.5 flex flex-col items-center justify-center">
+                    <Link
+                        href="/dashboard/seller/create"
+                        prefetch={true}
+                        aria-label="Add listing"
+                        className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1daddd] shadow-lg shadow-[#1daddd]/40 transition-transform active:scale-95 hover:bg-[#159ac6]"
+                    >
+                        <DynamicLucideIcon name="add" size={28} style={{ fontVariationSettings: "'wght' 400" }} className="text-white" />
                     </Link>
+                    <span className={`text-[10px] tracking-tight leading-tight mt-1 transition-colors ${isActive('/dashboard/seller/create') ? 'text-[#1daddd] font-semibold' : 'text-gray-500 dark:text-gray-400 font-medium'}`}>
+                        Add
+                    </span>
                 </div>
 
-                {/* Messages */}
+                {/* Messages / Chat */}
                 <Link 
                     href="/dashboard/messages" 
                     prefetch={true} 
-                    className="group flex flex-col items-center -ml-8"
-                    aria-label={unreadCount > 0 ? `Messages (${unreadCount > 99 ? '99+' : unreadCount} unread)` : 'Messages'}
+                    className="group flex flex-col items-center justify-center py-1 transition-transform active:scale-95"
+                    aria-label={unreadCount > 0 ? `Chat (${unreadCount > 99 ? '99+' : unreadCount} unread)` : 'Chat'}
                 >
-                    <div className={`relative w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
-                        <DynamicLucideIcon name="chat_bubble" size={26} strokeWidth={isActive('/dashboard/messages') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/dashboard/messages') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                    <div className={`relative flex items-center justify-center h-7 transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                        <DynamicLucideIcon name="chat_bubble" size={24} strokeWidth={isActive('/dashboard/messages') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/dashboard/messages') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                         {unreadCount > 0 && (
                             <span
                                 aria-hidden="true"
-                                className="absolute top-0.5 right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#242428] shadow-sm animate-in fade-in zoom-in duration-200"
+                                className="absolute -top-1.5 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#242428] shadow-sm animate-in fade-in zoom-in duration-200"
                             >
                                 {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
                         )}
                     </div>
+                    <span className={`text-[10px] tracking-tight leading-tight mt-0.5 transition-colors ${isActive('/dashboard/messages') ? 'text-[#1daddd] font-semibold' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 font-medium'}`}>
+                        Chat
+                    </span>
                 </Link>
 
                 {/* Profile */}
-                <Link href={profileLink} prefetch={true} className="group flex flex-col items-center">
-                    <div className={`w-[44px] h-[44px] flex justify-center items-center transition-colors ${isActive('/profile') || isActive('/login') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
-                        <DynamicLucideIcon name="account_circle" size={26} strokeWidth={isActive('/profile') || isActive('/login') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/profile') || isActive('/login') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
+                <Link href={profileLink} prefetch={true} className="group flex flex-col items-center justify-center py-1 transition-transform active:scale-95">
+                    <div className={`flex items-center justify-center h-7 transition-colors ${isActive('/profile') || isActive('/login') ? 'text-[#1daddd]' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                        <DynamicLucideIcon name="account_circle" size={24} strokeWidth={isActive('/profile') || isActive('/login') ? 2.6 : 2} style={{ fontVariationSettings: isActive('/profile') || isActive('/login') ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }} />
                     </div>
+                    <span className={`text-[10px] tracking-tight leading-tight mt-0.5 transition-colors ${isActive('/profile') || isActive('/login') ? 'text-[#1daddd] font-semibold' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 font-medium'}`}>
+                        Profile
+                    </span>
                 </Link>
             </div>
         </nav>
