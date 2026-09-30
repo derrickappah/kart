@@ -339,15 +339,9 @@ export default function FilterSidebar() {
     if (!isOpen) return null;
 
     return (
-        /* Overlay Backdrop */
+        /* Modal Root Container */
         <div
-            className={`fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm sm:p-4 ${
-                !dragY && !animatingOut ? 'animate-fade-in' : ''
-            }`}
-            style={{
-                opacity: animatingOut ? 0 : dragY > 0 ? Math.max(0, 1 - dragY / 300) : 1,
-                transition: animatingOut ? 'opacity 0.28s ease' : isDragging ? 'none' : 'opacity 0.25s ease',
-            }}
+            className="fixed inset-0 z-[100] flex flex-col justify-end sm:justify-center items-center sm:p-4"
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
@@ -355,11 +349,17 @@ export default function FilterSidebar() {
             aria-modal="true"
             aria-label="Filter and sort listings"
         >
-            <button
-                className="absolute inset-0 w-full h-full bg-transparent cursor-default border-none outline-none"
+            {/* Backdrop overlay (solid while dragging, fades only when dismissed) */}
+            <div
+                className={`absolute inset-0 bg-black/60 backdrop-blur-sm ${
+                    !animatingOut ? 'animate-fade-in' : ''
+                }`}
+                style={{
+                    opacity: animatingOut ? 0 : 1,
+                    transition: animatingOut ? 'opacity 0.28s ease' : undefined,
+                }}
                 onClick={closeSidebar}
-                aria-label="Close filters overlay"
-                tabIndex={-1}
+                aria-hidden="true"
             />
 
             {/* Modal Body / Bottom Drawer container */}
